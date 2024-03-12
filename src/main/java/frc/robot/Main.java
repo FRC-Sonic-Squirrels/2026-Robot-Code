@@ -34,6 +34,12 @@ public final class Main {
   public static void main(String... args) {
     SignalLogger.enableAutoLogging(false);
     SignalLogger.stop();
+    try {
+      Thread.sleep(10000);
+    } catch (InterruptedException e) {
+      System.out.println("sleep interrupted");
+    }
+
     RobotBase.startRobot(Robot::new);
   }
 }
