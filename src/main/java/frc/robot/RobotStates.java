@@ -260,6 +260,8 @@ public class RobotStates {
       intakeInUse = true;
     }
 
+    var scheduler = CommandScheduler.getInstance();
+
     if (!mechanismInUse && !endEffectorInUse && !intakeInUse) {
 
 
