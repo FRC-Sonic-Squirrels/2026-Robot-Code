@@ -4,6 +4,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
@@ -68,12 +69,13 @@ public class AutosManager {
     Command preloader =
         new RunStateMachineCommand(() -> new AutoStateMachine(subsystems, config, states), true);
 
-    Commands.waitSeconds(6)
-        .deadlineFor(preloader.repeatedly())
-        .andThen(Commands.runOnce(() -> preloadingComplete = true))
-        .ignoringDisable(true)
-        .withName("AutoPreload")
-        .schedule();
+    var cmd =
+        Commands.waitSeconds(6)
+            .deadlineFor(preloader.repeatedly())
+            .andThen(Commands.runOnce(() -> preloadingComplete = true))
+            .ignoringDisable(true)
+            .withName("AutoPreload");
+    CommandScheduler.getInstance().schedule(cmd);
 
     fillChooserAndMap(
         chooser,

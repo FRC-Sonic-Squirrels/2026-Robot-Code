@@ -1,6 +1,6 @@
 {
  "name":"CA_IB",
- "version":1,
+ "version":3,
  "snapshot":{
   "waypoints":[
     {"x":3.16611, "y":4.191, "heading":3.141592653589793, "intervals":166, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},

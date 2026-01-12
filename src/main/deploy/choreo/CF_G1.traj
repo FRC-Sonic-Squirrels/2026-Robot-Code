@@ -1,6 +1,6 @@
 {
  "name":"CF_G1",
- "version":1,
+ "version":3,
  "snapshot":{
   "waypoints":[
     {"x":5.294100794164811, "y":2.962403942155901, "heading":-1.0471975511965976, "intervals":46, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},

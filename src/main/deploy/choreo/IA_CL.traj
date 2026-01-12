@@ -1,6 +1,6 @@
 {
  "name":"IA_CL",
- "version":1,
+ "version":3,
  "snapshot":{
   "waypoints":[
     {"x":1.487926, "y":7.341086, "heading":2.199114857512855, "intervals":106, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},

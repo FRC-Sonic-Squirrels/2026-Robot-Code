@@ -1,6 +1,6 @@
 {
  "name":"S3_CA",
- "version":1,
+ "version":3,
  "snapshot":{
   "waypoints":[
     {"x":7.1, "y":4.191, "heading":0.0, "intervals":117, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},

@@ -1,6 +1,6 @@
 {
  "name":"CB_G1",
- "version":1,
+ "version":3,
  "snapshot":{
   "waypoints":[
     {"x":3.16611, "y":3.8608, "heading":3.141592653589793, "intervals":70, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},

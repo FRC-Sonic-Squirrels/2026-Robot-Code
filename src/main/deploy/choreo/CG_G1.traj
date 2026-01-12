@@ -1,6 +1,6 @@
 {
  "name":"CG_G1",
- "version":1,
+ "version":3,
  "snapshot":{
   "waypoints":[
     {"x":5.81279, "y":3.8608, "heading":0.0, "intervals":29, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},
