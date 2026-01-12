@@ -1,6 +1,6 @@
 {
  "name":"CD_G2",
- "version":1,
+ "version":3,
  "snapshot":{
   "waypoints":[
     {"x":3.97076079416481, "y":2.7973039421559016, "heading":-2.0943951023931953, "intervals":67, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},

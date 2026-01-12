@@ -1,6 +1,6 @@
 {
  "name":"CH_G2",
- "version":1,
+ "version":3,
  "snapshot":{
   "waypoints":[
     {"x":5.81279, "y":4.191, "heading":0.0, "intervals":35, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},

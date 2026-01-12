@@ -155,9 +155,9 @@ public class Robot extends LoggedRobot {
     // and put our autonomous chooser on the dashboard.
     robotContainer = new RobotContainer();
 
-    robotContainer.threadCommand().schedule();
-
     var commandScheduler = CommandScheduler.getInstance();
+    commandScheduler.schedule(robotContainer.threadCommand());
+
     commandScheduler.onCommandInitialize(
         command -> logGroupActiveCommands.buildBoolean(command.getName()).info(true));
     commandScheduler.onCommandInterrupt(
@@ -299,7 +299,8 @@ public class Robot extends LoggedRobot {
     // schedule the autonomous command (example)
     if (selectedAuto != null) {
       autoCommand = selectedAuto.command();
-      autoCommand.schedule();
+
+      CommandScheduler.getInstance().schedule(autoCommand);
     }
   }
 

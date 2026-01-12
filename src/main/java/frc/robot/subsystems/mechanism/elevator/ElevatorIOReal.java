@@ -13,6 +13,7 @@ import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
@@ -84,7 +85,8 @@ public class ElevatorIOReal implements ElevatorIO {
 
     leadMotor.optimizeBusUtilization();
 
-    followerMotor.setControl(new Follower(Constants.CanIDs.ELEVATOR_LEAD_CAN_ID, false));
+    followerMotor.setControl(
+        new Follower(Constants.CanIDs.ELEVATOR_LEAD_CAN_ID, MotorAlignmentValue.Aligned));
 
     refreshSet =
         new BaseStatusSignal[] {rotorPosition, rotorVelocity, appliedVoltage, current, temp};

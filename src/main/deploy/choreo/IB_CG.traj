@@ -1,6 +1,6 @@
 {
  "name":"IB_CG",
- "version":1,
+ "version":3,
  "snapshot":{
   "waypoints":[
     {"x":0.7625514268875122, "y":6.768265247344971, "heading":2.199114857512855, "intervals":228, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},

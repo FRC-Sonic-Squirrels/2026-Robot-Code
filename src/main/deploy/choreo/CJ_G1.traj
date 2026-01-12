@@ -1,6 +1,6 @@
 {
  "name":"CJ_G1",
- "version":1,
+ "version":3,
  "snapshot":{
   "waypoints":[
     {"x":5.008139205835189, "y":5.2544960578441, "heading":1.0471975511965976, "intervals":41, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},

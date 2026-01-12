@@ -1,6 +1,6 @@
 {
  "name":"S1_CL",
- "version":1,
+ "version":3,
  "snapshot":{
   "waypoints":[
     {"x":7.1, "y":7.0, "heading":1.0471975511965976, "intervals":307, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},

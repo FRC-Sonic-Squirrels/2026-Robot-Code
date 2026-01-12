@@ -1,6 +1,7 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.team2930.LoggerEntry;
@@ -279,24 +280,26 @@ public class RobotStates {
       intakeInUse = true;
     }
 
+    var scheduler = CommandScheduler.getInstance();
+
     if (!mechanismInUse && !endEffectorInUse && !intakeInUse) {
 
       // Passing coral between mechanisms
       if (transferCoralToEndEffector && !passCoralToEndEffector.isScheduled()) {
-        passCoralToEndEffector.schedule();
+        scheduler.schedule(passCoralToEndEffector);
       }
 
       if (transferCoralToIntake && !passCoralToIntake.isScheduled()) {
-        passCoralToIntake.schedule();
+        scheduler.schedule(passCoralToIntake);
       }
 
       // Passing algae between mechanisms
       if (transferAlgaeToEndEffector && !passAlgaeToEndEffector.isScheduled()) {
-        passAlgaeToEndEffector.schedule();
+        scheduler.schedule(passAlgaeToEndEffector);
       }
 
       if (transferAlgaeToIntake && !passAlgaeToIntake.isScheduled()) {
-        passAlgaeToIntake.schedule();
+        scheduler.schedule(passAlgaeToIntake);
       }
     } else {
       passCoralToEndEffector.cancel();
