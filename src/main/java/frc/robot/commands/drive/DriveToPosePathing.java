@@ -59,7 +59,8 @@ public class DriveToPosePathing extends Command {
       tunableGroup.build("Stall/MaxVelocity", 0.4);
   private static LoggedTunableNumber stallMinDistance =
       tunableGroup.build("Stall/MinDistance", 0.05);
-  private static LoggedTunableNumber stallDebounce = tunableGroup.build("Stall/Debounce", 0.15);
+  private static LoggedTunableNumber stallDebounce = 
+      tunableGroup.build("Stall/Debounce", 0.15);
 
   private static LoggerGroup logGroup = LoggerGroup.build("DriveToPosePathing");
   private static LoggerGroup pathGenLogGroup = logGroup.subgroup("PathGeneration");
