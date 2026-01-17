@@ -40,8 +40,6 @@ public class IntakeIOSim implements IntakeIO {
   private VoltageOut pivotOpenLoopControl = new VoltageOut(0);
   private MotionMagicVoltage pivotClosedLoopControl = new MotionMagicVoltage(0);
 
-  public boolean tofActivated = false;
-
   public IntakeIOSim() {}
 
   @Override
@@ -55,8 +53,6 @@ public class IntakeIOSim implements IntakeIO {
     inputs.pivotPosition = new Rotation2d(pivotSim.getPosition());
     inputs.pivotAppliedVolts = pivotSim.getVoltage().in(Units.Volts);
     inputs.pivotVelocityDegreesPerSecond = pivotSim.getVelocity().in(Units.DegreesPerSecond);
-
-    inputs.intakeTofDetected = tofActivated;
   }
 
   @Override

@@ -15,10 +15,6 @@ public interface IntakeIO {
     public double rollerTempCelsius;
     public double rollerAppliedVolts;
 
-    public double intakeTofDistanceInches;
-    public boolean intakeTofDetected;
-    public double intakeTofSignalStrength;
-
     public Rotation2d pivotPosition = Constants.zeroRotation2d;
     public double pivotAppliedVolts;
     public double pivotCurrentAmps;
@@ -38,8 +34,6 @@ public interface IntakeIO {
   public default void setRollerVelocity(double revPerMin) {}
 
   public default void setStarVoltage(double volts) {}
-
-  public default void setStarVelocity(double revPerMin) {}
 
   public default void setRollerClosedLoopConstants(
       double kP, double kV, double kS, double targetAccelerationConfig) {}
