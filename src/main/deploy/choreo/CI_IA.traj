@@ -1,6 +1,6 @@
 {
  "name":"CI_IA",
- "version":1,
+ "version":3,
  "snapshot":{
   "waypoints":[
     {"x":5.294100794164811, "y":5.089396057844099, "heading":1.0471975511965976, "intervals":82, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},

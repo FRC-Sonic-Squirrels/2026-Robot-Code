@@ -10,7 +10,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Units;
 import frc.lib.team2930.AllianceFlipUtil;
-import frc.lib.team2930.GeometryUtil;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 import frc.lib.team2930.StateMachine;
@@ -25,7 +24,6 @@ import frc.robot.autonomous.records.OppositeSide;
 import frc.robot.autonomous.records.PickupLocation;
 import frc.robot.autonomous.records.ScoringLocation;
 import frc.robot.autonomous.records.ScoringLocation.ReefSide;
-import frc.robot.commands.drive.DriveToPosePathing;
 import frc.robot.configs.RobotConfig;
 import frc.robot.subsystems.LED;
 import frc.robot.subsystems.intake.Intake;
@@ -73,7 +71,7 @@ public class AutoStateMachine extends StateMachine {
     return new AutoDescriptor(scoringLocations, coralStationLocations, StartingLocation.S2);
   }
 
-private boolean preloadCode;
+  private boolean preloadCode;
 
   /** IMPORTANT: Use this constructor only for preloading code */
   public AutoStateMachine(AutosSubsystems subsystems, RobotConfig config, RobotStates states) {
@@ -136,20 +134,6 @@ private boolean preloadCode;
     }
 
     this.config = config;
-
-    preloadCode();
-  }
-
-  private void preloadCode() {
-    // Pretend to create a path, to load all the pathing code.
-    var cmd =
-        new DriveToPosePathing(
-            wrapper,
-            config,
-            () -> wrapper.getCoralStationPoseEstimatorPose(true),
-            this::getClosestCoralStationPose,
-            states.scoringLevel);
-    cmd.initializeNoCheck();
   }
 
   // Additional Methods
@@ -220,20 +204,5 @@ private boolean preloadCode;
                     Constants.FieldConstants.CORAL_STATION_WIDTH.div(4).in(Units.Meter),
                     left ? Rotation2d.kCW_90deg : Rotation2d.kCCW_90deg)));
     return AllianceFlipUtil.flipPoseForAlliance(offsetPickup);
-  }
-
-  private Pose2d getClosestCoralStationPose() {
-    Pose2d bestPose = null;
-
-    for (PickupLocation location : PickupLocation.values()) {
-      Pose2d trialPose = getCoralStationPose(location);
-      if (bestPose == null
-          || GeometryUtil.getDist(trialPose, wrapper.getCoralStationPoseEstimatorPose(true))
-              < GeometryUtil.getDist(bestPose, wrapper.getCoralStationPoseEstimatorPose(true))) {
-        bestPose = trialPose;
-      }
-    }
-
-    return bestPose;
   }
 }

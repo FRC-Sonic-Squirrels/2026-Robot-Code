@@ -1,6 +1,6 @@
 {
  "name":"CL_G2",
- "version":1,
+ "version":3,
  "snapshot":{
   "waypoints":[
     {"x":3.6847992058351897, "y":5.089396057844099, "heading":2.0943951023931953, "intervals":58, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},

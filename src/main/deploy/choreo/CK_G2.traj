@@ -1,6 +1,6 @@
 {
  "name":"CK_G2",
- "version":1,
+ "version":3,
  "snapshot":{
   "waypoints":[
     {"x":3.970760794164811, "y":5.2544960578441, "heading":2.0943951023931953, "intervals":62, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},

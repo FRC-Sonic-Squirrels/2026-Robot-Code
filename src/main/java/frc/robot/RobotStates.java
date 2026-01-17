@@ -1,5 +1,6 @@
 package frc.robot;
 
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
@@ -259,6 +260,8 @@ public class RobotStates {
     if (intakeState == IntakeState.Override) {
       intakeInUse = true;
     }
+
+    var scheduler = CommandScheduler.getInstance();
 
     if (!mechanismInUse && !endEffectorInUse && !intakeInUse) {
 

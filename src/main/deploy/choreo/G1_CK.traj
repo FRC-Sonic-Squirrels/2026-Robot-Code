@@ -1,6 +1,6 @@
 {
  "name":"G1_CK",
- "version":1,
+ "version":3,
  "snapshot":{
   "waypoints":[
     {"x":1.225305199623108, "y":5.856461524963379, "heading":-2.9248672519028833, "intervals":65, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},

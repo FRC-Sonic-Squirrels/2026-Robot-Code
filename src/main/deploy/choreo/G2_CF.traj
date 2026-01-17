@@ -1,6 +1,6 @@
 {
  "name":"G2_CF",
- "version":1,
+ "version":3,
  "snapshot":{
   "waypoints":[
     {"x":1.223701238632202, "y":4.019707679748535, "heading":-3.0118905029958576, "intervals":83, "split":false, "fixTranslation":true, "fixHeading":true, "overrideIntervals":false},

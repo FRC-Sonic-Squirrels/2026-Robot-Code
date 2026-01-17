@@ -155,9 +155,9 @@ public class Robot extends LoggedRobot {
     // and put our autonomous chooser on the dashboard.
     robotContainer = new RobotContainer();
 
-    robotContainer.threadCommand().schedule();
-
     var commandScheduler = CommandScheduler.getInstance();
+    commandScheduler.schedule(robotContainer.threadCommand());
+
     commandScheduler.onCommandInitialize(
         command -> logGroupActiveCommands.buildBoolean(command.getName()).info(true));
     commandScheduler.onCommandInterrupt(
@@ -273,8 +273,6 @@ public class Robot extends LoggedRobot {
       }
     }
 
-    robotContainer.setCoralStationPoseToReefPose();
-
     // set gyro zero based on vision during pre match disable. This allows for imprecise robot
     // placement on the field to be fixed by vision
     // fms = has ever entered auto or tele then never reset
@@ -299,7 +297,8 @@ public class Robot extends LoggedRobot {
     // schedule the autonomous command (example)
     if (selectedAuto != null) {
       autoCommand = selectedAuto.command();
-      autoCommand.schedule();
+
+      CommandScheduler.getInstance().schedule(autoCommand);
     }
   }
 
