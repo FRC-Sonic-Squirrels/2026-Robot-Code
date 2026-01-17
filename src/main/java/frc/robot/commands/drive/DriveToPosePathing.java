@@ -139,7 +139,7 @@ public class DriveToPosePathing extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    Pose2d robotPose = wrapper.getCoralStationPoseEstimatorPose(true);
+    Pose2d robotPose = wrapper.getHubPoseEstimatorPose(true);
     Pose2d targetPose = this.targetPose.get();
     if (GeometryUtil.getDist(robotPose, targetPose) < 0.0002) {
       this.cancel();

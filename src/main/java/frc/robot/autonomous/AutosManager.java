@@ -313,7 +313,7 @@ public class AutosManager {
             helper =
                 new ChoreoHelper(
                     Timer.getFPGATimestamp(),
-                    drivetrain.getReefPoseEstimatorPose(true),
+                    drivetrain.getHubPoseEstimatorPose(true),
                     traj,
                     config.getDriveBaseRadius() / 2,
                     config.getAutoTranslationPidController(),
@@ -325,7 +325,7 @@ public class AutosManager {
           public void execute() {
             var result =
                 helper.calculateChassisSpeeds(
-                    drivetrain.getReefPoseEstimatorPose(true), Timer.getFPGATimestamp());
+                    drivetrain.getHubPoseEstimatorPose(true), Timer.getFPGATimestamp());
             drivetrain.setVelocityOverride(result.chassisSpeeds());
             atEndOfPath = result.atEndOfPath();
           }

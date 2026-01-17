@@ -273,7 +273,6 @@ public class Drivetrain extends SubsystemBase {
       logLocalization_HubRobotPosition.info(hubPoseEstimatorPose);
 
       SmartDashboard.putData("Localization/hubField2d", hubField2d);
-  
 
       rawOdometryField2d.setRobotPose(rawOdometryPose);
       logLocalization_RobotPosition_RAW_ODOMETRY.info(rawOdometryPose);
@@ -626,6 +625,7 @@ public class Drivetrain extends SubsystemBase {
       }
     }
   }
+
   public double getHubVisionStaleness() {
     try (var ignored = odometryLock.lock()) // Prevents odometry updates while reading data
     {

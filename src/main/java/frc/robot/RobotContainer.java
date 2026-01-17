@@ -213,7 +213,7 @@ public class RobotContainer {
       vision =
           new Vision(
               aprilTagLayout,
-              drivetrain::getReefPoseEstimatorPose,
+              drivetrain::getHubPoseEstimatorPose,
               drivetrain::getRotationGyroOnly,
               drivetrain::addVisionEstimate,
               config.getReplayVisionModules());
@@ -227,7 +227,7 @@ public class RobotContainer {
       if (Constants.unusedCode) {
         visionGamepiece =
             new VisionGamepiece(
-                new VisionGamepieceIO() {}, drivetrain::getReefPoseEstimatorPoseAtTimestamp);
+                new VisionGamepieceIO() {}, drivetrain::getHubPoseEstimatorPoseAtTimestamp);
       } else {
         visionGamepiece = null;
       }
@@ -257,7 +257,7 @@ public class RobotContainer {
             vision =
                 new Vision(
                     aprilTagLayout,
-                    drivetrain::getReefPoseEstimatorPose,
+                    drivetrain::getHubPoseEstimatorPose,
                     drivetrain::getRotationGyroOnly,
                     drivetrain::addVisionEstimate,
                     config.getVisionModuleObjects());
@@ -265,7 +265,7 @@ public class RobotContainer {
             if (Constants.unusedCode) {
               visionGamepiece =
                   new VisionGamepiece(
-                      new VisionGamepieceIOReal(), drivetrain::getReefPoseEstimatorPoseAtTimestamp);
+                      new VisionGamepieceIOReal(), drivetrain::getHubPoseEstimatorPoseAtTimestamp);
             } else {
               visionGamepiece = null;
             }
@@ -276,18 +276,18 @@ public class RobotContainer {
                   SimulatorRobotConfig.SHOOTER_SIDE_LEFT_CAMERA_NAME,
                   SimulatorRobotConfig.SHOOTER_SIDE_LEFT,
                   config,
-                  drivetrain::getReefPoseEstimatorPose),
+                  drivetrain::getHubPoseEstimatorPose),
               VisionModuleConfiguration.buildSim(
                   SimulatorRobotConfig.SHOOTER_SIDE_RIGHT_CAMERA_NAME,
                   SimulatorRobotConfig.SHOOTER_SIDE_RIGHT,
                   config,
-                  drivetrain::getReefPoseEstimatorPose),
+                  drivetrain::getHubPoseEstimatorPose),
             };
 
             vision =
                 new Vision(
                     aprilTagLayout,
-                    drivetrain::getReefPoseEstimatorPose,
+                    drivetrain::getHubPoseEstimatorPose,
                     drivetrain::getRotationGyroOnly,
                     drivetrain::addVisionEstimate,
                     visionModules);
@@ -295,8 +295,8 @@ public class RobotContainer {
             if (Constants.unusedCode) {
               visionGamepiece =
                   new VisionGamepiece(
-                      new VisionGamepieceIOSim(config, drivetrain::getReefPoseEstimatorPose),
-                      drivetrain::getReefPoseEstimatorPoseAtTimestamp);
+                      new VisionGamepieceIOSim(config, drivetrain::getHubPoseEstimatorPose),
+                      drivetrain::getHubPoseEstimatorPoseAtTimestamp);
             } else {
               visionGamepiece = null;
             }
@@ -327,7 +327,7 @@ public class RobotContainer {
           vision =
               new Vision(
                   aprilTagLayout,
-                  drivetrain::getReefPoseEstimatorPose,
+                  drivetrain::getHubPoseEstimatorPose,
                   drivetrain::getRotationGyroOnly,
                   drivetrain::addVisionEstimate,
                   config.getReplayVisionModules());
@@ -340,7 +340,7 @@ public class RobotContainer {
           if (Constants.unusedCode) {
             visionGamepiece =
                 new VisionGamepiece(
-                    new VisionGamepieceIO() {}, drivetrain::getReefPoseEstimatorPoseAtTimestamp);
+                    new VisionGamepieceIO() {}, drivetrain::getHubPoseEstimatorPoseAtTimestamp);
           } else {
             visionGamepiece = null;
           }
@@ -369,7 +369,7 @@ public class RobotContainer {
           vision =
               new Vision(
                   aprilTagLayout,
-                  drivetrain::getReefPoseEstimatorPose,
+                  drivetrain::getHubPoseEstimatorPose,
                   drivetrain::getRotationGyroOnly,
                   drivetrain::addVisionEstimate,
                   config.getVisionModuleObjects());
@@ -377,7 +377,7 @@ public class RobotContainer {
           if (Constants.unusedCode) {
             visionGamepiece =
                 new VisionGamepiece(
-                    new VisionGamepieceIOReal(), drivetrain::getReefPoseEstimatorPoseAtTimestamp);
+                    new VisionGamepieceIOReal(), drivetrain::getHubPoseEstimatorPoseAtTimestamp);
           } else {
             visionGamepiece = null;
           }
@@ -411,7 +411,7 @@ public class RobotContainer {
           vision =
               new Vision(
                   aprilTagLayout,
-                  drivetrain::getReefPoseEstimatorPose,
+                  drivetrain::getHubPoseEstimatorPose,
                   drivetrain::getRotationGyroOnly,
                   drivetrain::addVisionEstimate,
                   config.getVisionModuleObjects());
@@ -419,7 +419,7 @@ public class RobotContainer {
           if (Constants.unusedCode) {
             visionGamepiece =
                 new VisionGamepiece(
-                    new VisionGamepieceIOReal(), drivetrain::getReefPoseEstimatorPoseAtTimestamp);
+                    new VisionGamepieceIOReal(), drivetrain::getHubPoseEstimatorPoseAtTimestamp);
           } else {
             visionGamepiece = null;
           }
@@ -444,7 +444,7 @@ public class RobotContainer {
           vision =
               new Vision(
                   aprilTagLayout,
-                  drivetrain::getReefPoseEstimatorPose,
+                  drivetrain::getHubPoseEstimatorPose,
                   drivetrain::getRotationGyroOnly,
                   drivetrain::addVisionEstimate,
                   config.getReplayVisionModules());
@@ -457,7 +457,7 @@ public class RobotContainer {
           if (Constants.unusedCode) {
             visionGamepiece =
                 new VisionGamepiece(
-                    new VisionGamepieceIO() {}, drivetrain::getReefPoseEstimatorPoseAtTimestamp);
+                    new VisionGamepieceIO() {}, drivetrain::getHubPoseEstimatorPoseAtTimestamp);
           } else {
             visionGamepiece = null;
           }
@@ -553,7 +553,7 @@ public class RobotContainer {
           .onTrue(
               Commands.runOnce(
                   () -> {
-                    Pose2d pose = drivetrain.getReefPoseEstimatorPose();
+                    Pose2d pose = drivetrain.getHubPoseEstimatorPose();
                     drivetrain.setPose(
                         new Pose2d(pose.getX(), pose.getY(), Constants.zeroRotation2d));
                   },
@@ -578,12 +578,6 @@ public class RobotContainer {
     driverController
         .registerTrigger(XboxControllerWrapper.Button.start, "X Stance")
         .onTrue(Commands.runOnce(drivetrain::stopWithX));
-
-    driverController
-        .registerTrigger(XboxControllerWrapper.Button.rightBumper, "Intake Coral Station")
-        .whileTrue(
-            CommandComposer.intakeCoralFromStation(
-                drivetrainWrapper, endEffector, mech, led, driverController, true, robotStates));
 
     driverController
         .registerTrigger(XboxControllerWrapper.Button.leftBumper, "Ground Intake")
@@ -805,7 +799,7 @@ public class RobotContainer {
         "Zero Robot Angle",
         Commands.runOnce(
             () -> {
-              Pose2d pose = drivetrain.getReefPoseEstimatorPose();
+              Pose2d pose = drivetrain.getHubPoseEstimatorPose();
               drivetrain.setPose(new Pose2d(pose.getX(), pose.getY(), Constants.zeroRotation2d));
             },
             drivetrain));
@@ -909,15 +903,10 @@ public class RobotContainer {
 
   public void setPose(Pose2d pose) {
     drivetrain.setPose(pose);
-    drivetrain.setCoralStationPoseToReefPose();
-  }
-
-  public void setCoralStationPoseToReefPose() {
-    drivetrain.setCoralStationPoseToReefPose();
   }
 
   public void matchRawOdometryToPoseEstimatorValue() {
-    drivetrain.setRawOdometryPose(drivetrain.getReefPoseEstimatorPose());
+    drivetrain.setRawOdometryPose(drivetrain.getHubPoseEstimatorPose());
   }
 
   public void applyToDrivetrain() {
@@ -983,7 +972,7 @@ public class RobotContainer {
     SimpleMechanismVisualization.updateVisualization(elevator.getHeight(), arm.getAngle());
     SimpleMechanismVisualization.logMechanism();
     MechanismVisualization.updateVisualization(
-        drivetrainWrapper.getReefPoseEstimatorPose(true),
+        drivetrainWrapper.getHubPoseEstimatorPose(true),
         elevator.getHeight(),
         arm.getAngle(),
         intake.getPivotAngle(),
