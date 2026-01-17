@@ -27,12 +27,15 @@ import frc.robot.autonomous.records.ScoringLocation;
 import frc.robot.autonomous.records.ScoringLocation.ReefSide;
 import frc.robot.commands.drive.DriveToPosePathing;
 import frc.robot.configs.RobotConfig;
+import frc.robot.subsystems.LED;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
 public class AutoStateMachine extends StateMachine {
+
+  private final LED led;
 
   private final DrivetrainWrapper wrapper;
   private final RobotStates states;
@@ -89,6 +92,7 @@ public class AutoStateMachine extends StateMachine {
       RobotStates states) {
     super("Auto");
 
+    led = subsystems.led();
     wrapper = subsystems.drivetrain();
     this.states = states;
 
