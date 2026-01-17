@@ -43,7 +43,6 @@ public class AutoStateMachine extends StateMachine {
     super("Auto");
 
     led         = subsystems.led();
-    intake      = subsystems.intake();
     wrapper     = subsystems.drivetrain();
     this.states = states;
 
