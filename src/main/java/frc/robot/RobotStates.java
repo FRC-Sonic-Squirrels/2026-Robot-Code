@@ -263,38 +263,38 @@ public class RobotStates {
     if (!mechanismInUse && !endEffectorInUse && !intakeInUse) {
 
 
-    // Updates states
+      // Updates states
 
-    coralInRobot = coralInEndEffector || coralInIntake;
+      coralInRobot = coralInEndEffector || coralInIntake;
 
-    algaeInRobot = algaeInEndEffector || algaeInIntake;
+      algaeInRobot = algaeInEndEffector || algaeInIntake;
 
-    // Log states
+      // Log states
 
-    logEndEffectorDesiredAction.info(endEffectorDesiredAction);
-    logMechState.info(mechState);
-    logIntakeState.info(intakeState);
+      logEndEffectorDesiredAction.info(endEffectorDesiredAction);
+      logMechState.info(mechState);
+      logIntakeState.info(intakeState);
 
-    var level = scoringLevel;
-    logScoringLevelState.info(level);
-    logL1State.info(level == ScoringLevel.L1);
-    logL2State.info(level == ScoringLevel.L2);
-    logL3State.info(level == ScoringLevel.L3);
-    logL4State.info(level == ScoringLevel.L4);
-    logAlgaeClearingState.info(clearingAlgae);
-    logGamepieceInRobotState.info(coralInRobot);
-    logGamepieceInIntakeState.info(coralInIntake || algaeInRobot);
-    logCoralInIntakeState.info(coralInIntake);
-    logGamepieceInEndEffectorState.info(coralInEndEffector);
-    logGamepieceInEndEffectorScoringSideState.info(coralInEndEffectorScoringSide);
-    logGamepieceInEndEffectorNonScoringSideState.info(coralInEndEffectorNonScoringSide);
-    logHighStowMode.info(highStowMode);
+      var level = scoringLevel;
+      logScoringLevelState.info(level);
+      logL1State.info(level == ScoringLevel.L1);
+      logL2State.info(level == ScoringLevel.L2);
+      logL3State.info(level == ScoringLevel.L3);
+      logL4State.info(level == ScoringLevel.L4);
+      logAlgaeClearingState.info(clearingAlgae);
+      logGamepieceInRobotState.info(coralInRobot);
+      logGamepieceInIntakeState.info(coralInIntake || algaeInRobot);
+      logCoralInIntakeState.info(coralInIntake);
+      logGamepieceInEndEffectorState.info(coralInEndEffector);
+      logGamepieceInEndEffectorScoringSideState.info(coralInEndEffectorScoringSide);
+      logGamepieceInEndEffectorNonScoringSideState.info(coralInEndEffectorNonScoringSide);
+      logHighStowMode.info(highStowMode);
 
-    mechanismInUse = false;
-    intakeInUse = false;
-    endEffectorInUse = false;
+      mechanismInUse = false;
+      intakeInUse = false;
+      endEffectorInUse = false;
+    }
   }
-}
 
   public void setMechState(MechState state) {
     mechState = state;

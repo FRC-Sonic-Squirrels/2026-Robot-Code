@@ -73,7 +73,7 @@ public class Intake extends SubsystemBase {
 
   private static final LoggedTunableNumber fuelScoreVelocity =
       group.build("Score/Fuel/Velocity", -500.0);
- private static final LoggedTunableNumber intakingFuelPivotAngle =
+  private static final LoggedTunableNumber intakingFuelPivotAngle =
       group.build("Intaking/Fuel/AngleDeg", 20);
 
   // Roller
@@ -84,7 +84,6 @@ public class Intake extends SubsystemBase {
   private static final LoggedTunableNumber rKV = rollerSubgroup.build("KV");
   private static final LoggedTunableNumber rollerTargetAccelerationConfig =
       rollerSubgroup.build("MaxAccelerationConstraint");
-
 
   // Pivot
   private static final TunableNumberGroup pivotSubgroup = group.subgroup(PivotConstants.ROOT_TABLE);
@@ -289,7 +288,6 @@ public class Intake extends SubsystemBase {
   public boolean setPivotNeutralMode(NeutralModeValue value) {
     return io.setPivotNeutralMode(value);
   }
-
 
   // Getters
 

@@ -54,7 +54,6 @@ public class IntakeIOReal implements IntakeIO {
 
   private final BaseStatusSignal[] refreshSet;
 
-
   public IntakeIOReal() {
     // Motor config
     TalonFXConfiguration rollerConfig = new TalonFXConfiguration();
@@ -144,7 +143,7 @@ public class IntakeIOReal implements IntakeIO {
           pivotVelocity,
           pivotPosition
         };
-      }
+  }
 
   @Override
   public void updateInputs(Inputs inputs) {

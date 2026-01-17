@@ -15,14 +15,9 @@ import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 import frc.lib.team2930.StateMachine;
 import frc.lib.team6328.GeomUtil;
-import frc.robot.CommandComposer;
 import frc.robot.Constants;
-import frc.robot.FieldStates;
 import frc.robot.RobotStates;
-import frc.robot.RobotStates.IntakeState;
 import frc.robot.RobotStates.ScoringLevel;
-import frc.robot.autonomous.helpers.ChoreoHelper;
-import frc.robot.autonomous.helpers.ChoreoHelper.ChassisSpeedsWithPathEnd;
 import frc.robot.autonomous.records.AutoDescriptor;
 import frc.robot.autonomous.records.AutoDescriptor.StartingLocation;
 import frc.robot.autonomous.records.ChoreoTrajectoryWithName;
@@ -30,46 +25,22 @@ import frc.robot.autonomous.records.OppositeSide;
 import frc.robot.autonomous.records.PickupLocation;
 import frc.robot.autonomous.records.ScoringLocation;
 import frc.robot.autonomous.records.ScoringLocation.ReefSide;
-import frc.robot.commands.ScoreCoral;
-import frc.robot.commands.ScoreCoral.ScoreCoralObjective;
 import frc.robot.commands.drive.DriveToPosePathing;
-import frc.robot.commands.intake.IntakeCoralGround;
 import frc.robot.configs.RobotConfig;
-import frc.robot.subsystems.LED;
-import frc.robot.subsystems.endEffector.EndEffector;
-import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.mechanism.Mechanism;
-import frc.robot.subsystems.mechanism.arm.Arm;
-import frc.robot.subsystems.mechanism.elevator.Elevator;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.Consumer;
-import java.util.function.Supplier;
 
 public class AutoStateMachine extends StateMachine {
 
   private final DrivetrainWrapper wrapper;
-  private final Mechanism mech;
-  private final Elevator elevator;
-  private final Arm arm;
-  private final EndEffector endEffector;
-  private final LED led;
   private final RobotStates states;
-  private final Intake intake;
 
   private final List<ChoreoTrajectoryWithName> scoringPaths = new ArrayList<>();
-  private final List<ScoringLocation> scoringLocations;
   private final List<ChoreoTrajectoryWithName> coralStationPaths = new ArrayList<>();
-  private final List<PickupLocation> coralStationLocations;
 
   private final RobotConfig config;
-
-  private int scoringIndex = 0;
-  private int intakingIndex = 0;
-
-  private ChoreoHelper choreoHelper;
 
   private static LoggerGroup logGroup = LoggerGroup.build("AutoStateMachine");
 
@@ -78,11 +49,6 @@ public class AutoStateMachine extends StateMachine {
   private static LoggerEntry.Bool log_foundPath = logGroup.buildBoolean("PathFound");
   private static LoggerEntry.Struct<Pose2d> log_startingLocation =
       logGroup.buildStruct(Pose2d.class, "StartigLocation");
-
-  private final boolean procedural;
-  private Consumer<Double> rumble = null;
-
-  private ScoreCoral scoreCoral;
 
   private static AutoDescriptor preloadCodeDescriptor() {
     List<ScoringLocation> scoringLocations = new ArrayList<>();
@@ -102,19 +68,15 @@ public class AutoStateMachine extends StateMachine {
     return new AutoDescriptor(scoringLocations, coralStationLocations, StartingLocation.S2);
   }
 
-  private boolean preloadCode;
-
   /** IMPORTANT: Use this constructor only for preloading code */
   public AutoStateMachine(AutosSubsystems subsystems, RobotConfig config, RobotStates states) {
     this(subsystems, preloadCodeDescriptor(), config, false, false, states);
-    preloadCode = true;
     advance();
   }
 
   public AutoStateMachine(
       AutosSubsystems subsystems, RobotConfig config, Consumer<Double> rumble, RobotStates states) {
     this(subsystems, null, config, false, true, states);
-    this.rumble = rumble;
   }
 
   /** Creates a new AutoSubstateMachine. */
@@ -128,26 +90,7 @@ public class AutoStateMachine extends StateMachine {
     super("Auto");
 
     wrapper = subsystems.drivetrain();
-    mech = subsystems.mech();
-    elevator = mech.getElevator();
-    arm = mech.getArm();
-    endEffector = subsystems.endEffector();
-    led = subsystems.led();
-    intake = subsystems.intake();
     this.states = states;
-
-    if (descriptor == null) {
-      scoringLocations = null;
-      coralStationLocations = null;
-    } else {
-
-      scoringLocations =
-          flipAuto ? descriptor.flippedScoringLocations() : descriptor.scoringLocations();
-      coralStationLocations =
-          flipAuto ? descriptor.flippedCoralStationLocations() : descriptor.coralStationLocations();
-    }
-
-    this.procedural = procedural;
 
     if (!procedural) {
       ChoreoTrajectoryWithName startingPath =
@@ -184,8 +127,6 @@ public class AutoStateMachine extends StateMachine {
 
     this.config = config;
 
-    setInitialState(stateWithName("PrepScoreCoral", () -> prepScoreCoral()));
-
     preloadCode();
   }
 
@@ -199,137 +140,6 @@ public class AutoStateMachine extends StateMachine {
             this::getClosestCoralStationPose,
             states.scoringLevel);
     cmd.initializeNoCheck();
-  }
-
-  // CORAL SCORING STATES
-
-  private StateHandler prepScoreCoral() {
-    states.intakeState = IntakeState.Stow;
-    if (scoringLocations != null && scoringIndex == scoringLocations.size()) {
-      return stateWithName("Done", setDone());
-    }
-
-    if (scoringLocations == null) {
-
-      scoreCoral =
-          new ScoreCoral(
-              wrapper,
-              mech,
-              elevator,
-              arm,
-              led,
-              rumble,
-              config,
-              () -> ScoreCoralObjective.JustScore,
-              states);
-
-    } else {
-
-      states.scoringLevel = scoringLocations.get(scoringIndex).level();
-      scoreCoral =
-          new ScoreCoral(
-              wrapper,
-              mech,
-              elevator,
-              arm,
-              led,
-              scoringLocations.get(scoringIndex).side(),
-              (r) -> {},
-              config,
-              () -> ScoreCoralObjective.JustScore,
-              procedural ? Optional.empty() : Optional.of(scoringPaths.get(scoringIndex)),
-              preloadCode,
-              states);
-    }
-
-    spawnStateMachineAsCommand(scoreCoral, (s) -> null, preloadCode);
-
-    return stateWithName("ScoreCoral", () -> scoreCoral());
-  }
-
-  private StateHandler scoreCoral() {
-    if (!scoreCoral.usingDrivetrain() || preloadCode) {
-      var endEffectorSim = endEffector.getSim();
-      if (endEffectorSim != null && !preloadCode) {
-        endEffectorSim.scoringSideTofDetecting = false;
-        endEffectorSim.nonScoringSideTofDetecting = false;
-        FieldStates.setScoringLocationFilled(
-            new ScoringLocation(states.targetReefSide, states.scoringLevel));
-      }
-      scoringIndex++;
-      return stateWithName("PrepIntakeCoral", () -> prepIntakeCoral());
-    }
-
-    return null;
-  }
-
-  // CORAL INTAKING STATES
-
-  private StateHandler prepIntakeCoral() {
-    if (coralStationLocations != null && intakingIndex == coralStationLocations.size()) {
-      return stateWithName("Done", setDone());
-    }
-
-    if (!procedural) {
-      ChoreoTrajectoryWithName traj = coralStationPaths.get(intakingIndex);
-      choreoHelper =
-          new ChoreoHelper(
-              timeFromStart(),
-              coralStationLocations.get(intakingIndex).ground
-                  ? wrapper.getReefPoseEstimatorPose(true)
-                  : wrapper.getCoralStationPoseEstimatorPose(true),
-              traj,
-              config.getDriveBaseRadius() / 2,
-              config.getAutoTranslationPidController(),
-              config.getAutoTranslationPidController(),
-              config.getAutoThetaPidController());
-    }
-    Supplier<Pose2d> intakingPoseSupplier =
-        () ->
-            coralStationLocations == null
-                ? getClosestCoralStationPose()
-                : getCoralStationPose(coralStationLocations.get(intakingIndex));
-
-    if (procedural) {
-      spawnCommand(
-          new DriveToPosePathing(
-              wrapper,
-              config,
-              () -> wrapper.getCoralStationPoseEstimatorPose(true),
-              intakingPoseSupplier,
-              states.scoringLevel),
-          (c) -> null);
-    }
-
-    spawnCommand(
-        coralStationLocations.get(intakingIndex).ground
-            ? new IntakeCoralGround(intake, states)
-            : CommandComposer.intakeCoralFromStation(
-                wrapper, endEffector, mech, led, null, false, states),
-        (c) -> null);
-
-    return stateWithName("IntakeCoral", () -> intakeCoral());
-  }
-
-  private StateHandler intakeCoral() {
-    if (!procedural) {
-      ChassisSpeedsWithPathEnd result =
-          choreoHelper.calculateChassisSpeeds(
-              coralStationLocations.get(intakingIndex).ground
-                  ? wrapper.getReefPoseEstimatorPose(true)
-                  : wrapper.getCoralStationPoseEstimatorPose(true),
-              timeFromStart());
-      wrapper.setVelocityOverride(result.chassisSpeeds());
-    }
-
-    return states.coralInEndEffector || states.coralInIntake || preloadCode
-        ? stateWithName("ReturnToScoring", () -> returnToScoring())
-        : null;
-  }
-
-  private StateHandler returnToScoring() {
-    intakingIndex++;
-    return stateWithName("PrepScoreCoral", () -> prepScoreCoral());
   }
 
   // Additional Methods

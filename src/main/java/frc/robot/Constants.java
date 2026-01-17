@@ -27,9 +27,8 @@ import frc.lib.team2930.AllianceFlipUtil;
 import frc.lib.team6328.Alert;
 import frc.lib.team6328.Alert.AlertType;
 import frc.robot.Constants.RobotMode.RobotType;
-import frc.robot.commands.ScoreCoral.ScoringDirection;
-import frc.robot.commands.ScoreCoral.ScoringSide;
 import frc.robot.configs.*;
+import frc.robot.configs.SimulatorRobotConfig;
 import java.util.function.Supplier;
 
 /**
@@ -160,43 +159,6 @@ public final class Constants {
     }
 
     public static Distance REEF_BRANCH_OFFSET = Units.Inches.of(6.5);
-
-    private static ScoringSide[] SCORING_SIDE_ORDER = {
-      ScoringSide.FAR_MID,
-      ScoringSide.FAR_LEFT,
-      ScoringSide.NEAR_LEFT,
-      ScoringSide.NEAR_MID,
-      ScoringSide.NEAR_RIGHT,
-      ScoringSide.FAR_RIGHT
-    };
-
-    public static ScoringSideWithPose[] SCORING_SIDES(Distance extraOffset) {
-      ScoringSideWithPose[] poses = new ScoringSideWithPose[6];
-      for (int i = 0; i < poses.length; i++) {
-        Rotation2d angle = Rotation2d.fromRotations(i / 6.0);
-        Translation2d offset =
-            new Translation2d(
-                HUB_WIDTH
-                    .plus(
-                        RobotDimensions.ROBOT_DIMENSIONS_WITH_BUMPERS
-                            .getMeasureY()
-                            .plus(extraOffset))
-                    .div(2.0)
-                    .in(Units.Meters),
-                angle);
-        poses[i] =
-            new ScoringSideWithPose(
-                AllianceFlipUtil.flipPoseForAlliance(
-                    new Pose2d(BLUE_HUB_CENTER_POSE.plus(offset), angle)),
-                SCORING_SIDE_ORDER[i]);
-      }
-      return poses;
-    }
-
-    public record ScoringSideWithPose(Pose2d pose, ScoringSide side) {}
-
-    public record ScoringSideWithPoseAndDirection(
-        Pose2d pose, ScoringSide side, ScoringDirection direction) {}
 
     public static final Distance CORAL_STATION_WIDTH = Units.Inches.of(76);
 
