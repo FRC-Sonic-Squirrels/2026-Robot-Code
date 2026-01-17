@@ -49,7 +49,6 @@ import frc.robot.autonomous.records.AutoDescriptor.StartingLocation;
 import frc.robot.autonomous.records.PickupLocation;
 import frc.robot.autonomous.records.ScoringLocation;
 import frc.robot.autonomous.records.ScoringLocation.ReefSide;
-import frc.robot.commands.GrabAlgaeReef;
 import frc.robot.commands.climber.Climb;
 import frc.robot.commands.climber.ClimberSetAngle;
 import frc.robot.commands.drive.DrivetrainDefaultTeleopDrive;
@@ -594,15 +593,6 @@ public class RobotContainer {
         .registerTrigger(XboxControllerWrapper.Button.povDown, "Climb")
         .onTrue(new Climb(climber, driverController.getPovDown(), robotStates));
 
-    driverController
-        .registerTrigger(XboxControllerWrapper.Button.povUp, "Intake Algae Reef")
-        .whileTrue(
-            new RunStateMachineCommand(
-                    () ->
-                        new GrabAlgaeReef(
-                            robotStates, () -> drivetrainWrapper.getReefPoseEstimatorPose(false)))
-                .withName("Intake Algae Reef"));
-
     // ---------- OPERATOR CONTROLS -----------
 
     // Manual mech positions
@@ -641,8 +631,7 @@ public class RobotContainer {
     // Intake positions
     operatorController
         .registerTrigger(XboxControllerWrapper.Button.a, "Intake Pivot In")
-        .onTrue(
-            Commands.runOnce(() -> robotStates.intakeState = IntakeState.Stow));
+        .onTrue(Commands.runOnce(() -> robotStates.intakeState = IntakeState.Stow));
     operatorController
         .registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Intake Pivot Out")
         .onTrue(Commands.runOnce(() -> robotStates.intakeState = IntakeState.Down));
@@ -1017,8 +1006,6 @@ public class RobotContainer {
     if (!robotStates.triggerForCoralInRobot.getAsBoolean() && led.getGamepieceStatus()) {
       led.setGamepieceStatus(false);
     }
-
-
   }
 
   public List<ScoringLocation> getCustomScoringLocations() {

@@ -12,7 +12,6 @@ import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.RobotStates.ScoringLevel;
 import frc.robot.autonomous.records.ScoringLocation;
 import frc.robot.autonomous.records.ScoringLocation.ReefSide;
-import frc.robot.commands.ScoreCoral.ScoringSide;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,14 +40,6 @@ public class FieldStates {
   // Algae Memory
 
   private static boolean[] algaeLocations = new boolean[] {true, true, true, true, true, true};
-
-  public static boolean isAlgaeInScoringSide(ScoringSide side) {
-    return algaeLocations[side.ordinal()];
-  }
-
-  public static void removeAlgaeFromScoringSide(ScoringSide side) {
-    algaeLocations[side.ordinal()] = false;
-  }
 
   private static final TunableNumberGroup tunableGroup = new TunableNumberGroup("FieldStates");
   private static final LoggedTunableNumber tunableX = tunableGroup.build("TunableX", 3.758);
