@@ -217,6 +217,16 @@ public class Intake extends SubsystemBase {
           setPivotVoltage(0);
           setRollerPercentOut(0);
           break;
+                case Stow:
+          if (!states.coralExpectedInIntake) {
+
+          } else if (states.coralInIntake) {
+
+          } else {
+            setRollerPercentOut(0);
+
+          }
+          setPivotAngle(Rotation2d.fromDegrees(0));
         case Down:
           setPivotAngle(Rotation2d.fromDegrees(intakingFuelPivotAngle.get()));
           setRollerPercentOut(0);

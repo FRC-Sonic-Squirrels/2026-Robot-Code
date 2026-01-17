@@ -28,6 +28,7 @@ import frc.robot.autonomous.records.ScoringLocation.ReefSide;
 import frc.robot.commands.drive.DriveToPosePathing;
 import frc.robot.configs.RobotConfig;
 import frc.robot.subsystems.LED;
+import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
 import java.util.ArrayList;
 import java.util.List;
@@ -39,6 +40,7 @@ public class AutoStateMachine extends StateMachine {
 
   private final DrivetrainWrapper wrapper;
   private final RobotStates states;
+  private final Intake intake;
 
   private final List<ChoreoTrajectoryWithName> scoringPaths = new ArrayList<>();
   private final List<ChoreoTrajectoryWithName> coralStationPaths = new ArrayList<>();
@@ -71,9 +73,12 @@ public class AutoStateMachine extends StateMachine {
     return new AutoDescriptor(scoringLocations, coralStationLocations, StartingLocation.S2);
   }
 
+private boolean preloadCode;
+
   /** IMPORTANT: Use this constructor only for preloading code */
   public AutoStateMachine(AutosSubsystems subsystems, RobotConfig config, RobotStates states) {
     this(subsystems, preloadCodeDescriptor(), config, false, false, states);
+    preloadCode = true;
     advance();
   }
 
@@ -93,6 +98,7 @@ public class AutoStateMachine extends StateMachine {
     super("Auto");
 
     led = subsystems.led();
+    intake = subsystems.intake();
     wrapper = subsystems.drivetrain();
     this.states = states;
 
