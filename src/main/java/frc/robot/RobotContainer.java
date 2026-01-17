@@ -50,15 +50,12 @@ import frc.robot.autonomous.records.PickupLocation;
 import frc.robot.autonomous.records.ScoringLocation;
 import frc.robot.autonomous.records.ScoringLocation.ReefSide;
 import frc.robot.commands.GrabAlgaeReef;
-import frc.robot.commands.PassToEndEffector;
 import frc.robot.commands.climber.Climb;
 import frc.robot.commands.climber.ClimberSetAngle;
 import frc.robot.commands.drive.DrivetrainDefaultTeleopDrive;
 import frc.robot.commands.drive.WheelRadiusCharacterization;
 import frc.robot.commands.endEffector.EndEffectorSetRPM;
-import frc.robot.commands.intake.IntakeAlgaeGround;
 import frc.robot.commands.intake.IntakeCoralGround;
-import frc.robot.commands.intake.ScoreAlgae;
 import frc.robot.commands.led.LedSetStateForSeconds;
 import frc.robot.commands.mechanism.MechToPosition;
 import frc.robot.commands.mechanism.arm.ArmManualControl;
@@ -477,7 +474,6 @@ public class RobotContainer {
     }
 
     mech = new Mechanism(elevator, arm, robotStates);
-    robotStates.setIntake(intake);
 
     drivetrainWrapper =
         new DrivetrainWrapper(
@@ -591,23 +587,12 @@ public class RobotContainer {
                 drivetrainWrapper, endEffector, mech, led, driverController, true, robotStates));
 
     driverController
-        .registerTrigger(XboxControllerWrapper.Button.povLeft, "Score Algae")
-        .whileTrue(new ScoreAlgae(intake, robotStates))
-        .onFalse(
-            Commands.runOnce(() -> robotStates.intakeState = IntakeState.ScoreAlgae)
-                .andThen(Commands.waitSeconds(0.5))
-                .andThen(Commands.runOnce(() -> robotStates.intakeState = IntakeState.Stow)));
-    driverController
         .registerTrigger(XboxControllerWrapper.Button.leftBumper, "Ground Intake")
         .whileTrue(new IntakeCoralGround(intake, robotStates));
 
     driverController
         .registerTrigger(XboxControllerWrapper.Button.povDown, "Climb")
         .onTrue(new Climb(climber, driverController.getPovDown(), robotStates));
-
-    driverController
-        .registerTrigger(XboxControllerWrapper.Button.start, "Intake Algae Ground")
-        .whileTrue(new IntakeAlgaeGround(intake, robotStates));
 
     driverController
         .registerTrigger(XboxControllerWrapper.Button.povUp, "Intake Algae Reef")
@@ -635,11 +620,6 @@ public class RobotContainer {
     operatorController
         .registerTrigger(XboxControllerWrapper.Button.povUp, "L4 Position")
         .onTrue(new MechToPosition(mech, MechState.ReefL4Position, robotStates));
-
-    // Manual passoff position
-    operatorController
-        .registerTrigger(XboxControllerWrapper.Button.y, "Manual Passoff")
-        .onTrue(new RunStateMachineCommand(() -> new PassToEndEffector(intake, robotStates, true)));
 
     // Stow position
     operatorController

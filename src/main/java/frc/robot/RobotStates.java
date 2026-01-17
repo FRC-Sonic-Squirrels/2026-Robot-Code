@@ -1,15 +1,9 @@
 package frc.robot;
 
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
-import frc.lib.team2930.RunStateMachineCommand;
 import frc.robot.autonomous.records.ScoringLocation.ReefSide;
-import frc.robot.commands.PassToEndEffector;
-import frc.robot.commands.PassToIntake;
-import frc.robot.subsystems.intake.Intake;
 
 public class RobotStates {
   // End Effector states
@@ -217,20 +211,7 @@ public class RobotStates {
 
   // Commands
 
-  private Command passCoralToEndEffector = Commands.none();
-  private Command passCoralToIntake = new RunStateMachineCommand(() -> new PassToIntake(this));
-
-  private Command passAlgaeToEndEffector = Commands.none();
-  private Command passAlgaeToIntake = new RunStateMachineCommand(() -> new PassToIntake(this));
-
   public RobotStates() {}
-
-  public void setIntake(Intake intake) {
-    passCoralToEndEffector =
-        new RunStateMachineCommand(() -> new PassToEndEffector(intake, this, true));
-    passAlgaeToEndEffector =
-        new RunStateMachineCommand(() -> new PassToEndEffector(intake, this, false));
-  }
 
   public void changeEndEffectorIfNotAligning(EndEffectorDesiredAction action) {
     if (!endEffectorDesiredAction.alignmentActive) {
@@ -281,31 +262,6 @@ public class RobotStates {
 
     if (!mechanismInUse && !endEffectorInUse && !intakeInUse) {
 
-      // Passing coral between mechanisms
-      if (transferCoralToEndEffector && !passCoralToEndEffector.isScheduled()) {
-        passCoralToEndEffector.schedule();
-      }
-
-      if (transferCoralToIntake && !passCoralToIntake.isScheduled()) {
-        passCoralToIntake.schedule();
-      }
-
-      // Passing algae between mechanisms
-      if (transferAlgaeToEndEffector && !passAlgaeToEndEffector.isScheduled()) {
-        passAlgaeToEndEffector.schedule();
-      }
-
-      if (transferAlgaeToIntake && !passAlgaeToIntake.isScheduled()) {
-        passAlgaeToIntake.schedule();
-      }
-    } else {
-      passCoralToEndEffector.cancel();
-      passCoralToIntake.cancel();
-
-      passAlgaeToEndEffector.cancel();
-      passAlgaeToIntake.cancel();
-    }
-
     // Updates states
 
     coralInRobot = coralInEndEffector || coralInIntake;
@@ -337,6 +293,7 @@ public class RobotStates {
     intakeInUse = false;
     endEffectorInUse = false;
   }
+}
 
   public void setMechState(MechState state) {
     mechState = state;
@@ -351,9 +308,5 @@ public class RobotStates {
   public void setEndEffectorState(EndEffectorDesiredAction state) {
     endEffectorDesiredAction = state;
     endEffectorInUse = true;
-  }
-
-  public boolean coralInPassOff() {
-    return passCoralToEndEffector.isScheduled() || passCoralToIntake.isScheduled();
   }
 }
