@@ -71,7 +71,7 @@ public class Intake extends SubsystemBase {
   private static final TunableNumberGroup group =
       new TunableNumberGroup(IntakeConstants.ROOT_TABLE);
 
-  private static final LoggedTunableNumber fuelScoreVelocity =
+  private static final LoggedTunableNumber ejectingFuelVelocity =
       group.build("Score/Fuel/Velocity", -500.0);
   private static final LoggedTunableNumber intakingFuelPivotAngle =
       group.build("Intaking/Fuel/AngleDeg", 20);
@@ -232,7 +232,7 @@ public class Intake extends SubsystemBase {
           setRollerPercentOut(0);
           break;
         case Eject:
-          setRollerVelocity(fuelScoreVelocity.get());
+          setRollerVelocity(ejectingFuelVelocity.get());
           break;
         default:
           break;
