@@ -73,8 +73,8 @@ public class DrivetrainWrapper {
 
     drivetrain.runVelocity(chassisSpeeds, prioritizeRotation, chassisSpeedsOverride != null);
 
-    var pose1 = getReefPoseEstimatorPose(false);
-    var pose2 = getReefPoseEstimatorPose(true);
+    var pose1 = getHubPoseEstimatorPose(false);
+    var pose2 = getHubPoseEstimatorPose(true);
 
     logGyroDrift.info(
         pose1
@@ -144,17 +144,8 @@ public class DrivetrainWrapper {
     return drivetrain;
   }
 
-  public Pose2d getReefPoseEstimatorPose(boolean prioritizeGyro) {
-    var pose = drivetrain.getReefPoseEstimatorPose();
-    if (Constants.unusedCode && prioritizeGyro) {
-      pose = new Pose2d(pose.getTranslation(), getRotationGyroOnly());
-    }
-
-    return pose;
-  }
-
-  public Pose2d getCoralStationPoseEstimatorPose(boolean prioritizeGyro) {
-    var pose = drivetrain.getCoralStationPoseEstimatorPose();
+  public Pose2d getHubPoseEstimatorPose(boolean prioritizeGyro) {
+    var pose = drivetrain.getHubPoseEstimatorPose();
     if (Constants.unusedCode && prioritizeGyro) {
       pose = new Pose2d(pose.getTranslation(), getRotationGyroOnly());
     }
@@ -163,7 +154,7 @@ public class DrivetrainWrapper {
   }
 
   public double getVisionStaleness() {
-    return drivetrain.getReefVisionStaleness();
+    return drivetrain.getHubVisionStaleness();
   }
 
   public LinearVelocity getMaxLinearSpeed() {
