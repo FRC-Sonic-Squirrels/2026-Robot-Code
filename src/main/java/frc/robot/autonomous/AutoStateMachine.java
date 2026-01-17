@@ -13,7 +13,6 @@ import frc.robot.autonomous.records.ChoreoTrajectoryWithName;
 import frc.robot.autonomous.records.OppositeSide;
 import frc.robot.configs.RobotConfig;
 import frc.robot.subsystems.LED;
-import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +23,6 @@ public class AutoStateMachine extends StateMachine {
 
   private final DrivetrainWrapper wrapper;
   private final RobotStates states;
-  private final Intake intake;
 
   private final List<ChoreoTrajectoryWithName> scoringPaths = new ArrayList<>();
   private final List<ChoreoTrajectoryWithName> coralStationPaths = new ArrayList<>();
