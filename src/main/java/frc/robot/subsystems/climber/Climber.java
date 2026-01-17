@@ -58,9 +58,9 @@ public class Climber extends SubsystemBase {
   // Tunable numbers
 
   static {
-    if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2024_RETIRED_MAESTRO) {
-      winchkP.initDefault(70.0);
-      winchkD.initDefault(1.6);
+    if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_HOLO) {
+      winchkP.initDefault(4);
+      winchkD.initDefault(0);
       winchkG.initDefault(0.0);
 
       maxVelocityConfig.initDefault(10);
