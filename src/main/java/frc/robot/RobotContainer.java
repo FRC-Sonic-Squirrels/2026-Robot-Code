@@ -1094,7 +1094,7 @@ public class RobotContainer {
    */
   public static Rotation2d faceTowardsCenter(Pose2d robotTranslation, Pose2d[] reefAprilTagPose) {
 
-    var center = FieldConstants.BLUE_REEF_CENTER_POSE;
+    var center = FieldConstants.BLUE_HUB_CENTER_POSE;
     Pose2d centerPose = new Pose2d();
 
     AllianceFlipUtil.flipPoseForAlliance(centerPose);

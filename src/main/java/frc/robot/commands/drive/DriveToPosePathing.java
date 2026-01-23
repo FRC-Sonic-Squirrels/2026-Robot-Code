@@ -49,7 +49,7 @@ public class DriveToPosePathing extends Command {
   private static LoggedTunableNumber reefCirclingDistMeters =
       tunableGroup.build(
           "ReefCirclingDistMeters",
-          Constants.FieldConstants.REEF_DIAGONAL_WIDTH
+          Constants.FieldConstants.HUB_DIAGONAL_WIDTH
                   .plus(Constants.RobotDimensions.ROBOT_DIMENSIONS_WITH_BUMPERS.getMeasureY())
                   .div(2)
                   .in(Units.Meters)
@@ -255,7 +255,7 @@ public class DriveToPosePathing extends Command {
     double reefy = Constants.FieldConstants.REEF_CENTER_POSE().getY();
     double translationx = translation.getX();
     double translationy = translation.getY();
-    double reefRad = Constants.FieldConstants.REEF_DIAGONAL_WIDTH.div(2.0).in(Units.Meter);
+    double reefRad = Constants.FieldConstants.HUB_DIAGONAL_WIDTH.div(2.0).in(Units.Meter);
     double angledSlope = Math.atan(Math.toRadians(30));
     double xOffset = translationx - reefx;
     // All sides of hexagon
@@ -455,7 +455,7 @@ public class DriveToPosePathing extends Command {
 
     double robotDistToReef = getRobotDistToReef(pose);
     double minAllowedDistanceAway =
-        Constants.FieldConstants.REEF_DIAGONAL_WIDTH.div(2.0).in(Units.Meters)
+        Constants.FieldConstants.HUB_DIAGONAL_WIDTH.div(2.0).in(Units.Meters)
             + (Math.max(
                     Constants.RobotDimensions.ROBOT_DIMENSIONS_WITH_BUMPERS.getX(),
                     Constants.RobotDimensions.ROBOT_DIMENSIONS_WITH_BUMPERS.getY())

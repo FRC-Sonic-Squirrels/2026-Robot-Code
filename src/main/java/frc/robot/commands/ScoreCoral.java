@@ -538,7 +538,7 @@ public class ScoreCoral extends StateMachine {
     log_inputVel.info(vel);
 
     Translation2d flippedReef =
-        AllianceFlipUtil.flipTranslationForAlliance(Constants.FieldConstants.BLUE_REEF_CENTER_POSE);
+        AllianceFlipUtil.flipTranslationForAlliance(Constants.FieldConstants.BLUE_HUB_CENTER_POSE);
     Rotation2d headingToReef =
         GeometryUtil.getHeading(robotPose.getTranslation(), flippedReef).unaryMinus();
 
@@ -552,8 +552,7 @@ public class ScoreCoral extends StateMachine {
     double distToReef = GeometryUtil.getDist(robotPose.getTranslation(), flippedReef);
     double newDistToReef =
         Math.max(
-            distToReef - deltaPos.getX(),
-            Constants.FieldConstants.REEF_WIDTH.in(Units.Meter) / 2.0);
+            distToReef - deltaPos.getX(), Constants.FieldConstants.HUB_WIDTH.in(Units.Meter) / 2.0);
     double avgRadius = (distToReef + newDistToReef) / 2.0;
     Rotation2d deltaTheta = Rotation2d.fromRadians(-deltaPos.getY() / avgRadius);
     Translation2d newTranslation =

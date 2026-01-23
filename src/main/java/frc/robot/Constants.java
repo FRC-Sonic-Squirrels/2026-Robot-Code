@@ -149,21 +149,22 @@ public final class Constants {
   }
 
   public static class FieldConstants {
-    // official Field dimensions from game manual
-    public static Distance FIELD_LENGTH = Units.Inches.of(690.875);
-    public static Distance FIELD_WIDTH = Units.Inches.of(317.0);
+    // Official Field dimensions from field dimensions manual
+    public static Distance FIELD_LENGTH = Units.Inches.of(650.12);
+    public static Distance FIELD_WIDTH = Units.Inches.of(316.64);
 
-    public static Distance REEF_DIST_FROM_WALL = Units.Inches.of(144.0);
+    public static Distance HUB_DIST_FROM_WALL = Units.Inches.of(158.06);
 
-    public static Distance REEF_WIDTH = Units.Inches.of(65.5);
+    public static Distance HUB_WIDTH = Units.Inches.of(41.73);
+    public static Distance HUB_LENGTH = Units.Inches.of(47.00);
 
-    public static Distance REEF_DIAGONAL_WIDTH = REEF_WIDTH.times(2.0 / Math.sqrt(3));
+    public static Distance HUB_DIAGONAL_WIDTH = HUB_WIDTH.times(2.0 / Math.sqrt(3));
 
-    public static Translation2d BLUE_REEF_CENTER_POSE =
-        new Translation2d(REEF_DIST_FROM_WALL.plus(REEF_WIDTH.div(2.0)), FIELD_WIDTH.div(2.0));
+    public static Translation2d BLUE_HUB_CENTER_POSE =
+        new Translation2d(HUB_DIST_FROM_WALL.plus(HUB_WIDTH.div(2.0)), FIELD_WIDTH.div(2.0));
 
     public static Translation2d REEF_CENTER_POSE() {
-      return AllianceFlipUtil.flipTranslationForAlliance(BLUE_REEF_CENTER_POSE);
+      return AllianceFlipUtil.flipTranslationForAlliance(BLUE_HUB_CENTER_POSE);
     }
 
     public static Distance REEF_BRANCH_OFFSET = Units.Inches.of(6.5);
@@ -183,7 +184,7 @@ public final class Constants {
         Rotation2d angle = Rotation2d.fromRotations(i / 6.0);
         Translation2d offset =
             new Translation2d(
-                REEF_WIDTH
+                HUB_WIDTH
                     .plus(
                         RobotDimensions.ROBOT_DIMENSIONS_WITH_BUMPERS
                             .getMeasureY()
@@ -194,7 +195,7 @@ public final class Constants {
         poses[i] =
             new ScoringSideWithPose(
                 AllianceFlipUtil.flipPoseForAlliance(
-                    new Pose2d(BLUE_REEF_CENTER_POSE.plus(offset), angle)),
+                    new Pose2d(BLUE_HUB_CENTER_POSE.plus(offset), angle)),
                 SCORING_SIDE_ORDER[i]);
       }
       return poses;

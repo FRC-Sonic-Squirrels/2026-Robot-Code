@@ -112,7 +112,7 @@ public class FieldStates {
               AllianceFlipUtil.flipPoseForAlliance(
                   GeometryUtil.rotatePose3dAroundTranslation2d(
                       referencePose,
-                      Constants.FieldConstants.BLUE_REEF_CENTER_POSE,
+                      Constants.FieldConstants.BLUE_HUB_CENTER_POSE,
                       Rotation2d.fromDegrees(60 * (row / 2)))));
         }
       }
@@ -133,7 +133,7 @@ public class FieldStates {
             AllianceFlipUtil.flipPoseForAlliance(
                 GeometryUtil.rotatePose3dAroundTranslation2d(
                     correctedHeight,
-                    Constants.FieldConstants.BLUE_REEF_CENTER_POSE,
+                    Constants.FieldConstants.BLUE_HUB_CENTER_POSE,
                     Rotation2d.fromDegrees(60 * (i - 1)))));
       }
     }
