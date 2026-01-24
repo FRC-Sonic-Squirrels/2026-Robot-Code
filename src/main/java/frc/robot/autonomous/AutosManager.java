@@ -14,14 +14,12 @@ import frc.lib.team2930.LoggerGroup;
 import frc.lib.team2930.RunStateMachineCommand;
 import frc.robot.Constants;
 import frc.robot.RobotStates;
-import frc.robot.RobotStates.ScoringLevel;
 import frc.robot.autonomous.helpers.ChoreoHelper;
 import frc.robot.autonomous.records.AutoDescriptor;
 import frc.robot.autonomous.records.AutoDescriptor.StartingLocation;
 import frc.robot.autonomous.records.ChoreoTrajectoryWithName;
 import frc.robot.autonomous.records.PickupLocation;
 import frc.robot.autonomous.records.ScoringLocation;
-import frc.robot.autonomous.records.ScoringLocation.ReefSide;
 import frc.robot.configs.RobotConfig;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
 import java.util.ArrayList;
@@ -131,18 +129,6 @@ public class AutosManager {
     List<ScoringLocation> scoringLocations = new ArrayList<>();
     List<PickupLocation> coralStationLocations = new ArrayList<>();
 
-    scoringLocations.add(new ScoringLocation(ReefSide.CI, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CK, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CL, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CJ, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-
     var state =
         new AutoStateMachine(
             subsystems,
@@ -158,18 +144,6 @@ public class AutosManager {
   private Auto auto_IKLJLoli() {
     List<ScoringLocation> scoringLocations = new ArrayList<>();
     List<PickupLocation> coralStationLocations = new ArrayList<>();
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CI, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CK, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CL, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.G1);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CA, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.G2);
 
     var state =
         new AutoStateMachine(
@@ -187,18 +161,6 @@ public class AutosManager {
     List<ScoringLocation> scoringLocations = new ArrayList<>();
     List<PickupLocation> coralStationLocations = new ArrayList<>();
 
-    scoringLocations.add(new ScoringLocation(ReefSide.CA, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.G1);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CB, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.G2);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CC, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.G3);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CL, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-
     var state =
         new AutoStateMachine(
             subsystems,
@@ -215,17 +177,7 @@ public class AutosManager {
     List<ScoringLocation> scoringLocations = new ArrayList<>();
     List<PickupLocation> coralStationLocations = new ArrayList<>();
 
-    scoringLocations.add(new ScoringLocation(ReefSide.CH, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
 
-    scoringLocations.add(new ScoringLocation(ReefSide.CG, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CI, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CF, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
 
     var state =
         new AutoStateMachine(
