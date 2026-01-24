@@ -219,12 +219,10 @@ public class Robot extends LoggedRobot {
       autonomousChooser = robotContainer.getAutonomousChooser();
     }
 
-    var customScoringLocations = robotContainer.getCustomScoringLocations();
     var customCoralStationLocations = robotContainer.getCustomCoralStationLocations();
     var customStartingLocation = robotContainer.getCustomStartingLocation();
 
     if (selectedScoringLocations.isEmpty()) {
-      selectedScoringLocations = customScoringLocations;
       selectedCoralStationLocations = customCoralStationLocations;
       selectedStartingLocation = customStartingLocation;
     }
@@ -234,7 +232,6 @@ public class Robot extends LoggedRobot {
     if (autoName != null
         && (!autoName.equals(selectedAutoName)
             || autoFlipped != selectedAutoFlipped
-            || !selectedScoringLocations.equals(customScoringLocations)
             || !selectedCoralStationLocations.equals(customCoralStationLocations)
             || !selectedStartingLocation.equals(customStartingLocation))) {
       Pose2d initialPose;
@@ -252,7 +249,6 @@ public class Robot extends LoggedRobot {
       desiredInitialPose = initialPose;
       selectedAutoName = autoName;
       selectedAutoFlipped = autoFlipped;
-      selectedScoringLocations = customScoringLocations;
       selectedCoralStationLocations = customCoralStationLocations;
       selectedStartingLocation = customStartingLocation;
     }
