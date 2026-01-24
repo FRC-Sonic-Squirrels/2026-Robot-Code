@@ -25,7 +25,6 @@ import frc.lib.team2930.TrajectoryUtil;
 import frc.lib.team2930.TunableNumberGroup;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
-import frc.robot.RobotStates.ScoringLevel;
 import frc.robot.autonomous.helpers.ChoreoHelper;
 import frc.robot.autonomous.helpers.ChoreoHelper.ChassisSpeedsWithPathEnd;
 import frc.robot.autonomous.records.ChoreoTrajectoryWithName;
@@ -56,12 +55,6 @@ public class DriveToPosePathing extends Command {
               + 0.1);
   private static LoggedTunableNumber headingToleranceNearElements =
       tunableGroup.build("HeadingToleranceNearElements", 40.0);
-  private static LoggedTunableNumber stallMaxVelocity =
-      tunableGroup.build("Stall/MaxVelocity", 0.4);
-  private static LoggedTunableNumber stallMinDistance =
-      tunableGroup.build("Stall/MinDistance", 0.05);
-  private static LoggedTunableNumber stallDebounce = 
-      tunableGroup.build("Stall/Debounce", 0.15);
 
   private static LoggerGroup logGroup = LoggerGroup.build("DriveToPosePathing");
   private static LoggerGroup pathGenLogGroup = logGroup.subgroup("PathGeneration");
@@ -74,10 +67,6 @@ public class DriveToPosePathing extends Command {
       pathGenLogGroup.buildStructArray(Pose2d.class, "UnAttemptedPath");
   private static LoggerEntry.Struct<Pose2d> log_targetChassisSpeeds =
       pathFollowingLogGroup.buildStruct(Pose2d.class, "TargetChassisSpeeds");
-  private static LoggerEntry.Decimal log_distToTarget =
-      pathFollowingLogGroup.buildDecimal("DistToTarget");
-  private static LoggerEntry.Decimal log_velToTarget =
-      pathFollowingLogGroup.buildDecimal("VelToTarget");
   private static LoggerEntry.Bool log_pathStalling = pathFollowingLogGroup.buildBoolean("Stalling");
 
   private boolean debugRotationClamping = false;
@@ -89,8 +78,6 @@ public class DriveToPosePathing extends Command {
   private double finalTargetErrorLimit = Double.NaN;
   private double finalHeadingErrorLimit = Double.NaN;
   private double finalErrorMaxWait = 2;
-
-  private final ScoringLevel level;
 
   // private double distToTarget;
   // private Double prevdistToTarget = Double.NaN;
@@ -108,13 +95,11 @@ public class DriveToPosePathing extends Command {
       DrivetrainWrapper wrapper,
       RobotConfig config,
       Supplier<Pose2d> currentPose,
-      Supplier<Pose2d> targetPose,
-      ScoringLevel level) {
+      Supplier<Pose2d> targetPose) {
     this.wrapper = wrapper;
     this.config = config;
     this.currentPose = currentPose;
     this.targetPose = targetPose;
-    this.level = level;
   }
 
   public DriveToPosePathing setFinalOffsetError(double maxError) {
@@ -407,12 +392,7 @@ public class DriveToPosePathing extends Command {
   }
 
   private Trajectory<SwerveSample> generateSimplePath(List<Waypoint> waypoints) {
-    PathConstraints constraints =
-        new PathConstraints(
-            config.getPathingMaxSpeedMPS().get(),
-            level == ScoringLevel.L4 ? config.getPathingMaxAccelerationMPSPS().get() : 2.0,
-            config.getPathingMaxAngularVelocityRadPerSecond().get(),
-            config.getPathingMaxAngularAccelerationRadPerSecondSquared().get());
+    PathConstraints constraints = null;
 
     PathPlannerPath path =
         new PathPlannerPath(
