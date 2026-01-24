@@ -390,7 +390,50 @@ public class RobotContainer {
                   robotStates);
           break;
 
-        case ROBOT_2025_HOLO:
+        case ROBOT_2025_RETIRED_HOLO:
+          try {
+            Thread.sleep(1000);
+          } catch (InterruptedException e) {
+            System.out.println("sleep interrupted");
+          }
+          intake = new Intake(new IntakeIOReal(), robotStates);
+          endEffector = new EndEffector(new EndEffectorIOReal(), robotStates);
+          elevator = new Elevator(new ElevatorIOReal());
+          arm = new Arm(new ArmIOReal());
+          climber = new Climber(new ClimberIOReal());
+          drivetrain =
+              new Drivetrain(
+                  config,
+                  new GyroIOPigeon2(config, config.getGyroCANID()),
+                  new GyroIO.Fake(),
+                  config.getSwerveModuleObjects(),
+                  () -> is_autonomous);
+          vision =
+              new Vision(
+                  aprilTagLayout,
+                  drivetrain::getHubPoseEstimatorPose,
+                  drivetrain::getRotationGyroOnly,
+                  drivetrain::addVisionEstimate,
+                  config.getVisionModuleObjects());
+
+          if (Constants.unusedCode) {
+            visionGamepiece =
+                new VisionGamepiece(
+                    new VisionGamepieceIOReal(), drivetrain::getHubPoseEstimatorPoseAtTimestamp);
+          } else {
+            visionGamepiece = null;
+          }
+
+          led =
+              new LED(
+                  () -> brakeModeTriggered,
+                  drivetrain::isGyroConnected,
+                  () -> elevator.getHeight().in(Units.Inches) > 0.3,
+                  robotStates);
+
+          break;
+
+                  case ROBOT_2026:
           try {
             Thread.sleep(1000);
           } catch (InterruptedException e) {
