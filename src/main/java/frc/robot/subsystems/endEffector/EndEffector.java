@@ -8,16 +8,13 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.Constants.EndEffectorConstants;
 import frc.robot.Constants.RobotMode.RobotType;
 import frc.robot.RobotStates;
-import frc.robot.RobotStates.EndEffectorDesiredAction;
 
 public class EndEffector extends SubsystemBase {
   // Execution timing
@@ -160,10 +157,7 @@ public class EndEffector extends SubsystemBase {
     }
   }
 
-
-      // Update tunable numbers
-
-
+  // Update tunable numbers
 
   // Setters
 

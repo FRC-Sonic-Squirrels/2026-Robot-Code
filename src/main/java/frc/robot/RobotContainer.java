@@ -36,7 +36,6 @@ import frc.robot.Constants.RobotMode.Mode;
 import frc.robot.Constants.RobotMode.RobotType;
 import frc.robot.RobotStates.IntakeState;
 import frc.robot.RobotStates.MechState;
-import frc.robot.autonomous.AutosManager;
 import frc.robot.autonomous.AutosManager.Auto;
 import frc.robot.autonomous.AutosSubsystems;
 import frc.robot.autonomous.records.PickupLocation;
@@ -418,7 +417,7 @@ public class RobotContainer {
 
           break;
 
-                  case ROBOT_2026:
+        case ROBOT_2026:
           try {
             Thread.sleep(1000);
           } catch (InterruptedException e) {
@@ -759,9 +758,9 @@ public class RobotContainer {
             drivetrain));
   }
 
-//TODO: Fix apriltagfinder code
+  // TODO: Fix apriltagfinder code
 
-/* 
+  /*
   public static Pose2d findNearestAprilTag(Pose2d robotTranslation, Pose2d[] reefAprilTagPose) {
     Pose2d nearestAprilTag = null;
     int start;
@@ -782,7 +781,7 @@ public class RobotContainer {
     return nearestAprilTag;
   }
 
-  
+
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
    * @return the command to run in autonomous
@@ -882,8 +881,7 @@ public class RobotContainer {
     mech.periodic();
   }
 
-  public void getCustomScoringLocations() {
-  }
+  public void getCustomScoringLocations() {}
 
   public List<PickupLocation> getCustomCoralStationLocations() {
     List<PickupLocation> coralStationLocations = new ArrayList<>();

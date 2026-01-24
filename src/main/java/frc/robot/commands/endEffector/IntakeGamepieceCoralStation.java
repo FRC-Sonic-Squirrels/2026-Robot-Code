@@ -12,7 +12,6 @@ import frc.lib.team2930.AllianceFlipUtil;
 import frc.lib.team2930.GeometryUtil;
 import frc.robot.Constants.RobotMode;
 import frc.robot.RobotStates;
-import frc.robot.RobotStates.MechState;
 import frc.robot.subsystems.endEffector.EndEffector;
 import frc.robot.subsystems.mechanism.Mechanism;
 import java.util.function.Supplier;

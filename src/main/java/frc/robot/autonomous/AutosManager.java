@@ -4,14 +4,12 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
-import frc.lib.team2930.RunStateMachineCommand;
 import frc.robot.Constants;
 import frc.robot.RobotStates;
 import frc.robot.autonomous.helpers.ChoreoHelper;
@@ -63,7 +61,6 @@ public class AutosManager {
       Supplier<List<PickupLocation>> customCoralStationLocations) {
     var list = new ArrayList<Supplier<Auto>>();
 
-
     if (includeDebugPaths) {
       list.add(this::swerveCharacterization);
       // list.add(() -> testPath("TestDrive1Meter", true));
@@ -83,7 +80,6 @@ public class AutosManager {
   public Auto doNothing() {
     return new Auto("doNothing", new InstantCommand(), Constants.zeroPose2d);
   }
-
 
   @SuppressWarnings("unused")
   private Auto testPath(String pathName, boolean useInitialPose) {

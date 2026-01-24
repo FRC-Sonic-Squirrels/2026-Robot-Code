@@ -119,7 +119,6 @@ public class RobotStates {
 
   public void periodic() {
 
-
     logIntakeInUse.info(intakeInUse);
     logMechInUse.info(mechanismInUse);
     logEndEffectorInUse.info(endEffectorInUse);

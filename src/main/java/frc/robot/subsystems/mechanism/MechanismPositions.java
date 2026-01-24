@@ -7,7 +7,6 @@ import frc.lib.team2930.TunableNumberGroup;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.Constants.RobotMode.RobotType;
-import frc.robot.RobotStates;
 
 public class MechanismPositions {
   private static final TunableNumberGroup group = new TunableNumberGroup("MechanismPositions");
@@ -258,7 +257,6 @@ public class MechanismPositions {
         Rotation2d.fromDegrees(climbArmAngleDegrees.get()));
   }
 
-
   public static MechanismPosition coralStationPosition() {
     return new MechanismPosition(
         Units.Inches.of(coralStationElevatorHeightInches.get()),
@@ -276,7 +274,6 @@ public class MechanismPositions {
         Units.Inches.of(algaeClearingHighElevatorHeightInches.get()),
         Rotation2d.fromDegrees(algaeClearingHighArmAngleDegrees.get()));
   }
-
 
   public static MechanismPosition prepForPassoffPosition(boolean coral) {
     return coral

@@ -49,11 +49,9 @@ public class FieldStates {
   private static final Pose3d blueNearMidAlgae = new Pose3d(3.812, 4.0265, 0.905, Rotation3d.kZero);
   private static final double upperAlgaeHeight = 1.308;
 
+  List<Pose3d> algaePoseArray = new ArrayList<>();
 
-
-
-    List<Pose3d> algaePoseArray = new ArrayList<>();  {
-
+  {
     for (int i = 0; i < algaeLocations.length; i++) {
       if (algaeLocations[i]) {
         Pose3d referencePose = blueNearMidAlgae;
@@ -81,7 +79,6 @@ public class FieldStates {
                 Math.toRadians(tunableRoll.get()),
                 Math.toRadians(tunablePitch.get()),
                 Math.toRadians(tunableYaw.get()))));
-
 
     algaePoses.info(algaePoseArray.toArray(new Pose3d[algaePoseArray.size()]));
   }

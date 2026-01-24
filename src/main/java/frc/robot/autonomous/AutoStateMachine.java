@@ -25,7 +25,6 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class AutoStateMachine extends StateMachine {
 
@@ -47,7 +46,6 @@ public class AutoStateMachine extends StateMachine {
   private static LoggerEntry.Bool log_foundPath = logGroup.buildBoolean("PathFound");
   private static LoggerEntry.Struct<Pose2d> log_startingLocation =
       logGroup.buildStruct(Pose2d.class, "StartigLocation");
-
 
   private boolean preloadCode;
 
