@@ -21,7 +21,6 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -31,12 +30,10 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.team2930.*;
 import frc.lib.team2930.commands.RunsWhenDisabledInstantCommand;
-import frc.lib.team2930.lib.controller_rumble.ControllerRumbleForTime;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.RobotMode.Mode;
 import frc.robot.Constants.RobotMode.RobotType;
-import frc.robot.RobotStates.EndEffectorDesiredAction;
 import frc.robot.RobotStates.IntakeState;
 import frc.robot.RobotStates.MechState;
 import frc.robot.autonomous.AutosManager;
@@ -50,7 +47,6 @@ import frc.robot.commands.drive.DrivetrainDefaultTeleopDrive;
 import frc.robot.commands.drive.WheelRadiusCharacterization;
 import frc.robot.commands.endEffector.EndEffectorSetRPM;
 import frc.robot.commands.intake.IntakeCoralGround;
-import frc.robot.commands.led.LedSetStateForSeconds;
 import frc.robot.commands.mechanism.MechToPosition;
 import frc.robot.commands.mechanism.arm.ArmManualControl;
 import frc.robot.commands.mechanism.elevator.ElevatorManualControl;
@@ -586,23 +582,6 @@ public class RobotContainer {
                         new Pose2d(pose.getX(), pose.getY(), Constants.zeroRotation2d));
                   },
                   drivetrain));
-
-    driverController
-        .registerTrigger(XboxControllerWrapper.Button.back, "Score Algae in Net")
-        .onTrue(Commands.runOnce(() -> robotStates.mechState = MechState.AlgaeBargePosition))
-        .onFalse(
-            Commands.runOnce(
-                    () ->
-                        robotStates.endEffectorDesiredAction = EndEffectorDesiredAction.ScoreAlgae)
-                .andThen(Commands.waitUntil(() -> !robotStates.algaeInEndEffector))
-                .andThen(Commands.waitSeconds(0.3))
-                .andThen(
-                    Commands.runOnce(
-                        () -> {
-                          robotStates.mechState = MechState.Default;
-                          robotStates.endEffectorDesiredAction = EndEffectorDesiredAction.Idle;
-                        })));
-
     driverController
         .registerTrigger(XboxControllerWrapper.Button.start, "X Stance")
         .onTrue(Commands.runOnce(drivetrain::stopWithX));
@@ -633,7 +612,6 @@ public class RobotContainer {
     // Intake
     operatorController
         .registerTrigger(XboxControllerWrapper.Button.rightBumper, "Intake")
-        .onTrue(Commands.runOnce(() -> robotStates.intakeState = IntakeState.IntakeCoral))
         .onFalse(Commands.runOnce(() -> robotStates.intakeState = IntakeState.Stow));
 
     // Intake positions
@@ -692,17 +670,6 @@ public class RobotContainer {
     operatorController
         .registerTrigger(XboxControllerWrapper.Button.rightStick, "Climber in")
         .onTrue(new ClimberSetAngle(climber, Rotation2d.fromRotations(0)));
-
-    // ---------- NON-CONTROLLER TRIGGERS
-
-    robotStates.triggerForCoralInEndEffector.onFalse(
-        new MechToPosition(mech, MechState.Default, robotStates)
-            .withName("GamepieceOutOfEECommand"));
-
-    robotStates.instantTriggerForCoralInIntake.onTrue(
-        new ControllerRumbleForTime(
-                (r) -> driverController.getHID().setRumble(RumbleType.kBothRumble, r), 0.5, 0.5)
-            .alongWith(new LedSetStateForSeconds(led, RobotState.INTAKE_SUCCESS, 0.5)));
 
     // ---------- ON-ROBOT CONTROLS ------------
 
@@ -819,9 +786,30 @@ public class RobotContainer {
             drivetrain));
   }
 
+//TODO: Fix apriltagfinder code
 
+/* 
+  public static Pose2d findNearestAprilTag(Pose2d robotTranslation, Pose2d[] reefAprilTagPose) {
+    Pose2d nearestAprilTag = null;
+    int start;
+    double minDistance = 10000000000.0;
 
-  /**
+    start = Constants.isRedAlliance() ? 0 : 6;
+
+    for (int i = start; i < start + 6; i++) {
+      Translation2d aprilTag = reefAprilTagPose[i].getTranslation();
+
+      double distance = robotTranslation.getTranslation().getDistance(aprilTag);
+      if (distance < minDistance) {
+        minDistance = distance;
+        nearestAprilTag = reefAprilTagPose[i];
+      }
+    }
+
+    return nearestAprilTag;
+  }
+
+  
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
    * @return the command to run in autonomous
@@ -924,14 +912,6 @@ public class RobotContainer {
   public void updateRobotState() {
     robotStates.periodic();
     mech.periodic();
-
-    if (robotStates.triggerForCoralInRobot.getAsBoolean() && !led.getGamepieceStatus()) {
-      led.setGamepieceStatus(true);
-    }
-
-    if (!robotStates.triggerForCoralInRobot.getAsBoolean() && led.getGamepieceStatus()) {
-      led.setGamepieceStatus(false);
-    }
   }
 
   public void getCustomScoringLocations() {
