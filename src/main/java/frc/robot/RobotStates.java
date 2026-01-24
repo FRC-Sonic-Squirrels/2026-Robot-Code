@@ -1,6 +1,5 @@
 package frc.robot;
 
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 
@@ -71,16 +70,6 @@ public class RobotStates {
   private LoggerEntry.EnumValue<MechState> logMechState = logGroup.buildEnum("MechState");
   private LoggerEntry.EnumValue<IntakeState> logIntakeState = logGroup.buildEnum("IntakeState");
 
-  private LoggerGroup logTransferCoral = logGroup.subgroup("TransferCoral");
-  private LoggerEntry.Bool logTransferCoralToEndEffector =
-      logTransferCoral.buildBoolean("TransferToEndEffector");
-  private LoggerEntry.Bool logTransferCoralToIntake =
-      logTransferCoral.buildBoolean("TransferToIntake");
-  private LoggerEntry.Bool logTransferAlgaeToEndEffector =
-      logTransferCoral.buildBoolean("TransferToEndEffector");
-  private LoggerEntry.Bool logTransferAlgaeToIntake =
-      logTransferCoral.buildBoolean("TransferToIntake");
-
   private LoggerGroup logSubsystemsInUse = logGroup.subgroup("SubsystemsInUse");
   private LoggerEntry.Bool logIntakeInUse = logSubsystemsInUse.buildBoolean("IntakeInUse");
   private LoggerEntry.Bool logMechInUse = logSubsystemsInUse.buildBoolean("MechInUse");
@@ -108,12 +97,6 @@ public class RobotStates {
 
   public TargetCoralPosition targetCoralPosition = TargetCoralPosition.EndEffector;
 
-  private boolean transferCoralToEndEffector;
-  private boolean transferCoralToIntake;
-
-  private boolean transferAlgaeToEndEffector;
-  private boolean transferAlgaeToIntake;
-
   public boolean endEffectorInUse;
   public boolean mechanismInUse;
   public boolean intakeInUse;
@@ -137,18 +120,6 @@ public class RobotStates {
   public void periodic() {
 
 
-    transferAlgaeToEndEffector = false;
-    // algaeInIntake && !algaeInEndEffector;
-
-    transferCoralToIntake =
-        targetCoralPosition == TargetCoralPosition.Intake && !fuelInIntake;
-
-    logTransferCoralToEndEffector.info(transferCoralToEndEffector);
-    logTransferCoralToIntake.info(transferCoralToIntake);
-
-    logTransferAlgaeToEndEffector.info(transferAlgaeToEndEffector);
-    logTransferAlgaeToIntake.info(transferAlgaeToIntake);
-
     logIntakeInUse.info(intakeInUse);
     logMechInUse.info(mechanismInUse);
     logEndEffectorInUse.info(endEffectorInUse);
@@ -163,8 +134,6 @@ public class RobotStates {
     if (intakeState == IntakeState.Override) {
       intakeInUse = true;
     }
-
-    var scheduler = CommandScheduler.getInstance();
 
     if (!mechanismInUse && !endEffectorInUse && !intakeInUse) {
 
