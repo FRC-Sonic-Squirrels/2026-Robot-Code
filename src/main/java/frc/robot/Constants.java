@@ -31,6 +31,7 @@ import frc.robot.configs.RobotConfig;
 import frc.robot.configs.RobotConfig2023Rober;
 import frc.robot.configs.RobotConfig2024Maestro;
 import frc.robot.configs.RobotConfig2025;
+import frc.robot.configs.RobotConfig2026;
 import frc.robot.configs.SimulatorRobotConfig;
 import java.util.function.Supplier;
 
@@ -55,7 +56,7 @@ public final class Constants {
   }
 
   public static class RobotMode {
-    private static final RobotType ROBOT = RobotType.ROBOT_2025_HOLO;
+    private static final RobotType ROBOT = RobotType.ROBOT_2025_RETIRED_HOLO;
 
     private static final Alert invalidRobotAlert =
         new Alert("Invalid robot selected, using competition robot as default.", AlertType.ERROR);
@@ -84,9 +85,9 @@ public final class Constants {
         return RobotType.ROBOT_SIMBOT;
       }
 
-      if (ROBOT != RobotType.ROBOT_2024_RETIRED_MAESTRO && ROBOT != RobotType.ROBOT_2025_HOLO) {
+      if (ROBOT != RobotType.ROBOT_2024_RETIRED_MAESTRO && ROBOT != RobotType.ROBOT_2025_RETIRED_HOLO) {
         invalidRobotAlert.set(true);
-        return RobotType.ROBOT_2025_HOLO;
+        return RobotType.ROBOT_2025_RETIRED_HOLO;
       }
 
       return ROBOT;
@@ -102,7 +103,8 @@ public final class Constants {
       ROBOT_SIMBOT_REAL_CAMERAS(SimulatorRobotConfig::new),
       ROBOT_2023_RETIRED_ROBER(RobotConfig2023Rober::new),
       ROBOT_2024_RETIRED_MAESTRO(RobotConfig2024Maestro::new),
-      ROBOT_2025_HOLO(RobotConfig2025::new);
+      ROBOT_2025_RETIRED_HOLO(RobotConfig2026::new),
+      ROBOT_2026(RobotConfig2025::new); //Someone please name it...
 
       public final Supplier<RobotConfig> config;
 
