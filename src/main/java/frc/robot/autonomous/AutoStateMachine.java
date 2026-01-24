@@ -16,7 +16,6 @@ import frc.lib.team2930.StateMachine;
 import frc.lib.team6328.GeomUtil;
 import frc.robot.Constants;
 import frc.robot.RobotStates;
-import frc.robot.RobotStates.ScoringLevel;
 import frc.robot.autonomous.records.AutoDescriptor;
 import frc.robot.autonomous.records.AutoDescriptor.StartingLocation;
 import frc.robot.autonomous.records.ChoreoTrajectoryWithName;
@@ -53,32 +52,10 @@ public class AutoStateMachine extends StateMachine {
   private static LoggerEntry.Struct<Pose2d> log_startingLocation =
       logGroup.buildStruct(Pose2d.class, "StartigLocation");
 
-  private static AutoDescriptor preloadCodeDescriptor() {
-    List<ScoringLocation> scoringLocations = new ArrayList<>();
-    List<PickupLocation> coralStationLocations = new ArrayList<>();
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CI, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CK, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CL, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CJ, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-    return new AutoDescriptor(scoringLocations, coralStationLocations, StartingLocation.S2);
-  }
 
   private boolean preloadCode;
 
-  /** IMPORTANT: Use this constructor only for preloading code */
-  public AutoStateMachine(AutosSubsystems subsystems, RobotConfig config, RobotStates states) {
-    this(subsystems, preloadCodeDescriptor(), config, false, false, states);
-    preloadCode = true;
-    advance();
-  }
+  
 
   public AutoStateMachine(
       AutosSubsystems subsystems, RobotConfig config, Consumer<Double> rumble, RobotStates states) {

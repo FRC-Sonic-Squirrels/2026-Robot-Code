@@ -904,7 +904,6 @@ public class RobotContainer {
         climber.getWinchAngle(),
         robotStates);
     MechanismVisualization.logMechanism();
-    FieldStates.logGamepieceVisualization();
   }
 
   public void resetSubsystems() {}
