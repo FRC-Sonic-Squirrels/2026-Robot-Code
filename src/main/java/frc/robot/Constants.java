@@ -300,6 +300,9 @@ public final class Constants {
     public static final int INTAKE_ROLLER_CAN_ID = 20;
     public static final int INTAKE_TOF_CAN_ID = 43;
     public static final int INTAKE_STAR_CAN_ID = 21;
+
+    public static final int SHOOTER_FLYWHEEL_LEAD_CAN_ID = 35;
+    public static final int SHOOTER_FLYWHEEL_FOLLOW_CAN_ID = 36;
   }
 
   public static class DIOPorts {}
@@ -386,6 +389,15 @@ public final class Constants {
 
   public static class AutoConstants {
     public static final Distance DIST_TO_START_INTAKING = Units.Meters.of(1.0);
+  }
+
+  // TODO: Find literally all shooter constants
+  public static class ShooterConstants {
+    public static final double STOP = 0;
+    public static final double IDLE = 500;
+    public static final double SHOOTING = 2000;
+    public static final double SUPPLY_CURRENT_LIMIT = 0;
+    public static final double STATOR_CURRENT_LIMIT = 0;
   }
 
   public static volatile boolean unusedCode = false;
