@@ -20,7 +20,6 @@ import frc.lib.team2930.TunableNumberGroup;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.RobotStates;
-import java.util.Map;
 import java.util.function.Supplier;
 
 public class LED extends SubsystemBase {
@@ -65,7 +64,6 @@ public class LED extends SubsystemBase {
   private double timeToResetToBaseState = 0;
   private Timer resetToBaseStateTimer = new Timer();
   private boolean autoConfirmed = false;
-  private final RobotStates states;
   private Supplier<Boolean> preloadComplete;
 
   public LED(
@@ -79,7 +77,6 @@ public class LED extends SubsystemBase {
     this.brakeMode = brakeMode;
     this.gyroConnected = gyroConnected;
     this.motorsZeroed = motorsZeroed;
-    this.states = states;
   }
 
   public void setPreloadSupplier(Supplier<Boolean> preloadComplete) {
