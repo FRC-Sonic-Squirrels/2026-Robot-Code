@@ -26,7 +26,6 @@ import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 import frc.lib.team2930.commands.RunsWhenDisabledInstantCommand;
 import frc.robot.autonomous.AutosManager.Auto;
-import frc.robot.autonomous.records.AutoDescriptor.StartingLocation;
 import frc.robot.autonomous.records.PickupLocation;
 import java.util.ArrayList;
 import java.util.List;
@@ -76,7 +75,6 @@ public class Robot extends LoggedRobot {
   private Auto selectedAuto;
   private String selectedAutoName;
   private List<PickupLocation> selectedCoralStationLocations = new ArrayList<>();
-  private StartingLocation selectedStartingLocation;
   private boolean selectedAutoFlipped;
   private Command autoCommand;
   private Pose2d selectedInitialPose;
@@ -218,33 +216,8 @@ public class Robot extends LoggedRobot {
     }
 
     var customCoralStationLocations = robotContainer.getCustomCoralStationLocations();
-    var customStartingLocation = robotContainer.getCustomStartingLocation();
 
     var autoName = autonomousChooser.get();
-    var autoFlipped = robotContainer.autoFlipped();
-    if (autoName != null
-        && (!autoName.equals(selectedAutoName)
-            || autoFlipped != selectedAutoFlipped
-            || !selectedCoralStationLocations.equals(customCoralStationLocations)
-            || !selectedStartingLocation.equals(customStartingLocation))) {
-      Pose2d initialPose;
-
-      selectedAuto = robotContainer.getAutoSupplierForString(autoName).get();
-      if (selectedAuto != null) {
-        initialPose = selectedAuto.initPose();
-
-        logCurrentChooserValue.info(autoName);
-        logSelectedAuto.info(selectedAuto.name());
-      } else {
-        initialPose = null;
-      }
-
-      desiredInitialPose = initialPose;
-      selectedAutoName = autoName;
-      selectedAutoFlipped = autoFlipped;
-      selectedCoralStationLocations = customCoralStationLocations;
-      selectedStartingLocation = customStartingLocation;
-    }
 
     if (desiredInitialPose != null && !desiredInitialPose.equals(selectedInitialPose)) {
       boolean shouldResetPose = false;

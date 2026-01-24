@@ -220,8 +220,6 @@ public class Intake extends SubsystemBase {
         case Stow:
           if (!states.coralExpectedInIntake) {
 
-          } else if (states.coralInIntake) {
-
           } else {
             setRollerPercentOut(0);
           }

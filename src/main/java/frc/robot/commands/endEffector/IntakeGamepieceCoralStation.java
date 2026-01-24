@@ -51,8 +51,7 @@ public class IntakeGamepieceCoralStation extends Command {
   @Override
   public void initialize() {
     states.coralExpectedInEndEffector = true;
-    states.mechState = MechState.CoralStationPosition;
-    states.changeEndEffectorIfNotAligning(RobotStates.EndEffectorDesiredAction.CoralStationIntake);
+    states.changeEndEffectorIfNotAligning(null);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -73,13 +72,6 @@ public class IntakeGamepieceCoralStation extends Command {
   @Override
   public void end(boolean interrupted) {
     states.changeEndEffectorIfNotAligning(RobotStates.EndEffectorDesiredAction.Idle);
-  }
-
-  // Returns true when the command should end.
-  @Override
-  public boolean isFinished() {
-    return states.endEffectorDesiredAction
-        != RobotStates.EndEffectorDesiredAction.CoralStationIntake;
   }
 
   private double distToHumanPlayerStation(Translation2d translation) {

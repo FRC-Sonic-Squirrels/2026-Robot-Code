@@ -39,7 +39,6 @@ import frc.robot.RobotStates.MechState;
 import frc.robot.autonomous.AutosManager;
 import frc.robot.autonomous.AutosManager.Auto;
 import frc.robot.autonomous.AutosSubsystems;
-import frc.robot.autonomous.records.AutoDescriptor.StartingLocation;
 import frc.robot.autonomous.records.PickupLocation;
 import frc.robot.commands.climber.Climb;
 import frc.robot.commands.climber.ClimberSetAngle;
@@ -131,12 +130,9 @@ public class RobotContainer {
       new LoggedDashboardChooser<>("Flip Auto?");
   private final List<LoggedDashboardChooser<PickupLocation>> coralStationPosChooser =
       new ArrayList<>();
-  private final LoggedDashboardChooser<StartingLocation> startingLocationChooser =
-      new LoggedDashboardChooser<>("CustomStarting");
   private final int customGamepieceCount = 5;
 
   private final HashMap<String, Supplier<Auto>> stringToAutoSupplierMap = new HashMap<>();
-  private final AutosManager autoManager;
 
   // Buttons
 
@@ -526,30 +522,7 @@ public class RobotContainer {
       coralStationPosChooser.add(chooser);
     }
 
-    startingLocationChooser.addDefaultOption(StartingLocation.S1.name(), StartingLocation.S1);
-    for (StartingLocation location : StartingLocation.values())
-      startingLocationChooser.addOption(location.name(), location);
-
     var subsystems = new AutosSubsystems(drivetrainWrapper, mech, endEffector, led, intake);
-
-    autoManager =
-        new AutosManager(
-            subsystems,
-            config,
-            autoChooser,
-            stringToAutoSupplierMap,
-            () -> {
-              var result = flipAutoChooser.get();
-              if (result != null) {
-                return result;
-              }
-              return false;
-            },
-            this::getCustomCoralStationLocations,
-            this::getCustomStartingLocation,
-            robotStates);
-
-    led.setPreloadSupplier(autoManager::preloadingComplete);
 
     drivetrain.setDefaultCommand(
         new DrivetrainDefaultTeleopDrive(
@@ -818,10 +791,6 @@ public class RobotContainer {
     return autoChooser;
   }
 
-  public Supplier<Auto> getAutoSupplierForString(String string) {
-    return stringToAutoSupplierMap.getOrDefault(string, autoManager::doNothing);
-  }
-
   public boolean autoFlipped() {
     return flipAutoChooser.get();
   }
@@ -924,10 +893,6 @@ public class RobotContainer {
     }
 
     return coralStationLocations;
-  }
-
-  public StartingLocation getCustomStartingLocation() {
-    return startingLocationChooser.get();
   }
 
   public Command threadCommand() { // Used to set thread priority to main thread after a timed delay
