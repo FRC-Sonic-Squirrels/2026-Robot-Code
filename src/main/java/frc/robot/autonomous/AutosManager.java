@@ -56,7 +56,6 @@ public class AutosManager {
       LoggedDashboardChooser<String> chooser,
       HashMap<String, Supplier<Auto>> stringToAutoSupplierMap,
       BooleanSupplier flipAuto,
-      Supplier<List<ScoringLocation>> customScoringLocations,
       Supplier<List<PickupLocation>> customCoralStationLocations,
       Supplier<StartingLocation> customStartingLocation,
       RobotStates states) {
@@ -80,7 +79,6 @@ public class AutosManager {
     fillChooserAndMap(
         chooser,
         stringToAutoSupplierMap,
-        customScoringLocations,
         customCoralStationLocations,
         customStartingLocation);
   }
@@ -122,26 +120,8 @@ public class AutosManager {
   private void fillChooserAndMap(
       LoggedDashboardChooser<String> chooser,
       HashMap<String, Supplier<Auto>> stringToAutoSupplierMap,
-      Supplier<List<ScoringLocation>> customScoringLocations,
       Supplier<List<PickupLocation>> customCoralStationLocations,
-      Supplier<StartingLocation> customStartingLocation) {
-    var compAutos =
-        allCompetitionAutos(
-            customScoringLocations, customCoralStationLocations, customStartingLocation);
-
-    for (int i = 0; i < compAutos.size(); i++) {
-      var supplier = compAutos.get(i);
-      var name = supplier.get().name;
-      if (i == 0) {
-        // Do nothing command must be first in list.
-        chooser.addDefaultOption(name, name);
-      } else {
-        chooser.addOption(name, name);
-      }
-
-      stringToAutoSupplierMap.put(name, supplier);
-    }
-  }
+      Supplier<StartingLocation> customStartingLocation) {}
 
   public Auto doNothing() {
     return new Auto("doNothing", new InstantCommand(), Constants.zeroPose2d);

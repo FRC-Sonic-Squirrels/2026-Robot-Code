@@ -47,8 +47,6 @@ import frc.robot.autonomous.AutosManager.Auto;
 import frc.robot.autonomous.AutosSubsystems;
 import frc.robot.autonomous.records.AutoDescriptor.StartingLocation;
 import frc.robot.autonomous.records.PickupLocation;
-import frc.robot.autonomous.records.ScoringLocation;
-import frc.robot.autonomous.records.ScoringLocation.ReefSide;
 import frc.robot.commands.climber.Climb;
 import frc.robot.commands.climber.ClimberSetAngle;
 import frc.robot.commands.drive.DrivetrainDefaultTeleopDrive;
@@ -138,8 +136,6 @@ public class RobotContainer {
       new LoggedDashboardChooser<>("Auto Routine");
   private final LoggedDashboardChooser<Boolean> flipAutoChooser =
       new LoggedDashboardChooser<>("Flip Auto?");
-
-  private final List<LoggedDashboardChooser<ReefSide>> scoringPosChooser = new ArrayList<>();
   private final List<LoggedDashboardChooser<PickupLocation>> coralStationPosChooser =
       new ArrayList<>();
   private final LoggedDashboardChooser<StartingLocation> startingLocationChooser =
@@ -527,13 +523,6 @@ public class RobotContainer {
     flipAutoChooser.addDefaultOption("No", false);
     flipAutoChooser.addOption("Yes", true);
 
-    for (int i = 0; i < customGamepieceCount; i++) { // Add custom scoring choosers
-      LoggedDashboardChooser<ReefSide> chooser = new LoggedDashboardChooser<>(i + " CustomScoring");
-      for (ReefSide side : ScoringLocation.ReefSide.values()) chooser.addOption(side.name(), side);
-      chooser.addDefaultOption(ReefSide.CH.name(), ReefSide.CH);
-      scoringPosChooser.add(chooser);
-    }
-
     for (int i = 1; i < customGamepieceCount; i++) { // Add custom pickup choosers
       LoggedDashboardChooser<PickupLocation> chooser =
           new LoggedDashboardChooser<>(i + " CustomPickup");
@@ -563,7 +552,6 @@ public class RobotContainer {
               }
               return false;
             },
-            this::getCustomScoringLocations,
             this::getCustomCoralStationLocations,
             this::getCustomStartingLocation,
             robotStates);
@@ -633,20 +621,6 @@ public class RobotContainer {
     // ---------- OPERATOR CONTROLS -----------
 
     // Manual mech positions
-
-    // Reef positions
-    operatorController
-        .registerTrigger(XboxControllerWrapper.Button.povDown, "L1 Position")
-        .onTrue(new MechToPosition(mech, MechState.ReefL1Position, robotStates));
-    operatorController
-        .registerTrigger(XboxControllerWrapper.Button.povRight, "L2 Position")
-        .onTrue(new MechToPosition(mech, MechState.ReefL2Position, robotStates));
-    operatorController
-        .registerTrigger(XboxControllerWrapper.Button.povLeft, "L3 Position")
-        .onTrue(new MechToPosition(mech, MechState.ReefL3Position, robotStates));
-    operatorController
-        .registerTrigger(XboxControllerWrapper.Button.povUp, "L4 Position")
-        .onTrue(new MechToPosition(mech, MechState.ReefL4Position, robotStates));
 
     // Stow position
     operatorController
@@ -848,84 +822,7 @@ public class RobotContainer {
             drivetrain));
   }
 
-  /**
-   * Finds the nearest april tag position relative to the current robot translation
-   *
-   * @param robotTranslation - Current robot translation
-   * @param reefAprilTagPose - List of all april tag positions
-   * @return Nearest april tag
-   */
-  public static Pose2d findNearestAprilTag(Pose2d robotTranslation, Pose2d[] reefAprilTagPose) {
-    Pose2d nearestAprilTag = null;
-    int start;
-    double minDistance = 10000000000.0;
 
-    start = Constants.isRedAlliance() ? 0 : 6;
-
-    for (int i = start; i < start + 6; i++) {
-      Translation2d aprilTag = reefAprilTagPose[i].getTranslation();
-
-      double distance = robotTranslation.getTranslation().getDistance(aprilTag);
-      if (distance < minDistance) {
-        minDistance = distance;
-        nearestAprilTag = reefAprilTagPose[i];
-      }
-    }
-
-    return nearestAprilTag;
-  }
-
-  /**
-   * Finds the nearest coral station april tag position relative to the current robot translation
-   *
-   * @param robotTranslation - Current robot translation
-   * @param coralStationPose - List of all coral station april tag positions
-   * @return Nearest april tag
-   */
-  public static Pose2d findNearestCoralStation(Pose2d robotTranslation, Pose2d[] coralStationPose) {
-
-    int coralStation1Index = Constants.isRedAlliance() ? 0 : 2;
-    int coralStation2Index = Constants.isRedAlliance() ? 1 : 3;
-
-    Pose2d coralStation1 = coralStationPose[coralStation1Index];
-    Pose2d coralStation2 = coralStationPose[coralStation2Index];
-
-    Pose2d nearestCoralStation =
-        GeometryUtil.getDist(coralStation1, robotTranslation)
-                < GeometryUtil.getDist(coralStation2, robotTranslation)
-            ? coralStation1
-            : coralStation2;
-
-    return nearestCoralStation;
-  }
-
-  /**
-   * Makes the robot always face towards the center of the reef
-   *
-   * @param robotTranslation - Current robot translation
-   * @param reefAprilTagPose - List of all april tag positions
-   * @return Rotates robot to face center
-   */
-  public static Rotation2d faceTowardsCenter(Pose2d robotTranslation, Pose2d[] reefAprilTagPose) {
-
-    var center = FieldConstants.BLUE_REEF_CENTER_POSE;
-    Pose2d centerPose = new Pose2d();
-
-    AllianceFlipUtil.flipPoseForAlliance(centerPose);
-
-    double targetX = center.getX();
-    double targetY = center.getY();
-
-    double robotX = robotTranslation.getX();
-    double robotY = robotTranslation.getY();
-
-    double angleToCenter = Math.atan2(targetY - robotY, targetX - robotX);
-
-    double normalizedAngleToCenter = Math.atan2(Math.sin(angleToCenter), Math.cos(angleToCenter));
-
-    Rotation2d finalRotation = new Rotation2d(normalizedAngleToCenter);
-    return finalRotation.rotateBy(Rotation2d.k180deg);
-  }
 
   /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
@@ -1040,15 +937,7 @@ public class RobotContainer {
     }
   }
 
-  public List<ScoringLocation> getCustomScoringLocations() {
-    List<ScoringLocation> scoringLocations = new ArrayList<>();
-
-    for (LoggedDashboardChooser<ReefSide> location : scoringPosChooser) {
-      scoringLocations.add(
-          new ScoringLocation(location.get(), ScoringLevel.L4)); // Assume L4 during auto for now
-    }
-
-    return scoringLocations;
+  public void getCustomScoringLocations() {
   }
 
   public List<PickupLocation> getCustomCoralStationLocations() {
