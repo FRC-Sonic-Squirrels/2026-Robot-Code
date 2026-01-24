@@ -100,7 +100,7 @@ public class Intake extends SubsystemBase {
 
   // Motion constants
   static {
-    if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_HOLO) {
+    if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_RETIRED_HOLO) {
       rKS.initDefault(0);
       rKP.initDefault(0.4);
       rKV.initDefault(0.13);

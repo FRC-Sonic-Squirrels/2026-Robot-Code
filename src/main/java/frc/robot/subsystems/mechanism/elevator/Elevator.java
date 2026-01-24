@@ -69,14 +69,14 @@ public class Elevator extends SubsystemBase {
       maxVelocityConfig.initDefault(640.0);
       targetAccelerationConfig.initDefault(640.0);
 
-    } else if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2024_RETIRED_MAESTRO) {
-      kP.initDefault(5.0);
-      kD.initDefault(0.0);
-      kG.initDefault(0.153);
+    } else if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_RETIRED_HOLO) {
+      kP.initDefault(11.0);
+      kD.initDefault(0.2);
+      kG.initDefault(0.35);
 
       maxVelocityConfig.initDefault(1000.0);
       targetAccelerationConfig.initDefault(2000.0);
-    } else if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_HOLO) {
+    } else {
       kP.initDefault(11.0);
       kD.initDefault(0.2);
       kG.initDefault(0.35);
