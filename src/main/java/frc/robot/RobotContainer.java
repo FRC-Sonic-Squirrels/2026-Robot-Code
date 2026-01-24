@@ -36,6 +36,7 @@ import frc.robot.Constants.RobotMode.Mode;
 import frc.robot.Constants.RobotMode.RobotType;
 import frc.robot.RobotStates.IntakeState;
 import frc.robot.RobotStates.MechState;
+import frc.robot.RobotStates.RobotGoal;
 import frc.robot.autonomous.AutosManager;
 import frc.robot.autonomous.AutosManager.Auto;
 import frc.robot.autonomous.AutosSubsystems;
@@ -61,6 +62,7 @@ import frc.robot.subsystems.endEffector.EndEffectorIO;
 import frc.robot.subsystems.endEffector.EndEffectorIOReal;
 import frc.robot.subsystems.endEffector.EndEffectorIOSim;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.Intake.IntakeState;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOReal;
 import frc.robot.subsystems.intake.IntakeIOSim;
@@ -522,6 +524,9 @@ public class RobotContainer {
 
     var subsystems = new AutosSubsystems(drivetrainWrapper, mech, endEffector, led, intake);
 
+    robotStates.setSubsystems(
+        intake, drivetrainWrapper, () -> driverController.getRightTrigger().getAsBoolean());
+
     autoManager =
         new AutosManager(
             subsystems,
@@ -591,21 +596,24 @@ public class RobotContainer {
     // Eject
     operatorController
         .registerTrigger(XboxControllerWrapper.Button.leftBumper, "Intake Eject")
-        .onTrue(Commands.runOnce(() -> robotStates.intakeState = IntakeState.Eject))
-        .onFalse(Commands.runOnce(() -> robotStates.intakeState = IntakeState.Stow));
+        .onTrue(Commands.runOnce(() -> intake.setState(IntakeState.Eject)))
+        .onFalse(Commands.runOnce(() -> intake.setState(IntakeState.Stow)));
 
     // Intake
     operatorController
         .registerTrigger(XboxControllerWrapper.Button.rightBumper, "Intake")
-        .onFalse(Commands.runOnce(() -> robotStates.intakeState = IntakeState.Stow));
+        .onTrue(Commands.runOnce(() -> intake.setState(IntakeState.IntakeCoral)))
+        .onFalse(Commands.runOnce(() -> intake.setState(IntakeState.Stow)));
 
     // Intake positions
     operatorController
         .registerTrigger(XboxControllerWrapper.Button.a, "Intake Pivot In")
-        .onTrue(Commands.runOnce(() -> robotStates.intakeState = IntakeState.Stow));
+        .onTrue(
+            Commands.runOnce(() -> intake.setState(IntakeState.Stow))
+                .andThen(Commands.runOnce(() -> intake.setHoldAlgae(false))));
     operatorController
         .registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Intake Pivot Out")
-        .onTrue(Commands.runOnce(() -> robotStates.intakeState = IntakeState.Down));
+        .onTrue(Commands.runOnce(() -> intake.setState(IntakeState.Down)));
 
     // End Effector Rotation
     operatorController
@@ -820,6 +828,8 @@ public class RobotContainer {
   }
 
   public void enterDisabled() {
+    robotStates.setRobotGoal(RobotGoal.None);
+
     resetSubsystems();
     vision.useMaxDistanceAwayFromExistingEstimate(false);
     vision.useGyroBasedFilteringForVision(false);
@@ -832,7 +842,7 @@ public class RobotContainer {
       intake.setRollerPercentOut(0);
       robotStates.mechState = MechState.Idle;
 
-      robotStates.intakeState = IntakeState.Idle;
+      intake.setState(IntakeState.Idle);
     }
 
     is_teleop = false;
@@ -840,6 +850,8 @@ public class RobotContainer {
   }
 
   public void enterAutonomous() {
+    robotStates.setRobotGoal(RobotGoal.Auto);
+
     // TODO: add setting all motors into break mode if they aren't already
     vision.useMaxDistanceAwayFromExistingEstimate(true);
     vision.useGyroBasedFilteringForVision(true);
@@ -853,6 +865,8 @@ public class RobotContainer {
   }
 
   public void enterTeleop() {
+    robotStates.setRobotGoal(RobotGoal.None);
+
     climber.setServoAngle(ClimberConstants.SERVO_UNLOCK_ANGLE);
     resetDrivetrainResetOverrides();
     vision.useMaxDistanceAwayFromExistingEstimate(true);

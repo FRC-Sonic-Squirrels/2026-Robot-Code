@@ -28,6 +28,25 @@ import frc.robot.Constants.RobotMode.RobotType;
 import frc.robot.RobotStates;
 
 public class Intake extends SubsystemBase {
+
+  public enum IntakeState {
+    Idle,
+    Override,
+    IntakeCoral,
+    IntakeAlgae,
+    PrepPassoff,
+    PassoffEndEffector,
+    PassoffIntake,
+    Stow,
+    ScoreAlgaePrep,
+    ScoreAlgae,
+    ScoreCoralPrep,
+    ScoreCoral,
+    Climb,
+    Down,
+    Eject
+  }
+
   // Execution timing
   private static final ExecutionTiming timing = new ExecutionTiming(IntakeConstants.ROOT_TABLE);
 
@@ -48,6 +67,14 @@ public class Intake extends SubsystemBase {
       rollerLogGroup.buildDecimal("TargetVelocityRPM");
   private static final LoggerEntry.EnumValue<ControlMode> logRollerControlMode =
       rollerLogGroup.buildEnum("ControlMode");
+
+  private static final LoggerGroup starLogGroup = logGroup.subgroup("StarRollers");
+  private static final LoggerEntry.Decimal logStarTargetVelocityRPM =
+      starLogGroup.buildDecimal("TargetVelocityRPM");
+  private static final LoggerEntry.EnumValue<ControlMode> logStarControlMode =
+      starLogGroup.buildEnum("ControlMode");
+  private static final LoggerEntry.EnumValue<IntakeState> logIntakeState =
+      logGroup.buildEnum("IntakeState");
 
   // Pivot
   private static final LoggerGroup pivotLogGroup = logGroup.subgroup(PivotConstants.ROOT_TABLE);
@@ -144,6 +171,7 @@ public class Intake extends SubsystemBase {
   private final IntakeIO.Inputs inputs = new IntakeIO.Inputs(logGroup);
 
   // Intake states
+  private IntakeState intakeState = IntakeState.Idle;
 
   private double rollerTargetRPM;
 
@@ -190,6 +218,13 @@ public class Intake extends SubsystemBase {
 
       logPivotControlMode.info(pivotControlMode);
 
+      logToFActivated.info(inputs.intakeTofDetected);
+      logToFDistance.info(inputs.intakeTofDistanceInches);
+      logToFSignalStrength.info(inputs.intakeTofSignalStrength);
+
+      logStarControlMode.info(starControlMode);
+      logIntakeState.info(intakeState);
+
       // Update tunable numbers
 
       var rhc = hashCode();
@@ -210,7 +245,7 @@ public class Intake extends SubsystemBase {
 
       // Intake state machine
 
-      switch (states.intakeState) {
+      switch (intakeState) {
         case Override:
           break;
         case Idle:
@@ -343,5 +378,9 @@ public class Intake extends SubsystemBase {
     }
 
     return null;
+  }
+
+  public void setState(IntakeState state) {
+    intakeState = state;
   }
 }

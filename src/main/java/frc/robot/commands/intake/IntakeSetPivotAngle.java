@@ -7,8 +7,8 @@ package frc.robot.commands.intake;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.RobotStates;
-import frc.robot.RobotStates.IntakeState;
 import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.Intake.IntakeState;
 import java.util.function.Supplier;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
@@ -35,7 +35,7 @@ public class IntakeSetPivotAngle extends Command {
 
   @Override
   public void initialize() {
-    states.intakeState = IntakeState.Override;
+    states.setIntakeState(IntakeState.Override);
   }
 
   // Called every time the scheduler runs while the command is scheduled.

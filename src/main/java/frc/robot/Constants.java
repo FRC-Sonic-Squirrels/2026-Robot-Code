@@ -153,6 +153,11 @@ public final class Constants {
     public static Translation2d BLUE_HUB_CENTER_POSE =
         new Translation2d(HUB_DIST_FROM_WALL.plus(HUB_WIDTH.div(2.0)), FIELD_WIDTH.div(2.0));
 
+    public static Translation2d RIGHT_PASS_AIM_POINT =
+        new Translation2d(FIELD_LENGTH.div(4.0), FIELD_WIDTH.times(1.0 / 4.0));
+    public static Translation2d LEFT_PASS_AIM_POINT =
+        new Translation2d(FIELD_LENGTH.div(4.0), FIELD_WIDTH.times(3.0 / 4.0));
+
     public static Translation2d REEF_CENTER_POSE() {
       return AllianceFlipUtil.flipTranslationForAlliance(BLUE_HUB_CENTER_POSE);
     }
