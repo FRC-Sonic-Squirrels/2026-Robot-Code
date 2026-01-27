@@ -39,20 +39,20 @@ import frc.robot.Constants;
 public interface ShooterIO {
   /** Contains all of the input data received from hardware. */
   public static class Inputs {
-    public Rotation2d pivotPosition = Constants.zeroRotation2d;
-    public double pivotVelocityRadsPerSec = 0.0;
-    public double pivotAppliedVolts = 0.0;
-    public double pivotCurrentAmps = 0.0;
+    public Rotation2d hoodPosition = Constants.zeroRotation2d;
+    public double hoodVelocityRadsPerSec = 0.0;
+    public double hoodAppliedVolts = 0.0;
+    public double hoodCurrentAmps = 0.0;
 
-    public double[] launcherRPM = new double[2];
-    public double[] launcherAppliedVolts = new double[2];
-    public double[] launcherCurrentAmps = new double[2];
+    public double[] flywheelRPM = new double[2];
+    public double[] flywheelAppliedVolts = new double[2];
+    public double[] flywheelCurrentAmps = new double[2];
 
     public double kickerAppliedVolts = 0.0;
     public double kickerCurrentAmps = 0.0;
     public double kickerVelocityRPM = 0.0;
 
-    // launcher lead, launcher follower, pivot, kicker
+    //  flywheel lead, flywheel follower, hood, kicker
     public double[] tempsCelcius = new double[4];
 
     public double timeOfFlightDistance = 18.0;
@@ -61,26 +61,26 @@ public interface ShooterIO {
   /** Updates the set of loggable inputs. */
   public default void updateInputs(Inputs inputs) {}
 
-  // PIVOT
-  public default void setPivotPosition(Rotation2d rot) {}
+  // HOOD
+  public default void setHoodPosition(Rotation2d rot) {}
 
-  public default void setPivotVoltage(double volts) {}
+  public default void setHoodVoltage(double volts) {}
 
-  public default void resetPivotSensorPosition(Rotation2d position) {}
+  public default void resetHoodSensorPosition(Rotation2d position) {}
 
-  public default void setPivotClosedLoopConstants(
+  public default void setHoodClosedLoopConstants(
       double kP,
       double kD,
       double kG,
       double maxProfiledVelocity,
       double maxProfiledAcceleration) {}
 
-  // LAUNCHER
-  public default void setLauncherVoltage(double volts) {}
+  // Flywheel
+  public default void setFlywheelVoltage(double volts) {}
 
-  public default void setLauncherRPM(double topRollerRPM, double bottomRollerRPM) {}
+  public default void setFLywheelRPM(double topRollerRPM, double bottomRollerRPM) {}
 
-  public default void setLauncherClosedLoopConstants(
+  public default void setFlywheelClosedLoopConstants(
       double kP, double kV, double kS, double maxProfiledAcceleration) {}
 
   // KICKER

@@ -307,6 +307,7 @@ public final class Constants {
     public static final int SHOOTER_FOLLOW_CAN_ID = 36;
     public static final int SHOOTER_HOOD_CAN_ID = 37;
     public static final int SHOOTER_KICKER_CAN_ID = 38;
+    public static final int SHOOTER_TOF_CAN_ID = 42;
   }
 
   public static class DIOPorts {}
@@ -403,18 +404,20 @@ public final class Constants {
     public static final Distance SHOOTER_BASE_HEIGHT = Units.Inches.of(4.0);
     public static final Distance SHOOTER_LENGTH = Units.Inches.of(12.0);
     public static final Distance MAX_SHOOTING_DISTANCE = Units.Inches.of(180.0);
+    public static final double SUPPLY_CURRENT_LIMIT = 40;
+    public static final double STATOR_CURRENT_LIMIT = 40;
 
     public static final double SHOOTING_SPEED =
-      SHOOTING_RPM / 60.0 * Launcher.WHEEL_DIAMETER.in(Units.Meters) * Math.PI;
+        SHOOTING_RPM / 60.0 * Launcher.WHEEL_DIAMETER.in(Units.Meters) * Math.PI;
 
     public static final double SHOOTING_TIME = 0.2;
 
     public static final Transform2d SHOOTER_OFFSET =
-      new Transform2d(0, -Units.Inches.of(12).in(Units.Meters), Constants.zeroRotation2d);
+        new Transform2d(0, -Units.Inches.of(12).in(Units.Meters), Constants.zeroRotation2d);
 
     public static final Translation3d SHOOTER_AXIS_OF_ROTATION =
-      new Translation3d(
-        SHOOTER_OFFSET.getX(), SHOOTER_OFFSET.getY(), Units.Inches.of(5).in(Units.Meters));
+        new Translation3d(
+            SHOOTER_OFFSET.getX(), SHOOTER_OFFSET.getY(), Units.Inches.of(5).in(Units.Meters));
 
     public static class Hood {
       public static final double GEARING = 125.0;
@@ -463,7 +466,6 @@ public final class Constants {
       public static final double KICKING_PERCENT_OUT = 0.8;
     }
   }
-
 
   public static volatile boolean unusedCode = false;
 }

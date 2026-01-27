@@ -25,9 +25,11 @@
 // import frc.robot.Constants.MotorConstants.KrakenConstants;
 
 // public class ShooterIOReal implements ShooterIO {
-//     private TalonFX flywheelLeadMotor = new TalonFX(Constants.CanIDs.SHOOTER_FLYWHEEL_LEAD_CAN_ID);
-//     private TalonFX flywheelFollowMotor = new TalonFX(Constants.CanIDs.SHOOTER_FLYWHEEL_FOLLOW_CAN_ID);
-//     private TalonFX pivotMotor = new TalonFX(Constants.CanIDs.SHOOTER_PIVOT_CAN_ID);
+//     private TalonFX flywheelLeadMotor = new
+// TalonFX(Constants.CanIDs.SHOOTER_FLYWHEEL_LEAD_CAN_ID);
+//     private TalonFX flywheelFollowMotor = new
+// TalonFX(Constants.CanIDs.SHOOTER_FLYWHEEL_FOLLOW_CAN_ID);
+//     private TalonFX hoodMotor = new TalonFX(Constants.CanIDs.SHOOTER_HOOD_CAN_ID);
 //     private TalonFX kickerMotor = new TalonFX(Constants.CanIDs.SHOOTER_KICKER_CAN_ID);
 
 //     private final MotionMagicVoltage closedLoopControl =
@@ -52,9 +54,11 @@
 
 //         TalonFXConfiguration config = new TalonFXConfiguration();
 
-//         config.CurrentLimits.SupplyCurrentLimit = Constants.ShooterConstants.SUPPLY_CURRENT_LIMIT;
+//         config.CurrentLimits.SupplyCurrentLimit =
+// Constants.ShooterConstants.SUPPLY_CURRENT_LIMIT;
 //         config.CurrentLimits.SupplyCurrentLimitEnable = true;
-//         config.CurrentLimits.StatorCurrentLimit = Constants.ShooterConstants.STATOR_CURRENT_LIMIT;
+//         config.CurrentLimits.StatorCurrentLimit =
+// Constants.ShooterConstants.STATOR_CURRENT_LIMIT;
 //         config.CurrentLimits.StatorCurrentLimitEnable = true;
 
 //         config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
@@ -64,7 +68,7 @@
 
 //         flywheelLeadMotor.getConfigurator().apply(config);
 //         flywheelFollowMotor.getConfigurator().apply(config);
-        
+
 //         // Status signals
 
 //         flywheelLeadPosition = flywheelLeadMotor.getRotorPosition();
@@ -81,21 +85,26 @@
 
 //         // Update status signals
 
-//         BaseStatusSignal.setUpdateFrequencyForAll(100, flywheelLeadPosition, flywheelLeadVelocity);
+//         BaseStatusSignal.setUpdateFrequencyForAll(100, flywheelLeadPosition,
+// flywheelLeadVelocity);
 //         BaseStatusSignal.setUpdateFrequencyForAll(50, flywheelLeadVoltage, flywheelLeadCurrent);
 //         BaseStatusSignal.setUpdateFrequencyForAll(1, flywheelLeadTemp);
 
-//         BaseStatusSignal.setUpdateFrequencyForAll(100, flywheelFollowPosition, flywheelFollowVelocity);
-//         BaseStatusSignal.setUpdateFrequencyForAll(50, flywheelFollowVoltage, flywheelFollowCurrent);
+//         BaseStatusSignal.setUpdateFrequencyForAll(100, flywheelFollowPosition,
+// flywheelFollowVelocity);
+//         BaseStatusSignal.setUpdateFrequencyForAll(50, flywheelFollowVoltage,
+// flywheelFollowCurrent);
 //         BaseStatusSignal.setUpdateFrequencyForAll(1, flywheelFollowTemp);
 
 //         flywheelLeadMotor.optimizeBusUtilization();
 
 //         flywheelFollowMotor.setControl(
-//         new Follower(Constants.CanIDs.SHOOTER_FLYWHEEL_LEAD_CAN_ID, MotorAlignmentValue.Aligned));
+//         new Follower(Constants.CanIDs.SHOOTER_FLYWHEEL_LEAD_CAN_ID,
+// MotorAlignmentValue.Aligned));
 
 //         refreshSet =
-//             new BaseStatusSignal[] {flywheelLeadPosition, flywheelLeadVoltage, flywheelLeadVoltage, 
+//             new BaseStatusSignal[] {flywheelLeadPosition, flywheelLeadVoltage,
+// flywheelLeadVoltage,
 //             flywheelLeadCurrent, flywheelLeadTemp};
 //   }
 //     @Override
@@ -162,95 +171,95 @@ import com.playingwithfusion.TimeOfFlight;
 import com.playingwithfusion.TimeOfFlight.RangingMode;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Temperature;
+import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Constants;
 import frc.robot.Constants.ShooterConstants;
 
 public class ShooterIOReal implements ShooterIO {
 
-  TalonFX launcher_lead = new TalonFX(Constants.CanIDs.SHOOTER_LEAD_CAN_ID);
-  TalonFX launcher_follower = new TalonFX(Constants.CanIDs.SHOOTER_FOLLOW_CAN_ID);
-  TalonFX pivot = new TalonFX(Constants.CanIDs.SHOOTER_PIVOT_CAN_ID);
+  TalonFX flywheel_lead = new TalonFX(Constants.CanIDs.SHOOTER_LEAD_CAN_ID);
+  TalonFX flywheel_follower = new TalonFX(Constants.CanIDs.SHOOTER_FOLLOW_CAN_ID);
+  TalonFX hood = new TalonFX(Constants.CanIDs.SHOOTER_HOOD_CAN_ID);
   TalonFX kicker = new TalonFX(Constants.CanIDs.SHOOTER_KICKER_CAN_ID);
 
-  private final StatusSignal<Double> pivotPosition;
-  private final StatusSignal<Double> pivotVelocity;
-  private final StatusSignal<Double> pivotVoltage;
-  private final StatusSignal<Double> pivotCurrentAmps;
+  private final StatusSignal<Angle> hoodPosition;
+  private final StatusSignal<AngularVelocity> hoodVelocity;
+  private final StatusSignal<Voltage> hoodVoltage;
+  private final StatusSignal<Current> hoodCurrentAmps;
 
-  private final StatusSignal<Double> launcherLeadVelocity;
-  private final StatusSignal<Double> launcherLeadVoltage;
-  private final StatusSignal<Double> launcherLeadCurrentAmps;
-  private final StatusSignal<Double> launcherFollowVelocity;
-  private final StatusSignal<Double> launcherFollowerVoltage;
-  private final StatusSignal<Double> launcherFollowerCurrentAmps;
+  private final StatusSignal<AngularVelocity> flywheelLeadVelocity;
+  private final StatusSignal<Voltage> flywheelLeadVoltage;
+  private final StatusSignal<Current> flywheelLeadCurrentAmps;
+  private final StatusSignal<AngularVelocity> flywheelFollowVelocity;
+  private final StatusSignal<Voltage> flywheelFollowerVoltage;
+  private final StatusSignal<Current> flywheelFollowerCurrentAmps;
 
-  private final StatusSignal<Double> kickerAppliedVolts;
-  private final StatusSignal<Double> kickerCurrentAmps;
+  private final StatusSignal<Voltage> kickerAppliedVolts;
+  private final StatusSignal<Current> kickerCurrentAmps;
 
-  private final StatusSignal<Double> launcherLeadTempCelsius;
-  private final StatusSignal<Double> launcherFollowTempCelsius;
-  private final StatusSignal<Double> pivotTempCelsius;
-  private final StatusSignal<Double> kickerTempCelsius;
-  private final StatusSignal<Double> kickerVelocity;
+  private final StatusSignal<Temperature> flywheelLeadTempCelsius;
+  private final StatusSignal<Temperature> flywheelFollowTempCelsius;
+  private final StatusSignal<Temperature> hoodTempCelsius;
+  private final StatusSignal<Temperature> kickerTempCelsius;
+  private final StatusSignal<AngularVelocity> kickerVelocity;
 
   private final BaseStatusSignal[] refreshSet;
 
   // FIX: add FOC
-  private final MotionMagicVoltage pivotClosedLoopControl =
+  private final MotionMagicVoltage hoodClosedLoopControl =
       new MotionMagicVoltage(0).withEnableFOC(true);
-  private final VoltageOut pivotOpenLoop = new VoltageOut(0.0).withEnableFOC(true);
+  private final VoltageOut hoodOpenLoop = new VoltageOut(0.0).withEnableFOC(true);
 
-  private final MotionMagicVelocityVoltage launcherClosedLoop =
+  private final MotionMagicVelocityVoltage flywheelClosedLoop =
       new MotionMagicVelocityVoltage(0.0).withEnableFOC(true);
-  private final VoltageOut launcherOpenLoop = new VoltageOut(0.0).withEnableFOC(true);
+  private final VoltageOut flywheelOpenLoop = new VoltageOut(0.0).withEnableFOC(true);
 
   private final VoltageOut kickerOpenLoop = new VoltageOut(0.0).withEnableFOC(true);
 
   TimeOfFlight timeOfFlight = new TimeOfFlight(Constants.CanIDs.SHOOTER_TOF_CAN_ID);
 
   private final MotionMagicVelocityVoltage kickerClosedLoop =
-      new MotionMagicVelocityVoltage(0, 0, true, 0, 0, false, false, false);
+      new MotionMagicVelocityVoltage(0).withEnableFOC(true);
 
   public ShooterIOReal() {
-    // --- launcher config ---
-    TalonFXConfiguration launcherConfig = new TalonFXConfiguration();
+    // --- flywheel config ---
+    TalonFXConfiguration flywheelConfig = new TalonFXConfiguration();
 
-    launcherConfig.CurrentLimits.SupplyCurrentLimit = 40;
-    launcherConfig.CurrentLimits.SupplyCurrentThreshold = 60.0;
-    launcherConfig.CurrentLimits.SupplyTimeThreshold = 0.1;
-    launcherConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+    flywheelConfig.CurrentLimits.SupplyCurrentLimit = ShooterConstants.SUPPLY_CURRENT_LIMIT;
+    flywheelConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+    flywheelConfig.CurrentLimits.StatorCurrentLimit = ShooterConstants.STATOR_CURRENT_LIMIT;
+    flywheelConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
-    launcherConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-    launcherConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-    launcherConfig.Feedback.SensorToMechanismRatio = ShooterConstants.Launcher.GEARING;
+    flywheelConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
+    flywheelConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    flywheelConfig.Feedback.SensorToMechanismRatio = ShooterConstants.Launcher.GEARING;
 
-    launcherConfig.Voltage.PeakReverseVoltage = 0.0;
-    launcherConfig.Voltage.SupplyVoltageTimeConstant = 0.02;
+    flywheelConfig.Voltage.PeakReverseVoltage = 0.0;
+    flywheelConfig.Voltage.SupplyVoltageTimeConstant = 0.02;
 
-    launcher_lead.getConfigurator().apply(launcherConfig);
-    launcher_follower.getConfigurator().apply(launcherConfig);
+    flywheeLead.getConfigurator().apply(flywheelConfig);
+    flywheelFollower.getConfigurator().apply(flywheelConfig);
 
-    // --- pivot config ---
-    TalonFXConfiguration pivotConfig = new TalonFXConfiguration();
+    // --- hood config ---
+    TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
 
-    pivotConfig.CurrentLimits.SupplyCurrentLimit = 40;
-    pivotConfig.CurrentLimits.SupplyCurrentThreshold = 60.0;
-    pivotConfig.CurrentLimits.SupplyTimeThreshold = 0.1;
-    pivotConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+    hoodConfig.Feedback.SensorToMechanismRatio = Constants.ShooterConstants.Hood.GEARING;
+    hoodConfig.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
+    hoodConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-    pivotConfig.Feedback.SensorToMechanismRatio = Constants.ShooterConstants.Pivot.GEARING;
-    pivotConfig.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
-    pivotConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    hoodConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
+        Constants.ShooterConstants.Hood.MAX_ANGLE_RAD.getRotations();
+    hoodConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
+        Constants.ShooterConstants.Hood.MIN_ANGLE_RAD.getRotations();
 
-    pivotConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
-        Constants.ShooterConstants.Pivot.MAX_ANGLE_RAD.getRotations();
-    pivotConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
-        Constants.ShooterConstants.Pivot.MIN_ANGLE_RAD.getRotations();
+    hoodConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
+    hoodConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
 
-    pivotConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-    pivotConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
-
-    pivot.getConfigurator().apply(pivotConfig);
+    hood.getConfigurator().apply(hoodConfig);
 
     // -- kicker config --
     TalonFXConfiguration kickerConfig = new TalonFXConfiguration();
@@ -264,50 +273,50 @@ public class ShooterIOReal implements ShooterIO {
 
     kicker.getConfigurator().apply(kickerConfig);
 
-    pivotPosition = pivot.getPosition();
-    pivotVelocity = pivot.getVelocity();
-    pivotVoltage = pivot.getMotorVoltage();
-    pivotCurrentAmps = pivot.getStatorCurrent();
+    hoodPosition = hood.getPosition();
+    hoodVelocity = hood.getVelocity();
+    hoodVoltage = hood.getMotorVoltage();
+    hoodCurrentAmps = hood.getStatorCurrent();
 
-    launcherLeadVelocity = launcher_lead.getVelocity();
-    launcherFollowVelocity = launcher_follower.getVelocity();
+    flywheelLeadVelocity = flywheelLead.getVelocity();
+    flywheelFollowVelocity = flywheelFollower.getVelocity();
 
-    launcherLeadVoltage = launcher_lead.getMotorVoltage();
-    launcherFollowerVoltage = launcher_follower.getMotorVoltage();
-    launcherLeadCurrentAmps = launcher_lead.getStatorCurrent();
-    launcherFollowerCurrentAmps = launcher_follower.getStatorCurrent();
+    flywheelLeadVoltage = flywheelLead.getMotorVoltage();
+    flywheelFollowerVoltage = flywheelFollower.getMotorVoltage();
+    flywheelLeadCurrentAmps = flywheelLead.getStatorCurrent();
+    flywheelFollowerCurrentAmps = flywheelFollower.getStatorCurrent();
 
     kickerAppliedVolts = kicker.getMotorVoltage();
     kickerCurrentAmps = kicker.getStatorCurrent();
 
-    launcherLeadTempCelsius = launcher_lead.getDeviceTemp();
-    launcherFollowTempCelsius = launcher_lead.getDeviceTemp();
-    pivotTempCelsius = pivot.getDeviceTemp();
+    flywheelLeadTempCelsius = flywheelLead.getDeviceTemp();
+    flywheelFollowTempCelsius = flywheelLead.getDeviceTemp();
+    hoodTempCelsius = hood.getDeviceTemp();
     kickerTempCelsius = kicker.getDeviceTemp();
     kickerVelocity = kicker.getVelocity();
 
     BaseStatusSignal.setUpdateFrequencyForAll(
-        100, pivotPosition, launcherLeadVelocity, launcherFollowVelocity);
+        100, hoodPosition, flywheelLeadVelocity, flywheelFollowVelocity);
     BaseStatusSignal.setUpdateFrequencyForAll(
         50,
-        pivotVelocity,
-        pivotVoltage,
-        pivotCurrentAmps,
+        hoodVelocity,
+        hoodVoltage,
+        hoodCurrentAmps,
         kickerAppliedVolts,
         kickerCurrentAmps,
         kickerVelocity);
     BaseStatusSignal.setUpdateFrequencyForAll(
         10,
-        launcherLeadVoltage,
-        launcherLeadCurrentAmps,
-        launcherFollowerVoltage,
-        launcherFollowerCurrentAmps);
+        flywheelLeadVoltage,
+        flywheelLeadCurrentAmps,
+      flywheelFollowerVoltage,
+        flywheelFollowerCurrentAmps);
     BaseStatusSignal.setUpdateFrequencyForAll(
-        1, launcherLeadTempCelsius, launcherFollowTempCelsius, kickerTempCelsius, pivotTempCelsius);
+        1, flywheelLeadTempCelsius, flywheelFollowTempCelsius, kickerTempCelsius, hoodTempCelsius);
 
-    launcher_lead.optimizeBusUtilization();
-    launcher_follower.optimizeBusUtilization();
-    pivot.optimizeBusUtilization();
+    flywheelLead.optimizeBusUtilization();
+    flywheelFollower.optimizeBusUtilization();
+    hood.optimizeBusUtilization();
     kicker.optimizeBusUtilization();
 
     timeOfFlight.setRangeOfInterest(0, 16, 16, 0);
@@ -315,24 +324,24 @@ public class ShooterIOReal implements ShooterIO {
 
     refreshSet =
         new BaseStatusSignal[] {
-          pivotPosition,
-          pivotVelocity,
-          pivotVoltage,
-          pivotCurrentAmps,
+          hoodPosition,
+          hoodVelocity,
+          hoodVoltage,
+          hoodCurrentAmps,
           // --
-          launcherLeadVelocity,
-          launcherLeadVoltage,
-          launcherLeadCurrentAmps,
-          launcherFollowVelocity,
-          launcherFollowerVoltage,
-          launcherFollowerCurrentAmps,
+          flywheelLeadVelocity,
+          flywheelLeadVoltage,
+          flywheelLeadCurrentAmps,
+          flywheelFollowVelocity,
+          flywheelFollowerVoltage,
+          flywheelFollowerCurrentAmps,
           // --
           kickerAppliedVolts,
           kickerCurrentAmps,
           // --
-          launcherLeadTempCelsius,
-          launcherFollowTempCelsius,
-          pivotTempCelsius,
+          flywheelLeadTempCelsius,
+          flywheelFollowTempCelsius,
+          hoodTempCelsius,
           kickerTempCelsius,
           kickerVelocity
         };
@@ -342,58 +351,58 @@ public class ShooterIOReal implements ShooterIO {
   public void updateInputs(Inputs inputs) {
     BaseStatusSignal.refreshAll(refreshSet);
 
-    inputs.pivotPosition = Rotation2d.fromRotations(pivotPosition.getValueAsDouble());
+    inputs.hoodPosition = Rotation2d.fromRotations(hoodPosition.getValueAsDouble());
     // rotations to rads = mult by 2pi. 1 full rot = 2pi rads
-    inputs.pivotVelocityRadsPerSec = pivotVelocity.getValueAsDouble() * (2 * Math.PI);
-    inputs.pivotAppliedVolts = pivotVoltage.getValueAsDouble();
-    inputs.pivotCurrentAmps = pivotCurrentAmps.getValueAsDouble();
+    inputs.hoodVelocityRadsPerSec = hoodVelocity.getValueAsDouble() * (2 * Math.PI);
+    inputs.hoodAppliedVolts = hoodVoltage.getValueAsDouble();
+    inputs.hoodCurrentAmps = hoodCurrentAmps.getValueAsDouble();
 
-    inputs.launcherRPM[0] = launcherLeadVelocity.getValueAsDouble() * 60.0;
-    inputs.launcherRPM[1] = launcherFollowVelocity.getValueAsDouble() * 60.0;
+    inputs.flywheelRPM[0] = flywheelLeadVelocity.getValueAsDouble() * 60.0;
+    inputs.flywheelRPM[1] = flywheelFollowVelocity.getValueAsDouble() * 60.0;
 
     // rps to rpm = mult by 60
-    inputs.launcherAppliedVolts[0] = launcherLeadVoltage.getValueAsDouble();
-    inputs.launcherAppliedVolts[1] = launcherFollowerVoltage.getValueAsDouble();
+    inputs.flywheelAppliedVolts[0] = flywheelLeadVoltage.getValueAsDouble();
+    inputs.flywheelAppliedVolts[1] = flywheelFollowerVoltage.getValueAsDouble();
 
-    inputs.launcherCurrentAmps[0] = launcherLeadCurrentAmps.getValueAsDouble();
-    inputs.launcherCurrentAmps[1] = launcherFollowerCurrentAmps.getValueAsDouble();
+    inputs.flywheelCurrentAmps[0] = flywheelLeadCurrentAmps.getValueAsDouble();
+    inputs.flywheelCurrentAmps[1] = flywheelFollowerCurrentAmps.getValueAsDouble();
 
     inputs.kickerAppliedVolts = kickerAppliedVolts.getValueAsDouble();
     inputs.kickerCurrentAmps = kickerCurrentAmps.getValueAsDouble();
     inputs.kickerVelocityRPM = kickerVelocity.getValueAsDouble() * 60;
 
-    inputs.tempsCelcius[0] = launcherLeadTempCelsius.getValueAsDouble();
-    inputs.tempsCelcius[1] = launcherFollowTempCelsius.getValueAsDouble();
-    inputs.tempsCelcius[2] = pivotTempCelsius.getValueAsDouble();
+    inputs.tempsCelcius[0] = flywheelLeadTempCelsius.getValueAsDouble();
+    inputs.tempsCelcius[1] = flywheelFollowTempCelsius.getValueAsDouble();
+    inputs.tempsCelcius[2] = hoodTempCelsius.getValueAsDouble();
     inputs.tempsCelcius[3] = kickerTempCelsius.getValueAsDouble();
 
     inputs.timeOfFlightDistance = Units.Millimeters.of(timeOfFlight.getRange()).in(Units.Inches);
   }
 
-  // PIVOT
+  // HOOD
 
   @Override
-  public void setPivotPosition(Rotation2d rot) {
-    pivotClosedLoopControl.withPosition(rot.getRotations());
-    pivot.setControl(pivotClosedLoopControl);
+  public void setHoodPosition(Rotation2d rot) {
+    hoodClosedLoopControl.withPosition(rot.getRotations());
+    hood.setControl(hoodClosedLoopControl);
   }
 
   @Override
-  public void setPivotVoltage(double volts) {
-    pivot.setControl(pivotOpenLoop.withOutput(volts));
+  public void setHoodVoltage(double volts) {
+    hood.setControl(hoodOpenLoop.withOutput(volts));
   }
 
-  // LAUNCHER
+  // Flywheel
   @Override
-  public void setLauncherVoltage(double volts) {
-    launcher_lead.setControl(launcherOpenLoop.withOutput(volts));
-    launcher_follower.setControl(launcherOpenLoop.withOutput(volts));
+  public void setFlywheelVoltage(double volts) {
+    flywheelLead.setControl(flywheelOpenLoop.withOutput(volts));
+    flywheelFollower.setControl(flywheelOpenLoop.withOutput(volts));
   }
 
   @Override
-  public void setLauncherRPM(double topRollerRPM, double bottomRollerRPM) {
-    launcher_lead.setControl(launcherClosedLoop.withVelocity(topRollerRPM / 60));
-    launcher_follower.setControl(launcherClosedLoop.withVelocity(bottomRollerRPM / 60));
+  public void setFlywheelRPM(double topRollerRPM, double bottomRollerRPM) {
+    flywheelLead.setControl(flywheelClosedLoop.withVelocity(topRollerRPM / 60));
+    flywheelFollower.setControl(flywheelClosedLoop.withVelocity(bottomRollerRPM / 60));
   }
 
   @Override
@@ -402,17 +411,17 @@ public class ShooterIOReal implements ShooterIO {
   }
 
   @Override
-  public void resetPivotSensorPosition(Rotation2d position) {
-    pivot.setPosition(position.getRotations());
+  public void resetHoodSensorPosition(Rotation2d position) {
+    hood.setPosition(position.getRotations());
   }
 
   @Override
-  public void setPivotClosedLoopConstants(
+  public void setHoodClosedLoopConstants(
       double kP, double kD, double kG, double maxProfiledVelocity, double maxProfiledAcceleration) {
     Slot0Configs pidConfig = new Slot0Configs();
     MotionMagicConfigs mmConfig = new MotionMagicConfigs();
 
-    var configurator = pivot.getConfigurator();
+    var configurator = hood.getConfigurator();
     configurator.refresh(pidConfig);
     configurator.refresh(mmConfig);
 
@@ -428,13 +437,13 @@ public class ShooterIOReal implements ShooterIO {
   }
 
   @Override
-  public void setLauncherClosedLoopConstants(
+  public void setFlywheelClosedLoopConstants(
       double kP, double kV, double kS, double maxProfiledAcceleration) {
     Slot0Configs pidConfig = new Slot0Configs();
     MotionMagicConfigs mmConfig = new MotionMagicConfigs();
 
-    var leadConfigurator = launcher_lead.getConfigurator();
-    var followConfigurator = launcher_follower.getConfigurator();
+    var leadConfigurator = flywheelLead.getConfigurator();
+    var followConfigurator = flywheelFollower.getConfigurator();
 
     leadConfigurator.refresh(pidConfig);
     leadConfigurator.refresh(mmConfig);
@@ -459,13 +468,13 @@ public class ShooterIOReal implements ShooterIO {
   public boolean setNeutralMode(NeutralModeValue value) {
     var config = new MotorOutputConfigs();
 
-    var status = pivot.getConfigurator().refresh(config);
+    var status = hood.getConfigurator().refresh(config);
 
     if (status != StatusCode.OK) return false;
 
     config.NeutralMode = value;
 
-    pivot.getConfigurator().apply(config);
+    hood.getConfigurator().apply(config);
     return true;
   }
 

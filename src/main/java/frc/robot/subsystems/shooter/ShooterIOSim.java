@@ -1,12 +1,8 @@
-// package frc.robot.subsystems.shooter;
+// Comfort below
 
-// public class ShooterIOSim {
-    
-// }
 package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.controls.VoltageOut;
-
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -15,13 +11,11 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.Timer;
-import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.TalonFXSim;
 import frc.robot.Constants;
 import frc.robot.Constants.ControlMode;
-import frc.robot.Constants.IntakeConstants.RollerConstants;
 
 public class ShooterIOSim implements ShooterIO {
   public static final LoggerEntry.Decimal log_error = Shooter.logGroup.buildDecimal("SIM_error");
@@ -51,11 +45,11 @@ public class ShooterIOSim implements ShooterIO {
           false,
           Constants.ShooterConstants.Hood.SIM_INITIAL_ANGLE);
 
-  private final TalonFXSim launcherMotorSim =
+  private final TalonFXSim flywheelMotorSim =
       new TalonFXSim(
           DCMotor.getKrakenX60Foc(2),
-          Constants.ShooterConstants.Launcher.GEARING,
-          Constants.ShooterConstants.Launcher.MOI);
+          Constants.ShooterConstants.Flywheel.GEARING,
+          Constants.ShooterConstants.FLywheel.MOI);
 
   private final TalonFXSim kickerMotorSim =
       new TalonFXSim(
@@ -74,7 +68,7 @@ public class ShooterIOSim implements ShooterIO {
   private double pivotOpenLoopVolts = 0.0;
   private double kickerVolts = 0.0;
 
-  private VoltageOut launcherOpenLoopVolts = new VoltageOut(0.0).withEnableFOC(true);
+  private VoltageOut flywheelOpenLoopVolts = new VoltageOut(0.0).withEnableFOC(true);
 
   private double targetRPM = 0.0;
 
@@ -87,14 +81,14 @@ public class ShooterIOSim implements ShooterIO {
   public void updateInputs(Inputs inputs) {
 
     pivot.update(Constants.kDefaultPeriod);
-    launcherMotorSim.update(Constants.kDefaultPeriod);
+    flywheelMotorSim.update(Constants.kDefaultPeriod);
     kickerMotorSim.update(Constants.kDefaultPeriod);
 
     pivotFeedback.setTolerance(1.0);
 
-    inputs.pivotPosition = new Rotation2d(pivot.getAngleRads());
+    inputs.hoodPosition = new Rotation2d(pivot.getAngleRads());
 
-    inputs.launcherRPM[0] = targetRPM;
+    inputs.flywheelRPM[0] = targetRPM;
 
     inputs.kickerAppliedVolts = kickerVolts;
 
@@ -121,7 +115,7 @@ public class ShooterIOSim implements ShooterIO {
 
       pivotControlEffort =
           pivotFeedback.calculate(
-                  inputs.pivotPosition.getRadians(), pivotClosedLoopTargetAngle.getRadians())
+                  inputs.hoodPosition.getRadians(), pivotClosedLoopTargetAngle.getRadians())
               + ff;
 
       log_error.info(pivotFeedback.getPositionError());
@@ -138,7 +132,6 @@ public class ShooterIOSim implements ShooterIO {
     log_feedForward.info(ff);
 
     pivot.setInputVoltage(MathUtil.clamp(pivotControlEffort, -12.0, 12.0));
-    kickerMotorSim.setInputVoltage(MathUtil.clamp(kickerVolts, -12.0, 12.0));
     log_outputVoltage.info(MathUtil.clamp(pivotControlEffort, -12.0, 12.0));
     log_targetVelRadPerSec.info(pivotTargetVelRadPerSec);
     log_currentVelRadPerSec.info(pivot.getVelocityRadPerSec());
@@ -149,13 +142,13 @@ public class ShooterIOSim implements ShooterIO {
   }
 
   @Override
-  public void setPivotPosition(Rotation2d rot) {
+  public void setHoodPosition(Rotation2d rot) {
     pivotClosedLoopTargetAngle = rot;
     pivotControlMode = ControlMode.POSITION;
   }
 
   @Override
-  public void setPivotClosedLoopConstants(
+  public void setHoodClosedLoopConstants(
       double kP, double kD, double kG, double maxProfiledVelocity, double maxProfiledAcceleration) {
 
     pivotFeedback.setP(kP);
@@ -164,23 +157,24 @@ public class ShooterIOSim implements ShooterIO {
   }
 
   @Override
-  public void setPivotVoltage(double volts) {
+  public void setHoodVoltage(double volts) {
     pivotOpenLoopVolts = volts;
     pivotControlMode = ControlMode.VOLTAGE;
   }
 
-    @Override
-  public void setLauncherVoltage(double volts) {
-    launcherMotorSim.setControl(launcherOpenLoopVolts.withOutput(volts));
+  @Override
+  public void setFlywheelVoltage(double volts) {
+    flywheelMotorSim.setControl(FlywheelOpenLoopVolts.withOutput(volts));
   }
 
   @Override
   public void setKickerVoltage(double volts) {
-    kickerVolts = volts;
+    VoltageOut kickerVolts = new VoltageOut(MathUtil.clamp(volts, -12.0, 12.0));
+    kickerMotorSim.setControl(kickerVolts);
   }
 
   @Override
-  public void setLauncherRPM(double topRollerRPM, double bottomRollerRPM) {
+  public void setFlywheelRPM(double topRollerRPM, double bottomRollerRPM) {
     targetRPM = topRollerRPM;
   }
 

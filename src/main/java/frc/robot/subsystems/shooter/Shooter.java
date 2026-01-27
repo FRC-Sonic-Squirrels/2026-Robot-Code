@@ -9,7 +9,7 @@
 //     }
 
 //     private ShooterMode shooterMode = ShooterMode.STOP;
-    
+
 //     private double stopRPM = Constants.ShooterConstants.STOP;
 //     private double idleRPM = Constants.ShooterConstants.IDLE;
 //     private double shootingRPM = Constants.ShooterConstants.SHOOTING;
@@ -67,20 +67,20 @@ public class Shooter extends SubsystemBase {
   private static final ExecutionTiming timing = new ExecutionTiming(ROOT_TABLE);
 
   private static final LoggerGroup logInputs = LoggerGroup.build(ROOT_TABLE);
-  private static final LoggerEntry.Decimal logInputs_pivotPosition =
-      logInputs.buildDecimal("PivotPosition");
-  private static final LoggerEntry.Decimal logInputs_pivotVelocityRadsPerSec =
-      logInputs.buildDecimal("PivotVelocityRadsPerSec");
-  private static final LoggerEntry.Decimal logInputs_pivotAppliedVolts =
-      logInputs.buildDecimal("PivotAppliedVolts");
-  private static final LoggerEntry.Decimal logInputs_pivotCurrentAmps =
-      logInputs.buildDecimal("PivotCurrentAmps");
-  private static final LoggerEntry.DecimalArray logInputs_launcherRPM =
-      logInputs.buildDecimalArray("LauncherRPM");
+  private static final LoggerEntry.Decimal logInputs_hoodPosition =
+      logInputs.buildDecimal("HoodPosition");
+  private static final LoggerEntry.Decimal logInputs_hoodVelocityRadsPerSec =
+      logInputs.buildDecimal("HoodVelocityRadsPerSec");
+  private static final LoggerEntry.Decimal logInputs_hoodAppliedVolts =
+      logInputs.buildDecimal("HoodAppliedVolts");
+  private static final LoggerEntry.Decimal logInputs_hoodCurrentAmps =
+      logInputs.buildDecimal("HoodCurrentAmps");
+  private static final LoggerEntry.DecimalArray logInputs_flywheelRPM =
+      logInputs.buildDecimalArray("FlywheelRPM");
   private static final LoggerEntry.DecimalArray logInputs_launcherAppliedVolts =
-      logInputs.buildDecimalArray("LauncherAppliedVolts");
-  private static final LoggerEntry.DecimalArray logInputs_launcherCurrentAmps =
-      logInputs.buildDecimalArray("LauncherCurrentAmps");
+      logInputs.buildDecimalArray("FlywheelAppliedVolts");
+  private static final LoggerEntry.DecimalArray logInputs_flywheelCurrentAmps =
+      logInputs.buildDecimalArray("FlywheelCurrentAmps");
   private static final LoggerEntry.Decimal logInputs_kickerAppliedVolts =
       logInputs.buildDecimal("KickerAppliedVolts");
   private static final LoggerEntry.Decimal logInputs_kickerCurrentAmps =
@@ -97,27 +97,27 @@ public class Shooter extends SubsystemBase {
   private static final LoggerEntry.Decimal logTargetPitchDegrees =
       logGroup.buildDecimal("TargetPitchDegrees");
   private static final LoggerEntry.Bool logNoteInShooter = logGroup.buildBoolean("NoteInShooter");
-  private static final LoggerEntry.Decimal logPivotPIDLatency =
-      logGroup.buildDecimal("PivotPIDLatency");
-  private static final LoggerEntry.Decimal logLauncherRollersDifference =
-      logGroup.buildDecimal("LauncherRollersDifference");
+  private static final LoggerEntry.Decimal logHoodPIDLatency =
+      logGroup.buildDecimal("HoodPIDLatency");
+  private static final LoggerEntry.Decimal logFlywheelRollersDifference =
+      logGroup.buildDecimal("FlywheelRollersDifference");
 
   public static final TunableNumberGroup group = new TunableNumberGroup(ROOT_TABLE);
 
-  private static final TunableNumberGroup groupPivot = group.subgroup("Pivot");
-  private static final LoggedTunableNumber pivotkP = groupPivot.build("kP");
-  private static final LoggedTunableNumber pivotkD = groupPivot.build("kD");
-  private static final LoggedTunableNumber pivotkG = groupPivot.build("kG");
-  private static final LoggedTunableNumber pivotClosedLoopMaxVelocityConstraint =
-      groupPivot.build("ClosedLoopMaxVelocityConstraint");
-  private static final LoggedTunableNumber pivotClosedLoopMaxAccelerationConstraint =
-      groupPivot.build("ClosedLoopMaxAccelerationConstraint");
+  private static final TunableNumberGroup groupHood = group.subgroup("Hood");
+  private static final LoggedTunableNumber hoodkP = groupHood.build("kP");
+  private static final LoggedTunableNumber hoodkD = groupHood.build("kD");
+  private static final LoggedTunableNumber hoodkG = groupHood.build("kG");
+  private static final LoggedTunableNumber hoodClosedLoopMaxVelocityConstraint =
+      groupHood.build("ClosedLoopMaxVelocityConstraint");
+  private static final LoggedTunableNumber hoodClosedLoopMaxAccelerationConstraint =
+      groupHood.build("ClosedLoopMaxAccelerationConstraint");
 
-  private static final TunableNumberGroup groupLauncher = group.subgroup("Launcher");
-  private static final LoggedTunableNumber launcherkS = groupLauncher.build("kS");
-  private static final LoggedTunableNumber launcherkP = groupLauncher.build("kP");
-  private static final LoggedTunableNumber launcherkV = groupLauncher.build("kV");
-  private static final LoggedTunableNumber launcherClosedLoopMaxAccelerationConstraint =
+  private static final TunableNumberGroup groupFlywheel = group.subgroup("Flywheel");
+  private static final LoggedTunableNumber flywheelkS = groupFlywheel.build("kS");
+  private static final LoggedTunableNumber flywheelkP = groupFlywheel.build("kP");
+  private static final LoggedTunableNumber flywheelkV = groupFlywheel.build("kV");
+  private static final LoggedTunableNumber flywheelClosedLoopMaxAccelerationConstraint =
       groupLauncher.build("ClosedLoopMaxAccelerationConstraint");
 
   private static final TunableNumberGroup groupKicker = group.subgroup("Kicker");
@@ -126,8 +126,8 @@ public class Shooter extends SubsystemBase {
   private static final LoggedTunableNumber kickerClosedLoopMaxAccelerationConstraint =
       groupKicker.build("ClosedLoopMaxAccelerationConstraint");
 
-  private static final LoggedTunableNumber pivotToleranceDegrees =
-      group.build("pivotToleranceDegrees", 0.5);
+  private static final LoggedTunableNumber hoodToleranceDegrees =
+      group.build("hoodToleranceDegrees", 0.5);
   private static final LoggedTunableNumber launcherToleranceRPM =
       group.build("launcherToleranceRPM", 150);
   public static final LoggedTunableNumber distanceToTriggerNoteDetection =
@@ -135,11 +135,11 @@ public class Shooter extends SubsystemBase {
 
   static {
     if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_HOLO) {
-      pivotkP.initDefault(800.0);
-      pivotkD.initDefault(0.0);
-      pivotkG.initDefault(0.0);
-      pivotClosedLoopMaxVelocityConstraint.initDefault(10.0);
-      pivotClosedLoopMaxAccelerationConstraint.initDefault(5.0);
+      hoodkP.initDefault(800.0);
+      hoodkD.initDefault(0.0);
+      hoodkG.initDefault(0.0);
+      hoodClosedLoopMaxVelocityConstraint.initDefault(10.0);
+      hoodClosedLoopMaxAccelerationConstraint.initDefault(5.0);
 
       launcherkS.initDefault(0.24);
       launcherkP.initDefault(0.4);
@@ -150,11 +150,11 @@ public class Shooter extends SubsystemBase {
       kickerkV.initDefault(0.18);
       kickerClosedLoopMaxAccelerationConstraint.initDefault(300.0);
     } else if (Constants.RobotMode.isSimBot()) {
-      pivotkP.initDefault(15.0);
-      pivotkD.initDefault(0.0);
-      pivotkG.initDefault(0.0);
-      pivotClosedLoopMaxVelocityConstraint.initDefault(10.0);
-      pivotClosedLoopMaxAccelerationConstraint.initDefault(10.0);
+      hoodkP.initDefault(15.0);
+      hoodkD.initDefault(0.0);
+      hoodkG.initDefault(0.0);
+      hoodClosedLoopMaxVelocityConstraint.initDefault(10.0);
+      hoodClosedLoopMaxAccelerationConstraint.initDefault(10.0);
 
       launcherkS.initDefault(0.0);
       launcherkP.initDefault(0.5);
@@ -174,13 +174,13 @@ public class Shooter extends SubsystemBase {
 
   // Creates a new flat moving average filter
   // Average will be taken over the last 20 samples
-  private final LinearFilter pivotPidLatencyfilter = LinearFilter.movingAverage(20);
+  private final LinearFilter hoodPidLatencyfilter = LinearFilter.movingAverage(20);
 
-  private final List<PIDTargetMeasurement> pivotTargetMeasurements = new ArrayList<>();
+  private final List<PIDTargetMeasurement> hoodTargetMeasurements = new ArrayList<>();
 
-  private double pivotPidLatency = 0.0;
+  private double hoodPidLatency = 0.0;
 
-  private Rotation2d targetPivotPosition = Constants.zeroRotation2d;
+  private Rotation2d targetHoodPosition = Constants.zeroRotation2d;
   private double topRollerTargetLauncherRPM = 0.0;
 
   /** Creates a new ShooterSubsystem. */
@@ -193,12 +193,12 @@ public class Shooter extends SubsystemBase {
         launcherkS.get(),
         launcherClosedLoopMaxAccelerationConstraint.get());
 
-    io.setPivotClosedLoopConstants(
-        pivotkP.get(),
-        pivotkD.get(),
-        pivotkG.get(),
-        pivotClosedLoopMaxVelocityConstraint.get(),
-        pivotClosedLoopMaxAccelerationConstraint.get());
+    io.setHoodClosedLoopConstants(
+        hoodkP.get(),
+        hoodkD.get(),
+        hoodkG.get(),
+        hoodClosedLoopMaxVelocityConstraint.get(),
+        hoodClosedLoopMaxAccelerationConstraint.get());
 
     io.setKickerClosedLoopConstants(
         kickerkP.get(), kickerkV.get(), 0.0, kickerClosedLoopMaxAccelerationConstraint.get());
@@ -208,10 +208,10 @@ public class Shooter extends SubsystemBase {
   public void periodic() {
     try (var ignored = timing.start()) {
       io.updateInputs(inputs);
-      logInputs_pivotPosition.info(inputs.pivotPosition);
-      logInputs_pivotVelocityRadsPerSec.info(inputs.pivotVelocityRadsPerSec);
-      logInputs_pivotAppliedVolts.info(inputs.pivotAppliedVolts);
-      logInputs_pivotCurrentAmps.info(inputs.pivotCurrentAmps);
+      logInputs_hoodPosition.info(inputs.hoodPosition);
+      logInputs_hoodVelocityRadsPerSec.info(inputs.hoodVelocityRadsPerSec);
+      logInputs_hoodAppliedVolts.info(inputs.hoodAppliedVolts);
+      logInputs_hoodCurrentAmps.info(inputs.hoodCurrentAmps);
       logInputs_launcherRPM.info(inputs.launcherRPM);
       logInputs_launcherAppliedVolts.info(inputs.launcherAppliedVolts);
       logInputs_launcherCurrentAmps.info(inputs.launcherCurrentAmps);
@@ -221,35 +221,35 @@ public class Shooter extends SubsystemBase {
       logInputs_tempsCelcius.info(inputs.tempsCelcius);
       logInputs_timeOfFlightDistance.info(inputs.timeOfFlightDistance);
 
-      logPitchDegrees.info(inputs.pivotPosition.getDegrees());
-      logTargetPitchDegrees.info(targetPivotPosition.getDegrees());
+      logPitchDegrees.info(inputs.hoodPosition.getDegrees());
+      logTargetPitchDegrees.info(targetHoodPosition.getDegrees());
       logNoteInShooter.info(noteInShooter.getAsBoolean());
       logLauncherRollersDifference.info(inputs.launcherRPM[1] - inputs.launcherRPM[0]);
 
       if (Constants.unusedCode) {
         var timestamp = Timer.getFPGATimestamp();
-        var pivotPositionRadians = inputs.pivotPosition.getRadians();
+        var hoodPositionRadians = inputs.hoodPosition.getRadians();
 
-        pivotTargetMeasurements.add(
+        hoodTargetMeasurements.add(
             new PIDTargetMeasurement(
                 timestamp,
-                targetPivotPosition,
-                pivotPositionRadians <= targetPivotPosition.getRadians()));
+                targetHoodPosition,
+                hoodPositionRadians <= targetHoodPosition.getRadians()));
 
-        for (var it = pivotTargetMeasurements.iterator(); it.hasNext(); ) {
+        for (var it = hoodTargetMeasurements.iterator(); it.hasNext(); ) {
           var measurement = it.next();
           var targetRot = measurement.targetRot.getRadians();
 
           double delta = timestamp - measurement.timestamp;
-          if ((measurement.upDirection && pivotPositionRadians >= targetRot)
-              || (!measurement.upDirection && pivotPositionRadians <= targetRot)) {
-            pivotPidLatency = pivotPidLatencyfilter.calculate(delta);
+          if ((measurement.upDirection && hoodPositionRadians >= targetRot)
+              || (!measurement.upDirection && hoodPositionRadians <= targetRot)) {
+            hoodPidLatency = hoodPidLatencyfilter.calculate(delta);
             it.remove();
           } else if (delta >= 1.0) {
             it.remove();
           }
         }
-        logPivotPIDLatency.info(pivotPidLatency);
+        logHoodPIDLatency.info(hoodPidLatency);
       }
 
       var hc = hashCode();
@@ -264,18 +264,18 @@ public class Shooter extends SubsystemBase {
             launcherClosedLoopMaxAccelerationConstraint.get());
       }
 
-      if (pivotkP.hasChanged(hc)
-          || pivotkD.hasChanged(hc)
-          || pivotkG.hasChanged(hc)
-          || pivotClosedLoopMaxVelocityConstraint.hasChanged(hc)
-          || pivotClosedLoopMaxAccelerationConstraint.hasChanged(hc)) {
+      if (hoodkP.hasChanged(hc)
+          || hoodkD.hasChanged(hc)
+          || hoodkG.hasChanged(hc)
+          || hoodClosedLoopMaxVelocityConstraint.hasChanged(hc)
+          || hoodClosedLoopMaxAccelerationConstraint.hasChanged(hc)) {
 
-        io.setPivotClosedLoopConstants(
-            pivotkP.get(),
-            pivotkD.get(),
-            pivotkG.get(),
-            pivotClosedLoopMaxVelocityConstraint.get(),
-            pivotClosedLoopMaxAccelerationConstraint.get());
+        io.setHoodClosedLoopConstants(
+            hoodkP.get(),
+            hoodkD.get(),
+            hoodkG.get(),
+            hoodClosedLoopMaxVelocityConstraint.get(),
+            hoodClosedLoopMaxAccelerationConstraint.get());
       }
 
       if (kickerkP.hasChanged(hc)
@@ -288,25 +288,25 @@ public class Shooter extends SubsystemBase {
   }
 
   public Rotation2d getPitch() {
-    return inputs.pivotPosition;
+    return inputs.hoodPosition;
   }
 
   public void setPercentOut(double percent) {
     io.setLauncherVoltage(percent * MAX_VOLTAGE);
   }
 
-  public void setPivotClosedLoopConstants(
+  public void setHoodClosedLoopConstants(
       double kP, double kD, double kG, double maxProfiledVelocity, double maxProfiledAcceleration) {
-    io.setPivotClosedLoopConstants(kP, kD, kG, maxProfiledVelocity, maxProfiledAcceleration);
+    io.setHoodClosedLoopConstants(kP, kD, kG, maxProfiledVelocity, maxProfiledAcceleration);
   }
 
-  public void setPivotVoltage(double volts) {
-    io.setPivotVoltage(volts);
+  public void setHoodVoltage(double volts) {
+    io.setHoodVoltage(volts);
   }
 
-  public void setPivotPosition(Rotation2d rot) {
-    io.setPivotPosition(rot);
-    targetPivotPosition = rot;
+  public void setHoodPosition(Rotation2d rot) {
+    io.setHoodPosition(rot);
+    targetHoodPosition = rot;
   }
 
   public void setLauncherVoltage(double volts) {
@@ -335,20 +335,20 @@ public class Shooter extends SubsystemBase {
     return inputs.launcherRPM[0] > rpm - launcherToleranceRPM.get();
   }
 
-  public double getPivotPIDLatency() {
-    return pivotPidLatency;
+  public double getHoodPIDLatency() {
+    return hoodPidLatency;
   }
 
-  public boolean isPivotIsAtTarget() {
-    return isPivotIsAtTarget(targetPivotPosition);
+  public boolean isHoodIsAtTarget() {
+    return isHoodIsAtTarget(targetHoodPosition);
   }
 
-  public boolean isPivotIsAtTarget(Rotation2d target) {
-    return isPivotIsAtTarget(target, Rotation2d.fromDegrees(pivotToleranceDegrees.get()));
+  public boolean isHoodIsAtTarget(Rotation2d target) {
+    return isHoodIsAtTarget(target, Rotation2d.fromDegrees(hoodToleranceDegrees.get()));
   }
 
-  public boolean isPivotIsAtTarget(Rotation2d target, Rotation2d tolerance) {
-    return Math.abs(inputs.pivotPosition.getRadians() - target.getRadians())
+  public boolean isHoodIsAtTarget(Rotation2d target, Rotation2d tolerance) {
+    return Math.abs(inputs.hoodPosition.getRadians() - target.getRadians())
         <= tolerance.getRadians();
   }
 
@@ -380,16 +380,16 @@ public class Shooter extends SubsystemBase {
     return noteInShooter.getAsBoolean();
   }
 
-  public void pivotResetHomePosition() {
-    io.resetPivotSensorPosition(Constants.ShooterConstants.Hood.HOME_POSITION);
+  public void hoodResetHomePosition() {
+    io.resetHoodSensorPosition(Constants.ShooterConstants.Hood.HOME_POSITION);
   }
 
-  public double getPivotVoltage() {
-    return inputs.pivotAppliedVolts;
+  public double getHoodVoltage() {
+    return inputs.hoodAppliedVolts;
   }
 
-  public double getPivotVelocity() {
-    return inputs.pivotVelocityRadsPerSec;
+  public double getHoodVelocity() {
+    return inputs.hoodVelocityRadsPerSec;
   }
 
   public boolean setNeutralMode(NeutralModeValue value) {
