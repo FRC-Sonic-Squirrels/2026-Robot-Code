@@ -5,6 +5,8 @@
 // }
 package frc.robot.subsystems.shooter;
 
+import com.ctre.phoenix6.controls.VoltageOut;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -72,7 +74,7 @@ public class ShooterIOSim implements ShooterIO {
   private double pivotOpenLoopVolts = 0.0;
   private double kickerVolts = 0.0;
 
-  private double launcherOpenLoopVolts = 0.0;
+  private VoltageOut launcherOpenLoopVolts = new VoltageOut(0.0).withEnableFOC(true);
 
   private double targetRPM = 0.0;
 
@@ -135,8 +137,6 @@ public class ShooterIOSim implements ShooterIO {
 
     log_feedForward.info(ff);
 
-    launcherMotorSim.setInputVoltage(launcherOpenLoopVolts);
-
     pivot.setInputVoltage(MathUtil.clamp(pivotControlEffort, -12.0, 12.0));
     kickerMotorSim.setInputVoltage(MathUtil.clamp(kickerVolts, -12.0, 12.0));
     log_outputVoltage.info(MathUtil.clamp(pivotControlEffort, -12.0, 12.0));
@@ -169,14 +169,9 @@ public class ShooterIOSim implements ShooterIO {
     pivotControlMode = ControlMode.VOLTAGE;
   }
 
-  @Override
-  public void setLauncherVoltage(double volts) {
-    launcherOpenLoopVolts = volts;
-  }
-
     @Override
   public void setLauncherVoltage(double volts) {
-    launcherMotorSim.setControl(launchOpenLoopControl.withOutput(volts));
+    launcherMotorSim.setControl(launcherOpenLoopVolts.withOutput(volts));
   }
 
   @Override
