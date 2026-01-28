@@ -132,7 +132,7 @@ public class RobotContainer {
   private final int customGamepieceCount = 5;
 
   private final HashMap<String, Supplier<Auto>> stringToAutoSupplierMap = new HashMap<>();
-
+  private final AutosManager autoManager;
   // Buttons
 
   public DigitalInput brakeModeButton = new DigitalInput(0);
