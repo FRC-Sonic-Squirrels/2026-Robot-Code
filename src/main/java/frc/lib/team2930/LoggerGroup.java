@@ -63,6 +63,7 @@ public class LoggerGroup {
   private static long currentTimestmapLog;
 
   private static DataLog dataLog_handle;
+  private static boolean dataLog_handleFailure;
   private static int dataLog_flushDelay;
   private static String dataLog_folder;
   private static String dataLog_filename;
@@ -316,6 +317,10 @@ public class LoggerGroup {
       return;
     }
 
+    if (dataLog_handleFailure) {
+      return;
+    }
+
     String dataLogFolder = dataLog_folder;
     if (dataLogFolder == null) {
       return;
@@ -325,7 +330,8 @@ public class LoggerGroup {
     File logFolder = new File(dataLogFolder);
     if (!logFolder.exists()) {
       if (!logFolder.mkdirs()) {
-        throw new RuntimeException("Unable to create folder " + logFolder.getAbsolutePath());
+        dataLog_handleFailure = true;
+        return;
       }
     }
 
