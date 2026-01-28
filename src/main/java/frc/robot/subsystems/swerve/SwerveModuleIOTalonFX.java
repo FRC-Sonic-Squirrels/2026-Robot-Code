@@ -16,12 +16,7 @@ package frc.robot.subsystems.swerve;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.configs.CANcoderConfiguration;
-import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
-import com.ctre.phoenix6.configs.MotorOutputConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.configs.*;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
@@ -29,6 +24,7 @@ import com.ctre.phoenix6.hardware.CANcoder;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.ctre.phoenix6.signals.SensorDirectionValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.units.Units;
@@ -165,7 +161,14 @@ public class SwerveModuleIOTalonFX implements SwerveModuleIO {
     setTurnBrakeMode(true);
 
     // -- CANCODER
-    cancoder.getConfigurator().apply(new CANcoderConfiguration());
+    var cancoderConfiguration = new CANcoderConfiguration();
+    if (moduleSpecificConfig.encoderInverted() == InvertedValue.CounterClockwise_Positive) {
+      var magnetSensor =
+          new MagnetSensorConfigs()
+              .withSensorDirection(SensorDirectionValue.CounterClockwise_Positive);
+      cancoderConfiguration.withMagnetSensor(magnetSensor);
+    }
+    cancoder.getConfigurator().apply(cancoderConfiguration);
 
     // -- configure voltage requests
     driveVoltageRequest = new VoltageOut(0.0);

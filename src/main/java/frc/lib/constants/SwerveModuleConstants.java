@@ -25,4 +25,15 @@ public class SwerveModuleConstants {
 
     public static final double GEARING_TURN_GEAR_RATIO = 18.75;
   }
+
+  public static class MK5n {
+    public static final InvertedValue DEFAULT_DRIVE_MOTOR_INVERT = InvertedValue.Clockwise_Positive;
+    public static final InvertedValue DEFAULT_STEER_MOTOR_INVERT = InvertedValue.Clockwise_Positive;
+
+    public static final double LEVEL_1_GEARING_DRIVE_GEAR_RATIO = 7.03;
+    public static final double LEVEL_2_GEARING_DRIVE_GEAR_RATIO = 6.03;
+    public static final double LEVEL_3_GEARING_DRIVE_GEAR_RATIO = 5.27;
+
+    public static final double GEARING_TURN_GEAR_RATIO = 287.0 / 11.0;
+  }
 }

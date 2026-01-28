@@ -2,7 +2,6 @@ package frc.robot.configs;
 
 import com.ctre.phoenix6.signals.InvertedValue;
 import edu.wpi.first.math.geometry.Rotation2d;
-import frc.lib.constants.SwerveModuleConstants;
 
 public record IndividualSwerveModuleConfig(
     int driveMotorCANID,
@@ -10,7 +9,8 @@ public record IndividualSwerveModuleConfig(
     int steerEncoderCANID,
     Rotation2d absoluteEncoderOffset,
     InvertedValue driveMotorInverted,
-    InvertedValue steerMotorInverted) {
+    InvertedValue steerMotorInverted,
+    InvertedValue encoderInverted) {
 
   public static IndividualSwerveModuleConfig configureWithDefaultInverts(
       int driveMotorCANID,
@@ -22,7 +22,8 @@ public record IndividualSwerveModuleConfig(
         steerMotorCANID,
         steerEncoderCANID,
         absoluteEncoderOffset,
-        SwerveModuleConstants.MK4I.DEFAULT_DRIVE_MOTOR_INVERT,
-        SwerveModuleConstants.MK4I.DEFAULT_STEER_MOTOR_INVERT);
+        InvertedValue.CounterClockwise_Positive,
+        InvertedValue.CounterClockwise_Positive,
+        InvertedValue.Clockwise_Positive);
   }
 }

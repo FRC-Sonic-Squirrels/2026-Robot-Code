@@ -48,7 +48,8 @@ public class RobotConfig2023Rober extends RobotConfig {
           24,
           Rotation2d.fromDegrees(179.2),
           SwerveModuleConstants.MK4I.DEFAULT_DRIVE_MOTOR_INVERT,
-          InvertedValue.CounterClockwise_Positive);
+          InvertedValue.CounterClockwise_Positive,
+          InvertedValue.Clockwise_Positive);
   // 3
   private static final IndividualSwerveModuleConfig BACK_RIGHT_MODULE_CONFIG =
       new IndividualSwerveModuleConfig(
@@ -57,7 +58,8 @@ public class RobotConfig2023Rober extends RobotConfig {
           23,
           Rotation2d.fromDegrees(311.9),
           InvertedValue.CounterClockwise_Positive,
-          SwerveModuleConstants.MK4I.DEFAULT_STEER_MOTOR_INVERT);
+          SwerveModuleConstants.MK4I.DEFAULT_STEER_MOTOR_INVERT,
+          InvertedValue.Clockwise_Positive);
 
   // -------- SWERVE CURRENT LIMITS ---------
   private static final CurrentLimitsConfigs DRIVE_TALON_CURRENT_LIMIT_CONFIGS =

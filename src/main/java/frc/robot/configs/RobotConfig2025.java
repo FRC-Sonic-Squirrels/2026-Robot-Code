@@ -37,6 +37,7 @@ public class RobotConfig2025 extends RobotConfig {
           21,
           Rotation2d.fromDegrees(67.939),
           InvertedValue.CounterClockwise_Positive,
+          InvertedValue.Clockwise_Positive,
           InvertedValue.Clockwise_Positive);
   // 1
   private static final IndividualSwerveModuleConfig FRONT_RIGHT_MODULE_CONFIG =
@@ -46,6 +47,7 @@ public class RobotConfig2025 extends RobotConfig {
           22,
           Rotation2d.fromDegrees(-56.514),
           InvertedValue.CounterClockwise_Positive,
+          InvertedValue.Clockwise_Positive,
           InvertedValue.Clockwise_Positive);
   // 2
   private static final IndividualSwerveModuleConfig BACK_LEFT_MODULE_CONFIG =
@@ -55,6 +57,7 @@ public class RobotConfig2025 extends RobotConfig {
           23,
           Rotation2d.fromDegrees(130.43),
           InvertedValue.CounterClockwise_Positive,
+          InvertedValue.Clockwise_Positive,
           InvertedValue.Clockwise_Positive);
   // 3
   private static final IndividualSwerveModuleConfig BACK_RIGHT_MODULE_CONFIG =
@@ -64,6 +67,7 @@ public class RobotConfig2025 extends RobotConfig {
           24,
           Rotation2d.fromDegrees(-84.199),
           InvertedValue.CounterClockwise_Positive,
+          InvertedValue.Clockwise_Positive,
           InvertedValue.Clockwise_Positive);
 
   // -------- SWERVE CURRENT LIMITS ---------

@@ -29,11 +29,7 @@ import frc.lib.team6328.Alert.AlertType;
 import frc.robot.Constants.RobotMode.RobotType;
 import frc.robot.commands.ScoreCoral.ScoringDirection;
 import frc.robot.commands.ScoreCoral.ScoringSide;
-import frc.robot.configs.RobotConfig;
-import frc.robot.configs.RobotConfig2023Rober;
-import frc.robot.configs.RobotConfig2024Maestro;
-import frc.robot.configs.RobotConfig2025;
-import frc.robot.configs.SimulatorRobotConfig;
+import frc.robot.configs.*;
 import java.util.function.Supplier;
 
 /**
@@ -57,7 +53,7 @@ public final class Constants {
   }
 
   public static class RobotMode {
-    private static final RobotType ROBOT = RobotType.ROBOT_2025_HOLO;
+    private static final RobotType ROBOT = RobotType.ROBOT_2026_NEXT;
 
     private static final Alert invalidRobotAlert =
         new Alert("Invalid robot selected, using competition robot as default.", AlertType.ERROR);
@@ -86,11 +82,6 @@ public final class Constants {
         return RobotType.ROBOT_SIMBOT;
       }
 
-      if (ROBOT != RobotType.ROBOT_2024_RETIRED_MAESTRO && ROBOT != RobotType.ROBOT_2025_HOLO) {
-        invalidRobotAlert.set(true);
-        return RobotType.ROBOT_2025_HOLO;
-      }
-
       return ROBOT;
     }
 
@@ -104,7 +95,8 @@ public final class Constants {
       ROBOT_SIMBOT_REAL_CAMERAS(SimulatorRobotConfig::new),
       ROBOT_2023_RETIRED_ROBER(RobotConfig2023Rober::new),
       ROBOT_2024_RETIRED_MAESTRO(RobotConfig2024Maestro::new),
-      ROBOT_2025_HOLO(RobotConfig2025::new);
+      ROBOT_2025_HOLO(RobotConfig2025::new),
+      ROBOT_2026_NEXT(RobotConfig2026::new);
 
       public final Supplier<RobotConfig> config;
 
