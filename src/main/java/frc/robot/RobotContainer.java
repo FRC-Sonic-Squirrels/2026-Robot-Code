@@ -36,6 +36,7 @@ import frc.robot.Constants.RobotMode.Mode;
 import frc.robot.Constants.RobotMode.RobotType;
 import frc.robot.RobotStates.IntakeState;
 import frc.robot.RobotStates.MechState;
+import frc.robot.autonomous.AutosManager;
 import frc.robot.autonomous.AutosManager.Auto;
 import frc.robot.autonomous.AutosSubsystems;
 import frc.robot.autonomous.records.PickupLocation;
