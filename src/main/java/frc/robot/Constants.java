@@ -93,8 +93,8 @@ public final class Constants {
       // by only creating the specific config object corresponding to the robot type
       ROBOT_SIMBOT(SimulatorRobotConfig::new),
       ROBOT_SIMBOT_REAL_CAMERAS(SimulatorRobotConfig::new),
-      ROBOT_2023_RETIRED_ROBER(RobotConfig2023Rober::new),
-      ROBOT_2024_RETIRED_MAESTRO(RobotConfig2024Maestro::new),
+      ROBOT_2023_RETIRED_ROBER(RobotConfig2023::new),
+      ROBOT_2024_RETIRED_MAESTRO(RobotConfig2024::new),
       ROBOT_2025_HOLO(RobotConfig2025::new),
       ROBOT_2026_NEXT(RobotConfig2026::new);
 
@@ -412,7 +412,7 @@ public final class Constants {
             0.0,
             Units.Inches.of(18.725).in(Units.Meters),
             new Rotation3d(0.0, Math.toRadians(-12), 0.0));
-    public static final String CAMERA_NAME = RobotConfig2024Maestro.OBJECT_DETECTION_CAMERA_NAME;
+    public static final String CAMERA_NAME = RobotConfig2024.OBJECT_DETECTION_CAMERA_NAME;
     public static final int RESOLUTION_WIDTH_PIXELS = 960;
     public static final int RESOLUTION_HEIGHT_PIXELS = 720;
     public static final Rotation2d FOV_DIAGONAL = Rotation2d.fromDegrees(128.2);

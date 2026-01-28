@@ -20,8 +20,6 @@ import frc.robot.subsystems.swerve.SwerveModules;
 import frc.robot.subsystems.vision.VisionModuleConfiguration;
 
 public class SimulatorRobotConfig extends RobotConfig {
-  // private static final boolean PHOENIX_PRO_LICENSE = true;
-
   // ------------ SWERVE ---------------------
   private static final Distance WHEEL_RADIUS = Units.Inches.of(2.0);
 

@@ -22,9 +22,6 @@ import frc.robot.subsystems.swerve.SwerveModules;
 import frc.robot.subsystems.vision.VisionModuleConfiguration;
 
 public class RobotConfig2025 extends RobotConfig {
-
-  private static final boolean PHOENIX_PRO_LICENSE = true;
-
   // ------------ SWERVE ---------------------
   private static final Distance WHEEL_RADIUS = Units.Inches.of(1.957);
 
@@ -265,7 +262,7 @@ public class RobotConfig2025 extends RobotConfig {
 
   @Override
   public boolean getPhoenix6Licensed() {
-    return PHOENIX_PRO_LICENSE;
+    return true;
   }
 
   @Override
