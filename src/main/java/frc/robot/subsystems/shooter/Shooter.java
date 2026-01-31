@@ -5,7 +5,6 @@ import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
@@ -42,14 +41,11 @@ public class Shooter extends SubsystemBase {
       logInputs.buildDecimal("KickerVelocityRPM");
   private static final LoggerEntry.DecimalArray logInputs_tempsCelcius =
       logInputs.buildDecimalArray("TempsCelcius");
-  private static final LoggerEntry.Decimal logInputs_timeOfFlightDistance =
-      logInputs.buildDecimal("TimeOfFlightDistance");
 
   public static final LoggerGroup logGroup = LoggerGroup.build(ROOT_TABLE);
   private static final LoggerEntry.Decimal logPitchDegrees = logGroup.buildDecimal("PitchDegrees");
   private static final LoggerEntry.Decimal logTargetPitchDegrees =
       logGroup.buildDecimal("TargetPitchDegrees");
-  private static final LoggerEntry.Bool logNoteInShooter = logGroup.buildBoolean("NoteInShooter");
   private static final LoggerEntry.Decimal logHoodPIDLatency =
       logGroup.buildDecimal("HoodPIDLatency");
   private static final LoggerEntry.Decimal logFlywheelRollersDifference =
@@ -83,8 +79,6 @@ public class Shooter extends SubsystemBase {
       group.build("hoodToleranceDegrees", 0.5);
   private static final LoggedTunableNumber launcherToleranceRPM =
       group.build("launcherToleranceRPM", 150);
-  public static final LoggedTunableNumber distanceToTriggerNoteDetection =
-      group.build("distanceToTriggerNote", 10.0);
 
   static {
     if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2026) {
@@ -119,8 +113,6 @@ public class Shooter extends SubsystemBase {
       kickerClosedLoopMaxAccelerationConstraint.initDefault(0.0);
     }
   }
-
-  private final Trigger noteInShooter = new Trigger(this::getToFActivated);
 
   private final ShooterIO io;
   private final ShooterIO.Inputs inputs = new ShooterIO.Inputs();
@@ -172,11 +164,9 @@ public class Shooter extends SubsystemBase {
       logInputs_kickerCurrentAmps.info(inputs.kickerCurrentAmps);
       logInputs_kickerVelocityRPM.info(inputs.kickerVelocityRPM);
       logInputs_tempsCelcius.info(inputs.tempsCelcius);
-      logInputs_timeOfFlightDistance.info(inputs.timeOfFlightDistance);
 
       logPitchDegrees.info(inputs.hoodPosition.getDegrees());
       logTargetPitchDegrees.info(targetHoodPosition.getDegrees());
-      logNoteInShooter.info(noteInShooter.getAsBoolean());
       logFlywheelRollersDifference.info(inputs.flywheelRPM[1] - inputs.flywheelRPM[0]);
 
       if (Constants.unusedCode) {
@@ -305,32 +295,12 @@ public class Shooter extends SubsystemBase {
         <= tolerance.getRadians();
   }
 
-  public void markStartOfNoteLoading() {
-    io.markStartOfNoteLoading();
-  }
-
-  public void markStartOfNoteShooting() {
-    io.markStartOfNoteShooting();
-  }
-
   public void setKickerPercentOut(double percent) {
     io.setKickerVoltage(percent * Constants.MAX_VOLTAGE);
   }
 
   public double getKickerPercentOut() {
     return inputs.kickerAppliedVolts / Constants.MAX_VOLTAGE;
-  }
-
-  public double getToFDistance() {
-    return inputs.timeOfFlightDistance;
-  }
-
-  public boolean getToFActivated() {
-    return inputs.timeOfFlightDistance <= distanceToTriggerNoteDetection.get();
-  }
-
-  public boolean noteInShooter() {
-    return noteInShooter.getAsBoolean();
   }
 
   public void hoodResetHomePosition() {

@@ -22,8 +22,6 @@ public interface ShooterIO {
 
     //  flywheel lead, flywheel follower, hood, kicker
     public double[] tempsCelcius = new double[4];
-
-    public double timeOfFlightDistance = 18.0;
   }
 
   /** Updates the set of loggable inputs. */
@@ -57,10 +55,6 @@ public interface ShooterIO {
   public default boolean setNeutralMode(NeutralModeValue value) {
     return false;
   }
-
-  public default void markStartOfNoteLoading() {}
-
-  public default void markStartOfNoteShooting() {}
 
   public default void setKickerClosedLoopConstants(
       double kP, double kV, double kS, double maxProfiledAcceleration) {}

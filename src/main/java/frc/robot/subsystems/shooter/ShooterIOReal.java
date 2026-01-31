@@ -14,10 +14,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.playingwithfusion.TimeOfFlight;
-import com.playingwithfusion.TimeOfFlight.RangingMode;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -66,8 +63,6 @@ public class ShooterIOReal implements ShooterIO {
   private final VoltageOut flywheelOpenLoop = new VoltageOut(0.0).withEnableFOC(true);
 
   private final VoltageOut kickerOpenLoop = new VoltageOut(0.0).withEnableFOC(true);
-
-  TimeOfFlight timeOfFlight = new TimeOfFlight(Constants.CanIDs.SHOOTER_TOF_CAN_ID);
 
   private final MotionMagicVelocityVoltage kickerClosedLoop =
       new MotionMagicVelocityVoltage(0).withEnableFOC(true);
@@ -166,9 +161,6 @@ public class ShooterIOReal implements ShooterIO {
     hood.optimizeBusUtilization();
     kicker.optimizeBusUtilization();
 
-    timeOfFlight.setRangeOfInterest(0, 16, 16, 0);
-    timeOfFlight.setRangingMode(RangingMode.Short, 40);
-
     refreshSet =
         new BaseStatusSignal[] {
           hoodPosition,
@@ -222,8 +214,6 @@ public class ShooterIOReal implements ShooterIO {
     inputs.tempsCelcius[1] = flywheelFollowTempCelsius.getValueAsDouble();
     inputs.tempsCelcius[2] = hoodTempCelsius.getValueAsDouble();
     inputs.tempsCelcius[3] = kickerTempCelsius.getValueAsDouble();
-
-    inputs.timeOfFlightDistance = Units.Millimeters.of(timeOfFlight.getRange()).in(Units.Inches);
   }
 
   // HOOD
