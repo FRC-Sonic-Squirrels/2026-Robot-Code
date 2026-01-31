@@ -192,7 +192,6 @@ public class Robot extends LoggedRobot {
     logAllianceColor.info(DriverStation.getAlliance().toString());
 
     robotContainer.applyToDrivetrain();
-    robotContainer.updateVisualization();
     robotContainer.updateRobotState();
 
     LoggerGroup.publish();

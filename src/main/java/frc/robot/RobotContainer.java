@@ -17,7 +17,6 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -43,11 +42,6 @@ import frc.robot.autonomous.records.PickupLocation;
 import frc.robot.commands.climber.ClimberSetAngle;
 import frc.robot.commands.drive.DrivetrainDefaultTeleopDrive;
 import frc.robot.commands.drive.WheelRadiusCharacterization;
-import frc.robot.commands.endEffector.EndEffectorSetRPM;
-import frc.robot.commands.mechanism.MechToPosition;
-import frc.robot.commands.mechanism.arm.ArmManualControl;
-import frc.robot.commands.mechanism.elevator.ElevatorManualControl;
-import frc.robot.commands.setGoal.SetRobotGoal;
 import frc.robot.configs.SimulatorRobotConfig;
 import frc.robot.subsystems.LED;
 import frc.robot.subsystems.LED.BaseRobotState;
@@ -56,24 +50,11 @@ import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.ClimberIO;
 import frc.robot.subsystems.climber.ClimberIOReal;
 import frc.robot.subsystems.climber.ClimberIOSim;
-import frc.robot.subsystems.endEffector.EndEffector;
-import frc.robot.subsystems.endEffector.EndEffectorIO;
-import frc.robot.subsystems.endEffector.EndEffectorIOReal;
-import frc.robot.subsystems.endEffector.EndEffectorIOSim;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.IntakeState;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOReal;
 import frc.robot.subsystems.intake.IntakeIOSim;
-import frc.robot.subsystems.mechanism.Mechanism;
-import frc.robot.subsystems.mechanism.arm.Arm;
-import frc.robot.subsystems.mechanism.arm.ArmIO;
-import frc.robot.subsystems.mechanism.arm.ArmIOReal;
-import frc.robot.subsystems.mechanism.arm.ArmIOSim;
-import frc.robot.subsystems.mechanism.elevator.Elevator;
-import frc.robot.subsystems.mechanism.elevator.ElevatorIO;
-import frc.robot.subsystems.mechanism.elevator.ElevatorIOReal;
-import frc.robot.subsystems.mechanism.elevator.ElevatorIOSim;
 import frc.robot.subsystems.swerve.Drivetrain;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
 import frc.robot.subsystems.swerve.gyro.GyroIO;
@@ -84,8 +65,6 @@ import frc.robot.subsystems.visionGamepiece.VisionGamepiece;
 import frc.robot.subsystems.visionGamepiece.VisionGamepieceIO;
 import frc.robot.subsystems.visionGamepiece.VisionGamepieceIOReal;
 import frc.robot.subsystems.visionGamepiece.VisionGamepieceIOSim;
-import frc.robot.visualization.MechanismVisualization;
-import frc.robot.visualization.SimpleMechanismVisualization;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -110,11 +89,7 @@ public class RobotContainer {
   private final DrivetrainWrapper drivetrainWrapper;
   private final AprilTagFieldLayout aprilTagLayout;
   private final Vision vision;
-  private final Mechanism mech;
-  private final Arm arm;
-  private final Elevator elevator;
   private final Intake intake;
-  private final EndEffector endEffector;
   private final VisionGamepiece visionGamepiece;
   private final LED led;
   private final Climber climber;
@@ -146,6 +121,7 @@ public class RobotContainer {
       new Trigger(() -> !zeroSensorsButton.get() && !DriverStation.isEnabled());
 
   private boolean brakeModeTriggered = true;
+  private boolean zeroButtonTriggered = false;
 
   // Robot Modes
   @SuppressWarnings("unused")
@@ -203,10 +179,7 @@ public class RobotContainer {
               drivetrain::addVisionEstimate,
               config.getReplayVisionModules());
 
-      arm = new Arm(new ArmIO() {});
-      elevator = new Elevator(new ElevatorIO() {});
       intake = new Intake(new IntakeIO() {}, robotStates);
-      endEffector = new EndEffector(new EndEffectorIO() {}, robotStates);
       climber = new Climber(new ClimberIO() {});
 
       if (Constants.unusedCode) {
@@ -221,7 +194,7 @@ public class RobotContainer {
           new LED(
               () -> brakeModeTriggered,
               drivetrain::isGyroConnected,
-              () -> elevator.getHeight().in(Units.Inches) < 0.3,
+              () -> zeroButtonTriggered,
               robotStates);
     } else { // REAL and SIM robots HERE
       switch (robotType) {
@@ -287,16 +260,13 @@ public class RobotContainer {
             }
           }
 
-          arm = new Arm(new ArmIOSim());
-          elevator = new Elevator(new ElevatorIOSim());
           intake = new Intake(new IntakeIOSim(), robotStates);
-          endEffector = new EndEffector(new EndEffectorIOSim(), robotStates);
           climber = new Climber(new ClimberIOSim());
           led =
               new LED(
                   () -> brakeModeTriggered,
                   drivetrain::isGyroConnected,
-                  () -> elevator.getHeight().in(Units.Inches) > 0.3,
+                  () -> zeroButtonTriggered,
                   robotStates);
           break;
 
@@ -316,10 +286,7 @@ public class RobotContainer {
                   drivetrain::getRotationGyroOnly,
                   drivetrain::addVisionEstimate,
                   config.getReplayVisionModules());
-          arm = new Arm(new ArmIO() {});
-          elevator = new Elevator(new ElevatorIO() {});
           intake = new Intake(new IntakeIO() {}, robotStates);
-          endEffector = new EndEffector(new EndEffectorIO() {}, robotStates);
           climber = new Climber(new ClimberIO() {});
 
           if (Constants.unusedCode) {
@@ -334,7 +301,7 @@ public class RobotContainer {
               new LED(
                   () -> brakeModeTriggered,
                   drivetrain::isGyroConnected,
-                  () -> elevator.getHeight().in(Units.Inches) > 0.3,
+                  () -> zeroButtonTriggered,
                   robotStates);
           break;
 
@@ -347,9 +314,6 @@ public class RobotContainer {
                   config.getSwerveModuleObjects(),
                   () -> is_autonomous);
           intake = new Intake(new IntakeIOReal(), robotStates);
-          endEffector = new EndEffector(new EndEffectorIOReal(), robotStates);
-          elevator = new Elevator(new ElevatorIOReal());
-          arm = new Arm(new ArmIOReal());
           climber = new Climber(new ClimberIO() {});
           vision =
               new Vision(
@@ -371,7 +335,7 @@ public class RobotContainer {
               new LED(
                   () -> brakeModeTriggered,
                   drivetrain::isGyroConnected,
-                  () -> elevator.getHeight().in(Units.Inches) > 0.3,
+                  () -> zeroButtonTriggered,
                   robotStates);
           break;
 
@@ -382,9 +346,6 @@ public class RobotContainer {
             System.out.println("sleep interrupted");
           }
           intake = new Intake(new IntakeIOReal(), robotStates);
-          endEffector = new EndEffector(new EndEffectorIOReal(), robotStates);
-          elevator = new Elevator(new ElevatorIOReal());
-          arm = new Arm(new ArmIOReal());
           climber = new Climber(new ClimberIOReal());
           drivetrain =
               new Drivetrain(
@@ -413,7 +374,7 @@ public class RobotContainer {
               new LED(
                   () -> brakeModeTriggered,
                   drivetrain::isGyroConnected,
-                  () -> elevator.getHeight().in(Units.Inches) > 0.3,
+                  () -> zeroButtonTriggered,
                   robotStates);
 
           break;
@@ -425,9 +386,6 @@ public class RobotContainer {
             System.out.println("sleep interrupted");
           }
           intake = new Intake(new IntakeIOReal(), robotStates);
-          endEffector = new EndEffector(new EndEffectorIOReal(), robotStates);
-          elevator = new Elevator(new ElevatorIOReal());
-          arm = new Arm(new ArmIOReal());
           climber = new Climber(new ClimberIOReal());
           drivetrain =
               new Drivetrain(
@@ -456,7 +414,7 @@ public class RobotContainer {
               new LED(
                   () -> brakeModeTriggered,
                   drivetrain::isGyroConnected,
-                  () -> elevator.getHeight().in(Units.Inches) > 0.3,
+                  () -> zeroButtonTriggered,
                   robotStates);
           break;
 
@@ -475,10 +433,7 @@ public class RobotContainer {
                   drivetrain::getRotationGyroOnly,
                   drivetrain::addVisionEstimate,
                   config.getReplayVisionModules());
-          arm = new Arm(new ArmIO() {});
-          elevator = new Elevator(new ElevatorIO() {});
           intake = new Intake(new IntakeIO() {}, robotStates);
-          endEffector = new EndEffector(new EndEffectorIO() {}, robotStates);
           climber = new Climber(new ClimberIO() {});
 
           if (Constants.unusedCode) {
@@ -493,20 +448,13 @@ public class RobotContainer {
               new LED(
                   () -> brakeModeTriggered,
                   drivetrain::isGyroConnected,
-                  () -> elevator.getHeight().in(Units.Inches) > 0.3,
+                  () -> zeroButtonTriggered,
                   robotStates);
           break;
       }
     }
 
-    mech = new Mechanism(elevator, arm, robotStates);
-
-    drivetrainWrapper =
-        new DrivetrainWrapper(
-            drivetrain,
-            () ->
-                Constants.ElevatorConstants.SPEED_SCALAR_MAP.get(
-                    elevator.getHeight().in(Units.Inches)));
+    drivetrainWrapper = new DrivetrainWrapper(drivetrain);
 
     flipAutoChooser.addDefaultOption("No", false);
     flipAutoChooser.addOption("Yes", true);
@@ -521,7 +469,7 @@ public class RobotContainer {
       coralStationPosChooser.add(chooser);
     }
 
-    var subsystems = new AutosSubsystems(drivetrainWrapper, mech, endEffector, led, intake);
+    var subsystems = new AutosSubsystems(drivetrainWrapper, led, intake);
 
     robotStates.setSubsystems(
         intake, drivetrainWrapper, () -> driverController.getRightTrigger().getAsBoolean());
@@ -579,22 +527,7 @@ public class RobotContainer {
         .registerTrigger(XboxControllerWrapper.Button.start, "X Stance")
         .onTrue(Commands.runOnce(drivetrain::stopWithX));
 
-    driverController
-        .registerTrigger(XboxControllerWrapper.Button.povDown, "Climb")
-        .whileTrue(new SetRobotGoal(robotStates, RobotGoal.Climb, true, false));
-
-    driverController
-        .registerTrigger(XboxControllerWrapper.Button.leftBumper, "Score")
-        .whileTrue(new SetRobotGoal(robotStates, RobotGoal.Score, true, false));
-
     // ---------- OPERATOR CONTROLS -----------
-
-    // Manual mech positions
-
-    // Stow position
-    operatorController
-        .registerTrigger(XboxControllerWrapper.Button.x, "Score Prep Position")
-        .onTrue(new MechToPosition(mech, MechState.StowPosition, robotStates));
 
     // Eject
     operatorController
@@ -616,15 +549,6 @@ public class RobotContainer {
         .registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Intake Pivot Out")
         .onTrue(Commands.runOnce(() -> intake.setState(IntakeState.Down)));
 
-    // End Effector Rotation
-    operatorController
-        .registerTrigger(XboxControllerWrapper.Button.start, "End Effector Out")
-        .whileTrue(new EndEffectorSetRPM(-1000, robotStates));
-
-    operatorController
-        .registerTrigger(XboxControllerWrapper.Button.back, "End Effector In")
-        .whileTrue(new EndEffectorSetRPM(1000, robotStates));
-
     // Climber in
     operatorController
         .registerTrigger(XboxControllerWrapper.Button.b, "Climber In")
@@ -636,30 +560,8 @@ public class RobotContainer {
                     new ClimberSetAngle(climber, Constants.ClimberConstants.MIN_CLIMBER_ANGLE)));
 
     operatorController
-        .registerTrigger(
-            XboxControllerWrapper.Button.leftTrigger, "Manual arm and elevator override")
-        .onTrue(Commands.runOnce(() -> robotStates.mechState = MechState.Override))
-        .whileTrue(
-            new ArmManualControl(operatorController::getRightX, arm)
-                .alongWith(
-                    new ElevatorManualControl(() -> -operatorController.getLeftY(), elevator)))
-        .onFalse(Commands.runOnce(() -> robotStates.mechanismInUse = false));
-
-    operatorController
         .registerTrigger(XboxControllerWrapper.Button.b, "Climber Out")
         .onTrue(new ClimberSetAngle(climber, Rotation2d.fromRotations(5.4)));
-
-    operatorController
-        .registerTrigger(XboxControllerWrapper.Button.leftStick, "Manual arm and elevator override")
-        .onTrue(Commands.runOnce(() -> robotStates.mechState = MechState.Override))
-        .whileTrue(
-            new ArmManualControl(operatorController::getRightX, arm)
-                .alongWith(
-                    new ElevatorManualControl(() -> -operatorController.getLeftY(), elevator)));
-
-    operatorController
-        .registerTrigger(XboxControllerWrapper.Button.leftStick, "Mech auto prep position")
-        .onTrue(new MechToPosition(mech, MechState.AutoPrep, robotStates));
 
     operatorController
         .registerTrigger(XboxControllerWrapper.Button.rightStick, "Climber in")
@@ -670,53 +572,36 @@ public class RobotContainer {
     zeroSensorsButtonTrigger.onTrue(
         new RunsWhenDisabledInstantCommand(
             () -> {
-              elevator.resetSensorToHomePosition();
-              arm.resetSensorToHomePosition();
               intake.resetPivotSensorToHomePosition();
               led.setRobotState(RobotState.ZERO_SUBSYSTEMS);
               climber.resetWinchSensorToHomePosition();
+              zeroButtonTriggered = true;
             }));
 
     brakeModeButtonTrigger.onTrue(
         new ConditionalCommand(
             new RunsWhenDisabledInstantCommand(
                 () -> {
-                  boolean armSuccess = arm.setNeutralMode(NeutralModeValue.Coast);
-                  boolean elevatorSuccess = elevator.setNeutralMode(NeutralModeValue.Coast);
                   boolean intakePivotSuccess = intake.setPivotNeutralMode(NeutralModeValue.Coast);
                   boolean climberWinchSuccess = climber.setWinchNeutralMode(NeutralModeValue.Coast);
 
-                  brakeModeFailure =
-                      !armSuccess
-                          || !elevatorSuccess
-                          || !intakePivotSuccess
-                          || !climberWinchSuccess;
+                  brakeModeFailure = !intakePivotSuccess || !climberWinchSuccess;
 
                   brakeModeTriggered = false;
                   led.setRobotState(
                       brakeModeFailure ? RobotState.BRAKE_MODE_FAILED : RobotState.BRAKE_MODE_OFF);
-                },
-                elevator,
-                arm),
+                }),
             new RunsWhenDisabledInstantCommand(
                 () -> {
-                  boolean armSuccess = arm.setNeutralMode(NeutralModeValue.Brake);
-                  boolean elevatorSuccess = elevator.setNeutralMode(NeutralModeValue.Brake);
                   boolean intakePivotSuccess = intake.setPivotNeutralMode(NeutralModeValue.Brake);
                   boolean climberWinchSuccess = climber.setWinchNeutralMode(NeutralModeValue.Brake);
 
-                  brakeModeFailure =
-                      !armSuccess
-                          || !elevatorSuccess
-                          || !intakePivotSuccess
-                          || !climberWinchSuccess;
+                  brakeModeFailure = !intakePivotSuccess || !climberWinchSuccess;
 
                   brakeModeTriggered = true;
                   led.setRobotState(
                       brakeModeFailure ? RobotState.BRAKE_MODE_FAILED : RobotState.BRAKE_MODE_ON);
-                },
-                elevator,
-                arm),
+                }),
             () -> brakeModeTriggered));
 
     // ---------- ELASTIC CONTROLS ------------
@@ -759,8 +644,6 @@ public class RobotContainer {
         "Zero Mech",
         new RunsWhenDisabledInstantCommand(
             () -> {
-              elevator.resetSensorToHomePosition();
-              arm.resetSensorToHomePosition();
               intake.resetPivotSensorToHomePosition();
               led.setRobotState(RobotState.ZERO_SUBSYSTEMS);
             }));
@@ -836,8 +719,6 @@ public class RobotContainer {
     vision.useGyroBasedFilteringForVision(false);
 
     if (!DriverStation.isFMSAttached()) {
-      arm.setPercentOut(0);
-      elevator.setPercentOut(0);
       climber.setWinchVoltage(0);
       intake.setPivotVoltage(0);
       intake.setRollerPercentOut(0);
@@ -888,25 +769,10 @@ public class RobotContainer {
     drivetrainWrapper.resetRotationOverride();
   }
 
-  public void updateVisualization() { // Advantage Scope visualization
-    MechanismVisualization.logMechanism();
-    SimpleMechanismVisualization.updateVisualization(elevator.getHeight(), arm.getAngle());
-    SimpleMechanismVisualization.logMechanism();
-    MechanismVisualization.updateVisualization(
-        drivetrainWrapper.getHubPoseEstimatorPose(true),
-        elevator.getHeight(),
-        arm.getAngle(),
-        intake.getPivotAngle(),
-        climber.getWinchAngle(),
-        robotStates);
-    MechanismVisualization.logMechanism();
-  }
-
   public void resetSubsystems() {}
 
   public void updateRobotState() {
     robotStates.periodic();
-    mech.periodic();
   }
 
   public void getCustomScoringLocations() {}

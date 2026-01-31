@@ -24,8 +24,6 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import frc.lib.team2930.AllianceFlipUtil;
-import frc.lib.team6328.Alert;
-import frc.lib.team6328.Alert.AlertType;
 import frc.robot.Constants.RobotMode.RobotType;
 import frc.robot.configs.*;
 import frc.robot.configs.SimulatorRobotConfig;
@@ -53,9 +51,6 @@ public final class Constants {
 
   public static class RobotMode {
     private static final RobotType ROBOT = RobotType.ROBOT_2025_RETIRED_HOLO;
-
-    private static final Alert invalidRobotAlert =
-        new Alert("Invalid robot selected, using competition robot as default.", AlertType.ERROR);
 
     public static boolean isSimBot() {
       switch (getRobot()) {
