@@ -17,9 +17,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
@@ -397,24 +395,7 @@ public final class Constants {
 
   // TODO: Find literally all shooter constants
   public static class ShooterConstants {
-    public static final double PREP_RPM = 2500.0;
-    public static final double SHOOTING_RPM = 8000.0;
-    public static final double SHOOTING_PERCENT_OUT = 0.95;
-    public static final Distance SHOOTER_BASE_HEIGHT = Units.Inches.of(4.0);
     public static final Distance SHOOTER_LENGTH = Units.Inches.of(12.0);
-    public static final Distance MAX_SHOOTING_DISTANCE = Units.Inches.of(180.0);
-
-    public static final double SHOOTING_SPEED =
-        SHOOTING_RPM / 60.0 * Flywheel.WHEEL_DIAMETER.in(Units.Meters) * Math.PI;
-
-    public static final double SHOOTING_TIME = 0.2;
-
-    public static final Transform2d SHOOTER_OFFSET =
-        new Transform2d(0, -Units.Inches.of(12).in(Units.Meters), Constants.zeroRotation2d);
-
-    public static final Translation3d SHOOTER_AXIS_OF_ROTATION =
-        new Translation3d(
-            SHOOTER_OFFSET.getX(), SHOOTER_OFFSET.getY(), Units.Inches.of(5).in(Units.Meters));
 
     public static class Hood {
       public static final double GEARING = 125.0;
@@ -422,42 +403,16 @@ public final class Constants {
       public static final Rotation2d MIN_ANGLE_RAD = Rotation2d.fromDegrees(12.0);
       public static final Rotation2d MAX_ANGLE_RAD =
           Rotation2d.fromDegrees(59); // TRUE HARD STOP 59.67
-      public static final Rotation2d HOME_POSITION = MIN_ANGLE_RAD;
-      public static final Rotation2d TRUE_TOP_HARD_STOP = Rotation2d.fromDegrees(59.67);
-
-      public static final Rotation2d SHOOTER_STOW_PITCH = Rotation2d.fromDegrees(14.0);
-
-      public static final Rotation2d LOADING_POSITION = MIN_ANGLE_RAD;
 
       public static final double SIM_INITIAL_ANGLE = Math.toRadians(14.0);
 
-      public static final InterpolatingDoubleTreeMap PITCH_ADJUSTMENT_MAP;
-
-      public static final Distance MIN_DISTANCE = Units.Inches.of(40.0);
-
       public static final double SUPPLY_CURRENT_LIMIT = 40;
       public static final double STATOR_CURRENT_LIMIT = 40;
-
-      static {
-        PITCH_ADJUSTMENT_MAP = new InterpolatingDoubleTreeMap();
-        PITCH_ADJUSTMENT_MAP.put(Units.Inches.of(51).in(Units.Meters), 4.0);
-        PITCH_ADJUSTMENT_MAP.put(Units.Inches.of(106.3).in(Units.Meters), 4.5);
-        PITCH_ADJUSTMENT_MAP.put(Units.Inches.of(114.2).in(Units.Meters), 4.5);
-        PITCH_ADJUSTMENT_MAP.put(Units.Inches.of(145.7).in(Units.Meters), 4.25);
-      }
-
-      public static double getPitchOffset(Distance distance) {
-        if (distance.lt(MIN_DISTANCE)) {
-          return 0.0;
-        }
-        return PITCH_ADJUSTMENT_MAP.get(distance.in(Units.Meters));
-      }
     }
 
     public static class Flywheel {
       public static final double MOI = 5.0;
       public static final double GEARING = (18.0 / 30.0);
-      public static final Distance WHEEL_DIAMETER = Units.Inches.of(2.0);
       public static final double SUPPLY_CURRENT_LIMIT = 40;
       public static final double STATOR_CURRENT_LIMIT = 40;
       public static final double PEAK_REVERSE_VOLTAGE = 0;
@@ -467,7 +422,6 @@ public final class Constants {
     public static class Kicker {
       public static final double MOI = 5.0;
       public static final double GEARING = 1.0;
-      public static final double KICKING_PERCENT_OUT = 0.8;
       public static final double SUPPLY_CURRENT_LIMIT = 40;
       public static final double STATOR_CURRENT_LIMIT = 40;
       public static final double SENSOR_TO_MECHANISM_RATIO = 1.42;
