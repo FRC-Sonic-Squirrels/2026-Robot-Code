@@ -119,6 +119,9 @@ public class ShooterIOReal implements ShooterIO {
 
     kickerConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
+    kickerConfig.Feedback.SensorToMechanismRatio =
+        ShooterConstants.Kicker.SENSOR_TO_MECHANISM_RATIO;
+
     kicker.getConfigurator().apply(kickerConfig);
 
     hoodPosition = hood.getPosition();
