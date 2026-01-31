@@ -400,8 +400,7 @@ public final class Constants {
       public static final double GEARING = 125.0;
 
       public static final Rotation2d MIN_ANGLE_RAD = Rotation2d.fromDegrees(12.0);
-      public static final Rotation2d MAX_ANGLE_RAD =
-          Rotation2d.fromDegrees(59);
+      public static final Rotation2d MAX_ANGLE_RAD = Rotation2d.fromDegrees(59);
 
       public static final double SIM_INITIAL_ANGLE = Math.toRadians(14.0);
 
