@@ -75,32 +75,31 @@ public class AllianceFlipUtil {
   }
 
   public static Translation2d getClosestTranslation(Translation2d[] selection, Pose2d currentPose) {
-    int lowestIndex = -1;
-    double lowestDist = 100000000;
-    for (int i = 0; i < selection.length; i++) {
+    Translation2d lowestDistTranslation = null;
+    double lowestDist = Double.MAX_VALUE;
+    for (Translation2d translation : selection) {
       double distance =
-          currentPose.getTranslation().getDistance(flipTranslationForAlliance(selection[i]));
+          currentPose.getTranslation().getDistance(flipTranslationForAlliance(translation));
       if (distance < lowestDist) {
-        lowestIndex = i;
+        lowestDistTranslation = translation;
         lowestDist = distance;
       }
     }
-    return selection[lowestIndex];
+    for (int i = 0; i < selection.length; i++) {}
+    return lowestDistTranslation;
   }
 
   public static Pose2d getClosestPose(Pose2d[] selection, Pose2d currentPose) {
-    int lowestIndex = -1;
-    double lowestDist = 100000000;
-    for (int i = 0; i < selection.length; i++) {
+    Pose2d lowestDistPose = null;
+    double lowestDist = Double.MAX_VALUE;
+    for (Pose2d pose : selection) {
       double distance =
-          currentPose
-              .getTranslation()
-              .getDistance(flipPoseForAlliance(selection[i]).getTranslation());
+          currentPose.getTranslation().getDistance(flipPoseForAlliance(pose).getTranslation());
       if (distance < lowestDist) {
-        lowestIndex = i;
+        lowestDistPose = pose;
         lowestDist = distance;
       }
     }
-    return selection[lowestIndex];
+    return lowestDistPose;
   }
 }

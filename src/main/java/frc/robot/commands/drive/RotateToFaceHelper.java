@@ -91,7 +91,7 @@ public class RotateToFaceHelper {
     log_rotVel.info(rotVel);
     log_targetRotation.info(targetangle);
     log_currentRotation.info(currentPoseRotation);
-    log_positionErrorDeg.info(Math.toDegrees(rotationalPID.getPositionError()));
+    log_positionErrorDeg.info(Math.toDegrees(getError()));
   }
 
   public void end() {
@@ -99,7 +99,7 @@ public class RotateToFaceHelper {
   }
 
   public boolean withinTolerance() {
-    return Math.abs(Math.toDegrees(rotationalPID.getPositionError())) <= toleranceDegrees.get();
+    return Math.abs(Math.toDegrees(getError())) <= toleranceDegrees.get();
   }
 
   public double getError() {
