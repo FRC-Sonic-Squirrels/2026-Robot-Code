@@ -300,6 +300,11 @@ public final class Constants {
     public static final int INTAKE_ROLLER_CAN_ID = 20;
     public static final int INTAKE_TOF_CAN_ID = 43;
     public static final int INTAKE_STAR_CAN_ID = 21;
+
+    public static final int SHOOTER_LEAD_CAN_ID = 35;
+    public static final int SHOOTER_FOLLOW_CAN_ID = 36;
+    public static final int SHOOTER_HOOD_CAN_ID = 37;
+    public static final int SHOOTER_KICKER_CAN_ID = 38;
   }
 
   public static class DIOPorts {}
@@ -386,6 +391,39 @@ public final class Constants {
 
   public static class AutoConstants {
     public static final Distance DIST_TO_START_INTAKING = Units.Meters.of(1.0);
+  }
+
+  public static class ShooterConstants {
+    public static final Distance SHOOTER_LENGTH = Units.Inches.of(12.0);
+
+    public static class Hood {
+      public static final double GEARING = 125.0;
+
+      public static final Rotation2d MIN_ANGLE_RAD = Rotation2d.fromDegrees(12.0);
+      public static final Rotation2d MAX_ANGLE_RAD = Rotation2d.fromDegrees(59);
+
+      public static final double SIM_INITIAL_ANGLE = Math.toRadians(14.0);
+
+      public static final double SUPPLY_CURRENT_LIMIT = 40;
+      public static final double STATOR_CURRENT_LIMIT = 40;
+    }
+
+    public static class Flywheel {
+      public static final double MOI = 5.0;
+      public static final double GEARING = (18.0 / 30.0);
+      public static final double SUPPLY_CURRENT_LIMIT = 40;
+      public static final double STATOR_CURRENT_LIMIT = 40;
+      public static final double PEAK_REVERSE_VOLTAGE = 0;
+      public static final double SUPPLY_VOLTAGE_TIME = 0.02;
+    }
+
+    public static class Kicker {
+      public static final double MOI = 5.0;
+      public static final double GEARING = 1.0;
+      public static final double SUPPLY_CURRENT_LIMIT = 40;
+      public static final double STATOR_CURRENT_LIMIT = 40;
+      public static final double SENSOR_TO_MECHANISM_RATIO = 1.42;
+    }
   }
 
   public static volatile boolean unusedCode = false;
