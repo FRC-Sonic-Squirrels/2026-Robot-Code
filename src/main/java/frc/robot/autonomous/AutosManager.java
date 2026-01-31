@@ -1,5 +1,6 @@
 package frc.robot.autonomous;
 
+import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
@@ -17,8 +18,13 @@ import frc.robot.Constants;
 import frc.robot.RobotStates;
 import frc.robot.autonomous.helpers.ChoreoHelper;
 import frc.robot.autonomous.records.ChoreoTrajectoryWithName;
+import frc.robot.autonomous.records.ChoreoVars;
+import frc.robot.autonomous.records.PickupLocation;
+import frc.robot.commands.drive.DriveToPose;
 import frc.robot.configs.RobotConfig;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
+
+import java.util.ArrayList;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +34,10 @@ import java.util.function.Supplier;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class AutosManager {
+  public enum Autos {
+    NOTHING, TEST, SWERVE_CHARACTERIZATION;
+  }
+
   private String ROOT_TABLE = "Sysid";
 
   public static class Logs extends AutoRegisterLoggers {
@@ -35,10 +45,11 @@ public class AutosManager {
   }
 
   private final Logs            logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
-  private final AutosSubsystems subsystems;
-  private final RobotConfig     config;
-  private final BooleanSupplier flipAuto;
-  private final RobotStates     states;
+  private final AutosSubsystems   subsystems;
+  private final RobotConfig       config;
+  private final RobotStates states;
+  private final BooleanSupplier   flipAuto;
+  private final DrivetrainWrapper wrapper;
 
   public final boolean includeDebugPaths = false;
 
@@ -48,47 +59,73 @@ public class AutosManager {
   }
 
   public AutosManager(AutosSubsystems subsystems, RobotConfig config, LoggedDashboardChooser<String> chooser,
-      HashMap<String, Supplier<Auto>> stringToAutoSupplierMap, BooleanSupplier flipAuto, RobotStates states) {
+      HashMap<String, Supplier<AutoProgram>> stringToAutoSupplierMap, BooleanSupplier flipAuto,
+      Supplier<List<PickupLocation>> customCoralStationLocations, RobotStates states) {
     this.subsystems = subsystems;
     this.config     = config;
     this.flipAuto   = flipAuto;
-    this.states     = states;
-    Command preloader = new RunStateMachineCommand(() -> new AutoStateMachine(subsystems, config, false, false, states),
-        true);
-
-    var cmd = Commands.waitSeconds(6).deadlineFor(preloader.repeatedly())
-        .andThen(Commands.runOnce(() -> preloadingComplete = true)).ignoringDisable(true).withName("AutoPreload");
-    CommandScheduler.getInstance().schedule(cmd);
-
+    this.states = states;
+    wrapper         = subsystems.drivetrain();
+    // preload code
+    // Command preloader;
     fillChooserAndMap(chooser, stringToAutoSupplierMap);
+    // TODO: Make a decision about the necessity of the preloader.
+    // var cmd =
+    // Commands.waitSeconds(6)
+    // .deadlineFor(preloader.repeatedly())
+    // .andThen(Commands.runOnce(() -> preloadingComplete = true))
+    // .ignoringDisable(true)
+    // .withName("AutoPreload");
+    // CommandScheduler.getInstance().schedule(cmd);
+
   }
 
-  private List<Supplier<Auto>> allCompetitionAutos() {
-    var list = new ArrayList<Supplier<Auto>>();
+  private List<Supplier<AutoProgram>> allCompetitionAutos() {
+    var list = new ArrayList<Supplier<AutoProgram>>();
+
     list.add(this::doNothing);
+    list.add(this::firstTest);
+
     if (includeDebugPaths) {
       list.add(this::swerveCharacterization);
+      // list.add(() -> testPath("TestDrive1Meter", true));
+      // list.add(() -> testPath("TestDrive10Meter", true));
+      // list.add(() -> testPath("TestDrive2Meters", true));
+      // list.add(() -> testPath("TestDrive2MetersRotating", true));
+      // list.add(() -> testPath("TestDrive2MetersThenLeft", true));
+      // list.add(() -> testPath("TestDrive2MetersThenLeftRotating", true));
+      // list.add(() -> testPath("TestCircle", true));
+      // list.add(() -> testPath("TestCircle", false, "TestCircleDontResetPose"));
+      // list.add(() -> testPath("TestZigZag", false));
     }
+
     return list;
   }
 
   private void fillChooserAndMap(LoggedDashboardChooser<String> chooser,
-      HashMap<String, Supplier<Auto>> stringToAutoSupplierMap) {
+      HashMap<String, Supplier<AutoProgram>> stringToAutoSupplierMap) {
     var compAutos = allCompetitionAutos();
+
     for (int i = 0; i < compAutos.size(); i++) {
       var supplier = compAutos.get(i);
-      var name     = supplier.get().name;
+      var name     = supplier.get().getName();
       if (i == 0) {
+        // Do nothing command must be first in list.
         chooser.addDefaultOption(name, name);
       } else {
         chooser.addOption(name, name);
       }
+
       stringToAutoSupplierMap.put(name, supplier);
     }
   }
 
-  public Auto doNothing() {
-    return new Auto("doNothing", new InstantCommand(), Constants.zeroPose2d);
+  public AutoProgram doNothing() {
+    return new AutoProgram(createAutoPath(Autos.NOTHING), "Do Nothing");
+  }
+
+  public AutoProgram firstTest() {
+    return new AutoProgram(createAutoPath(Autos.TEST), "Test");
   }
 
   @SuppressWarnings("unused")
@@ -96,6 +133,7 @@ public class AutosManager {
     return testPath(pathName, useInitialPose, pathName);
   }
 
+  // TODO: Potentially get rid of testPath? See if it's necessary.
   private Auto testPath(String pathName, boolean useInitialPose, String autoName) {
     var traj = ChoreoTrajectoryWithName.getTrajectory(pathName);
     return new Auto(autoName, new Command() {
@@ -130,7 +168,7 @@ public class AutosManager {
     }, useInitialPose ? traj.getInitialPose(true) : null);
   }
 
-  public Auto swerveCharacterization() {
+  public AutoProgram swerveCharacterization() {
     var sysidConfig = new SysIdRoutine.Config(null, null, null, (state) -> {
       if (state != SysIdRoutineLog.State.kNone) {
         logs.swervesysidstate.info(state);
@@ -150,9 +188,10 @@ public class AutosManager {
         // .andThen(Commands.waitSeconds(1.0))
         .andThen(command3)
         // .andThen(Commands.waitSeconds(1.0))
-        .andThen(command4).andThen(Commands.runOnce(() -> logs.swervesysidstate.info(SysIdRoutineLog.State.kNone)));
-
-    return new Auto("swerveCharacterization", finalCommand, Constants.zeroPose2d);
+        .andThen(command4).andThen(Commands.runOnce(() -> logSwerveSysidState.info(SysIdRoutineLog.State.kNone)));
+    return new AutoProgram(createAutoPath(Autos.SWERVE_CHARACTERIZATION), "Swerve Characterization");
+    // return new Auto("swerveCharacterization", finalCommand,
+    // Constants.zeroPose2d);
   }
 
   private Auto stateToAuto(String name, AutoStateMachine state) {
@@ -161,5 +200,27 @@ public class AutosManager {
 
   public boolean preloadingComplete() {
     return preloadingComplete;
+  }
+
+  private Pair<Command, Pose2d> createAutoPath(Autos auto) {
+    Pose2d initialPose;
+    switch (auto) {
+      case TEST:
+        initialPose = ChoreoVars.Poses.S5;
+        return Pair.of(driveToPose(ChoreoVars.Poses.H2).andThen(driveToPose(ChoreoVars.Poses.T1))
+            .andThen(driveToPose(ChoreoVars.Poses.T2)).andThen(driveToPose(ChoreoVars.Poses.T3))
+            .andThen(driveToPose(ChoreoVars.Poses.T4)).andThen(driveToPose(ChoreoVars.Poses.H1))
+            .andThen(driveToPose(ChoreoVars.Poses.C1)), initialPose);
+      default:
+        return Pair.of(new InstantCommand(), Pose2d.kZero);
+    }
+  }
+
+  private Command driveToPose(Pose2d desiredPose) {
+    return new DriveToPose(wrapper, false, desiredPose, () -> wrapper.getHubPoseEstimatorPose(true));
+  }
+
+  private Command driveToPoseShoot(Pose2d desiredPose) {
+    return new DriveToPose(wrapper, false, desiredPose, () -> wrapper.getHubPoseEstimatorPose(true));
   }
 }

@@ -154,6 +154,7 @@ public class DriveToPose extends Command {
 
   @Override
   public void execute() {
+
     // Get current and target pose
     var currentPose = currentRobotPose.get();
     var targetPose  = poseSupplier.get();
