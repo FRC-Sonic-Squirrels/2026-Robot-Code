@@ -6,7 +6,4 @@ import frc.robot.subsystems.mechanism.Mechanism;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
 
 public record AutosSubsystems(
-    DrivetrainWrapper drivetrain,
-    Mechanism mech,
-    LED led,
-    Intake intake) {}
+    DrivetrainWrapper drivetrain, Mechanism mech, LED led, Intake intake) {}

@@ -43,7 +43,6 @@ import frc.robot.autonomous.records.PickupLocation;
 import frc.robot.commands.climber.ClimberSetAngle;
 import frc.robot.commands.drive.DrivetrainDefaultTeleopDrive;
 import frc.robot.commands.drive.WheelRadiusCharacterization;
-import frc.robot.commands.endEffector.EndEffectorSetRPM;
 import frc.robot.commands.mechanism.MechToPosition;
 import frc.robot.commands.mechanism.arm.ArmManualControl;
 import frc.robot.commands.mechanism.elevator.ElevatorManualControl;
@@ -603,15 +602,6 @@ public class RobotContainer {
     operatorController
         .registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Intake Pivot Out")
         .onTrue(Commands.runOnce(() -> intake.setState(IntakeState.Down)));
-
-    // End Effector Rotation
-    operatorController
-        .registerTrigger(XboxControllerWrapper.Button.start, "End Effector Out")
-        .whileTrue(new EndEffectorSetRPM(-1000, robotStates));
-
-    operatorController
-        .registerTrigger(XboxControllerWrapper.Button.back, "End Effector In")
-        .whileTrue(new EndEffectorSetRPM(1000, robotStates));
 
     // Climber in
     operatorController
