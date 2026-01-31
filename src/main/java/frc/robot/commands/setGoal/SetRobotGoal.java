@@ -23,38 +23,31 @@ public class SetRobotGoal extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    executed = setRobotGoalOverride(overrideOthers, RobotGoal.None, newGoal);
+    if (overrideOthers) {
+      states.setRobotGoal(newGoal);
+      executed = true;
+    } else {
+      executed = states.setRobotGoalIf(RobotGoal.None, newGoal);
+    }
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    boolean ex = setRobotGoalIf(!executed, RobotGoal.None, newGoal);
-    if (ex) {
-      executed = true;
+    if (!executed) {
+      boolean ex = states.setRobotGoalIf(RobotGoal.None, newGoal);
+      if (ex) {
+        executed = true;
+      }
     }
   }
 
   // Called once the command ends or is interrupted.
   @Override
   public void end(boolean interrupted) {
-    setRobotGoalIf(resetToNone && executed, newGoal, RobotGoal.None);
-  }
-
-  private boolean setRobotGoalOverride(boolean override, RobotGoal expetedGoal, RobotGoal newGoal) {
-    if (override || (states.getRobotGoal() == expetedGoal)) {
-      states.setRobotGoal(newGoal);
-      return true;
+    if (resetToNone && executed) {
+      states.setRobotGoalIf(newGoal, RobotGoal.None);
     }
-    return false;
-  }
-
-  private boolean setRobotGoalIf(boolean condition, RobotGoal expetedGoal, RobotGoal newGoal) {
-    if (condition && (states.getRobotGoal() == expetedGoal)) {
-      states.setRobotGoal(newGoal);
-      return true;
-    }
-    return false;
   }
 
   // Returns true when the command should end.

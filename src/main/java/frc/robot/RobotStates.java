@@ -272,6 +272,14 @@ public class RobotStates {
     wantedGoal = newGoal;
   }
 
+  public boolean setRobotGoalIf(RobotGoal expetedGoal, RobotGoal newGoal) {
+    if (getRobotGoal() == expetedGoal) {
+      setRobotGoal(newGoal);
+      return true;
+    }
+    return false;
+  }
+
   // TODO: this should probrably be removed
   public void setIntakeState(Intake.IntakeState newState) {
     intake.setState(newState);
