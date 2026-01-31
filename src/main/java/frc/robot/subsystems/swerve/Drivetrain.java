@@ -163,10 +163,11 @@ public class Drivetrain extends SubsystemBase {
   private final SwerveDriveKinematics kinematics;
   private Pose2d                      rawOdometryPose = Constants.zeroPose2d;
 
-  private final PoseEstimator hubPoseEstimator;
+  private final PoseEstimator reefPoseEstimator;
+  private final PoseEstimator coralStationPoseEstimator;
 
-  private final Field2d hubField2d = new Field2d();
-
+  private final Field2d reefField2d        = new Field2d();
+  private final Field2d coralField2d       = new Field2d();
   private final Field2d rawOdometryField2d = new Field2d();
 
   private Pose2d prevVel = Constants.zeroPose2d;
@@ -195,7 +196,8 @@ public class Drivetrain extends SubsystemBase {
 
     int[] hubTags = { 2, 3, 4, 5, 8, 9, 10, 11, 18, 19, 20, 21, 24, 25, 26, 27 };
 
-    hubPoseEstimator = new PoseEstimator(0.1, 0.1, 0.1, hubTags);
+    reefPoseEstimator         = new PoseEstimator(0.1, 0.1, 0.1, reefTags);
+    coralStationPoseEstimator = new PoseEstimator(0.6, 0.6, 0.3, coralStationTags);
 
     // High speed odometry thread
 
@@ -248,9 +250,13 @@ public class Drivetrain extends SubsystemBase {
       var hubVisionStaleness   = getHubVisionStaleness();
 
       // Log robot poses
-      logLocalization_HubRobotPosition.info(hubPoseEstimatorPose);
+      logLocalization_ReefRobotPosition.info(reefPoseEstimatorPose);
+      logLocalization_CoralStationRobotPosition.info(coralPoseEstimatorPose);
 
-      SmartDashboard.putData("Localization/hubField2d", hubField2d);
+      reefField2d.setRobotPose(reefPoseEstimatorPose);
+      coralField2d.setRobotPose(coralPoseEstimatorPose);
+      SmartDashboard.putData("Localization/reefField2d", reefField2d);
+      SmartDashboard.putData("Localization/coralField2d", coralField2d);
 
       rawOdometryField2d.setRobotPose(rawOdometryPose);
       logLocalization_RobotPosition_RAW_ODOMETRY.info(rawOdometryPose);
@@ -258,10 +264,11 @@ public class Drivetrain extends SubsystemBase {
 
       // Log other vision information
 
-      logTimeSinceVisionHub.info(hubVisionStaleness);
-      logRejectionCutoff.info(hubPoseEstimator.rejectionCutoff);
-      logRejectionInvalidTags.info(hubPoseEstimator.rejectionInvalidTags);
-      logRejectionNoDriveData.info(hubPoseEstimator.rejectionNoDriveData);
+      logTimeSinceVisionReef.info(reefVisionStaleness);
+      logTimeSinceVisionStation.info(stationVisionStaleness);
+      logRejectionCutoff.info(reefPoseEstimator.rejectionCutoff);
+      logRejectionInvalidTags.info(reefPoseEstimator.rejectionInvalidTags);
+      logRejectionNoDriveData.info(reefPoseEstimator.rejectionNoDriveData);
 
       // Log which gyro in use
 
@@ -412,7 +419,8 @@ public class Drivetrain extends SubsystemBase {
             // Apply the twist (change since last sample) to the current pose
             rawOdometryPose = rawOdometryPose.exp(twist);
 
-            hubPoseEstimator.addDriveData(timestamp, twist);
+            reefPoseEstimator.addDriveData(timestamp, twist);
+            coralStationPoseEstimator.addDriveData(timestamp, twist);
           }
         }
       } catch (Exception e) {
@@ -473,6 +481,7 @@ public class Drivetrain extends SubsystemBase {
     logDrivetrain_speedsY.info(speeds.vyMetersPerSecond);
     logDrivetrain_linearSpeed.info(Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond));
     logDrivetrain_linearSpeedMax.info(config.getRobotMaxLinearVelocity());
+    logDrivetrain_speedsRot.info(speeds.omegaRadiansPerSecond);
 
     // Calculate module setpoints
     ChassisSpeeds       discreteSpeeds = ChassisSpeeds.discretize(speeds, Constants.kDefaultPeriod);
@@ -501,6 +510,11 @@ public class Drivetrain extends SubsystemBase {
     runVelocity(new ChassisSpeeds(), false, true);
   }
 
+  /** Stops the drive. */
+  public void stop() {
+    runVelocity(new ChassisSpeeds(), false, true);
+  }
+
   /**
    * Stops the drive and turns the modules to an X arrangement to resist movement.
    * The modules will return to their normal orientations the next time a nonzero
@@ -515,6 +529,7 @@ public class Drivetrain extends SubsystemBase {
       headings[i] = config.getModuleTranslations()[i].getAngle();
     }
     kinematics.resetHeadings(headings);
+    stop();
   }
 
   /** Runs forwards at the commanded voltage. */
@@ -564,7 +579,8 @@ public class Drivetrain extends SubsystemBase {
     try (var ignored = odometryLock.lock()) // Prevents odometry updates while reading data
     {
       try (var ignored2 = timing_vision.start()) {
-        hubPoseEstimator.addVisionData(visionData);
+        reefPoseEstimator.addVisionData(visionData);
+        coralStationPoseEstimator.addVisionData(visionData);
       }
     }
   }
@@ -578,28 +594,53 @@ public class Drivetrain extends SubsystemBase {
     return rawOdometryPose;
   }
 
-  public Pose2d getHubPoseEstimatorPose() {
+  public Pose2d getReefPoseEstimatorPose() {
     try (var ignored = odometryLock.lock()) // Prevents odometry updates while reading data
     {
       try (var ignored2 = timing_pose.start()) {
-        return hubPoseEstimator.getLatestPose();
+        return reefPoseEstimator.getLatestPose();
       }
     }
   }
 
-  public double getHubVisionStaleness() {
+  public Pose2d getCoralStationPoseEstimatorPose() {
     try (var ignored = odometryLock.lock()) // Prevents odometry updates while reading data
     {
       try (var ignored2 = timing_pose.start()) {
-        return hubPoseEstimator.getVisionStaleness();
+        return coralStationPoseEstimator.getLatestPose();
       }
     }
   }
 
-  public Pose2d getHubPoseEstimatorPoseAtTimestamp(double timestamp) {
+  public double getReefVisionStaleness() {
     try (var ignored = odometryLock.lock()) // Prevents odometry updates while reading data
     {
-      return hubPoseEstimator.getPoseAtTime(timestamp);
+      try (var ignored2 = timing_pose.start()) {
+        return reefPoseEstimator.getVisionStaleness();
+      }
+    }
+  }
+
+  public double getCoralStationVisionStaleness() {
+    try (var ignored = odometryLock.lock()) // Prevents odometry updates while reading data
+    {
+      try (var ignored2 = timing_pose.start()) {
+        return coralStationPoseEstimator.getVisionStaleness();
+      }
+    }
+  }
+
+  public Pose2d getReefPoseEstimatorPoseAtTimestamp(double timestamp) {
+    try (var ignored = odometryLock.lock()) // Prevents odometry updates while reading data
+    {
+      return reefPoseEstimator.getPoseAtTime(timestamp);
+    }
+  }
+
+  public Pose2d getCoralStationPoseEstimatorPoseAtTimestamp(double timestamp) {
+    try (var ignored = odometryLock.lock()) // Prevents odometry updates while reading data
+    {
+      return coralStationPoseEstimator.getPoseAtTime(timestamp);
     }
   }
 
@@ -611,10 +652,15 @@ public class Drivetrain extends SubsystemBase {
   public void setPose(Pose2d pose) {
     try (var ignored = odometryLock.lock()) // Prevents odometry updates while reading data
     {
-      this.hubPoseEstimator.resetPose(pose, Utils.getCurrentTimeSeconds() + 0.2);
+      this.reefPoseEstimator.resetPose(pose, Utils.getCurrentTimeSeconds() + 0.2);
+      this.coralStationPoseEstimator.resetPose(pose, Utils.getCurrentTimeSeconds() + 0.2);
 
       this.rawOdometryPose = pose;
     }
+  }
+
+  public void setCoralStationPoseToReefPose() {
+    this.coralStationPoseEstimator.resetPose(reefPoseEstimator.getLatestPose(), Utils.getCurrentTimeSeconds() + 0.2);
   }
 
   public void setRawOdometryPose(Pose2d pose) {
