@@ -121,6 +121,7 @@ public class RobotContainer {
       new Trigger(() -> !zeroSensorsButton.get() && !DriverStation.isEnabled());
 
   private boolean brakeModeTriggered = true;
+  private boolean zeroButtonTriggered = false;
 
   // Robot Modes
   @SuppressWarnings("unused")
@@ -189,7 +190,12 @@ public class RobotContainer {
         visionGamepiece = null;
       }
 
-      led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, robotStates);
+      led =
+          new LED(
+              () -> brakeModeTriggered,
+              drivetrain::isGyroConnected,
+              robotStates,
+              () -> zeroButtonTriggered);
     } else { // REAL and SIM robots HERE
       switch (robotType) {
         case ROBOT_SIMBOT_REAL_CAMERAS:
@@ -539,6 +545,7 @@ public class RobotContainer {
               intake.resetPivotSensorToHomePosition();
               led.setRobotState(RobotState.ZERO_SUBSYSTEMS);
               climber.resetWinchSensorToHomePosition();
+              zeroButtonTriggered = true;
             }));
 
     brakeModeButtonTrigger.onTrue(
