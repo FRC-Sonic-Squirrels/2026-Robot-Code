@@ -1,156 +1,3 @@
-// package frc.robot.subsystems.shooter;
-
-// import com.ctre.phoenix6.BaseStatusSignal;
-// import com.ctre.phoenix6.StatusCode;
-// import com.ctre.phoenix6.StatusSignal;
-// import com.ctre.phoenix6.configs.MotionMagicConfigs;
-// import com.ctre.phoenix6.configs.MotorOutputConfigs;
-// import com.ctre.phoenix6.configs.Slot0Configs;
-// import com.ctre.phoenix6.configs.TalonFXConfiguration;
-// import com.ctre.phoenix6.controls.Follower;
-// import com.ctre.phoenix6.controls.MotionMagicVoltage;
-// import com.ctre.phoenix6.controls.VoltageOut;
-// import com.ctre.phoenix6.hardware.TalonFX;
-// import com.ctre.phoenix6.signals.InvertedValue;
-// import com.ctre.phoenix6.signals.MotorAlignmentValue;
-// import com.ctre.phoenix6.signals.NeutralModeValue;
-
-// import edu.wpi.first.units.Units;
-// import edu.wpi.first.units.measure.Angle;
-// import edu.wpi.first.units.measure.AngularVelocity;
-// import edu.wpi.first.units.measure.Current;
-// import edu.wpi.first.units.measure.Temperature;
-// import edu.wpi.first.units.measure.Voltage;
-// import frc.robot.Constants;
-// import frc.robot.Constants.MotorConstants.KrakenConstants;
-
-// public class ShooterIOReal implements ShooterIO {
-//     private TalonFX flywheelLeadMotor = new
-// TalonFX(Constants.CanIDs.SHOOTER_FLYWHEEL_LEAD_CAN_ID);
-//     private TalonFX flywheelFollowMotor = new
-// TalonFX(Constants.CanIDs.SHOOTER_FLYWHEEL_FOLLOW_CAN_ID);
-//     private TalonFX hoodMotor = new TalonFX(Constants.CanIDs.SHOOTER_HOOD_CAN_ID);
-//     private TalonFX kickerMotor = new TalonFX(Constants.CanIDs.SHOOTER_KICKER_CAN_ID);
-
-//     private final MotionMagicVoltage closedLoopControl =
-//         new MotionMagicVoltage(0.0).withEnableFOC(true);
-//     private final VoltageOut openLoopControl = new VoltageOut(0.0).withEnableFOC(true);
-
-//     private StatusSignal<Angle> flywheelLeadPosition;
-//     private StatusSignal<AngularVelocity> flywheelLeadVelocity;
-//     private StatusSignal<Voltage> flywheelLeadVoltage;
-//     private StatusSignal<Current> flywheelLeadCurrent;
-//     private StatusSignal<Temperature> flywheelLeadTemp;
-
-//     private StatusSignal<Angle> flywheelFollowPosition;
-//     private StatusSignal<AngularVelocity> flywheelFollowVelocity;
-//     private StatusSignal<Voltage> flywheelFollowVoltage;
-//     private StatusSignal<Current> flywheelFollowCurrent;
-//     private StatusSignal<Temperature> flywheelFollowTemp;
-
-//     private final BaseStatusSignal[] refreshSet;
-
-//     public ShooterIOReal() {
-
-//         TalonFXConfiguration config = new TalonFXConfiguration();
-
-//         config.CurrentLimits.SupplyCurrentLimit =
-// Constants.ShooterConstants.SUPPLY_CURRENT_LIMIT;
-//         config.CurrentLimits.SupplyCurrentLimitEnable = true;
-//         config.CurrentLimits.StatorCurrentLimit =
-// Constants.ShooterConstants.STATOR_CURRENT_LIMIT;
-//         config.CurrentLimits.StatorCurrentLimitEnable = true;
-
-//         config.MotorOutput.NeutralMode = NeutralModeValue.Coast;
-//         config.MotorOutput.Inverted = InvertedValue.CounterClockwise_Positive;
-
-//         config.Voltage.SupplyVoltageTimeConstant = KrakenConstants.SUPPLY_VOLTAGE_TIME;
-
-//         flywheelLeadMotor.getConfigurator().apply(config);
-//         flywheelFollowMotor.getConfigurator().apply(config);
-
-//         // Status signals
-
-//         flywheelLeadPosition = flywheelLeadMotor.getRotorPosition();
-//         flywheelLeadVelocity = flywheelLeadMotor.getRotorVelocity();
-//         flywheelLeadVoltage = flywheelLeadMotor.getMotorVoltage();
-//         flywheelLeadCurrent = flywheelLeadMotor.getStatorCurrent();
-//         flywheelLeadTemp = flywheelLeadMotor.getDeviceTemp();
-
-//         flywheelFollowPosition = flywheelFollowMotor.getRotorPosition();
-//         flywheelFollowVelocity = flywheelFollowMotor.getRotorVelocity();
-//         flywheelFollowVoltage = flywheelFollowMotor.getMotorVoltage();
-//         flywheelFollowCurrent = flywheelFollowMotor.getStatorCurrent();
-//         flywheelFollowTemp = flywheelFollowMotor.getDeviceTemp();
-
-//         // Update status signals
-
-//         BaseStatusSignal.setUpdateFrequencyForAll(100, flywheelLeadPosition,
-// flywheelLeadVelocity);
-//         BaseStatusSignal.setUpdateFrequencyForAll(50, flywheelLeadVoltage, flywheelLeadCurrent);
-//         BaseStatusSignal.setUpdateFrequencyForAll(1, flywheelLeadTemp);
-
-//         BaseStatusSignal.setUpdateFrequencyForAll(100, flywheelFollowPosition,
-// flywheelFollowVelocity);
-//         BaseStatusSignal.setUpdateFrequencyForAll(50, flywheelFollowVoltage,
-// flywheelFollowCurrent);
-//         BaseStatusSignal.setUpdateFrequencyForAll(1, flywheelFollowTemp);
-
-//         flywheelLeadMotor.optimizeBusUtilization();
-
-//         flywheelFollowMotor.setControl(
-//         new Follower(Constants.CanIDs.SHOOTER_FLYWHEEL_LEAD_CAN_ID,
-// MotorAlignmentValue.Aligned));
-
-//         refreshSet =
-//             new BaseStatusSignal[] {flywheelLeadPosition, flywheelLeadVoltage,
-// flywheelLeadVoltage,
-//             flywheelLeadCurrent, flywheelLeadTemp};
-//   }
-//     @Override
-//     public void updateInputs(Inputs inputs) {
-//         inputs.refreshAll(refreshSet);
-
-//         inputs.appliedVolts = flywheelLeadVoltage.getValue().in(Units.Volts);
-//         inputs.currentAmps = flywheelLeadCurrent.getValue().in(Units.Amps);
-//         inputs.tempCelsius = flywheelLeadTemp.getValue().in(Units.Celsius);
-//   }
-//   @Override
-//   public void setVoltage(double volts) {
-//     openLoopControl.withOutput(volts);
-//     flywheelLeadMotor.setControl(openLoopControl);
-//   }
-//   @Override
-//   public void setClosedLoopConstants(
-//       double kP, double kD, double kG, MotionMagicConfigs mmConfigs) {
-//     Slot0Configs pidConfig = new Slot0Configs();
-
-//     flywheelLeadMotor.getConfigurator().refresh(pidConfig);
-
-//     pidConfig.kP = kP;
-//     pidConfig.kD = kD;
-//     pidConfig.kG = kG;
-
-//     flywheelLeadMotor.getConfigurator().apply(pidConfig);
-//     flywheelLeadMotor.getConfigurator().apply(mmConfigs);
-//   }
-//   @Override
-//   public boolean setNeutralMode(NeutralModeValue value) {
-//     var config = new MotorOutputConfigs();
-
-//     var status1 = flywheelLeadMotor.getConfigurator().refresh(config);
-//     var status2 = flywheelFollowMotor.getConfigurator().refresh(config);
-
-//     if (status1 != StatusCode.OK || status2 != StatusCode.OK) return false;
-
-//     config.NeutralMode = value;
-
-//     flywheelLeadMotor.getConfigurator().apply(config);
-//     flywheelFollowMotor.getConfigurator().apply(config);
-
-//     return true;
-//   }
-// }
 package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.BaseStatusSignal;
@@ -181,8 +28,8 @@ import frc.robot.Constants.ShooterConstants;
 
 public class ShooterIOReal implements ShooterIO {
 
-  TalonFX flywheel_lead = new TalonFX(Constants.CanIDs.SHOOTER_LEAD_CAN_ID);
-  TalonFX flywheel_follower = new TalonFX(Constants.CanIDs.SHOOTER_FOLLOW_CAN_ID);
+  TalonFX flywheelLead = new TalonFX(Constants.CanIDs.SHOOTER_LEAD_CAN_ID);
+  TalonFX flywheelFollower = new TalonFX(Constants.CanIDs.SHOOTER_FOLLOW_CAN_ID);
   TalonFX hood = new TalonFX(Constants.CanIDs.SHOOTER_HOOD_CAN_ID);
   TalonFX kicker = new TalonFX(Constants.CanIDs.SHOOTER_KICKER_CAN_ID);
 
@@ -236,12 +83,12 @@ public class ShooterIOReal implements ShooterIO {
 
     flywheelConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     flywheelConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
-    flywheelConfig.Feedback.SensorToMechanismRatio = ShooterConstants.Launcher.GEARING;
+    flywheelConfig.Feedback.SensorToMechanismRatio = ShooterConstants.Flywheel.GEARING;
 
     flywheelConfig.Voltage.PeakReverseVoltage = 0.0;
     flywheelConfig.Voltage.SupplyVoltageTimeConstant = 0.02;
 
-    flywheeLead.getConfigurator().apply(flywheelConfig);
+    flywheelLead.getConfigurator().apply(flywheelConfig);
     flywheelFollower.getConfigurator().apply(flywheelConfig);
 
     // --- hood config ---
@@ -309,7 +156,7 @@ public class ShooterIOReal implements ShooterIO {
         10,
         flywheelLeadVoltage,
         flywheelLeadCurrentAmps,
-      flywheelFollowerVoltage,
+        flywheelFollowerVoltage,
         flywheelFollowerCurrentAmps);
     BaseStatusSignal.setUpdateFrequencyForAll(
         1, flywheelLeadTempCelsius, flywheelFollowTempCelsius, kickerTempCelsius, hoodTempCelsius);

@@ -408,7 +408,7 @@ public final class Constants {
     public static final double STATOR_CURRENT_LIMIT = 40;
 
     public static final double SHOOTING_SPEED =
-        SHOOTING_RPM / 60.0 * Launcher.WHEEL_DIAMETER.in(Units.Meters) * Math.PI;
+        SHOOTING_RPM / 60.0 * Flywheel.WHEEL_DIAMETER.in(Units.Meters) * Math.PI;
 
     public static final double SHOOTING_TIME = 0.2;
 
@@ -454,7 +454,7 @@ public final class Constants {
       }
     }
 
-    public static class Launcher {
+    public static class Flywheel {
       public static final double MOI = 5.0;
       public static final double GEARING = (18.0 / 30.0);
       public static final Distance WHEEL_DIAMETER = Units.Inches.of(2.0);

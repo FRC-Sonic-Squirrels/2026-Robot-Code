@@ -1,5 +1,4 @@
 // Comfort below
-
 package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.controls.VoltageOut;
@@ -49,7 +48,7 @@ public class ShooterIOSim implements ShooterIO {
       new TalonFXSim(
           DCMotor.getKrakenX60Foc(2),
           Constants.ShooterConstants.Flywheel.GEARING,
-          Constants.ShooterConstants.FLywheel.MOI);
+          Constants.ShooterConstants.Flywheel.MOI);
 
   private final TalonFXSim kickerMotorSim =
       new TalonFXSim(
@@ -164,7 +163,7 @@ public class ShooterIOSim implements ShooterIO {
 
   @Override
   public void setFlywheelVoltage(double volts) {
-    flywheelMotorSim.setControl(FlywheelOpenLoopVolts.withOutput(volts));
+    flywheelMotorSim.setControl(flywheelOpenLoopVolts.withOutput(volts));
   }
 
   @Override

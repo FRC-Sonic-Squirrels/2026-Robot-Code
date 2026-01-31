@@ -1,50 +1,3 @@
-// import frc.robot.Constants;
-// import frc.robot.Robot;
-// import frc.lib.team2930.LinearInterpolator;
-// import edu.wpi.first.math.filter.SlewRateLimiter;
-// import edu.wpi.first.wpilibj.PowerDistribution;
-
-//     public enum ShooterMode {
-//         STOP, IDLE, SHOOTING
-//     }
-
-//     private ShooterMode shooterMode = ShooterMode.STOP;
-
-//     private double stopRPM = Constants.ShooterConstants.STOP;
-//     private double idleRPM = Constants.ShooterConstants.IDLE;
-//     private double shootingRPM = Constants.ShooterConstants.SHOOTING;
-
-//     private Robot m_robot;
-
-//     // Numbers from 2022 shooter subsystem
-//     private double desiredRpm = 0;
-//     private boolean atSpeed = false;
-//     private LinearInterpolator rpmInterpolator;
-//     private double currentRpm = 0;
-//     private double rpmDifference = 0;
-//     private double maxRpmDifference = 30;
-//     private final double rpmToTicks = 2048 / 600;
-
-//     private double teleopConfigkP = 0.2;
-//     private double teleopConfigkI = 0.0003;
-//     private double teleopCondigkD = 0.3;
-//     private double teleopConfigkF = 0.51;
-//     private double teleopConfigkIZ = 3000;
-//     private double maxForwardOutput = 1.0;
-//     private double maxReverseOutput = -0.05;
-// //new code
-//     private double rateRpmPerSecond = 10000000;
-//     private SlewRateLimiter rateLimiter = new SlewRateLimiter(rateRpmPerSecond);
-
-//     public Shooter(Robot robot, PowerDistribution revPhd) {
-//         this.m_robot = robot;
-
-//     }
-
-// }// Copyright (c) FIRST and other WPILib contributors.
-// Open Source Software; you can modify and/or share it under the terms of
-// the WPILib BSD license file in the root directory of this project.
-
 package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -118,7 +71,7 @@ public class Shooter extends SubsystemBase {
   private static final LoggedTunableNumber flywheelkP = groupFlywheel.build("kP");
   private static final LoggedTunableNumber flywheelkV = groupFlywheel.build("kV");
   private static final LoggedTunableNumber flywheelClosedLoopMaxAccelerationConstraint =
-      groupLauncher.build("ClosedLoopMaxAccelerationConstraint");
+      groupFlywheel.build("ClosedLoopMaxAccelerationConstraint");
 
   private static final TunableNumberGroup groupKicker = group.subgroup("Kicker");
   private static final LoggedTunableNumber kickerkP = groupKicker.build("kP");
@@ -141,10 +94,10 @@ public class Shooter extends SubsystemBase {
       hoodClosedLoopMaxVelocityConstraint.initDefault(10.0);
       hoodClosedLoopMaxAccelerationConstraint.initDefault(5.0);
 
-      launcherkS.initDefault(0.24);
-      launcherkP.initDefault(0.4);
-      launcherkV.initDefault(0.072);
-      launcherClosedLoopMaxAccelerationConstraint.initDefault(1000.0);
+      flywheelkS.initDefault(0.24);
+      flywheelkP.initDefault(0.4);
+      flywheelkV.initDefault(0.072);
+      flywheelClosedLoopMaxAccelerationConstraint.initDefault(1000.0);
 
       kickerkP.initDefault(0.6);
       kickerkV.initDefault(0.18);
@@ -156,10 +109,10 @@ public class Shooter extends SubsystemBase {
       hoodClosedLoopMaxVelocityConstraint.initDefault(10.0);
       hoodClosedLoopMaxAccelerationConstraint.initDefault(10.0);
 
-      launcherkS.initDefault(0.0);
-      launcherkP.initDefault(0.5);
-      launcherkV.initDefault(0.13);
-      launcherClosedLoopMaxAccelerationConstraint.initDefault(10.0);
+      flywheelkS.initDefault(0.0);
+      flywheelkP.initDefault(0.5);
+      flywheelkV.initDefault(0.13);
+      flywheelClosedLoopMaxAccelerationConstraint.initDefault(10.0);
 
       kickerkP.initDefault(0.0);
       kickerkV.initDefault(0.0);
@@ -187,11 +140,11 @@ public class Shooter extends SubsystemBase {
   public Shooter(ShooterIO io) {
     this.io = io;
 
-    io.setLauncherClosedLoopConstants(
-        launcherkP.get(),
-        launcherkV.get(),
-        launcherkS.get(),
-        launcherClosedLoopMaxAccelerationConstraint.get());
+    io.setFlywheelClosedLoopConstants(
+        flywheelkP.get(),
+        flywheelkV.get(),
+        flywheelkS.get(),
+        flywheelClosedLoopMaxAccelerationConstraint.get());
 
     io.setHoodClosedLoopConstants(
         hoodkP.get(),
@@ -212,9 +165,9 @@ public class Shooter extends SubsystemBase {
       logInputs_hoodVelocityRadsPerSec.info(inputs.hoodVelocityRadsPerSec);
       logInputs_hoodAppliedVolts.info(inputs.hoodAppliedVolts);
       logInputs_hoodCurrentAmps.info(inputs.hoodCurrentAmps);
-      logInputs_launcherRPM.info(inputs.launcherRPM);
-      logInputs_launcherAppliedVolts.info(inputs.launcherAppliedVolts);
-      logInputs_launcherCurrentAmps.info(inputs.launcherCurrentAmps);
+      logInputs_flywheelRPM.info(inputs.flywheelRPM);
+      logInputs_launcherAppliedVolts.info(inputs.flywheelAppliedVolts);
+      logInputs_flywheelCurrentAmps.info(inputs.flywheelCurrentAmps);
       logInputs_kickerAppliedVolts.info(inputs.kickerAppliedVolts);
       logInputs_kickerCurrentAmps.info(inputs.kickerCurrentAmps);
       logInputs_kickerVelocityRPM.info(inputs.kickerVelocityRPM);
@@ -224,7 +177,7 @@ public class Shooter extends SubsystemBase {
       logPitchDegrees.info(inputs.hoodPosition.getDegrees());
       logTargetPitchDegrees.info(targetHoodPosition.getDegrees());
       logNoteInShooter.info(noteInShooter.getAsBoolean());
-      logLauncherRollersDifference.info(inputs.launcherRPM[1] - inputs.launcherRPM[0]);
+      logFlywheelRollersDifference.info(inputs.flywheelRPM[1] - inputs.flywheelRPM[0]);
 
       if (Constants.unusedCode) {
         var timestamp = Timer.getFPGATimestamp();
@@ -253,15 +206,15 @@ public class Shooter extends SubsystemBase {
       }
 
       var hc = hashCode();
-      if (launcherkS.hasChanged(hc)
-          || launcherkP.hasChanged(hc)
-          || launcherkV.hasChanged(hc)
-          || launcherClosedLoopMaxAccelerationConstraint.hasChanged(hc)) {
-        io.setLauncherClosedLoopConstants(
-            launcherkP.get(),
-            launcherkV.get(),
-            launcherkS.get(),
-            launcherClosedLoopMaxAccelerationConstraint.get());
+      if (flywheelkS.hasChanged(hc)
+          || flywheelkP.hasChanged(hc)
+          || flywheelkV.hasChanged(hc)
+          || flywheelClosedLoopMaxAccelerationConstraint.hasChanged(hc)) {
+        io.setFlywheelClosedLoopConstants(
+            flywheelkP.get(),
+            flywheelkV.get(),
+            flywheelkS.get(),
+            flywheelClosedLoopMaxAccelerationConstraint.get());
       }
 
       if (hoodkP.hasChanged(hc)
@@ -292,7 +245,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public void setPercentOut(double percent) {
-    io.setLauncherVoltage(percent * MAX_VOLTAGE);
+    io.setFlywheelVoltage(percent * MAX_VOLTAGE);
   }
 
   public void setHoodClosedLoopConstants(
@@ -309,22 +262,22 @@ public class Shooter extends SubsystemBase {
     targetHoodPosition = rot;
   }
 
-  public void setLauncherVoltage(double volts) {
-    io.setLauncherVoltage(volts);
+  public void setFlywheelVoltage(double volts) {
+    io.setFlywheelVoltage(volts);
   }
 
-  public void setLauncherRPM(double topRollerRPM, double bottomRollerRPM) {
-    io.setLauncherRPM(topRollerRPM, bottomRollerRPM);
+  public void setFlywheelRPM(double topRollerRPM, double bottomRollerRPM) {
+    io.setFlywheelRPM(topRollerRPM, bottomRollerRPM);
     topRollerTargetLauncherRPM = topRollerRPM;
   }
 
-  public void setLauncherRPM(double rpm) {
-    io.setLauncherRPM(rpm, rpm);
+  public void setFlywheelRPM(double rpm) {
+    io.setFlywheelRPM(rpm, rpm);
     topRollerTargetLauncherRPM = rpm;
   }
 
   public double getRPM() {
-    return inputs.launcherRPM[0];
+    return inputs.flywheelRPM[0];
   }
 
   public boolean isAtTargetRPM() {
@@ -332,7 +285,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean isAtTargetRPM(double rpm) {
-    return inputs.launcherRPM[0] > rpm - launcherToleranceRPM.get();
+    return inputs.flywheelRPM[0] > rpm - launcherToleranceRPM.get();
   }
 
   public double getHoodPIDLatency() {
