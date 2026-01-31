@@ -435,6 +435,9 @@ public class RobotContainer {
 
     var subsystems = new AutosSubsystems(drivetrainWrapper, led, intake);
 
+    robotStates.setSubsystems(
+        intake, drivetrainWrapper, () -> driverController.getRightTrigger().getAsBoolean());
+
     autoManager =
         new AutosManager(
             subsystems,
