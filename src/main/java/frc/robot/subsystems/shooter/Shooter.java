@@ -87,7 +87,7 @@ public class Shooter extends SubsystemBase {
       group.build("distanceToTriggerNote", 10.0);
 
   static {
-    if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_HOLO) {
+    if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2026) {
       hoodkP.initDefault(800.0);
       hoodkD.initDefault(0.0);
       hoodkG.initDefault(0.0);
