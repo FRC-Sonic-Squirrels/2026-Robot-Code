@@ -34,14 +34,12 @@ import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.RobotMode.Mode;
 import frc.robot.Constants.RobotMode.RobotType;
-import frc.robot.RobotStates.IntakeState;
 import frc.robot.RobotStates.MechState;
 import frc.robot.RobotStates.RobotGoal;
 import frc.robot.autonomous.AutosManager;
 import frc.robot.autonomous.AutosManager.Auto;
 import frc.robot.autonomous.AutosSubsystems;
 import frc.robot.autonomous.records.PickupLocation;
-import frc.robot.commands.climber.Climb;
 import frc.robot.commands.climber.ClimberSetAngle;
 import frc.robot.commands.drive.DrivetrainDefaultTeleopDrive;
 import frc.robot.commands.drive.WheelRadiusCharacterization;
@@ -49,6 +47,7 @@ import frc.robot.commands.endEffector.EndEffectorSetRPM;
 import frc.robot.commands.mechanism.MechToPosition;
 import frc.robot.commands.mechanism.arm.ArmManualControl;
 import frc.robot.commands.mechanism.elevator.ElevatorManualControl;
+import frc.robot.commands.setGoal.SetRobotGoal;
 import frc.robot.configs.SimulatorRobotConfig;
 import frc.robot.subsystems.LED;
 import frc.robot.subsystems.LED.BaseRobotState;
@@ -582,7 +581,11 @@ public class RobotContainer {
 
     driverController
         .registerTrigger(XboxControllerWrapper.Button.povDown, "Climb")
-        .onTrue(new Climb(climber, driverController.getPovDown(), robotStates));
+        .whileTrue(new SetRobotGoal(robotStates, RobotGoal.Climb, true, false));
+
+    driverController
+        .registerTrigger(XboxControllerWrapper.Button.leftBumper, "Score")
+        .whileTrue(new SetRobotGoal(robotStates, RobotGoal.Score, true, false));
 
     // ---------- OPERATOR CONTROLS -----------
 
@@ -608,9 +611,7 @@ public class RobotContainer {
     // Intake positions
     operatorController
         .registerTrigger(XboxControllerWrapper.Button.a, "Intake Pivot In")
-        .onTrue(
-            Commands.runOnce(() -> intake.setState(IntakeState.Stow))
-                .andThen(Commands.runOnce(() -> intake.setHoldAlgae(false))));
+        .onTrue(Commands.runOnce(() -> intake.setState(IntakeState.Stow)));
     operatorController
         .registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Intake Pivot Out")
         .onTrue(Commands.runOnce(() -> intake.setState(IntakeState.Down)));

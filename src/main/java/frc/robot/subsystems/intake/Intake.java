@@ -68,11 +68,6 @@ public class Intake extends SubsystemBase {
   private static final LoggerEntry.EnumValue<ControlMode> logRollerControlMode =
       rollerLogGroup.buildEnum("ControlMode");
 
-  private static final LoggerGroup starLogGroup = logGroup.subgroup("StarRollers");
-  private static final LoggerEntry.Decimal logStarTargetVelocityRPM =
-      starLogGroup.buildDecimal("TargetVelocityRPM");
-  private static final LoggerEntry.EnumValue<ControlMode> logStarControlMode =
-      starLogGroup.buildEnum("ControlMode");
   private static final LoggerEntry.EnumValue<IntakeState> logIntakeState =
       logGroup.buildEnum("IntakeState");
 
@@ -218,11 +213,6 @@ public class Intake extends SubsystemBase {
 
       logPivotControlMode.info(pivotControlMode);
 
-      logToFActivated.info(inputs.intakeTofDetected);
-      logToFDistance.info(inputs.intakeTofDistanceInches);
-      logToFSignalStrength.info(inputs.intakeTofSignalStrength);
-
-      logStarControlMode.info(starControlMode);
       logIntakeState.info(intakeState);
 
       // Update tunable numbers

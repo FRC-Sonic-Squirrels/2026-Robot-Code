@@ -5,13 +5,10 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.team2930.AllianceFlipUtil;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
-import frc.lib.team2930.RunStateMachineCommand;
 import frc.robot.Constants.FieldConstants;
-import frc.robot.commands.PassToEndEffector;
 import frc.robot.commands.drive.DriveToPoseHelper;
 import frc.robot.commands.drive.RotateToFaceHelper;
 import frc.robot.subsystems.intake.Intake;
@@ -48,22 +45,6 @@ public class RobotStates {
     AutoPrep,
   }
 
-  // Intake states
-
-  public enum IntakeState {
-    Idle,
-    Override,
-    IntakeFuel,
-    PrepPassoff,
-    PassoffEndEffector,
-    PassoffIntake,
-    ShootFuel,
-    Stow,
-    Climb,
-    Down,
-    Eject
-  }
-
   // Desired mech to hold coral
 
   public enum TargetCoralPosition {
@@ -89,7 +70,6 @@ public class RobotStates {
   private LoggerEntry.EnumValue<EndEffectorDesiredAction> logEndEffectorDesiredAction =
       logGroup.buildEnum("EndEffectorDesiredAction");
   private LoggerEntry.EnumValue<MechState> logMechState = logGroup.buildEnum("MechState");
-  private LoggerEntry.EnumValue<IntakeState> logIntakeState = logGroup.buildEnum("IntakeState");
 
   private LoggerGroup logSubsystemsInUse = logGroup.subgroup("SubsystemsInUse");
   private LoggerEntry.Bool logMechInUse = logSubsystemsInUse.buildBoolean("MechInUse");
@@ -132,17 +112,6 @@ public class RobotStates {
   private RobotGoal goal = RobotGoal.None;
   private RobotGoal wantedGoal = RobotGoal.None;
 
-  // Triggers
-
-  public Trigger triggerForCoralInRobot = new Trigger(() -> coralInRobot);
-  public Trigger triggerForCoralInEndEffector = new Trigger(() -> coralInEndEffector).debounce(0.5);
-  public Trigger triggerForCoralInIntake =
-      new Trigger(() -> coralInIntake)
-          .debounce(
-              0.1); // debounce to allow coral to get fully in intake before ending intake command
-
-  public Trigger instantTriggerForCoralInIntake = new Trigger(() -> coralInIntake);
-
   // Commands
 
   public RobotStates() {}
@@ -161,10 +130,6 @@ public class RobotStates {
     this.intake = intake;
     this.drivetrain = drivetrain;
     this.intaking = intaking;
-    passCoralToEndEffector =
-        new RunStateMachineCommand(() -> new PassToEndEffector(intake, this, true));
-    passAlgaeToEndEffector =
-        new RunStateMachineCommand(() -> new PassToEndEffector(intake, this, false));
     dtpHelpter =
         new DriveToPoseHelper(
             this.drivetrain,
@@ -247,31 +212,7 @@ public class RobotStates {
         break;
     }
 
-    targetCoralPosition =
-        scoringLevel == ScoringLevel.L1
-            ? TargetCoralPosition.Intake
-            : TargetCoralPosition
-                .EndEffector; // If scoring in L1, target mech for coral is intake, else end
-    // effector
-
-    transferCoralToEndEffector =
-        targetCoralPosition == TargetCoralPosition.EndEffector
-            && !coralInEndEffector
-            && coralInIntake;
-
     CommandScheduler.getInstance().setPeriod(endEffectorOverrideVelocity);
-
-    transferAlgaeToEndEffector = false;
-    // algaeInIntake && !algaeInEndEffector;
-
-    transferCoralToIntake =
-        targetCoralPosition == TargetCoralPosition.Intake && !coralInIntake && coralInEndEffector;
-
-    logTransferCoralToEndEffector.info(transferCoralToEndEffector);
-    logTransferCoralToIntake.info(transferCoralToIntake);
-
-    logTransferAlgaeToEndEffector.info(transferAlgaeToEndEffector);
-    logTransferAlgaeToIntake.info(transferAlgaeToIntake);
 
     logMechInUse.info(mechanismInUse);
     logEndEffectorInUse.info(endEffectorInUse);
@@ -282,40 +223,6 @@ public class RobotStates {
     if (mechState == MechState.Override) {
       mechanismInUse = true;
     }
-    var scheduler = CommandScheduler.getInstance();
-
-    if (!mechanismInUse && !endEffectorInUse) {
-
-      // Passing coral between mechanisms
-      if (transferCoralToEndEffector && !passCoralToEndEffector.isScheduled()) {
-        scheduler.schedule(passCoralToEndEffector);
-      }
-
-      if (transferCoralToIntake && !passCoralToIntake.isScheduled()) {
-        scheduler.schedule(passCoralToIntake);
-      }
-
-      // Passing algae between mechanisms
-      if (transferAlgaeToEndEffector && !passAlgaeToEndEffector.isScheduled()) {
-        scheduler.schedule(passAlgaeToEndEffector);
-      }
-
-      if (transferAlgaeToIntake && !passAlgaeToIntake.isScheduled()) {
-        scheduler.schedule(passAlgaeToIntake);
-      }
-    } else {
-      passCoralToEndEffector.cancel();
-      passCoralToIntake.cancel();
-
-      passAlgaeToEndEffector.cancel();
-      passAlgaeToIntake.cancel();
-    }
-
-    // Updates states
-
-    coralInRobot = coralInEndEffector || coralInIntake;
-
-    algaeInRobot = algaeInEndEffector || algaeInIntake;
 
     // Log states
 
@@ -355,10 +262,6 @@ public class RobotStates {
   public void setEndEffectorState(EndEffectorDesiredAction state) {
     endEffectorDesiredAction = state;
     endEffectorInUse = true;
-  }
-
-  public boolean coralInPassOff() {
-    return passCoralToEndEffector.isScheduled() || passCoralToIntake.isScheduled();
   }
 
   public RobotGoal getRobotGoal() {
