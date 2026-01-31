@@ -460,6 +460,8 @@ public final class Constants {
       public static final Distance WHEEL_DIAMETER = Units.Inches.of(2.0);
       public static final double SUPPLY_CURRENT_LIMIT = 40;
       public static final double STATOR_CURRENT_LIMIT = 40;
+      public static final double PEAK_REVERSE_VOLTAGE = 0;
+      public static final double SUPPLY_VOLTAGE_TIME = 0.02;
     }
 
     public static class Kicker {
