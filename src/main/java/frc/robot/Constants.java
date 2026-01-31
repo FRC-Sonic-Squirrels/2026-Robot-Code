@@ -435,6 +435,9 @@ public final class Constants {
 
       public static final Distance MIN_DISTANCE = Units.Inches.of(40.0);
 
+      public static final double SUPPLY_CURRENT_LIMIT = 40;
+      public static final double STATOR_CURRENT_LIMIT = 40;
+
       static {
         PITCH_ADJUSTMENT_MAP = new InterpolatingDoubleTreeMap();
         PITCH_ADJUSTMENT_MAP.put(Units.Inches.of(51).in(Units.Meters), 4.0);
