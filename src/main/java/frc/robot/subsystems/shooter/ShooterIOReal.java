@@ -14,6 +14,7 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -54,11 +55,8 @@ public class ShooterIOReal implements ShooterIO {
 
   private final MotionMagicVoltage hoodClosedLoopControl =
       new MotionMagicVoltage(0).withEnableFOC(true);
-  private final VoltageOut hoodOpenLoop = new VoltageOut(0.0).withEnableFOC(true);
-
   private final MotionMagicVelocityVoltage flywheelClosedLoop =
       new MotionMagicVelocityVoltage(0.0).withEnableFOC(true);
-  private final VoltageOut flywheelOpenLoop = new VoltageOut(0.0).withEnableFOC(true);
 
   private final VoltageOut kickerOpenLoop = new VoltageOut(0.0).withEnableFOC(true);
 
@@ -200,27 +198,27 @@ public class ShooterIOReal implements ShooterIO {
     inputs.hoodPosition = Rotation2d.fromRotations(hoodPosition.getValueAsDouble());
     // rotations to rads = mult by 2pi. 1 full rot = 2pi rads
     inputs.hoodVelocityRadsPerSec = hoodVelocity.getValueAsDouble() * (2 * Math.PI);
-    inputs.hoodAppliedVolts = hoodVoltage.getValueAsDouble();
-    inputs.hoodCurrentAmps = hoodCurrentAmps.getValueAsDouble();
+    inputs.hoodAppliedVolts = hoodVoltage.getValue().in(Units.Volts);
+    inputs.hoodCurrentAmps = hoodCurrentAmps.getValue().in(Units.Amps);
 
-    inputs.flywheelRPM[0] = flywheelLeadVelocity.getValueAsDouble() * 60.0;
-    inputs.flywheelRPM[1] = flywheelFollowVelocity.getValueAsDouble() * 60.0;
+    inputs.flywheelRPM[0] = flywheelLeadVelocity.getValue().in(Units.RPM);
+    inputs.flywheelRPM[1] = flywheelFollowVelocity.getValue().in(Units.RPM);
 
     // rps to rpm = mult by 60
-    inputs.flywheelAppliedVolts[0] = flywheelLeadVoltage.getValueAsDouble();
-    inputs.flywheelAppliedVolts[1] = flywheelFollowerVoltage.getValueAsDouble();
+    inputs.flywheelAppliedVolts[0] = flywheelLeadVoltage.getValue().in(Units.Volts);
+    inputs.flywheelAppliedVolts[1] = flywheelFollowerVoltage.getValue().in(Units.Volts);
 
-    inputs.flywheelCurrentAmps[0] = flywheelLeadCurrentAmps.getValueAsDouble();
-    inputs.flywheelCurrentAmps[1] = flywheelFollowerCurrentAmps.getValueAsDouble();
+    inputs.flywheelCurrentAmps[0] = flywheelLeadCurrentAmps.getValue().in(Units.Amps);
+    inputs.flywheelCurrentAmps[1] = flywheelFollowerCurrentAmps.getValue().in(Units.Amps);
 
-    inputs.kickerAppliedVolts = kickerAppliedVolts.getValueAsDouble();
-    inputs.kickerCurrentAmps = kickerCurrentAmps.getValueAsDouble();
-    inputs.kickerVelocityRPM = kickerVelocity.getValueAsDouble() * 60;
+    inputs.kickerAppliedVolts = kickerAppliedVolts.getValue().in(Units.Volts);
+    inputs.kickerCurrentAmps = kickerCurrentAmps.getValue().in(Units.Amps);
+    inputs.kickerVelocityRPM = kickerVelocity.getValue().in(Units.RPM);
 
-    inputs.tempsCelcius[0] = flywheelLeadTempCelsius.getValueAsDouble();
-    inputs.tempsCelcius[1] = flywheelFollowTempCelsius.getValueAsDouble();
-    inputs.tempsCelcius[2] = hoodTempCelsius.getValueAsDouble();
-    inputs.tempsCelcius[3] = kickerTempCelsius.getValueAsDouble();
+    inputs.tempsCelcius[0] = flywheelLeadTempCelsius.getValue().in(Units.Celsius);
+    inputs.tempsCelcius[1] = flywheelFollowTempCelsius.getValue().in(Units.Celsius);
+    inputs.tempsCelcius[2] = hoodTempCelsius.getValue().in(Units.Celsius);
+    inputs.tempsCelcius[3] = kickerTempCelsius.getValue().in(Units.Celsius);
   }
 
   // HOOD
@@ -231,22 +229,11 @@ public class ShooterIOReal implements ShooterIO {
     hood.setControl(hoodClosedLoopControl);
   }
 
-  @Override
-  public void setHoodVoltage(double volts) {
-    hood.setControl(hoodOpenLoop.withOutput(volts));
-  }
-
   // Flywheel
-  @Override
-  public void setFlywheelVoltage(double volts) {
-    flywheelLead.setControl(flywheelOpenLoop.withOutput(volts));
-    flywheelFollower.setControl(flywheelOpenLoop.withOutput(volts));
-  }
 
   @Override
-  public void setFlywheelRPM(double topRollerRPM, double bottomRollerRPM) {
-    flywheelLead.setControl(flywheelClosedLoop.withVelocity(topRollerRPM / 60));
-    flywheelFollower.setControl(flywheelClosedLoop.withVelocity(bottomRollerRPM / 60));
+  public void setFlywheelRPM(double revPerMin) {
+    flywheelLead.setControl(flywheelClosedLoop.withVelocity(revPerMin / 60));
   }
 
   @Override

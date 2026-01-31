@@ -27,10 +27,9 @@ public interface ShooterIO {
   /** Updates the set of loggable inputs. */
   public default void updateInputs(Inputs inputs) {}
 
-  // HOOD
-  public default void setHoodPosition(Rotation2d rot) {}
+  // Hood
 
-  public default void setHoodVoltage(double volts) {}
+  public default void setHoodPosition(Rotation2d rot) {}
 
   public default void setHoodClosedLoopConstants(
       double kP,
@@ -40,14 +39,14 @@ public interface ShooterIO {
       double maxProfiledAcceleration) {}
 
   // Flywheel
-  public default void setFlywheelVoltage(double volts) {}
 
-  public default void setFlywheelRPM(double topRollerRPM, double bottomRollerRPM) {}
+  public default void setFlywheelRPM(double revPerMin) {}
 
   public default void setFlywheelClosedLoopConstants(
       double kP, double kV, double kS, double maxProfiledAcceleration) {}
 
-  // KICKER
+  // Kicker
+
   public default void setKickerVoltage(double volts) {}
 
   public default boolean setNeutralMode(NeutralModeValue value) {

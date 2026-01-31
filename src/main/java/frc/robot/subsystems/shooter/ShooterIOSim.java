@@ -1,7 +1,6 @@
 // Comfort below
 package frc.robot.subsystems.shooter;
 
-import com.ctre.phoenix6.controls.VoltageOut;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
@@ -65,8 +64,6 @@ public class ShooterIOSim implements ShooterIO {
   private double pivotControlEffort = 0.0;
   private double pivotOpenLoopVolts = 0.0;
   private double kickerVolts = 0.0;
-
-  private VoltageOut flywheelOpenLoopVolts = new VoltageOut(0.0).withEnableFOC(true);
 
   private double targetRPM = 0.0;
 
@@ -135,24 +132,7 @@ public class ShooterIOSim implements ShooterIO {
   }
 
   @Override
-  public void setHoodVoltage(double volts) {
-    pivotOpenLoopVolts = volts;
-    pivotControlMode = ControlMode.VOLTAGE;
-  }
-
-  @Override
-  public void setFlywheelVoltage(double volts) {
-    flywheelMotorSim.setControl(flywheelOpenLoopVolts.withOutput(volts));
-  }
-
-  @Override
-  public void setKickerVoltage(double volts) {
-    VoltageOut kickerVolts = new VoltageOut(MathUtil.clamp(volts, -12.0, 12.0));
-    kickerMotorSim.setControl(kickerVolts);
-  }
-
-  @Override
-  public void setFlywheelRPM(double topRollerRPM, double bottomRollerRPM) {
-    targetRPM = topRollerRPM;
+  public void setFlywheelRPM(double revPerMin) {
+    targetRPM = revPerMin;
   }
 }

@@ -14,7 +14,6 @@ import java.util.List;
 
 public class Shooter extends SubsystemBase {
   private static final String ROOT_TABLE = "Shooter";
-  private static final double MAX_VOLTAGE = 12;
 
   private static final ExecutionTiming timing = new ExecutionTiming(ROOT_TABLE);
 
@@ -234,17 +233,9 @@ public class Shooter extends SubsystemBase {
     return inputs.hoodPosition;
   }
 
-  public void setPercentOut(double percent) {
-    io.setFlywheelVoltage(percent * MAX_VOLTAGE);
-  }
-
   public void setHoodClosedLoopConstants(
       double kP, double kD, double kG, double maxProfiledVelocity, double maxProfiledAcceleration) {
     io.setHoodClosedLoopConstants(kP, kD, kG, maxProfiledVelocity, maxProfiledAcceleration);
-  }
-
-  public void setHoodVoltage(double volts) {
-    io.setHoodVoltage(volts);
   }
 
   public void setHoodPosition(Rotation2d rot) {
@@ -252,18 +243,9 @@ public class Shooter extends SubsystemBase {
     targetHoodPosition = rot;
   }
 
-  public void setFlywheelVoltage(double volts) {
-    io.setFlywheelVoltage(volts);
-  }
-
-  public void setFlywheelRPM(double topRollerRPM, double bottomRollerRPM) {
-    io.setFlywheelRPM(topRollerRPM, bottomRollerRPM);
-    targetFlywheelRPM = topRollerRPM;
-  }
-
-  public void setFlywheelRPM(double rpm) {
-    io.setFlywheelRPM(rpm, rpm);
-    targetFlywheelRPM = rpm;
+  public void setFlywheelRPM(double revPerMin) {
+    io.setFlywheelRPM(revPerMin);
+    targetFlywheelRPM = revPerMin;
   }
 
   public double getRPM() {
