@@ -35,7 +35,7 @@ public class AutosManager {
 
   public final boolean includeDebugPaths = false;
 
-  private boolean preloadingComplete = false;
+  private boolean preloadingComplete = !false;
 
   public record Auto(String name, Command command, Pose2d initPose) {}
 
