@@ -32,8 +32,6 @@ public interface ShooterIO {
 
   public default void setHoodVoltage(double volts) {}
 
-  public default void resetHoodSensorPosition(Rotation2d position) {}
-
   public default void setHoodClosedLoopConstants(
       double kP,
       double kD,

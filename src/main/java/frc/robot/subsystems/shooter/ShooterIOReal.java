@@ -248,11 +248,6 @@ public class ShooterIOReal implements ShooterIO {
   }
 
   @Override
-  public void resetHoodSensorPosition(Rotation2d position) {
-    hood.setPosition(position.getRotations());
-  }
-
-  @Override
   public void setHoodClosedLoopConstants(
       double kP, double kD, double kG, double maxProfiledVelocity, double maxProfiledAcceleration) {
     Slot0Configs pidConfig = new Slot0Configs();

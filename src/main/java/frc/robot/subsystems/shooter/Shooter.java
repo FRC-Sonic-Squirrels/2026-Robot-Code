@@ -303,10 +303,6 @@ public class Shooter extends SubsystemBase {
     return inputs.kickerAppliedVolts / Constants.MAX_VOLTAGE;
   }
 
-  public void hoodResetHomePosition() {
-    io.resetHoodSensorPosition(Constants.ShooterConstants.Hood.HOME_POSITION);
-  }
-
   public double getHoodVoltage() {
     return inputs.hoodAppliedVolts;
   }
