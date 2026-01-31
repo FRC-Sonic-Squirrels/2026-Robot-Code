@@ -114,7 +114,7 @@ public class Shooter extends SubsystemBase {
   }
 
   private final ShooterIO io;
-  private final ShooterIO.Inputs inputs = new ShooterIO.Inputs();
+  private final ShooterIO.Inputs inputs = new ShooterIO.Inputs(logGroup);
 
   // Creates a new flat moving average filter
   // Average will be taken over the last 20 samples
