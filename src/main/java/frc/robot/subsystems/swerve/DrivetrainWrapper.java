@@ -62,13 +62,9 @@ public class DrivetrainWrapper {
 
     // If chassisSpeedsOverride, replace chassisSpeeds with that
 
-    if (chassisSpeedsOverride != null) {
-      chassisSpeeds = chassisSpeedsOverride;
-    }
-
     // Run drivetrain
 
-    drivetrain.runVelocity(chassisSpeeds, prioritizeRotation, chassisSpeedsOverride != null);
+    drivetrain.runVelocity(prioritizeRotation, chassisSpeedsOverride != null);
 
     var pose1 = getHubPoseEstimatorPose(false);
     var pose2 = getHubPoseEstimatorPose(true);

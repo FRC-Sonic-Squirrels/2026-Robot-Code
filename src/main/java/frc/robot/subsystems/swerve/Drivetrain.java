@@ -473,7 +473,6 @@ public class Drivetrain extends SubsystemBase {
     logDrivetrain_speedsY.info(speeds.vyMetersPerSecond);
     logDrivetrain_linearSpeed.info(Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond));
     logDrivetrain_linearSpeedMax.info(config.getRobotMaxLinearVelocity());
-    logDrivetrain_speedsRot.info(speeds.omegaRadiansPerSecond);
 
     // Calculate module setpoints
     ChassisSpeeds       discreteSpeeds = ChassisSpeeds.discretize(speeds, Constants.kDefaultPeriod);
@@ -516,7 +515,6 @@ public class Drivetrain extends SubsystemBase {
       headings[i] = config.getModuleTranslations()[i].getAngle();
     }
     kinematics.resetHeadings(headings);
-    stop();
   }
 
   /** Runs forwards at the commanded voltage. */
