@@ -109,6 +109,8 @@ public class ShooterIOReal implements ShooterIO {
 
     kickerConfig.CurrentLimits.SupplyCurrentLimit = ShooterConstants.Kicker.SUPPLY_CURRENT_LIMIT;
     kickerConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+    kickerConfig.CurrentLimits.StatorCurrentLimit = ShooterConstants.Kicker.STATOR_CURRENT_LIMIT;
+    kickerConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
     kickerConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
