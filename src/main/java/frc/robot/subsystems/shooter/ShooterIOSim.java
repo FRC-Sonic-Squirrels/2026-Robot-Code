@@ -9,7 +9,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.TalonFXSim;
@@ -71,9 +70,6 @@ public class ShooterIOSim implements ShooterIO {
 
   private double targetRPM = 0.0;
 
-  private double timeMarkForNoteLoadingDone = Double.NaN;
-  private double timeMarkForNoteShootingDone = Double.NaN;
-
   public ShooterIOSim() {}
 
   @Override
@@ -90,23 +86,6 @@ public class ShooterIOSim implements ShooterIO {
     inputs.flywheelRPM[0] = targetRPM;
 
     inputs.kickerAppliedVolts = kickerVolts;
-
-    var now = Timer.getFPGATimestamp();
-
-    inputs.timeOfFlightDistance = 16;
-
-    // Simulate note movements.
-    if (Double.isFinite(timeMarkForNoteLoadingDone)) {
-      if (now > timeMarkForNoteLoadingDone) {
-        inputs.timeOfFlightDistance = 0;
-      }
-    } else if (Double.isFinite(timeMarkForNoteShootingDone)) {
-      if (now < timeMarkForNoteShootingDone) {
-        inputs.timeOfFlightDistance = 0;
-      } else {
-        timeMarkForNoteShootingDone = Double.NaN; // Shooting done, reset marks.
-      }
-    }
 
     double ff = 0.0;
 
@@ -175,21 +154,5 @@ public class ShooterIOSim implements ShooterIO {
   @Override
   public void setFlywheelRPM(double topRollerRPM, double bottomRollerRPM) {
     targetRPM = topRollerRPM;
-  }
-
-  @Override
-  public void markStartOfNoteLoading() {
-    if (Double.isNaN(timeMarkForNoteLoadingDone)) {
-      timeMarkForNoteLoadingDone = Timer.getFPGATimestamp() + 0.2;
-      timeMarkForNoteShootingDone = Double.NaN;
-    }
-  }
-
-  @Override
-  public void markStartOfNoteShooting() {
-    if (Double.isNaN(timeMarkForNoteShootingDone)) {
-      timeMarkForNoteLoadingDone = Double.NaN;
-      timeMarkForNoteShootingDone = Timer.getFPGATimestamp() + 0.2;
-    }
   }
 }

@@ -29,7 +29,7 @@ public class Shooter extends SubsystemBase {
       logInputs.buildDecimal("HoodCurrentAmps");
   private static final LoggerEntry.DecimalArray logInputs_flywheelRPM =
       logInputs.buildDecimalArray("FlywheelRPM");
-  private static final LoggerEntry.DecimalArray logInputs_launcherAppliedVolts =
+  private static final LoggerEntry.DecimalArray logInputs_flywheelAppliedVolts =
       logInputs.buildDecimalArray("FlywheelAppliedVolts");
   private static final LoggerEntry.DecimalArray logInputs_flywheelCurrentAmps =
       logInputs.buildDecimalArray("FlywheelCurrentAmps");
@@ -77,8 +77,8 @@ public class Shooter extends SubsystemBase {
 
   private static final LoggedTunableNumber hoodToleranceDegrees =
       group.build("hoodToleranceDegrees", 0.5);
-  private static final LoggedTunableNumber launcherToleranceRPM =
-      group.build("launcherToleranceRPM", 150);
+  private static final LoggedTunableNumber flywheelToleranceRPM =
+      group.build("flywheelToleranceRPM", 150);
 
   static {
     if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2026) {
@@ -126,7 +126,7 @@ public class Shooter extends SubsystemBase {
   private double hoodPidLatency = 0.0;
 
   private Rotation2d targetHoodPosition = Constants.zeroRotation2d;
-  private double topRollerTargetLauncherRPM = 0.0;
+  private double topRollerTargetFlywheelRPM = 0.0;
 
   /** Creates a new ShooterSubsystem. */
   public Shooter(ShooterIO io) {
@@ -158,7 +158,7 @@ public class Shooter extends SubsystemBase {
       logInputs_hoodAppliedVolts.info(inputs.hoodAppliedVolts);
       logInputs_hoodCurrentAmps.info(inputs.hoodCurrentAmps);
       logInputs_flywheelRPM.info(inputs.flywheelRPM);
-      logInputs_launcherAppliedVolts.info(inputs.flywheelAppliedVolts);
+      logInputs_flywheelAppliedVolts.info(inputs.flywheelAppliedVolts);
       logInputs_flywheelCurrentAmps.info(inputs.flywheelCurrentAmps);
       logInputs_kickerAppliedVolts.info(inputs.kickerAppliedVolts);
       logInputs_kickerCurrentAmps.info(inputs.kickerCurrentAmps);
@@ -258,12 +258,12 @@ public class Shooter extends SubsystemBase {
 
   public void setFlywheelRPM(double topRollerRPM, double bottomRollerRPM) {
     io.setFlywheelRPM(topRollerRPM, bottomRollerRPM);
-    topRollerTargetLauncherRPM = topRollerRPM;
+    topRollerTargetFlywheelRPM = topRollerRPM;
   }
 
   public void setFlywheelRPM(double rpm) {
     io.setFlywheelRPM(rpm, rpm);
-    topRollerTargetLauncherRPM = rpm;
+    topRollerTargetFlywheelRPM = rpm;
   }
 
   public double getRPM() {
@@ -271,11 +271,11 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean isAtTargetRPM() {
-    return isAtTargetRPM(topRollerTargetLauncherRPM);
+    return isAtTargetRPM(topRollerTargetFlywheelRPM);
   }
 
   public boolean isAtTargetRPM(double rpm) {
-    return inputs.flywheelRPM[0] > rpm - launcherToleranceRPM.get();
+    return inputs.flywheelRPM[0] > rpm - flywheelToleranceRPM.get();
   }
 
   public double getHoodPIDLatency() {
