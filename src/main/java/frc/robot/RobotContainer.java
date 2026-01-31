@@ -56,10 +56,6 @@ import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.ClimberIO;
 import frc.robot.subsystems.climber.ClimberIOReal;
 import frc.robot.subsystems.climber.ClimberIOSim;
-import frc.robot.subsystems.endEffector.EndEffector;
-import frc.robot.subsystems.endEffector.EndEffectorIO;
-import frc.robot.subsystems.endEffector.EndEffectorIOReal;
-import frc.robot.subsystems.endEffector.EndEffectorIOSim;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.IntakeState;
 import frc.robot.subsystems.intake.IntakeIO;
@@ -114,7 +110,6 @@ public class RobotContainer {
   private final Arm arm;
   private final Elevator elevator;
   private final Intake intake;
-  private final EndEffector endEffector;
   private final VisionGamepiece visionGamepiece;
   private final LED led;
   private final Climber climber;
@@ -206,7 +201,6 @@ public class RobotContainer {
       arm = new Arm(new ArmIO() {});
       elevator = new Elevator(new ElevatorIO() {});
       intake = new Intake(new IntakeIO() {}, robotStates);
-      endEffector = new EndEffector(new EndEffectorIO() {}, robotStates);
       climber = new Climber(new ClimberIO() {});
 
       if (Constants.unusedCode) {
@@ -290,7 +284,6 @@ public class RobotContainer {
           arm = new Arm(new ArmIOSim());
           elevator = new Elevator(new ElevatorIOSim());
           intake = new Intake(new IntakeIOSim(), robotStates);
-          endEffector = new EndEffector(new EndEffectorIOSim(), robotStates);
           climber = new Climber(new ClimberIOSim());
           led =
               new LED(
@@ -319,7 +312,6 @@ public class RobotContainer {
           arm = new Arm(new ArmIO() {});
           elevator = new Elevator(new ElevatorIO() {});
           intake = new Intake(new IntakeIO() {}, robotStates);
-          endEffector = new EndEffector(new EndEffectorIO() {}, robotStates);
           climber = new Climber(new ClimberIO() {});
 
           if (Constants.unusedCode) {
@@ -347,7 +339,6 @@ public class RobotContainer {
                   config.getSwerveModuleObjects(),
                   () -> is_autonomous);
           intake = new Intake(new IntakeIOReal(), robotStates);
-          endEffector = new EndEffector(new EndEffectorIOReal(), robotStates);
           elevator = new Elevator(new ElevatorIOReal());
           arm = new Arm(new ArmIOReal());
           climber = new Climber(new ClimberIO() {});
@@ -382,7 +373,6 @@ public class RobotContainer {
             System.out.println("sleep interrupted");
           }
           intake = new Intake(new IntakeIOReal(), robotStates);
-          endEffector = new EndEffector(new EndEffectorIOReal(), robotStates);
           elevator = new Elevator(new ElevatorIOReal());
           arm = new Arm(new ArmIOReal());
           climber = new Climber(new ClimberIOReal());
@@ -425,7 +415,6 @@ public class RobotContainer {
             System.out.println("sleep interrupted");
           }
           intake = new Intake(new IntakeIOReal(), robotStates);
-          endEffector = new EndEffector(new EndEffectorIOReal(), robotStates);
           elevator = new Elevator(new ElevatorIOReal());
           arm = new Arm(new ArmIOReal());
           climber = new Climber(new ClimberIOReal());
@@ -478,7 +467,6 @@ public class RobotContainer {
           arm = new Arm(new ArmIO() {});
           elevator = new Elevator(new ElevatorIO() {});
           intake = new Intake(new IntakeIO() {}, robotStates);
-          endEffector = new EndEffector(new EndEffectorIO() {}, robotStates);
           climber = new Climber(new ClimberIO() {});
 
           if (Constants.unusedCode) {
@@ -521,7 +509,7 @@ public class RobotContainer {
       coralStationPosChooser.add(chooser);
     }
 
-    var subsystems = new AutosSubsystems(drivetrainWrapper, mech, endEffector, led, intake);
+    var subsystems = new AutosSubsystems(drivetrainWrapper, mech, led, intake);
 
     robotStates.setSubsystems(
         intake, drivetrainWrapper, () -> driverController.getRightTrigger().getAsBoolean());
