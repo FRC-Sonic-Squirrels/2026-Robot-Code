@@ -524,6 +524,24 @@ public class RobotContainer {
 
     var subsystems = new AutosSubsystems(drivetrainWrapper, mech, endEffector, led, intake);
 
+        autoManager =
+        new AutosManager(
+            subsystems,
+            config,
+            autoChooser,
+            stringToAutoSupplierMap,
+            () -> {
+              var result = flipAutoChooser.get();
+              if (result != null) {
+                return result;
+              }
+              return false;
+            },
+            this::getCustomCoralStationLocations,
+            robotStates);
+
+    led.setPreloadSupplier(autoManager::preloadingComplete);
+
     drivetrain.setDefaultCommand(
         new DrivetrainDefaultTeleopDrive(
             drivetrainWrapper,
