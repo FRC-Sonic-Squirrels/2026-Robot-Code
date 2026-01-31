@@ -26,25 +26,8 @@ public class FieldStates {
   private static final LoggerGroup logGroup = LoggerGroup.build("FieldStates");
   private static final LoggerEntry.Struct<Pose3d> testPose =
       logGroup.buildStruct(Pose3d.class, "TestPose");
-  private static final LoggerEntry.StructArray<Pose3d> coralPoses =
-      logGroup.buildStructArray(Pose3d.class, "CoralPoses");
   private static final LoggerEntry.StructArray<Pose3d> algaePoses =
       logGroup.buildStructArray(Pose3d.class, "AlgaePoses");
-
-  private static final Pose3d[] blueAPose3ds =
-      new Pose3d[] {
-        new Pose3d(3.725, 4.19, 0.485, new Rotation3d(0, 0, Math.toRadians(90))),
-        new Pose3d(3.786, 4.19, 0.705, new Rotation3d(0, Math.toRadians(35), 0)),
-        new Pose3d(3.786, 4.19, 1.1075, new Rotation3d(0, Math.toRadians(35), 0)),
-        new Pose3d(3.69, 4.19, 1.74, new Rotation3d(0, Math.toRadians(85), 0))
-      };
-  private static final Pose3d[] blueBPose3ds =
-      new Pose3d[] {
-        new Pose3d(3.725, 3.86, 0.485, new Rotation3d(0, 0, Math.toRadians(90))),
-        new Pose3d(3.786, 3.86, 0.705, new Rotation3d(0, Math.toRadians(35), 0)),
-        new Pose3d(3.786, 3.86, 1.1075, new Rotation3d(0, Math.toRadians(35), 0)),
-        new Pose3d(3.69, 3.86, 1.74, new Rotation3d(0, Math.toRadians(85), 0))
-      };
 
   private static final Pose3d blueNearMidAlgae = new Pose3d(3.812, 4.0265, 0.905, Rotation3d.kZero);
   private static final double upperAlgaeHeight = 1.308;

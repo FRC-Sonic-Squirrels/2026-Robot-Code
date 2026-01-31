@@ -62,25 +62,6 @@ public class EndEffector extends SubsystemBase {
   private static final LoggedTunableNumber targetAccelerationConfig =
       group.build("MaxAccelerationConstraint");
 
-  private static final LoggedTunableNumber intakingVelocitySlow =
-      group.build("intakingVelocitySlow", 800);
-  private static final LoggedTunableNumber intakingVelocityHigh =
-      group.build("intakingVelocity", 1500);
-
-  private static final LoggedTunableNumber scoringVelocityRPM =
-      group.build("ScoringVelocityRPM", -3000);
-  private static final LoggedTunableNumber passOffVelocityRPM =
-      group.build("passOffVelocityRPM", -1000);
-  private static final LoggedTunableNumber holdAlgaeRPM = group.build("passOffVelocityRPM", -1500);
-
-  private static final LoggedTunableNumber correctionVelocity = group.build("alignVelocity", 300);
-  private static final LoggedTunableNumber alignTarget = group.build("alignTarget", 1);
-  private static final LoggedTunableNumber alignTolerance = group.build("alignTolerance", 2);
-  private static final LoggedTunableNumber alignL1Turns = group.build("alignL1Turns", 0.75);
-  private static final LoggedTunableNumber alignL2Turns = group.build("alignL2Turns", 0.15);
-  private static final LoggedTunableNumber alignL3Turns = group.build("alignL3Turns", 1.8);
-  private static final LoggedTunableNumber alignL4Turns = group.build("alignL4Turns", 1.8);
-
   // Motion constants
 
   static {
@@ -107,7 +88,6 @@ public class EndEffector extends SubsystemBase {
   private final EndEffectorIO.Inputs inputs = new EndEffectorIO.Inputs(logGroup);
 
   private ControlMode controlMode = ControlMode.OPEN_LOOP;
-  private double zeroCoralPosition;
 
   /** Creates a new EndEffector. */
   public EndEffector(EndEffectorIO io, RobotStates states) {
@@ -138,10 +118,6 @@ public class EndEffector extends SubsystemBase {
       // Logging
       io.updateInputs(inputs);
 
-      var coralInEndEffectorScoringSide = scoringSideTofSeenGamepiece();
-      var coralInEndEffectorNonScoringSide = nonScoringSideTOFSeenGamepiece();
-      var coralInEndEffector = coralInEndEffectorScoringSide || coralInEndEffectorNonScoringSide;
-
       logInputs_velocityRPM.info(inputs.velocityRPM);
       logInputs_currentAmps.info(inputs.currentAmps);
       logInputs_tempCelsius.info(inputs.tempCelsius);
@@ -163,17 +139,6 @@ public class EndEffector extends SubsystemBase {
 
   private void setConstants() {
     io.setClosedLoopConstants(kP.get(), kV.get(), kS.get(), targetAccelerationConfig.get());
-  }
-
-  private void setPercentOut(double percent) {
-    io.setVoltage(percent * Constants.MAX_VOLTAGE);
-    controlMode = ControlMode.OPEN_LOOP;
-  }
-
-  private void setVelocity(double revPerMin) {
-    io.setVelocity(revPerMin);
-    logTargetVelocityRPM.info(revPerMin);
-    controlMode = ControlMode.CLOSED_LOOP;
   }
 
   // Getters

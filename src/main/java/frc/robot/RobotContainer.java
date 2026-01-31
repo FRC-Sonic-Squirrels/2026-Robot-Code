@@ -45,7 +45,6 @@ import frc.robot.commands.climber.ClimberSetAngle;
 import frc.robot.commands.drive.DrivetrainDefaultTeleopDrive;
 import frc.robot.commands.drive.WheelRadiusCharacterization;
 import frc.robot.commands.endEffector.EndEffectorSetRPM;
-import frc.robot.commands.intake.IntakeCoralGround;
 import frc.robot.commands.mechanism.MechToPosition;
 import frc.robot.commands.mechanism.arm.ArmManualControl;
 import frc.robot.commands.mechanism.elevator.ElevatorManualControl;
@@ -575,10 +574,6 @@ public class RobotContainer {
     driverController
         .registerTrigger(XboxControllerWrapper.Button.start, "X Stance")
         .onTrue(Commands.runOnce(drivetrain::stopWithX));
-
-    driverController
-        .registerTrigger(XboxControllerWrapper.Button.leftBumper, "Ground Intake")
-        .whileTrue(new IntakeCoralGround(intake, robotStates));
 
     driverController
         .registerTrigger(XboxControllerWrapper.Button.povDown, "Climb")

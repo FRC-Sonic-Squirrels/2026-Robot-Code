@@ -26,9 +26,6 @@ import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 import frc.lib.team2930.commands.RunsWhenDisabledInstantCommand;
 import frc.robot.autonomous.AutosManager.Auto;
-import frc.robot.autonomous.records.PickupLocation;
-import java.util.ArrayList;
-import java.util.List;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -74,7 +71,6 @@ public class Robot extends LoggedRobot {
   private LoggedDashboardChooser<String> autonomousChooser = null;
   private Auto selectedAuto;
   private String selectedAutoName;
-  private List<PickupLocation> selectedCoralStationLocations = new ArrayList<>();
   private boolean selectedAutoFlipped;
   private Command autoCommand;
   private Pose2d selectedInitialPose;
@@ -214,9 +210,7 @@ public class Robot extends LoggedRobot {
     if (autonomousChooser == null) {
       autonomousChooser = robotContainer.getAutonomousChooser();
     }
-
-    var customCoralStationLocations = robotContainer.getCustomCoralStationLocations();
-
+    
     var autoName = autonomousChooser.get();
 
     if (desiredInitialPose != null && !desiredInitialPose.equals(selectedInitialPose)) {

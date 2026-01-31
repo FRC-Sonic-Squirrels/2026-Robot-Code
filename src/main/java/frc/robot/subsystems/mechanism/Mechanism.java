@@ -9,8 +9,6 @@ import edu.wpi.first.units.Units;
 import frc.lib.team2930.ExecutionTiming;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
-import frc.lib.team2930.TunableNumberGroup;
-import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.RobotStates;
 import frc.robot.subsystems.mechanism.MechanismPositions.MechanismPosition;
 import frc.robot.subsystems.mechanism.arm.Arm;
@@ -39,18 +37,6 @@ public class Mechanism {
       logGroup.buildString("CurrentMotionState");
   private static final LoggerEntry.Text log_currentSection = logGroup.buildString("CurrentSection");
   private static final LoggerEntry.Text log_targetSection = logGroup.buildString("TargetSection");
-
-  // Tunable numbers
-
-  private static final TunableNumberGroup tunableGroup = new TunableNumberGroup(ROOT_TABLE);
-  private static final LoggedTunableNumber scoreL4ArmAccel =
-      tunableGroup.build("scoringL4ArmAccel", 5);
-  private static final LoggedTunableNumber coralStationArmAccel =
-      tunableGroup.build("coralStationArmAccel", 3);
-  private static final LoggedTunableNumber holdAlgaeArmAccel =
-      tunableGroup.build("holdAlgaeArmAccel", 3);
-  private static final LoggedTunableNumber holdAlgaeElevatorAccel =
-      tunableGroup.build("holdAlgaeElevatorAccel", 100);
 
   // States
 
@@ -91,10 +77,6 @@ public class Mechanism {
 
   public Arm getArm() {
     return arm;
-  }
-
-  private void goToPositionParallel(MechanismPosition position) {
-    goToPositionParallel(position, Double.NaN, Double.NaN);
   }
 
   private void goToPositionParallel(
