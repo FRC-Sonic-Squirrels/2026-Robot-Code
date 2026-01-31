@@ -17,12 +17,10 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.GenericHID.RumbleType;
 import edu.wpi.first.wpilibj.Threads;
 import edu.wpi.first.wpilibj.XboxController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -32,30 +30,22 @@ import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.team2930.*;
 import frc.lib.team2930.commands.RunsWhenDisabledInstantCommand;
-import frc.lib.team2930.lib.controller_rumble.ControllerRumbleForTime;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants.ClimberConstants;
-import frc.robot.Constants.FieldConstants;
 import frc.robot.Constants.RobotMode.Mode;
 import frc.robot.Constants.RobotMode.RobotType;
-import frc.robot.RobotStates.EndEffectorDesiredAction;
 import frc.robot.RobotStates.IntakeState;
 import frc.robot.RobotStates.MechState;
-import frc.robot.RobotStates.ScoringLevel;
 import frc.robot.autonomous.AutosManager;
 import frc.robot.autonomous.AutosManager.Auto;
 import frc.robot.autonomous.AutosSubsystems;
-import frc.robot.autonomous.records.AutoDescriptor.StartingLocation;
 import frc.robot.autonomous.records.PickupLocation;
-import frc.robot.autonomous.records.ScoringLocation;
-import frc.robot.autonomous.records.ScoringLocation.ReefSide;
 import frc.robot.commands.climber.Climb;
 import frc.robot.commands.climber.ClimberSetAngle;
 import frc.robot.commands.drive.DrivetrainDefaultTeleopDrive;
 import frc.robot.commands.drive.WheelRadiusCharacterization;
 import frc.robot.commands.endEffector.EndEffectorSetRPM;
 import frc.robot.commands.intake.IntakeCoralGround;
-import frc.robot.commands.led.LedSetStateForSeconds;
 import frc.robot.commands.mechanism.MechToPosition;
 import frc.robot.commands.mechanism.arm.ArmManualControl;
 import frc.robot.commands.mechanism.elevator.ElevatorManualControl;
@@ -138,17 +128,12 @@ public class RobotContainer {
       new LoggedDashboardChooser<>("Auto Routine");
   private final LoggedDashboardChooser<Boolean> flipAutoChooser =
       new LoggedDashboardChooser<>("Flip Auto?");
-
-  private final List<LoggedDashboardChooser<ReefSide>> scoringPosChooser = new ArrayList<>();
   private final List<LoggedDashboardChooser<PickupLocation>> coralStationPosChooser =
       new ArrayList<>();
-  private final LoggedDashboardChooser<StartingLocation> startingLocationChooser =
-      new LoggedDashboardChooser<>("CustomStarting");
   private final int customGamepieceCount = 5;
 
   private final HashMap<String, Supplier<Auto>> stringToAutoSupplierMap = new HashMap<>();
   private final AutosManager autoManager;
-
   // Buttons
 
   public DigitalInput brakeModeButton = new DigitalInput(0);
@@ -433,7 +418,7 @@ public class RobotContainer {
 
           break;
 
-                  case ROBOT_2026:
+        case ROBOT_2026:
           try {
             Thread.sleep(1000);
           } catch (InterruptedException e) {
@@ -568,13 +553,6 @@ public class RobotContainer {
     flipAutoChooser.addDefaultOption("No", false);
     flipAutoChooser.addOption("Yes", true);
 
-    for (int i = 0; i < customGamepieceCount; i++) { // Add custom scoring choosers
-      LoggedDashboardChooser<ReefSide> chooser = new LoggedDashboardChooser<>(i + " CustomScoring");
-      for (ReefSide side : ScoringLocation.ReefSide.values()) chooser.addOption(side.name(), side);
-      chooser.addDefaultOption(ReefSide.CH.name(), ReefSide.CH);
-      scoringPosChooser.add(chooser);
-    }
-
     for (int i = 1; i < customGamepieceCount; i++) { // Add custom pickup choosers
       LoggedDashboardChooser<PickupLocation> chooser =
           new LoggedDashboardChooser<>(i + " CustomPickup");
@@ -585,13 +563,9 @@ public class RobotContainer {
       coralStationPosChooser.add(chooser);
     }
 
-    startingLocationChooser.addDefaultOption(StartingLocation.S1.name(), StartingLocation.S1);
-    for (StartingLocation location : StartingLocation.values())
-      startingLocationChooser.addOption(location.name(), location);
-
     var subsystems = new AutosSubsystems(drivetrainWrapper, mech, endEffector, led, intake);
 
-    autoManager =
+        autoManager =
         new AutosManager(
             subsystems,
             config,
@@ -604,9 +578,7 @@ public class RobotContainer {
               }
               return false;
             },
-            this::getCustomScoringLocations,
             this::getCustomCoralStationLocations,
-            this::getCustomStartingLocation,
             robotStates);
 
     led.setPreloadSupplier(autoManager::preloadingComplete);
@@ -642,23 +614,6 @@ public class RobotContainer {
                         new Pose2d(pose.getX(), pose.getY(), Constants.zeroRotation2d));
                   },
                   drivetrain));
-
-    driverController
-        .registerTrigger(XboxControllerWrapper.Button.back, "Score Algae in Net")
-        .onTrue(Commands.runOnce(() -> robotStates.mechState = MechState.AlgaeBargePosition))
-        .onFalse(
-            Commands.runOnce(
-                    () ->
-                        robotStates.endEffectorDesiredAction = EndEffectorDesiredAction.ScoreAlgae)
-                .andThen(Commands.waitUntil(() -> !robotStates.algaeInEndEffector))
-                .andThen(Commands.waitSeconds(0.3))
-                .andThen(
-                    Commands.runOnce(
-                        () -> {
-                          robotStates.mechState = MechState.Default;
-                          robotStates.endEffectorDesiredAction = EndEffectorDesiredAction.Idle;
-                        })));
-
     driverController
         .registerTrigger(XboxControllerWrapper.Button.start, "X Stance")
         .onTrue(Commands.runOnce(drivetrain::stopWithX));
@@ -675,20 +630,6 @@ public class RobotContainer {
 
     // Manual mech positions
 
-    // Reef positions
-    operatorController
-        .registerTrigger(XboxControllerWrapper.Button.povDown, "L1 Position")
-        .onTrue(new MechToPosition(mech, MechState.ReefL1Position, robotStates));
-    operatorController
-        .registerTrigger(XboxControllerWrapper.Button.povRight, "L2 Position")
-        .onTrue(new MechToPosition(mech, MechState.ReefL2Position, robotStates));
-    operatorController
-        .registerTrigger(XboxControllerWrapper.Button.povLeft, "L3 Position")
-        .onTrue(new MechToPosition(mech, MechState.ReefL3Position, robotStates));
-    operatorController
-        .registerTrigger(XboxControllerWrapper.Button.povUp, "L4 Position")
-        .onTrue(new MechToPosition(mech, MechState.ReefL4Position, robotStates));
-
     // Stow position
     operatorController
         .registerTrigger(XboxControllerWrapper.Button.x, "Score Prep Position")
@@ -703,7 +644,6 @@ public class RobotContainer {
     // Intake
     operatorController
         .registerTrigger(XboxControllerWrapper.Button.rightBumper, "Intake")
-        .onTrue(Commands.runOnce(() -> robotStates.intakeState = IntakeState.IntakeCoral))
         .onFalse(Commands.runOnce(() -> robotStates.intakeState = IntakeState.Stow));
 
     // Intake positions
@@ -762,17 +702,6 @@ public class RobotContainer {
     operatorController
         .registerTrigger(XboxControllerWrapper.Button.rightStick, "Climber in")
         .onTrue(new ClimberSetAngle(climber, Rotation2d.fromRotations(0)));
-
-    // ---------- NON-CONTROLLER TRIGGERS
-
-    robotStates.triggerForCoralInEndEffector.onFalse(
-        new MechToPosition(mech, MechState.Default, robotStates)
-            .withName("GamepieceOutOfEECommand"));
-
-    robotStates.instantTriggerForCoralInIntake.onTrue(
-        new ControllerRumbleForTime(
-                (r) -> driverController.getHID().setRumble(RumbleType.kBothRumble, r), 0.5, 0.5)
-            .alongWith(new LedSetStateForSeconds(led, RobotState.INTAKE_SUCCESS, 0.5)));
 
     // ---------- ON-ROBOT CONTROLS ------------
 
@@ -889,13 +818,9 @@ public class RobotContainer {
             drivetrain));
   }
 
-  /**
-   * Finds the nearest april tag position relative to the current robot translation
-   *
-   * @param robotTranslation - Current robot translation
-   * @param reefAprilTagPose - List of all april tag positions
-   * @return Nearest april tag
-   */
+  // TODO: Fix apriltagfinder code
+
+  /*
   public static Pose2d findNearestAprilTag(Pose2d robotTranslation, Pose2d[] reefAprilTagPose) {
     Pose2d nearestAprilTag = null;
     int start;
@@ -916,69 +841,13 @@ public class RobotContainer {
     return nearestAprilTag;
   }
 
-  /**
-   * Finds the nearest coral station april tag position relative to the current robot translation
-   *
-   * @param robotTranslation - Current robot translation
-   * @param coralStationPose - List of all coral station april tag positions
-   * @return Nearest april tag
-   */
-  public static Pose2d findNearestCoralStation(Pose2d robotTranslation, Pose2d[] coralStationPose) {
 
-    int coralStation1Index = Constants.isRedAlliance() ? 0 : 2;
-    int coralStation2Index = Constants.isRedAlliance() ? 1 : 3;
-
-    Pose2d coralStation1 = coralStationPose[coralStation1Index];
-    Pose2d coralStation2 = coralStationPose[coralStation2Index];
-
-    Pose2d nearestCoralStation =
-        GeometryUtil.getDist(coralStation1, robotTranslation)
-                < GeometryUtil.getDist(coralStation2, robotTranslation)
-            ? coralStation1
-            : coralStation2;
-
-    return nearestCoralStation;
-  }
-
-  /**
-   * Makes the robot always face towards the center of the reef
-   *
-   * @param robotTranslation - Current robot translation
-   * @param reefAprilTagPose - List of all april tag positions
-   * @return Rotates robot to face center
-   */
-  public static Rotation2d faceTowardsCenter(Pose2d robotTranslation, Pose2d[] reefAprilTagPose) {
-
-    var center = FieldConstants.BLUE_HUB_CENTER_POSE;
-    Pose2d centerPose = new Pose2d();
-
-    AllianceFlipUtil.flipPoseForAlliance(centerPose);
-
-    double targetX = center.getX();
-    double targetY = center.getY();
-
-    double robotX = robotTranslation.getX();
-    double robotY = robotTranslation.getY();
-
-    double angleToCenter = Math.atan2(targetY - robotY, targetX - robotX);
-
-    double normalizedAngleToCenter = Math.atan2(Math.sin(angleToCenter), Math.cos(angleToCenter));
-
-    Rotation2d finalRotation = new Rotation2d(normalizedAngleToCenter);
-    return finalRotation.rotateBy(Rotation2d.k180deg);
-  }
-
-  /**
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
    * @return the command to run in autonomous
    */
   public LoggedDashboardChooser<String> getAutonomousChooser() {
     return autoChooser;
-  }
-
-  public Supplier<Auto> getAutoSupplierForString(String string) {
-    return stringToAutoSupplierMap.getOrDefault(string, autoManager::doNothing);
   }
 
   public boolean autoFlipped() {
@@ -1063,7 +932,6 @@ public class RobotContainer {
         climber.getWinchAngle(),
         robotStates);
     MechanismVisualization.logMechanism();
-    FieldStates.logGamepieceVisualization();
   }
 
   public void resetSubsystems() {}
@@ -1071,26 +939,9 @@ public class RobotContainer {
   public void updateRobotState() {
     robotStates.periodic();
     mech.periodic();
-
-    if (robotStates.triggerForCoralInRobot.getAsBoolean() && !led.getGamepieceStatus()) {
-      led.setGamepieceStatus(true);
-    }
-
-    if (!robotStates.triggerForCoralInRobot.getAsBoolean() && led.getGamepieceStatus()) {
-      led.setGamepieceStatus(false);
-    }
   }
 
-  public List<ScoringLocation> getCustomScoringLocations() {
-    List<ScoringLocation> scoringLocations = new ArrayList<>();
-
-    for (LoggedDashboardChooser<ReefSide> location : scoringPosChooser) {
-      scoringLocations.add(
-          new ScoringLocation(location.get(), ScoringLevel.L4)); // Assume L4 during auto for now
-    }
-
-    return scoringLocations;
-  }
+  public void getCustomScoringLocations() {}
 
   public List<PickupLocation> getCustomCoralStationLocations() {
     List<PickupLocation> coralStationLocations = new ArrayList<>();
@@ -1100,10 +951,6 @@ public class RobotContainer {
     }
 
     return coralStationLocations;
-  }
-
-  public StartingLocation getCustomStartingLocation() {
-    return startingLocationChooser.get();
   }
 
   public Command threadCommand() { // Used to set thread priority to main thread after a timed delay

@@ -4,24 +4,17 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
-import frc.lib.team2930.RunStateMachineCommand;
 import frc.robot.Constants;
 import frc.robot.RobotStates;
-import frc.robot.RobotStates.ScoringLevel;
 import frc.robot.autonomous.helpers.ChoreoHelper;
-import frc.robot.autonomous.records.AutoDescriptor;
-import frc.robot.autonomous.records.AutoDescriptor.StartingLocation;
 import frc.robot.autonomous.records.ChoreoTrajectoryWithName;
 import frc.robot.autonomous.records.PickupLocation;
-import frc.robot.autonomous.records.ScoringLocation;
-import frc.robot.autonomous.records.ScoringLocation.ReefSide;
 import frc.robot.configs.RobotConfig;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
 import java.util.ArrayList;
@@ -56,52 +49,17 @@ public class AutosManager {
       LoggedDashboardChooser<String> chooser,
       HashMap<String, Supplier<Auto>> stringToAutoSupplierMap,
       BooleanSupplier flipAuto,
-      Supplier<List<ScoringLocation>> customScoringLocations,
       Supplier<List<PickupLocation>> customCoralStationLocations,
-      Supplier<StartingLocation> customStartingLocation,
       RobotStates states) {
     this.subsystems = subsystems;
     this.config = config;
     this.flipAuto = flipAuto;
     this.states = states;
-
-    // preload code
-    Command preloader =
-        new RunStateMachineCommand(() -> new AutoStateMachine(subsystems, config, states), true);
-
-    var cmd =
-        Commands.waitSeconds(6)
-            .deadlineFor(preloader.repeatedly())
-            .andThen(Commands.runOnce(() -> preloadingComplete = true))
-            .ignoringDisable(true)
-            .withName("AutoPreload");
-    CommandScheduler.getInstance().schedule(cmd);
-
-    fillChooserAndMap(
-        chooser,
-        stringToAutoSupplierMap,
-        customScoringLocations,
-        customCoralStationLocations,
-        customStartingLocation);
   }
 
   private List<Supplier<Auto>> allCompetitionAutos(
-      Supplier<List<ScoringLocation>> customScoringLocations,
-      Supplier<List<PickupLocation>> customCoralStationLocations,
-      Supplier<StartingLocation> customStartingLocation) {
+      Supplier<List<PickupLocation>> customCoralStationLocations) {
     var list = new ArrayList<Supplier<Auto>>();
-
-    list.add(this::doNothing);
-    list.add(this::auto_IKLJ);
-    list.add(this::auto_IKLJLoli);
-    list.add(this::auto_lolipops);
-    list.add(this::auto_compatible);
-    list.add(
-        () ->
-            customChoreoAuto(
-                customScoringLocations.get(),
-                customCoralStationLocations.get(),
-                customStartingLocation.get()));
 
     if (includeDebugPaths) {
       list.add(this::swerveCharacterization);
@@ -119,178 +77,8 @@ public class AutosManager {
     return list;
   }
 
-  private void fillChooserAndMap(
-      LoggedDashboardChooser<String> chooser,
-      HashMap<String, Supplier<Auto>> stringToAutoSupplierMap,
-      Supplier<List<ScoringLocation>> customScoringLocations,
-      Supplier<List<PickupLocation>> customCoralStationLocations,
-      Supplier<StartingLocation> customStartingLocation) {
-    var compAutos =
-        allCompetitionAutos(
-            customScoringLocations, customCoralStationLocations, customStartingLocation);
-
-    for (int i = 0; i < compAutos.size(); i++) {
-      var supplier = compAutos.get(i);
-      var name = supplier.get().name;
-      if (i == 0) {
-        // Do nothing command must be first in list.
-        chooser.addDefaultOption(name, name);
-      } else {
-        chooser.addOption(name, name);
-      }
-
-      stringToAutoSupplierMap.put(name, supplier);
-    }
-  }
-
   public Auto doNothing() {
     return new Auto("doNothing", new InstantCommand(), Constants.zeroPose2d);
-  }
-
-  private Auto auto_IKLJ() {
-    List<ScoringLocation> scoringLocations = new ArrayList<>();
-    List<PickupLocation> coralStationLocations = new ArrayList<>();
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CI, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CK, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CL, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CJ, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-
-    var state =
-        new AutoStateMachine(
-            subsystems,
-            new AutoDescriptor(scoringLocations, coralStationLocations, StartingLocation.S2),
-            config,
-            flipAuto.getAsBoolean(),
-            false,
-            states);
-
-    return stateToAuto("IKLJ", state);
-  }
-
-  private Auto auto_IKLJLoli() {
-    List<ScoringLocation> scoringLocations = new ArrayList<>();
-    List<PickupLocation> coralStationLocations = new ArrayList<>();
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CI, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CK, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CL, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.G1);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CA, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.G2);
-
-    var state =
-        new AutoStateMachine(
-            subsystems,
-            new AutoDescriptor(scoringLocations, coralStationLocations, StartingLocation.S2),
-            config,
-            flipAuto.getAsBoolean(),
-            false,
-            states);
-
-    return stateToAuto("IKLJ_Loli", state);
-  }
-
-  private Auto auto_lolipops() {
-    List<ScoringLocation> scoringLocations = new ArrayList<>();
-    List<PickupLocation> coralStationLocations = new ArrayList<>();
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CA, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.G1);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CB, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.G2);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CC, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.G3);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CL, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-
-    var state =
-        new AutoStateMachine(
-            subsystems,
-            new AutoDescriptor(scoringLocations, coralStationLocations, StartingLocation.S2),
-            config,
-            flipAuto.getAsBoolean(),
-            false,
-            states);
-
-    return stateToAuto("Lolipops", state);
-  }
-
-  private Auto auto_compatible() {
-    List<ScoringLocation> scoringLocations = new ArrayList<>();
-    List<PickupLocation> coralStationLocations = new ArrayList<>();
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CH, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CG, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CI, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CF, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-
-    var state =
-        new AutoStateMachine(
-            subsystems,
-            new AutoDescriptor(scoringLocations, coralStationLocations, StartingLocation.S3),
-            config,
-            flipAuto.getAsBoolean(),
-            false,
-            states);
-
-    return stateToAuto("Compatible", state);
-  }
-
-  private Auto customChoreoAuto(
-      List<ScoringLocation> scoringLocations,
-      List<PickupLocation> coralStationLocations,
-      StartingLocation customStartingLocation) {
-
-    String print = "";
-    if (scoringLocations.get(0).side() != null) {
-      print = customStartingLocation + " " + scoringLocations.get(0).side().name() + " . ";
-
-      for (int i = 0; i < coralStationLocations.size(); i++) {
-        print +=
-            coralStationLocations.get(i).name()
-                + " "
-                + scoringLocations.get(i + 1).side().name()
-                + " . ";
-      }
-    }
-
-    logCustomAutoPlan.info(print);
-
-    if (scoringLocations.get(0).side() == null) return new Auto("CUSTOM", Commands.none(), null);
-
-    var state =
-        new AutoStateMachine(
-            subsystems,
-            new AutoDescriptor(scoringLocations, coralStationLocations, customStartingLocation),
-            config,
-            flipAuto.getAsBoolean(),
-            false,
-            states);
-
-    return stateToAuto("CUSTOM", state);
   }
 
   @SuppressWarnings("unused")

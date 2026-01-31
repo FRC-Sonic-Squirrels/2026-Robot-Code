@@ -20,8 +20,6 @@ import frc.lib.team2930.TunableNumberGroup;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.RobotStates;
-import frc.robot.RobotStates.ScoringLevel;
-import java.util.Map;
 import java.util.function.Supplier;
 
 public class LED extends SubsystemBase {
@@ -66,7 +64,6 @@ public class LED extends SubsystemBase {
   private double timeToResetToBaseState = 0;
   private Timer resetToBaseStateTimer = new Timer();
   private boolean autoConfirmed = false;
-  private final RobotStates states;
   private Supplier<Boolean> preloadComplete;
 
   public LED(
@@ -80,7 +77,6 @@ public class LED extends SubsystemBase {
     this.brakeMode = brakeMode;
     this.gyroConnected = gyroConnected;
     this.motorsZeroed = motorsZeroed;
-    this.states = states;
   }
 
   public void setPreloadSupplier(Supplier<Boolean> preloadComplete) {
@@ -99,17 +95,6 @@ public class LED extends SubsystemBase {
       switch (robotState) {
         case BASE:
           switch (baseRobotState) {
-            case LEVEL_MODE:
-              if (states.scoringLevel == ScoringLevel.L1) {
-                setColorLevel(squirrelOrange, Color.kWhite, 1);
-              } else if (states.scoringLevel == ScoringLevel.L2) {
-                setColorLevel(squirrelOrange, Color.kWhite, 2);
-              } else if (states.scoringLevel == ScoringLevel.L3) {
-                setColorLevel(squirrelOrange, Color.kWhite, 3);
-              } else if (states.scoringLevel == ScoringLevel.L4) {
-                setColorLevel(squirrelOrange, Color.kWhite, 4);
-              }
-              break;
             case GAMEPIECE_STATUS:
               if (robotLoops < robotLoopsTillReady) { // Loading bar
                 setProgressBar(Color.kGreen, (double) robotLoops / (double) robotLoopsTillReady);
@@ -128,16 +113,12 @@ public class LED extends SubsystemBase {
                   && DriverStation.isDisabled()) { // auto not confirmed indication
                 setBlinking(Color.kDarkViolet);
               } else {
-                if (gamepieceInRobot) { // gamepiece in robot indication
-                  setSolidColor(squirrelOrange);
-                } else {
-                  if (DriverStation.isTeleop() && DriverStation.isEnabled()) { // Teleop pattern
-                    setSolidColor(Color.kBlack);
-                  } else if (DriverStation.isAutonomous()) { // Auton pattern
-                    setSeaLevelGraphic();
-                  } else { // Disabled pattern
-                    setSnake(squirrelOrange, new Color(1, 0.3, 0));
-                  }
+                if (DriverStation.isTeleop() && DriverStation.isEnabled()) { // Teleop pattern
+                  setSolidColor(Color.kBlack);
+                } else if (DriverStation.isAutonomous()) { // Auton pattern
+                  setSeaLevelGraphic();
+                } else { // Disabled pattern
+                  setSnake(squirrelOrange, new Color(1, 0.3, 0));
                 }
               }
               break;
@@ -146,9 +127,6 @@ public class LED extends SubsystemBase {
               break;
             case SCORING_ALIGNMENT:
               setZoomingDot();
-              break;
-            case ALGAE_ALIGNMENT:
-              setBlinking(Color.kAqua);
               break;
             case INTAKE_SUCCESS:
               setBlinking(Color.kRed);
@@ -176,11 +154,8 @@ public class LED extends SubsystemBase {
         case BRAKE_MODE_FAILED:
           setSolidColor(Color.kPurple);
           break;
-        case SCORE_SUCCESS:
+        case SCORING:
           setBlinking(Color.kGreen);
-          break;
-        case SCORE_FAILURE:
-          setBlinking(Color.kRed);
           break;
         case INTAKE_SUCCESS:
           setBlinking(Color.kRed);
@@ -216,16 +191,6 @@ public class LED extends SubsystemBase {
   private void setProgressBar(Color color, double percent) {
     LEDPattern progress = LEDPattern.progressMaskLayer(() -> percent);
     progress.applyTo(ledBuffer);
-    led.setData(ledBuffer);
-  }
-
-  /** setColorLevel() - The LEDS will reflect where the levels are on the robot. */
-  private void setColorLevel(Color bgColor, Color lvColor, int level) {
-    double sectionStart = ((level * (0.25)) - 0.25);
-    double sectionEnd = (level * (0.25));
-    LEDPattern layers =
-        LEDPattern.steps(Map.of(0, bgColor, sectionStart, lvColor, sectionEnd, bgColor));
-    layers.applyTo(ledBuffer);
     led.setData(ledBuffer);
   }
 
@@ -364,8 +329,7 @@ public class LED extends SubsystemBase {
     BRAKE_MODE_ON,
     BASE,
     BRAKE_MODE_FAILED,
-    SCORE_FAILURE,
-    SCORE_SUCCESS,
+    SCORING,
     TWENTY_SECOND_WARNING,
     HOME_SUBSYSTEMS,
     INTAKE_SUCCESS
@@ -375,7 +339,6 @@ public class LED extends SubsystemBase {
     GAMEPIECE_STATUS,
     AUTO_GAMEPIECE_PICKUP,
     SCORING_ALIGNMENT,
-    ALGAE_ALIGNMENT,
     INTAKE_SUCCESS,
     AUTO_DRIVE_TO_POSE,
     GOAL_LINE_UP,

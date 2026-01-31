@@ -26,9 +26,7 @@ import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 import frc.lib.team2930.commands.RunsWhenDisabledInstantCommand;
 import frc.robot.autonomous.AutosManager.Auto;
-import frc.robot.autonomous.records.AutoDescriptor.StartingLocation;
 import frc.robot.autonomous.records.PickupLocation;
-import frc.robot.autonomous.records.ScoringLocation;
 import java.util.ArrayList;
 import java.util.List;
 import org.littletonrobotics.junction.LogFileUtil;
@@ -76,9 +74,7 @@ public class Robot extends LoggedRobot {
   private LoggedDashboardChooser<String> autonomousChooser = null;
   private Auto selectedAuto;
   private String selectedAutoName;
-  private List<ScoringLocation> selectedScoringLocations = new ArrayList<>();
   private List<PickupLocation> selectedCoralStationLocations = new ArrayList<>();
-  private StartingLocation selectedStartingLocation;
   private boolean selectedAutoFlipped;
   private Command autoCommand;
   private Pose2d selectedInitialPose;
@@ -219,43 +215,9 @@ public class Robot extends LoggedRobot {
       autonomousChooser = robotContainer.getAutonomousChooser();
     }
 
-    var customScoringLocations = robotContainer.getCustomScoringLocations();
     var customCoralStationLocations = robotContainer.getCustomCoralStationLocations();
-    var customStartingLocation = robotContainer.getCustomStartingLocation();
-
-    if (selectedScoringLocations.isEmpty()) {
-      selectedScoringLocations = customScoringLocations;
-      selectedCoralStationLocations = customCoralStationLocations;
-      selectedStartingLocation = customStartingLocation;
-    }
 
     var autoName = autonomousChooser.get();
-    var autoFlipped = robotContainer.autoFlipped();
-    if (autoName != null
-        && (!autoName.equals(selectedAutoName)
-            || autoFlipped != selectedAutoFlipped
-            || !selectedScoringLocations.equals(customScoringLocations)
-            || !selectedCoralStationLocations.equals(customCoralStationLocations)
-            || !selectedStartingLocation.equals(customStartingLocation))) {
-      Pose2d initialPose;
-
-      selectedAuto = robotContainer.getAutoSupplierForString(autoName).get();
-      if (selectedAuto != null) {
-        initialPose = selectedAuto.initPose();
-
-        logCurrentChooserValue.info(autoName);
-        logSelectedAuto.info(selectedAuto.name());
-      } else {
-        initialPose = null;
-      }
-
-      desiredInitialPose = initialPose;
-      selectedAutoName = autoName;
-      selectedAutoFlipped = autoFlipped;
-      selectedScoringLocations = customScoringLocations;
-      selectedCoralStationLocations = customCoralStationLocations;
-      selectedStartingLocation = customStartingLocation;
-    }
 
     if (desiredInitialPose != null && !desiredInitialPose.equals(selectedInitialPose)) {
       boolean shouldResetPose = false;

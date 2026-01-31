@@ -7,8 +7,6 @@ import frc.lib.team2930.TunableNumberGroup;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.Constants.RobotMode.RobotType;
-import frc.robot.RobotStates;
-import frc.robot.RobotStates.ScoringLevel;
 
 public class MechanismPositions {
   private static final TunableNumberGroup group = new TunableNumberGroup("MechanismPositions");
@@ -253,85 +251,10 @@ public class MechanismPositions {
 
   public record MechanismPosition(Distance elevatorHeight, Rotation2d armAngle) {}
 
-  public static MechanismPosition reefPosition(ScoringLevel scoringLevel) {
-    switch (scoringLevel) {
-      case L1:
-        return new MechanismPosition(
-            Units.Inches.of(reefL1ElevatorHeightInches.get()),
-            Rotation2d.fromDegrees(reefL1ArmAngleDegrees.get()));
-      case L2:
-        return new MechanismPosition(
-            Units.Inches.of(reefL2ElevatorHeightInches.get()),
-            Rotation2d.fromDegrees(reefL2ArmAngleDegrees.get()));
-      case L3:
-        return new MechanismPosition(
-            Units.Inches.of(reefL3ElevatorHeightInches.get()),
-            Rotation2d.fromDegrees(reefL3ArmAngleDegrees.get()));
-      case L4:
-        return new MechanismPosition(
-            Units.Inches.of(reefL4ElevatorHeightInches.get()),
-            Rotation2d.fromDegrees(reefL4ArmAngleDegrees.get()));
-      default:
-        return new MechanismPosition(
-            Units.Inches.of(reefL1ElevatorHeightInches.get()),
-            Rotation2d.fromDegrees(reefL1ArmAngleDegrees.get()));
-    }
-  }
-
-  public static MechanismPosition reefPositionCoralInWay(ScoringLevel scoringLevel) {
-    switch (scoringLevel) {
-      case L1:
-        return new MechanismPosition(
-            Units.Inches.of(reefL1CoralInWayElevatorHeightInches.get()),
-            Rotation2d.fromDegrees(reefL1CoralInWayArmAngleDegrees.get()));
-      case L2:
-        return new MechanismPosition(
-            Units.Inches.of(reefL2CoralInWayElevatorHeightInches.get()),
-            Rotation2d.fromDegrees(reefL2CoralInWayArmAngleDegrees.get()));
-      case L3:
-        return new MechanismPosition(
-            Units.Inches.of(reefL3CoralInWayElevatorHeightInches.get()),
-            Rotation2d.fromDegrees(reefL3CoralInWayArmAngleDegrees.get()));
-      case L4:
-        return new MechanismPosition(
-            Units.Inches.of(reefL4CoralInWayElevatorHeightInches.get()),
-            Rotation2d.fromDegrees(reefL4CoralInWayArmAngleDegrees.get()));
-      default:
-        return new MechanismPosition(
-            Units.Inches.of(reefL1CoralInWayElevatorHeightInches.get()),
-            Rotation2d.fromDegrees(reefL1CoralInWayArmAngleDegrees.get()));
-    }
-  }
-
   public static MechanismPosition climbPosition() {
     return new MechanismPosition(
         Units.Inches.of(climbElevatorHeightInches.get()),
         Rotation2d.fromDegrees(climbArmAngleDegrees.get()));
-  }
-
-  public static MechanismPosition reefPrepPosition(ScoringLevel scoringLevel) {
-    switch (scoringLevel) {
-      case L1:
-        return new MechanismPosition(
-            Units.Inches.of(reefL1ElevatorHeightInches.get()),
-            Rotation2d.fromDegrees(reefL1ArmAngleDegrees.get()));
-      case L2:
-        return new MechanismPosition(
-            Units.Inches.of(reefL2ElevatorHeightInches.get()),
-            Rotation2d.fromDegrees(reefL2ArmAngleDegrees.get()));
-      case L3:
-        return new MechanismPosition(
-            Units.Inches.of(reefL3ElevatorHeightInches.get()),
-            Rotation2d.fromDegrees(reefL3ArmAngleDegrees.get() - reefPrepArmOffsetDegrees.get()));
-      case L4:
-        return new MechanismPosition(
-            Units.Inches.of(reefL4ElevatorHeightInches.get()),
-            Rotation2d.fromDegrees(reefL4ArmAngleDegrees.get() - reefPrepArmOffsetDegrees.get()));
-      default:
-        return new MechanismPosition(
-            Units.Inches.of(reefL1ElevatorHeightInches.get()),
-            Rotation2d.fromDegrees(reefL1ArmAngleDegrees.get()));
-    }
   }
 
   public static MechanismPosition coralStationPosition() {
@@ -350,14 +273,6 @@ public class MechanismPositions {
     return new MechanismPosition(
         Units.Inches.of(algaeClearingHighElevatorHeightInches.get()),
         Rotation2d.fromDegrees(algaeClearingHighArmAngleDegrees.get()));
-  }
-
-  public static MechanismPosition stowPosition(RobotStates states) {
-    return states.scoringLevel != ScoringLevel.L4
-        ? reefPosition(states.scoringLevel)
-        : new MechanismPosition(
-            Units.Inches.of(highStowElevatorHeightInches.get()),
-            Rotation2d.fromDegrees(stowArmAngleDegrees.get()));
   }
 
   public static MechanismPosition prepForPassoffPosition(boolean coral) {

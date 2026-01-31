@@ -9,36 +9,10 @@ import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 import frc.lib.team2930.TunableNumberGroup;
 import frc.lib.team6328.LoggedTunableNumber;
-import frc.robot.RobotStates.ScoringLevel;
-import frc.robot.autonomous.records.ScoringLocation;
-import frc.robot.autonomous.records.ScoringLocation.ReefSide;
 import java.util.ArrayList;
 import java.util.List;
 
 public class FieldStates {
-
-  // Coral Memory
-
-  private static boolean[][] scoredLocations =
-      new boolean[ScoringLevel.values().length][ReefSide.values().length];
-
-  public static boolean isScoringLocationFilled(ScoringLocation location) {
-    return scoredLocations[location.level().ordinal()][location.side().ordinal()];
-  }
-
-  public static void setScoringLocationFilled(ScoringLocation location) {
-    scoredLocations[location.level().ordinal()][location.side().ordinal()] = true;
-  }
-
-  public static boolean scoringLevelFilled(ScoringLevel level) {
-    for (ReefSide side : ReefSide.values()) {
-      if (!isScoringLocationFilled(new ScoringLocation(side, level))) return false;
-    }
-    return true;
-  }
-
-  // Algae Memory
-
   private static boolean[] algaeLocations = new boolean[] {true, true, true, true, true, true};
 
   private static final TunableNumberGroup tunableGroup = new TunableNumberGroup("FieldStates");
@@ -75,42 +49,9 @@ public class FieldStates {
   private static final Pose3d blueNearMidAlgae = new Pose3d(3.812, 4.0265, 0.905, Rotation3d.kZero);
   private static final double upperAlgaeHeight = 1.308;
 
-  public static void logGamepieceVisualization() {
-    // for debugging visualization
-    if (Constants.unusedCode) {
-      System.out.println();
-      System.out.print(scoredLocations[3][0]);
-      System.out.print(" " + scoredLocations[3][1]);
-      System.out.print(" " + scoredLocations[3][2]);
-      System.out.print(" " + scoredLocations[3][3]);
-      System.out.print(" " + scoredLocations[3][4]);
-      System.out.print(" " + scoredLocations[3][5]);
-      System.out.print(" " + scoredLocations[3][6]);
-      System.out.print(" " + scoredLocations[3][7]);
-      System.out.print(" " + scoredLocations[3][8]);
-      System.out.print(" " + scoredLocations[3][9]);
-      System.out.print(" " + scoredLocations[3][10]);
-      System.out.print(" " + scoredLocations[3][11]);
-    }
+  List<Pose3d> algaePoseArray = new ArrayList<>();
 
-    List<Pose3d> poses = new ArrayList<>();
-    for (int columb = 0; columb < scoredLocations.length; columb++) {
-      for (int row = 0; row < scoredLocations[0].length; row++) {
-        if (scoredLocations[columb][row]) {
-          Pose3d referencePose = row % 2 == 0 ? blueAPose3ds[columb] : blueBPose3ds[columb];
-
-          poses.add(
-              AllianceFlipUtil.flipPoseForAlliance(
-                  GeometryUtil.rotatePose3dAroundTranslation2d(
-                      referencePose,
-                      Constants.FieldConstants.BLUE_HUB_CENTER_POSE,
-                      Rotation2d.fromDegrees(60 * (row / 2)))));
-        }
-      }
-    }
-
-    List<Pose3d> algaePoseArray = new ArrayList<>();
-
+  {
     for (int i = 0; i < algaeLocations.length; i++) {
       if (algaeLocations[i]) {
         Pose3d referencePose = blueNearMidAlgae;
@@ -138,8 +79,6 @@ public class FieldStates {
                 Math.toRadians(tunableRoll.get()),
                 Math.toRadians(tunablePitch.get()),
                 Math.toRadians(tunableYaw.get()))));
-
-    coralPoses.info(poses.toArray(new Pose3d[poses.size()]));
 
     algaePoses.info(algaePoseArray.toArray(new Pose3d[algaePoseArray.size()]));
   }

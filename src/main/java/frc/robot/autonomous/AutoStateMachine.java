@@ -16,21 +16,15 @@ import frc.lib.team2930.StateMachine;
 import frc.lib.team6328.GeomUtil;
 import frc.robot.Constants;
 import frc.robot.RobotStates;
-import frc.robot.RobotStates.ScoringLevel;
-import frc.robot.autonomous.records.AutoDescriptor;
-import frc.robot.autonomous.records.AutoDescriptor.StartingLocation;
 import frc.robot.autonomous.records.ChoreoTrajectoryWithName;
 import frc.robot.autonomous.records.OppositeSide;
 import frc.robot.autonomous.records.PickupLocation;
-import frc.robot.autonomous.records.ScoringLocation;
-import frc.robot.autonomous.records.ScoringLocation.ReefSide;
 import frc.robot.configs.RobotConfig;
 import frc.robot.subsystems.LED;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 public class AutoStateMachine extends StateMachine {
 
@@ -53,42 +47,11 @@ public class AutoStateMachine extends StateMachine {
   private static LoggerEntry.Struct<Pose2d> log_startingLocation =
       logGroup.buildStruct(Pose2d.class, "StartigLocation");
 
-  private static AutoDescriptor preloadCodeDescriptor() {
-    List<ScoringLocation> scoringLocations = new ArrayList<>();
-    List<PickupLocation> coralStationLocations = new ArrayList<>();
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CI, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CK, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CL, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-
-    scoringLocations.add(new ScoringLocation(ReefSide.CJ, ScoringLevel.L4));
-    coralStationLocations.add(PickupLocation.IA);
-    return new AutoDescriptor(scoringLocations, coralStationLocations, StartingLocation.S2);
-  }
-
   private boolean preloadCode;
-
-  /** IMPORTANT: Use this constructor only for preloading code */
-  public AutoStateMachine(AutosSubsystems subsystems, RobotConfig config, RobotStates states) {
-    this(subsystems, preloadCodeDescriptor(), config, false, false, states);
-    preloadCode = true;
-    advance();
-  }
-
-  public AutoStateMachine(
-      AutosSubsystems subsystems, RobotConfig config, Consumer<Double> rumble, RobotStates states) {
-    this(subsystems, null, config, false, true, states);
-  }
 
   /** Creates a new AutoSubstateMachine. */
   public AutoStateMachine(
       AutosSubsystems subsystems,
-      AutoDescriptor descriptor,
       RobotConfig config,
       boolean flipAuto,
       boolean procedural,
@@ -99,25 +62,6 @@ public class AutoStateMachine extends StateMachine {
     intake = subsystems.intake();
     wrapper = subsystems.drivetrain();
     this.states = states;
-
-    if (!procedural) {
-      ChoreoTrajectoryWithName startingPath =
-          locationsToPath(descriptor.startingLocation(), descriptor.scoringLocations().get(0));
-      log_startingLocation.info(startingPath.getInitialPose(true));
-      scoringPaths.add(startingPath);
-
-      for (int i = 1; i < descriptor.scoringLocations().size(); i++) {
-        scoringPaths.add(
-            locationsToPath(
-                descriptor.coralStationLocations().get(i - 1),
-                descriptor.scoringLocations().get(i)));
-      }
-
-      for (int i = 0; i < descriptor.coralStationLocations().size(); i++) {
-        PickupLocation pickup = descriptor.coralStationLocations().get(i);
-        coralStationPaths.add(locationsToPath(descriptor.scoringLocations().get(i), pickup));
-      }
-    }
 
     boolean foundPath = scoringPaths.indexOf(null) == -1 && coralStationPaths.indexOf(null) == -1;
 
@@ -134,23 +78,6 @@ public class AutoStateMachine extends StateMachine {
     }
 
     this.config = config;
-  }
-
-  // Additional Methods
-
-  public static ChoreoTrajectoryWithName locationsToPath(
-      ScoringLocation scoring, PickupLocation coralStation) {
-    return enumsToPath(scoring.side(), coralStation);
-  }
-
-  public static ChoreoTrajectoryWithName locationsToPath(
-      PickupLocation coralStation, ScoringLocation scoring) {
-    return enumsToPath(coralStation, scoring.side());
-  }
-
-  public static ChoreoTrajectoryWithName locationsToPath(
-      StartingLocation starting, ScoringLocation scoring) {
-    return enumsToPath(starting, scoring.side());
   }
 
   private static <T1, T2> ChoreoTrajectoryWithName enumsToPath(

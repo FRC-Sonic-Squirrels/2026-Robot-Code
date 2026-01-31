@@ -12,7 +12,6 @@ import frc.lib.team2930.LoggerGroup;
 import frc.lib.team2930.TunableNumberGroup;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.RobotStates;
-import frc.robot.RobotStates.ScoringLevel;
 import frc.robot.subsystems.mechanism.MechanismPositions.MechanismPosition;
 import frc.robot.subsystems.mechanism.arm.Arm;
 import frc.robot.subsystems.mechanism.elevator.Elevator;
@@ -74,104 +73,6 @@ public class Mechanism {
           arm.setPercentOut(0);
           break;
         case Override:
-          break;
-        case ReefPosition:
-          if (states.scoringLevel == ScoringLevel.L4) { // If scoring L4, slow arm accel
-            goToPositionParallel(
-                MechanismPositions.reefPosition(states.scoringLevel),
-                Double.NaN,
-                scoreL4ArmAccel.get());
-          } else {
-            goToPositionParallel(MechanismPositions.reefPosition(states.scoringLevel));
-          }
-          break;
-        case ReefPositionCoralInWay:
-          if (states.scoringLevel == ScoringLevel.L4) { // If scoring L4, slow arm accel
-            goToPositionParallel(
-                MechanismPositions.reefPositionCoralInWay(states.scoringLevel),
-                Double.NaN,
-                scoreL4ArmAccel.get());
-          } else {
-            goToPositionParallel(MechanismPositions.reefPositionCoralInWay(states.scoringLevel));
-          }
-          break;
-        case ReefL1Position:
-          goToPositionParallel(MechanismPositions.reefPosition(ScoringLevel.L1));
-          break;
-        case ReefL2Position:
-          goToPositionParallel(MechanismPositions.reefPosition(ScoringLevel.L2));
-          break;
-        case ReefL3Position:
-          goToPositionParallel(MechanismPositions.reefPosition(ScoringLevel.L3));
-          break;
-        case ReefL4Position:
-          goToPositionParallel(
-              MechanismPositions.reefPosition(ScoringLevel.L4), Double.NaN, scoreL4ArmAccel.get());
-          break;
-        case ReefPrepPosition:
-          if (states.scoringLevel == ScoringLevel.L4) { // If scoring L4, slow arm accel
-            goToPositionParallel(
-                MechanismPositions.reefPrepPosition(states.scoringLevel),
-                Double.NaN,
-                scoreL4ArmAccel.get());
-          } else {
-            goToPositionParallel(MechanismPositions.reefPrepPosition(states.scoringLevel));
-          }
-          break;
-        case CoralStationPosition:
-          goToPositionParallel(
-              MechanismPositions.coralStationPosition(), Double.NaN, coralStationArmAccel.get());
-          break;
-        case ClearAlgaeLowPosition:
-          goToPositionParallel(MechanismPositions.clearAlgaeLowPosition());
-          break;
-        case ClearAlgaeHighPosition:
-          goToPositionParallel(MechanismPositions.clearAlgaeHighPosition());
-          break;
-        case StowPosition:
-          goToPositionParallel(MechanismPositions.stowPosition(states));
-          break;
-        case ClimbPosition:
-          goToPositionParallel(MechanismPositions.climbPosition());
-          break;
-        case PrepPassoffCoralPosition:
-          goToPositionParallel(MechanismPositions.prepForPassoffPosition(true));
-          break;
-        case PrepPassoffAlgaePosition:
-          goToPositionParallel(MechanismPositions.prepForPassoffPosition(false));
-          break;
-        case PassOffCoralPosition:
-          goToPositionParallel(MechanismPositions.passoffPosition(true));
-          break;
-        case PassOffAlgaePosition:
-          goToPositionParallel(MechanismPositions.passoffPosition(false));
-          break;
-        case HoldAlgaePosition:
-          goToPositionParallel(
-              MechanismPositions.holdAlgaePosition(),
-              holdAlgaeElevatorAccel.get(),
-              holdAlgaeArmAccel.get());
-          break;
-        case AvoidIntake:
-          goToPositionParallel(MechanismPositions.avoidIntakePosition());
-          break;
-        case Default:
-          goToPositionParallel(MechanismPositions.defaultPosition());
-          break;
-        case AutoPrep:
-          goToPositionParallel(MechanismPositions.autoPrepPosition());
-          break;
-        case AlgaeBargePosition:
-          goToPositionParallel(
-              MechanismPositions.scoreAlgaeBargePosition(),
-              holdAlgaeElevatorAccel.get(),
-              holdAlgaeArmAccel.get());
-          break;
-        case GrabAlgaeFromReefHigh:
-          goToPositionParallel(MechanismPositions.grabAlgaeFromReefHigh());
-          break;
-        case GrabAlgaeFromReefLow:
-          goToPositionParallel(MechanismPositions.grabAlgaeFromReefLow());
           break;
         default:
           break;
