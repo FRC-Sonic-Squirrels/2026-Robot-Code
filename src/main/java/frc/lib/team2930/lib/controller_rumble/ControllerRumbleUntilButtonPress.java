@@ -6,12 +6,12 @@ import java.util.function.Consumer;
 
 public class ControllerRumbleUntilButtonPress extends Command {
   private Consumer<Double> rumbleConsumer;
-  private double rumbleStrength;
-  private BooleanSupplier rumbleSupplier;
+  private double           rumbleStrength;
+  private BooleanSupplier  rumbleSupplier;
 
   /** Rumble the controller until the specified button is pressed */
-  public ControllerRumbleUntilButtonPress(
-      Consumer<Double> rumbleConsumer, BooleanSupplier buttonPressSupplier, double rumbleStrength) {
+  public ControllerRumbleUntilButtonPress(Consumer<Double> rumbleConsumer, BooleanSupplier buttonPressSupplier,
+      double rumbleStrength) {
     this.rumbleConsumer = rumbleConsumer;
     this.rumbleStrength = rumbleStrength;
     this.rumbleSupplier = buttonPressSupplier;
@@ -25,7 +25,8 @@ public class ControllerRumbleUntilButtonPress extends Command {
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
-  public void execute() {}
+  public void execute() {
+  }
 
   // Called once the command ends or is interrupted.
   @Override

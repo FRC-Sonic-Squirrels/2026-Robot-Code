@@ -10,10 +10,11 @@ import frc.lib.team2930.commands.WaitForRequirementsCommand;
 import org.junit.jupiter.api.Test;
 
 public class CommandTest {
-  public static class TestRequirement implements Subsystem {}
+  public static class TestRequirement implements Subsystem {
+  }
 
   public static class TestCommand extends Command {
-    public int executed;
+    public int     executed;
     public boolean done;
 
     @Override

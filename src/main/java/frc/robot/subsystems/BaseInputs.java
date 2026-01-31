@@ -6,30 +6,31 @@ import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 
 public abstract class BaseInputs {
-  private final LoggerEntry.Bool log_connected;
-  private final LoggerEntry.Text log_statusCode;
+  private final LoggerEntry.Bool    log_connected;
+  private final LoggerEntry.Text    log_statusCode;
   private final LoggerEntry.Decimal log_lastGoodStatus;
 
   public boolean connected;
-  public String statusCode;
-  public double lastGoodStatus;
+  public String  statusCode;
+  public double  lastGoodStatus;
 
   public BaseInputs(LoggerGroup logInputs) {
-    log_connected = logInputs.buildBoolean("Connected");
-    log_statusCode = logInputs.buildString("StatusCode");
+    log_connected      = logInputs.buildBoolean("Connected");
+    log_statusCode     = logInputs.buildString("StatusCode");
     log_lastGoodStatus = logInputs.buildDecimal("LastGoodStatus");
   }
 
   public void refreshAll(BaseStatusSignal[]... refreshSetArray) {
-    String statusCode = "";
-    boolean connected = true;
+    String  statusCode = "";
+    boolean connected  = true;
 
     for (var refreshSet : refreshSetArray) {
-      var setCode = BaseStatusSignal.refreshAll(refreshSet);
+      var setCode       = BaseStatusSignal.refreshAll(refreshSet);
       var setStatusCode = setCode.getDescription();
-      var setConnected = setCode == StatusCode.OK;
+      var setConnected  = setCode == StatusCode.OK;
 
-      if (!setConnected) connected = false;
+      if (!setConnected)
+        connected = false;
 
       statusCode = statusCode.isEmpty() ? setStatusCode : statusCode + " / " + setStatusCode;
     }
@@ -39,7 +40,7 @@ public abstract class BaseInputs {
       log_lastGoodStatus.info(lastGoodStatus);
     }
 
-    this.connected = connected;
+    this.connected  = connected;
     this.statusCode = statusCode;
 
     log_connected.info(connected);

@@ -16,10 +16,10 @@ public interface IntakeIO {
     public double rollerAppliedVolts;
 
     public Rotation2d pivotPosition = Constants.zeroRotation2d;
-    public double pivotAppliedVolts;
-    public double pivotCurrentAmps;
-    public double pivotTempCelsius;
-    public double pivotVelocityDegreesPerSecond;
+    public double     pivotAppliedVolts;
+    public double     pivotCurrentAmps;
+    public double     pivotTempCelsius;
+    public double     pivotVelocityDegreesPerSecond;
 
     public Inputs(LoggerGroup logInputs) {
       super(logInputs);
@@ -27,25 +27,32 @@ public interface IntakeIO {
   }
 
   /** Updates the set of loggable inputs. */
-  public default void updateInputs(Inputs inputs) {}
+  public default void updateInputs(Inputs inputs) {
+  }
 
-  public default void setRollerVoltage(double volts) {}
+  public default void setRollerVoltage(double volts) {
+  }
 
-  public default void setRollerVelocity(double revPerMin) {}
+  public default void setRollerVelocity(double revPerMin) {
+  }
 
-  public default void setStarVoltage(double volts) {}
+  public default void setStarVoltage(double volts) {
+  }
 
-  public default void setRollerClosedLoopConstants(
-      double kP, double kV, double kS, double targetAccelerationConfig) {}
+  public default void setRollerClosedLoopConstants(double kP, double kV, double kS, double targetAccelerationConfig) {
+  }
 
-  public default void setPivotVoltage(double volts) {}
+  public default void setPivotVoltage(double volts) {
+  }
 
-  public default void resetPivotSensorPosition(Rotation2d angle) {}
+  public default void resetPivotSensorPosition(Rotation2d angle) {
+  }
 
-  public default void setPivotClosedLoopPosition(Rotation2d angle) {}
+  public default void setPivotClosedLoopPosition(Rotation2d angle) {
+  }
 
-  public default void setPivotClosedLoopConstants(
-      double kP, double kD, double kG, MotionMagicConfigs mmConfigs) {}
+  public default void setPivotClosedLoopConstants(double kP, double kD, double kG, MotionMagicConfigs mmConfigs) {
+  }
 
   public default boolean setPivotNeutralMode(NeutralModeValue value) {
     return false;

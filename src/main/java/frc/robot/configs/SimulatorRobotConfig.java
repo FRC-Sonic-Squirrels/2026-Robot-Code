@@ -34,10 +34,8 @@ public class SimulatorRobotConfig extends RobotConfig {
   // ------ SWERVE MODULE CONFIGURATIONS: CANID + OFFSET + INVERTS --------------
 
   // --------- SWERVE GEAR RATIO ---------
-  private static final double SWERVE_DRIVE_GEAR_RATIO =
-      SwerveModuleConstants.MK4I.LEVEL_2_GEARING_DRIVE_GEAR_RATIO;
-  private static final double SWERVE_STEER_GEAR_RATIO =
-      SwerveModuleConstants.MK4I.GEARING_TURN_GEAR_RATIO;
+  private static final double SWERVE_DRIVE_GEAR_RATIO = SwerveModuleConstants.MK4I.LEVEL_2_GEARING_DRIVE_GEAR_RATIO;
+  private static final double SWERVE_STEER_GEAR_RATIO = SwerveModuleConstants.MK4I.GEARING_TURN_GEAR_RATIO;
 
   // ---------- SWERVE STEERING MOTOR PID CONSTANTS -----------
   private static final LoggedTunableNumber ANGLE_KP = group.build("ANGLE_KP", 10.0);
@@ -58,86 +56,63 @@ public class SimulatorRobotConfig extends RobotConfig {
   private static final Distance TRACK_WIDTH_Y = Units.Inches.of(30); // 22.625 inches
 
   // ------- ROBOT MAX SPEED --------
-  private static final double MAX_VELOCITY_METERS_PER_SECOND = 6.0;
+  private static final double MAX_VELOCITY_METERS_PER_SECOND       = 6.0;
   private static final double MAX_COAST_VELOCITY_METERS_PER_SECOND = 0.05;
 
   // ------- AUTONOMOUS CONSTANTS -------
-  private static final LoggedTunableNumber AUTO_MAX_SPEED_METERS_PER_SECOND =
-      group.build("AUTO_MAX_SPEED", 5.0);
-  private static final LoggedTunableNumber AUTO_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED =
-      group.build("AUTO_MAX_ACCEL", 5.0);
-  private static final LoggedTunableNumber AUTO_MAX_ANGULAR_VEL_RADIANS_PER_SECOND =
-      group.build("AUTO_MAX_ANGULAR_VEL_RAD_PER_SECOND", Math.PI * 4);
-  private static final LoggedTunableNumber
-      AUTO_MAX_ANGULAR_ACCELERATION_RADIANS_PER_SECOND_SQUARED =
-          group.build("AUTO_MAX_ANGULAR_ACCEL_RAD_PER_SECOND_SQUARED", Math.PI * 8);
+  private static final LoggedTunableNumber AUTO_MAX_SPEED_METERS_PER_SECOND                         = group
+      .build("AUTO_MAX_SPEED", 5.0);
+  private static final LoggedTunableNumber AUTO_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED          = group
+      .build("AUTO_MAX_ACCEL", 5.0);
+  private static final LoggedTunableNumber AUTO_MAX_ANGULAR_VEL_RADIANS_PER_SECOND                  = group
+      .build("AUTO_MAX_ANGULAR_VEL_RAD_PER_SECOND", Math.PI * 4);
+  private static final LoggedTunableNumber AUTO_MAX_ANGULAR_ACCELERATION_RADIANS_PER_SECOND_SQUARED = group
+      .build("AUTO_MAX_ANGULAR_ACCEL_RAD_PER_SECOND_SQUARED", Math.PI * 8);
 
-  private static final LoggedTunableNumber AUTO_TRANSLATION_KP =
-      group.build("AUTO_TRANSLATION_KP", 6.0);
-  private static final LoggedTunableNumber AUTO_TRANSLATION_KI =
-      group.build("AUTO_TRANSLATION_KI", 0.0);
-  private static final LoggedTunableNumber AUTO_TRANSLATION_KD =
-      group.build("AUTO_TRANSLATION_KD", 0.0);
-  private static final LoggedTunableNumber AUTO_THETA_KP = group.build("AUTO_THETA_KP", 4.9);
-  private static final LoggedTunableNumber AUTO_THETA_KI = group.build("AUTO_THETA_KI", 0.0);
-  private static final LoggedTunableNumber AUTO_THETA_KD = group.build("AUTO_THETA_KD", 0.0);
+  private static final LoggedTunableNumber AUTO_TRANSLATION_KP = group.build("AUTO_TRANSLATION_KP", 6.0);
+  private static final LoggedTunableNumber AUTO_TRANSLATION_KI = group.build("AUTO_TRANSLATION_KI", 0.0);
+  private static final LoggedTunableNumber AUTO_TRANSLATION_KD = group.build("AUTO_TRANSLATION_KD", 0.0);
+  private static final LoggedTunableNumber AUTO_THETA_KP       = group.build("AUTO_THETA_KP", 4.9);
+  private static final LoggedTunableNumber AUTO_THETA_KI       = group.build("AUTO_THETA_KI", 0.0);
+  private static final LoggedTunableNumber AUTO_THETA_KD       = group.build("AUTO_THETA_KD", 0.0);
 
-  private final com.pathplanner.lib.config.RobotConfig PATH_PLANNER_CONFIG =
-      new com.pathplanner.lib.config.RobotConfig(
-          Units.Kilogram.of(115),
-          Units.KilogramSquareMeters.of(5.3598424503),
-          new ModuleConfig(
-              WHEEL_RADIUS,
-              Units.MetersPerSecond.of(MAX_VELOCITY_METERS_PER_SECOND),
-              0.65,
-              DCMotor.getKrakenX60Foc(1),
-              SwerveModuleConstants.MK4I.LEVEL_2_GEARING_DRIVE_GEAR_RATIO,
-              Units.Amps.of(DRIVE_TALON_CURRENT_LIMIT_CONFIGS.SupplyCurrentLimit),
-              1),
-          getModuleTranslations());
+  private final com.pathplanner.lib.config.RobotConfig PATH_PLANNER_CONFIG = new com.pathplanner.lib.config.RobotConfig(
+      Units.Kilogram.of(115), Units.KilogramSquareMeters.of(5.3598424503),
+      new ModuleConfig(WHEEL_RADIUS, Units.MetersPerSecond.of(MAX_VELOCITY_METERS_PER_SECOND), 0.65,
+          DCMotor.getKrakenX60Foc(1), SwerveModuleConstants.MK4I.LEVEL_2_GEARING_DRIVE_GEAR_RATIO,
+          Units.Amps.of(DRIVE_TALON_CURRENT_LIMIT_CONFIGS.SupplyCurrentLimit), 1),
+      getModuleTranslations());
 
   // -------- SWERVE CURRENT LIMITS ---------
-  private static final CurrentLimitsConfigs DRIVE_TALON_CURRENT_LIMIT_CONFIGS =
-      new CurrentLimitsConfigs().withSupplyCurrentLimit(20).withSupplyCurrentLimitEnable(true);
+  private static final CurrentLimitsConfigs DRIVE_TALON_CURRENT_LIMIT_CONFIGS = new CurrentLimitsConfigs()
+      .withSupplyCurrentLimit(20).withSupplyCurrentLimitEnable(true);
 
-  private static final CurrentLimitsConfigs STEER_TALON_CURRENT_LIMIT_CONFIGS =
-      new CurrentLimitsConfigs().withSupplyCurrentLimit(25).withSupplyCurrentLimitEnable(true);
+  private static final CurrentLimitsConfigs STEER_TALON_CURRENT_LIMIT_CONFIGS = new CurrentLimitsConfigs()
+      .withSupplyCurrentLimit(25).withSupplyCurrentLimitEnable(true);
 
   // ---- VISION CAMERA TRANSFORM3d's -------
-  public static final Transform3d SHOOTER_SIDE_LEFT =
-      new Transform3d(
-          new Translation3d(
-              Units.Inches.of(-0.62273).in(Units.Meters),
-              Units.Inches.of(9.625919).in(Units.Meters),
-              Units.Inches.of(22.21467).in(Units.Meters)),
-          new Rotation3d(0.0, 0.0, Math.toRadians(225.0)));
+  public static final Transform3d SHOOTER_SIDE_LEFT = new Transform3d(
+      new Translation3d(Units.Inches.of(-0.62273).in(Units.Meters), Units.Inches.of(9.625919).in(Units.Meters),
+          Units.Inches.of(22.21467).in(Units.Meters)),
+      new Rotation3d(0.0, 0.0, Math.toRadians(225.0)));
 
-  public static final Transform3d SHOOTER_SIDE_RIGHT =
-      new Transform3d(
-          new Translation3d(
-              Units.Inches.of(-0.62273).in(Units.Meters),
-              Units.Inches.of(-9.625919).in(Units.Meters),
-              Units.Inches.of(22.21467).in(Units.Meters)),
-          new Rotation3d(0.0, 0.0, Math.toRadians(135.0)));
+  public static final Transform3d SHOOTER_SIDE_RIGHT = new Transform3d(
+      new Translation3d(Units.Inches.of(-0.62273).in(Units.Meters), Units.Inches.of(-9.625919).in(Units.Meters),
+          Units.Inches.of(22.21467).in(Units.Meters)),
+      new Rotation3d(0.0, 0.0, Math.toRadians(135.0)));
 
-  public static final Transform3d INTAKE_SIDE_LEFT =
-      new Transform3d(
-          new Translation3d(
-              Units.Inches.of(0.64738).in(Units.Meters),
-              Units.Inches.of(13.14840).in(Units.Meters),
-              Units.Inches.of(22.31306).in(Units.Meters)),
-          new Rotation3d(0.0, 0.0, Math.toRadians(45.0)));
+  public static final Transform3d INTAKE_SIDE_LEFT = new Transform3d(
+      new Translation3d(Units.Inches.of(0.64738).in(Units.Meters), Units.Inches.of(13.14840).in(Units.Meters),
+          Units.Inches.of(22.31306).in(Units.Meters)),
+      new Rotation3d(0.0, 0.0, Math.toRadians(45.0)));
 
-  public static final Transform3d INTAKE_SIDE_RIGHT =
-      new Transform3d(
-          new Translation3d(
-              Units.Inches.of(0.64738).in(Units.Meters),
-              Units.Inches.of(-13.14840).in(Units.Meters),
-              Units.Inches.of(22.31306).in(Units.Meters)),
-          new Rotation3d(0.0, 0.0, Math.toRadians(-45.0)));
+  public static final Transform3d INTAKE_SIDE_RIGHT = new Transform3d(
+      new Translation3d(Units.Inches.of(0.64738).in(Units.Meters), Units.Inches.of(-13.14840).in(Units.Meters),
+          Units.Inches.of(22.31306).in(Units.Meters)),
+      new Rotation3d(0.0, 0.0, Math.toRadians(-45.0)));
 
-  public static final String OBJECT_DETECTION_CAMERA_NAME = "0_Object_Detection_ELP";
-  public static final String SHOOTER_SIDE_LEFT_CAMERA_NAME = "1_Shooter_Left_See3Cam";
+  public static final String OBJECT_DETECTION_CAMERA_NAME   = "0_Object_Detection_ELP";
+  public static final String SHOOTER_SIDE_LEFT_CAMERA_NAME  = "1_Shooter_Left_See3Cam";
   public static final String SHOOTER_SIDE_RIGHT_CAMERA_NAME = "2_Shooter_Right_See3Cam";
 
   public static final AprilTagFields APRIL_TAG_FIELD = AprilTagFields.k2025ReefscapeWelded;
@@ -147,54 +122,47 @@ public class SimulatorRobotConfig extends RobotConfig {
    *
    * FUNCTIONS RETURNING CONSTANTS:
    *
-   * YOU MUST CHANGED 2 METHODS:
-   * getSwerveModuleObjects()
-   * getVisionModuleObjects()
+   * YOU MUST CHANGED 2 METHODS: getSwerveModuleObjects() getVisionModuleObjects()
    *
    */
 
   @Override
   public SwerveModules getSwerveModuleObjects() {
-    return new SwerveModules(
-        new SwerveModule(0, this, new SwerveModuleIOSim()),
-        new SwerveModule(1, this, new SwerveModuleIOSim()),
-        new SwerveModule(2, this, new SwerveModuleIOSim()),
+    return new SwerveModules(new SwerveModule(0, this, new SwerveModuleIOSim()),
+        new SwerveModule(1, this, new SwerveModuleIOSim()), new SwerveModule(2, this, new SwerveModuleIOSim()),
         new SwerveModule(3, this, new SwerveModuleIOSim()));
   }
 
   @Override
   public SwerveModules getReplaySwerveModuleObjects() {
-    return new SwerveModules(
-        new SwerveModule(0, this, new SwerveModuleIO.Fake()),
-        new SwerveModule(1, this, new SwerveModuleIO.Fake()),
-        new SwerveModule(2, this, new SwerveModuleIO.Fake()),
+    return new SwerveModules(new SwerveModule(0, this, new SwerveModuleIO.Fake()),
+        new SwerveModule(1, this, new SwerveModuleIO.Fake()), new SwerveModule(2, this, new SwerveModuleIO.Fake()),
         new SwerveModule(3, this, new SwerveModuleIO.Fake()));
   }
 
   //
   // @Override
   // public VisionModuleConfiguration[] getVisionModuleObjects() {
-  //   // does not work for SIM because we need to give VisionIOSim a pose supplier which can only
+  // // does not work for SIM because we need to give VisionIOSim a pose supplier
+  // which can only
   // be
-  //   // obtained from the drivetrain
-  //   throw new RuntimeException("Unsupported action for SIM BOT");
+  // // obtained from the drivetrain
+  // throw new RuntimeException("Unsupported action for SIM BOT");
   // }
 
   // CAVEAT: only call when we're testing real cameras on sim robot
   @Override
   public VisionModuleConfiguration[] getVisionModuleObjects() {
     return new VisionModuleConfiguration[] {
-      VisionModuleConfiguration.build(SHOOTER_SIDE_LEFT_CAMERA_NAME, SHOOTER_SIDE_LEFT),
-      VisionModuleConfiguration.build(SHOOTER_SIDE_RIGHT_CAMERA_NAME, SHOOTER_SIDE_RIGHT)
-    };
+        VisionModuleConfiguration.build(SHOOTER_SIDE_LEFT_CAMERA_NAME, SHOOTER_SIDE_LEFT),
+        VisionModuleConfiguration.build(SHOOTER_SIDE_RIGHT_CAMERA_NAME, SHOOTER_SIDE_RIGHT) };
   }
 
   @Override
   public VisionModuleConfiguration[] getReplayVisionModules() {
     return new VisionModuleConfiguration[] {
-      VisionModuleConfiguration.buildReplayStub(SHOOTER_SIDE_LEFT_CAMERA_NAME, SHOOTER_SIDE_LEFT),
-      VisionModuleConfiguration.buildReplayStub(SHOOTER_SIDE_RIGHT_CAMERA_NAME, SHOOTER_SIDE_RIGHT)
-    };
+        VisionModuleConfiguration.buildReplayStub(SHOOTER_SIDE_LEFT_CAMERA_NAME, SHOOTER_SIDE_LEFT),
+        VisionModuleConfiguration.buildReplayStub(SHOOTER_SIDE_RIGHT_CAMERA_NAME, SHOOTER_SIDE_RIGHT) };
   }
 
   @Override
@@ -299,8 +267,7 @@ public class SimulatorRobotConfig extends RobotConfig {
 
   @Override
   public PIDController getAutoTranslationPidController() {
-    return new PIDController(
-        AUTO_TRANSLATION_KP.get(), AUTO_TRANSLATION_KI.get(), AUTO_TRANSLATION_KD.get());
+    return new PIDController(AUTO_TRANSLATION_KP.get(), AUTO_TRANSLATION_KI.get(), AUTO_TRANSLATION_KD.get());
   }
 
   @Override

@@ -6,16 +6,15 @@ import frc.robot.RobotStates.RobotGoal;
 
 public class SetRobotGoal extends Command {
   private final RobotStates states;
-  private final RobotGoal newGoal;
-  private final boolean resetToNone;
-  private final boolean overrideOthers;
-  private boolean executed = false;
+  private final RobotGoal   newGoal;
+  private final boolean     resetToNone;
+  private final boolean     overrideOthers;
+  private boolean           executed = false;
 
-  public SetRobotGoal(
-      RobotStates states, RobotGoal newGoal, boolean resetToNone, boolean overrideOthers) {
-    this.states = states;
-    this.newGoal = newGoal;
-    this.resetToNone = resetToNone;
+  public SetRobotGoal(RobotStates states, RobotGoal newGoal, boolean resetToNone, boolean overrideOthers) {
+    this.states         = states;
+    this.newGoal        = newGoal;
+    this.resetToNone    = resetToNone;
     this.overrideOthers = overrideOthers;
     // Use addRequirements() here to declare subsystem dependencies.
   }

@@ -14,11 +14,11 @@ import org.photonvision.targeting.PhotonPipelineResult;
 public class VisionIOPhotonVision implements VisionIO {
   private final PhotonCamera camera;
 
-  private double lastTimestampCTRETime = -1;
-  private PhotonPipelineResult lastResult = new PhotonPipelineResult();
+  private double               lastTimestampCTRETime = -1;
+  private PhotonPipelineResult lastResult            = new PhotonPipelineResult();
 
-  public double medianUpdateTime = 0.0;
-  MedianFilter updateTimeMedianFilter = new MedianFilter(10);
+  public double medianUpdateTime       = 0.0;
+  MedianFilter  updateTimeMedianFilter = new MedianFilter(10);
 
   public VisionIOPhotonVision(String cameraName) {
     camera = new PhotonCamera(cameraName);
@@ -28,50 +28,46 @@ public class VisionIOPhotonVision implements VisionIO {
     camera.setLED(VisionLEDMode.kOff);
 
     /*
-       * based on
-    https://docs.wpilib.org/en/latest/docs/software/networktables/listening-for-change.html#listening-for-changes
-       * and
-    https://github.com/Mechanical-Advantage/RobotCode2022/blob/main/src/main/java/frc/robot/subsystems/vision/VisionIOPhotonVision.java
-       */
+     * based on
+     * https://docs.wpilib.org/en/latest/docs/software/networktables/listening-for-
+     * change.html#listening-for-changes and
+     * https://github.com/Mechanical-Advantage/RobotCode2022/blob/main/src/main/java
+     * /frc/robot/subsystems/vision/VisionIOPhotonVision.java
+     */
     @SuppressWarnings("rawtypes")
-    StructSubscriber targetPoseSub =
-        inst.getTable("/photonvision/" + cameraName)
-            .getStructTopic("targetPose", Transform3d.struct)
-            .subscribe(null);
+    StructSubscriber targetPoseSub = inst.getTable("/photonvision/" + cameraName)
+        .getStructTopic("targetPose", Transform3d.struct).subscribe(null);
 
-    inst.addListener(
-        targetPoseSub,
-        java.util.EnumSet.of(NetworkTableEvent.Kind.kValueAll),
-        event -> {
-          for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
-            for (var target : result.getTargets()) {
-              target.altCameraToTarget = target.bestCameraToTarget;
-            }
+    inst.addListener(targetPoseSub, java.util.EnumSet.of(NetworkTableEvent.Kind.kValueAll), event -> {
+      for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
+        for (var target : result.getTargets()) {
+          target.altCameraToTarget = target.bestCameraToTarget;
+        }
 
-            var timestamp = result.getTimestampSeconds();
-            var fpga = Timer.getFPGATimestamp();
-            var ctre = Utils.getCurrentTimeSeconds();
+        var timestamp = result.getTimestampSeconds();
+        var fpga      = Timer.getFPGATimestamp();
+        var ctre      = Utils.getCurrentTimeSeconds();
 
-            // we use CTRE time here because drivetrain odometry uses CTRE time NOT FPGA
-            timestamp -= fpga;
-            timestamp += ctre;
+        // we use CTRE time here because drivetrain odometry uses CTRE time NOT FPGA
+        timestamp -= fpga;
+        timestamp += ctre;
 
-            synchronized (VisionIOPhotonVision.this) {
-              updateTimeMedian(timestamp - lastTimestampCTRETime);
+        synchronized (VisionIOPhotonVision.this) {
+          updateTimeMedian(timestamp - lastTimestampCTRETime);
 
-              lastTimestampCTRETime = timestamp;
-              lastResult = result;
-            }
-          }
-        });
+          lastTimestampCTRETime = timestamp;
+          lastResult            = result;
+        }
+      }
+    });
   }
 
   @Override
   public synchronized void updateInputs(Inputs inputs) {
     inputs.lastTimestampCTRETime = this.lastTimestampCTRETime;
-    inputs.lastResult = this.lastResult;
-    inputs.connected = camera.isConnected();
-    inputs.medianUpdateTime = medianUpdateTime;
+    inputs.lastResult            = this.lastResult;
+    inputs.connected             = camera.isConnected();
+    inputs.medianUpdateTime      = medianUpdateTime;
   }
 
   @Override

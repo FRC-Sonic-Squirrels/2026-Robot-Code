@@ -17,7 +17,10 @@ import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.geometry.Twist2d;
 import frc.robot.Constants;
 
-/** Geometry utilities for working with translations, rotations, transforms, and poses. */
+/**
+ * Geometry utilities for working with translations, rotations, transforms, and
+ * poses.
+ */
 public class GeomUtil {
   /**
    * Creates a pure translating transform
@@ -61,8 +64,8 @@ public class GeomUtil {
   }
 
   /**
-   * Converts a Transform2d to a Pose2d to be used as a position or as the start of a kinematic
-   * chain
+   * Converts a Transform2d to a Pose2d to be used as a position or as the start
+   * of a kinematic chain
    *
    * @param transform The transform that will represent the pose
    * @return The resulting pose
@@ -94,7 +97,7 @@ public class GeomUtil {
   /**
    * Multiplies a twist by a scaling factor
    *
-   * @param twist The twist to multiply
+   * @param twist  The twist to multiply
    * @param factor The scaling factor for the twist components
    * @return The new twist
    */
@@ -113,8 +116,8 @@ public class GeomUtil {
   }
 
   /**
-   * Converts a Transform3d to a Pose3d to be used as a position or as the start of a kinematic
-   * chain
+   * Converts a Transform3d to a Pose3d to be used as a position or as the start
+   * of a kinematic chain
    *
    * @param transform The transform that will represent the pose
    * @return The resulting pose
@@ -124,7 +127,8 @@ public class GeomUtil {
   }
 
   /**
-   * Converts a Translation3d to a Translation2d by extracting two dimensions (X and Y). chain
+   * Converts a Translation3d to a Translation2d by extracting two dimensions (X
+   * and Y). chain
    *
    * @param transform The original translation
    * @return The resulting translation
@@ -134,7 +138,8 @@ public class GeomUtil {
   }
 
   /**
-   * Converts a Translation3d to a Translation2d by extracting two dimensions (X and Z). chain
+   * Converts a Translation3d to a Translation2d by extracting two dimensions (X
+   * and Z). chain
    *
    * @param transform The original translation
    * @return The resulting translation

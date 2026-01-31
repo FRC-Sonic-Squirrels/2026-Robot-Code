@@ -24,7 +24,8 @@ import java.util.List;
 public interface SwerveModuleIO {
   public class Fake implements SwerveModuleIO {
     @Override
-    public void registerSignalForOdometry(List<BaseStatusSignal> signals) {}
+    public void registerSignalForOdometry(List<BaseStatusSignal> signals) {
+    }
 
     @Override
     public SwerveModulePosition updateOdometry(Inputs inputs, double wheelRadius) {
@@ -32,34 +33,40 @@ public interface SwerveModuleIO {
     }
 
     @Override
-    public void updateInputs(Inputs inputs) {}
+    public void updateInputs(Inputs inputs) {
+    }
 
     @Override
-    public void setDriveVoltage(double volts) {}
+    public void setDriveVoltage(double volts) {
+    }
 
     @Override
-    public void setTurnVoltage(double volts) {}
+    public void setTurnVoltage(double volts) {
+    }
 
     @Override
-    public void setDriveBrakeMode(boolean enable) {}
+    public void setDriveBrakeMode(boolean enable) {
+    }
 
     @Override
-    public void setTurnBrakeMode(boolean enable) {}
+    public void setTurnBrakeMode(boolean enable) {
+    }
 
     @Override
-    public void setDriveVelocity(
-        double velocityMetersPerSec, double accelerationMetersPerSecondSquared) {}
+    public void setDriveVelocity(double velocityMetersPerSec, double accelerationMetersPerSecondSquared) {
+    }
 
     @Override
-    public void setDriveClosedLoopConstraints(
-        double kP, double kD, double kS, double kV, double kA) {}
+    public void setDriveClosedLoopConstraints(double kP, double kD, double kS, double kV, double kA) {
+    }
 
     @Override
-    public void setTurnPosition(Rotation2d position) {}
+    public void setTurnPosition(Rotation2d position) {
+    }
 
     @Override
-    public void setTurnClosedLoopConstraints(
-        double kP, double kD, double cruiseVelocity, double acceleration) {}
+    public void setTurnClosedLoopConstraints(double kP, double kD, double cruiseVelocity, double acceleration) {
+    }
   }
 
   class Inputs extends BaseInputs {
@@ -69,10 +76,10 @@ public interface SwerveModuleIO {
     public double driveCurrentAmps;
 
     public Rotation2d turnAbsolutePosition = Constants.zeroRotation2d;
-    public Rotation2d turnPosition = Constants.zeroRotation2d;
-    public double turnVelocityRadPerSec;
-    public double turnAppliedVolts;
-    public double turnCurrentAmps;
+    public Rotation2d turnPosition         = Constants.zeroRotation2d;
+    public double     turnVelocityRadPerSec;
+    public double     turnAppliedVolts;
+    public double     turnCurrentAmps;
 
     public Rotation2d angle = Constants.zeroRotation2d;
 
@@ -101,8 +108,7 @@ public interface SwerveModuleIO {
 
   void setTurnPosition(Rotation2d position);
 
-  void setTurnClosedLoopConstraints(
-      double kP, double kD, double cruiseVelocity, double acceleration);
+  void setTurnClosedLoopConstraints(double kP, double kD, double cruiseVelocity, double acceleration);
 
   /** Enable or disable brake mode on the drive motor. */
   void setDriveBrakeMode(boolean enable);

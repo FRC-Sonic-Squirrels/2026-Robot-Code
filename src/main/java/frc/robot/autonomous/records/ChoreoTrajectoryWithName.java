@@ -12,9 +12,11 @@ import java.util.Optional;
 
 public record ChoreoTrajectoryWithName(String name, Trajectory<SwerveSample> states) {
   public static ChoreoTrajectoryWithName getTrajectory(String name) {
-    if (name == null) return null;
+    if (name == null)
+      return null;
     Optional<Trajectory<SwerveSample>> traj = Choreo.loadTrajectory(name);
-    if (traj.isEmpty()) return null;
+    if (traj.isEmpty())
+      return null;
     return new ChoreoTrajectoryWithName(name, traj.orElseThrow());
   }
 
@@ -36,8 +38,7 @@ public record ChoreoTrajectoryWithName(String name, Trajectory<SwerveSample> sta
       for (SwerveSample sample : this.states.samples()) {
         newSamples.add(flipSample(sample));
       }
-      Trajectory<SwerveSample> newPath =
-          new Trajectory<>(name, newSamples, new ArrayList<>(), new ArrayList<>());
+      Trajectory<SwerveSample> newPath = new Trajectory<>(name, newSamples, new ArrayList<>(), new ArrayList<>());
       return new ChoreoTrajectoryWithName(name, newPath);
     } else {
       return this;
@@ -45,27 +46,16 @@ public record ChoreoTrajectoryWithName(String name, Trajectory<SwerveSample> sta
   }
 
   public SwerveSample flipSample(SwerveSample sample) {
-    Pose2d oldPoint = sample.getPose();
-    Pose2d newPoint = AllianceFlipUtil.rotatePose2DAroundCenterPoint(oldPoint);
+    Pose2d   oldPoint         = sample.getPose();
+    Pose2d   newPoint         = AllianceFlipUtil.rotatePose2DAroundCenterPoint(oldPoint);
     double[] newModuleForcesX = new double[sample.moduleForcesX().length];
     double[] newModuleForcesY = new double[sample.moduleForcesY().length];
     for (int i = 0; i < 4; i++) {
       newModuleForcesX[i] = -sample.moduleForcesX()[i];
       newModuleForcesY[i] = -sample.moduleForcesY()[i];
     }
-    return new SwerveSample(
-        sample.t,
-        newPoint.getX(),
-        newPoint.getY(),
-        newPoint.getRotation().getRadians(),
-        -sample.vx,
-        -sample.vy,
-        sample.omega,
-        -sample.ax,
-        -sample.ay,
-        sample.alpha,
-        sample.moduleForcesX(),
-        null);
+    return new SwerveSample(sample.t, newPoint.getX(), newPoint.getY(), newPoint.getRotation().getRadians(), -sample.vx,
+        -sample.vy, sample.omega, -sample.ax, -sample.ay, sample.alpha, sample.moduleForcesX(), null);
   }
 
   public Pose2d getInitialPose(boolean flipForAlliance) {

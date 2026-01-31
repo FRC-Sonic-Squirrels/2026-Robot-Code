@@ -19,42 +19,33 @@ import java.util.function.Supplier;
 public class RotateToFaceHelper {
   private static final String ROOT_TABLE = "RotateToFaceHelper";
 
-  private static final LoggerGroup logGroup = LoggerGroup.build(ROOT_TABLE);
-  private static final LoggerEntry.Decimal log_rotVel = logGroup.buildDecimal("rotVel");
-  private static final LoggerEntry.Decimal log_targetRotation =
-      logGroup.buildDecimal("targetRotation");
-  private static final LoggerEntry.Decimal log_currentRotation =
-      logGroup.buildDecimal("currentRotation");
-  private static final LoggerEntry.Decimal log_positionErrorDeg =
-      logGroup.buildDecimal("positionErrorDeg");
+  private static final LoggerGroup         logGroup             = LoggerGroup.build(ROOT_TABLE);
+  private static final LoggerEntry.Decimal log_rotVel           = logGroup.buildDecimal("rotVel");
+  private static final LoggerEntry.Decimal log_targetRotation   = logGroup.buildDecimal("targetRotation");
+  private static final LoggerEntry.Decimal log_currentRotation  = logGroup.buildDecimal("currentRotation");
+  private static final LoggerEntry.Decimal log_positionErrorDeg = logGroup.buildDecimal("positionErrorDeg");
 
-  private static final TunableNumberGroup groupTunable = new TunableNumberGroup(ROOT_TABLE);
-  private static final LoggedTunableNumber tunableKP = groupTunable.build("kP", 4.9);
-  private static final LoggedTunableNumber cruiseVelocity =
-      groupTunable.build("cruiseVelocity", 2 * Math.PI);
-  private static final LoggedTunableNumber maxAcceleration =
-      groupTunable.build("maxAcceleration", 4 * Math.PI);
-  private static final LoggedTunableNumber toleranceDegrees =
-      groupTunable.build("toleranceDegrees", 1);
+  private static final TunableNumberGroup  groupTunable     = new TunableNumberGroup(ROOT_TABLE);
+  private static final LoggedTunableNumber tunableKP        = groupTunable.build("kP", 4.9);
+  private static final LoggedTunableNumber cruiseVelocity   = groupTunable.build("cruiseVelocity", 2 * Math.PI);
+  private static final LoggedTunableNumber maxAcceleration  = groupTunable.build("maxAcceleration", 4 * Math.PI);
+  private static final LoggedTunableNumber toleranceDegrees = groupTunable.build("toleranceDegrees", 1);
 
-  private final DrivetrainWrapper wrapper;
+  private final DrivetrainWrapper       wrapper;
   private final Supplier<Translation2d> target;
-  private final Supplier<Pose2d> currentPose;
-  private final ProfiledPIDController rotationalPID =
-      new ProfiledPIDController(0, 0, 0, new Constraints(0.0, 0.0));
+  private final Supplier<Pose2d>        currentPose;
+  private final ProfiledPIDController   rotationalPID = new ProfiledPIDController(0, 0, 0, new Constraints(0.0, 0.0));
 
   /** Creates a new RotateToFaceHelper . */
-  public RotateToFaceHelper(
-      DrivetrainWrapper wrapper, Supplier<Translation2d> target, Supplier<Pose2d> pose2d) {
-    this.wrapper = wrapper;
-    this.target = target;
+  public RotateToFaceHelper(DrivetrainWrapper wrapper, Supplier<Translation2d> target, Supplier<Pose2d> pose2d) {
+    this.wrapper     = wrapper;
+    this.target      = target;
     this.currentPose = pose2d;
     // Use addRequirements() here to declare subsystem dependencies.
   }
 
   public void initialize() {
-    rotationalPID.reset(
-        currentPose.get().getRotation().getRadians(),
+    rotationalPID.reset(currentPose.get().getRotation().getRadians(),
         wrapper.getFieldRelativeVelocities().getRotation().getRadians());
     rotationalPID.setP(tunableKP.get());
     rotationalPID.setConstraints(new Constraints(cruiseVelocity.get(), maxAcceleration.get()));
@@ -82,10 +73,9 @@ public class RotateToFaceHelper {
       wrapper.resetRotationOverride();
       return;
     }
-    var targetangle = faceTowardsCenter(target.get());
+    var targetangle         = faceTowardsCenter(target.get());
     var currentPoseRotation = currentPose.get().getRotation();
-    var rotVel =
-        rotationalPID.calculate(currentPoseRotation.getRadians(), targetangle.getRadians());
+    var rotVel              = rotationalPID.calculate(currentPoseRotation.getRadians(), targetangle.getRadians());
     wrapper.setRotationOverride(rotVel);
 
     log_rotVel.info(rotVel);

@@ -5,15 +5,16 @@ import org.photonvision.targeting.PhotonPipelineResult;
 
 public interface VisionIO {
   class Inputs {
-    PhotonPipelineResult lastResult = new PhotonPipelineResult();
-    double lastTimestampCTRETime = -1.0;
-    boolean connected;
-    double medianLatency;
-    double medianUpdateTime;
+    PhotonPipelineResult lastResult            = new PhotonPipelineResult();
+    double               lastTimestampCTRETime = -1.0;
+    boolean              connected;
+    double               medianLatency;
+    double               medianUpdateTime;
   }
 
   /** Updates the set of loggable inputs. */
-  public default void updateInputs(Inputs inputs) {}
+  public default void updateInputs(Inputs inputs) {
+  }
 
   public default PhotonCamera getCamera() {
     System.out.println("------default getCamera() == null  ------------");

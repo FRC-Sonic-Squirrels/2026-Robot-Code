@@ -6,16 +6,15 @@ import java.util.function.Consumer;
 
 public class ControllerRumbleForTime extends Command {
   private Consumer<Double> rumbleConsumer;
-  private double rumbleStrength;
-  private double timeSeconds;
-  private Timer timer = new Timer();
+  private double           rumbleStrength;
+  private double           timeSeconds;
+  private Timer            timer = new Timer();
 
   /** Rumble the controller until the specified button is pressed */
-  public ControllerRumbleForTime(
-      Consumer<Double> rumbleConsumer, double timeSeconds, double rumbleStrength) {
+  public ControllerRumbleForTime(Consumer<Double> rumbleConsumer, double timeSeconds, double rumbleStrength) {
     this.rumbleConsumer = rumbleConsumer;
     this.rumbleStrength = rumbleStrength;
-    this.timeSeconds = timeSeconds;
+    this.timeSeconds    = timeSeconds;
   }
 
   // Called when the command is initially scheduled.
@@ -27,7 +26,8 @@ public class ControllerRumbleForTime extends Command {
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
-  public void execute() {}
+  public void execute() {
+  }
 
   // Called once the command ends or is interrupted.
   @Override

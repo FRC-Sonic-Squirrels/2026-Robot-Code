@@ -8,7 +8,7 @@ public class ExecutionTiming implements AutoCloseable {
   private static LoggerGroup group = LoggerGroup.build(ROOT_TABLE);
 
   private final LoggerEntry.Decimal logger;
-  private long startTime;
+  private long                      startTime;
 
   public ExecutionTiming(String context) {
     logger = group.buildDecimal(context);

@@ -11,21 +11,12 @@ import java.util.function.Function;
 
 public class XboxControllerWrapper {
   public enum Button {
-    a(CommandXboxController::a),
-    b(CommandXboxController::b),
-    x(CommandXboxController::x),
-    y(CommandXboxController::y),
-    back(CommandXboxController::back),
-    start(CommandXboxController::start),
-    leftStick(CommandXboxController::leftStick),
-    rightStick(CommandXboxController::rightStick),
-    leftBumper(CommandXboxController::leftBumper),
-    rightBumper(CommandXboxController::rightBumper),
-    leftTrigger(CommandXboxController::leftTrigger),
-    rightTrigger(CommandXboxController::rightTrigger),
-    povUp(CommandXboxController::povUp),
-    povDown(CommandXboxController::povDown),
-    povLeft(CommandXboxController::povLeft),
+    a(CommandXboxController::a), b(CommandXboxController::b), x(CommandXboxController::x), y(CommandXboxController::y),
+    back(CommandXboxController::back), start(CommandXboxController::start), leftStick(CommandXboxController::leftStick),
+    rightStick(CommandXboxController::rightStick), leftBumper(CommandXboxController::leftBumper),
+    rightBumper(CommandXboxController::rightBumper), leftTrigger(CommandXboxController::leftTrigger),
+    rightTrigger(CommandXboxController::rightTrigger), povUp(CommandXboxController::povUp),
+    povDown(CommandXboxController::povDown), povLeft(CommandXboxController::povLeft),
     povRight(CommandXboxController::povRight);
 
     final Function<CommandXboxController, Trigger> binder;
@@ -39,22 +30,21 @@ public class XboxControllerWrapper {
     }
   }
 
-  private final CommandXboxController controller;
+  private final CommandXboxController         controller;
   private final Map<Button, LoggerEntry.Text> buttons = new HashMap<>();
 
   public XboxControllerWrapper(int port) {
-    LoggerGroup logGroup =
-        switch (port) {
-          case 0 -> {
-            controller = new CommandXboxController(0);
-            yield LoggerGroup.build("XboxDriver");
-          }
-          case 1 -> {
-            controller = new CommandXboxController(1);
-            yield LoggerGroup.build("XboxOperator");
-          }
-          default -> throw new RuntimeException("Invalid controller port: " + port);
-        };
+    LoggerGroup logGroup = switch (port) {
+      case 0 -> {
+        controller = new CommandXboxController(0);
+        yield LoggerGroup.build("XboxDriver");
+      }
+      case 1 -> {
+        controller = new CommandXboxController(1);
+        yield LoggerGroup.build("XboxOperator");
+      }
+      default -> throw new RuntimeException("Invalid controller port: " + port);
+    };
 
     for (Button button : Button.values()) {
       var entry = logGroup.buildString(button.name());

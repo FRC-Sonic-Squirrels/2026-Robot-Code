@@ -25,58 +25,52 @@ import java.util.function.Supplier;
 public class LED extends SubsystemBase {
   private static final String ROOT_TABLE = "LED";
 
-  private static final LoggerGroup logGroup = LoggerGroup.build(ROOT_TABLE);
-  private static final LoggerEntry.EnumValue<RobotState> log_robotState =
-      logGroup.buildEnum("robotState");
-  private static final LoggerEntry.EnumValue<BaseRobotState> log_baseRobotState =
-      logGroup.buildEnum("baseRobotState");
-  private static final LoggerEntry.Bool log_gamepieceInRobot =
-      logGroup.buildBoolean("gamepieceInRobot");
-  private static final LoggerEntry.Bool log_isTeleop = logGroup.buildBoolean("isTeleop");
+  private static final LoggerGroup                           logGroup             = LoggerGroup.build(ROOT_TABLE);
+  private static final LoggerEntry.EnumValue<RobotState>     log_robotState       = logGroup.buildEnum("robotState");
+  private static final LoggerEntry.EnumValue<BaseRobotState> log_baseRobotState   = logGroup
+      .buildEnum("baseRobotState");
+  private static final LoggerEntry.Bool                      log_gamepieceInRobot = logGroup
+      .buildBoolean("gamepieceInRobot");
+  private static final LoggerEntry.Bool                      log_isTeleop         = logGroup.buildBoolean("isTeleop");
 
   /** Creates a new LED. */
   private AddressableLED led = new AddressableLED(Constants.LEDConstants.PWM_PORT);
 
-  private AddressableLEDBuffer ledBuffer =
-      new AddressableLEDBuffer(Constants.LEDConstants.LED_BUFFER);
+  private AddressableLEDBuffer ledBuffer = new AddressableLEDBuffer(Constants.LEDConstants.LED_BUFFER);
   // robot's led size
-  private AddressableLEDBuffer previousBuffer =
-      new AddressableLEDBuffer(Constants.LEDConstants.LED_BUFFER);
+  private AddressableLEDBuffer previousBuffer = new AddressableLEDBuffer(Constants.LEDConstants.LED_BUFFER);
 
   private final Distance ledSpacing = Meters.of(1 / 120.0);
 
-  private int levelMeterCount = 0;
-  private RobotState robotState = RobotState.BASE;
-  private BaseRobotState baseRobotState = BaseRobotState.GAMEPIECE_STATUS;
-  private boolean gamepieceInRobot;
-  private Color squirrelOrange = new Color(0.1, 1, 0);
-  private TunableNumberGroup group = new TunableNumberGroup("LED");
-  private LoggedTunableNumber useTunableLEDs = group.build("useTunableLEDs", 0);
-  private LoggedTunableNumber tunableR = group.build("tunableColor/r", 0);
-  private LoggedTunableNumber tunableG = group.build("tunableColor/g", 0);
-  private LoggedTunableNumber tunableB = group.build("tunableColor/b", 0);
-  private LoggedTunableNumber zoomingDotSpeed = group.build("zoomingDotSpeed", 5);
-  private int robotLoops = 0;
-  private final int robotLoopsTillReady = 30;
+  private int                     levelMeterCount        = 0;
+  private RobotState              robotState             = RobotState.BASE;
+  private BaseRobotState          baseRobotState         = BaseRobotState.GAMEPIECE_STATUS;
+  private boolean                 gamepieceInRobot;
+  private Color                   squirrelOrange         = new Color(0.1, 1, 0);
+  private TunableNumberGroup      group                  = new TunableNumberGroup("LED");
+  private LoggedTunableNumber     useTunableLEDs         = group.build("useTunableLEDs", 0);
+  private LoggedTunableNumber     tunableR               = group.build("tunableColor/r", 0);
+  private LoggedTunableNumber     tunableG               = group.build("tunableColor/g", 0);
+  private LoggedTunableNumber     tunableB               = group.build("tunableColor/b", 0);
+  private LoggedTunableNumber     zoomingDotSpeed        = group.build("zoomingDotSpeed", 5);
+  private int                     robotLoops             = 0;
+  private final int               robotLoopsTillReady    = 30;
   private final Supplier<Boolean> brakeMode;
   private final Supplier<Boolean> gyroConnected;
   private final Supplier<Boolean> motorsZeroed;
-  private double timeToResetToBaseState = 0;
-  private Timer resetToBaseStateTimer = new Timer();
-  private boolean autoConfirmed = false;
-  private Supplier<Boolean> preloadComplete;
+  private double                  timeToResetToBaseState = 0;
+  private Timer                   resetToBaseStateTimer  = new Timer();
+  private boolean                 autoConfirmed          = false;
+  private Supplier<Boolean>       preloadComplete;
 
-  public LED(
-      Supplier<Boolean> brakeMode,
-      Supplier<Boolean> gyroConnected,
-      Supplier<Boolean> motorsZeroed,
+  public LED(Supplier<Boolean> brakeMode, Supplier<Boolean> gyroConnected, Supplier<Boolean> motorsZeroed,
       RobotStates states) {
     led.setLength(ledBuffer.getLength());
     led.setData(ledBuffer);
     led.start();
-    this.brakeMode = brakeMode;
+    this.brakeMode     = brakeMode;
     this.gyroConnected = gyroConnected;
-    this.motorsZeroed = motorsZeroed;
+    this.motorsZeroed  = motorsZeroed;
   }
 
   public void setPreloadSupplier(Supplier<Boolean> preloadComplete) {
@@ -87,7 +81,8 @@ public class LED extends SubsystemBase {
   public void periodic() {
     robotLoops++;
 
-    if (resetToBaseStateTimer.get() > timeToResetToBaseState) robotState = RobotState.BASE;
+    if (resetToBaseStateTimer.get() > timeToResetToBaseState)
+      robotState = RobotState.BASE;
 
     if (useTunableLEDs.get() == 0) {
       // This method will be called once per scheduler run
@@ -102,15 +97,13 @@ public class LED extends SubsystemBase {
                 setSnake(Color.kGreen, Color.kCrimson);
               } else if (!preloadComplete.get()) { // Code preload incomplete indication
                 setRainbow();
-              } else if (!motorsZeroed.get()
-                  && DriverStation.isDisabled()) { // moters not zeroed indication
+              } else if (!motorsZeroed.get() && DriverStation.isDisabled()) { // moters not zeroed indication
                 setSnake(Color.kRed, Color.kPurple);
-              } else if (!gyroConnected.get()
-                  && !Constants.RobotMode.isSimBot()) { // gyro disconnected indication
+              } else if (!gyroConnected.get() && !Constants.RobotMode.isSimBot()) { // gyro disconnected indication
                 setBlinking(Color.kAquamarine);
-              } else if (!autoConfirmed
-                  && DriverStation.isFMSAttached()
-                  && DriverStation.isDisabled()) { // auto not confirmed indication
+              } else if (!autoConfirmed && DriverStation.isFMSAttached() && DriverStation.isDisabled()) { // auto not
+                                                                                                          // confirmed
+                                                                                                          // indication
                 setBlinking(Color.kDarkViolet);
               } else {
                 if (DriverStation.isTeleop() && DriverStation.isEnabled()) { // Teleop pattern
@@ -170,12 +163,12 @@ public class LED extends SubsystemBase {
     log_gamepieceInRobot.info(gamepieceInRobot);
     log_isTeleop.info(DriverStation.isTeleop());
 
-    if (!sameAsPrevBuffer()) led.setData(ledBuffer);
+    if (!sameAsPrevBuffer())
+      led.setData(ledBuffer);
 
-    ledBuffer.forEach(
-        (i, r, g, b) -> {
-          previousBuffer.setRGB(i, r, g, b);
-        });
+    ledBuffer.forEach((i, r, g, b) -> {
+      previousBuffer.setRGB(i, r, g, b);
+    });
   }
 
   // Setters
@@ -187,14 +180,20 @@ public class LED extends SubsystemBase {
     led.setData(ledBuffer);
   }
 
-  /** setProgressBar() - A bottom-up progress bar will fill the LEDs with pure white at %100. */
+  /**
+   * setProgressBar() - A bottom-up progress bar will fill the LEDs with pure
+   * white at %100.
+   */
   private void setProgressBar(Color color, double percent) {
     LEDPattern progress = LEDPattern.progressMaskLayer(() -> percent);
     progress.applyTo(ledBuffer);
     led.setData(ledBuffer);
   }
 
-  /** setBlinking() - The LEDs will blink a color at the predefined interval of 0.1s */
+  /**
+   * setBlinking() - The LEDs will blink a color at the predefined interval of
+   * 0.1s
+   */
   private void setBlinking(Color color) {
     setBlinking(color, 0.1);
   }
@@ -207,18 +206,20 @@ public class LED extends SubsystemBase {
     led.setData(ledBuffer);
   }
 
-  /** setSnake() - Gradient of two colors that will scroll across the LEDs continously */
+  /**
+   * setSnake() - Gradient of two colors that will scroll across the LEDs
+   * continously
+   */
   private void setSnake(Color color1, Color color2) {
-    LEDPattern gradient =
-        LEDPattern.gradient(LEDPattern.GradientType.kContinuous, color1, color2)
-            .scrollAtAbsoluteSpeed(Centimeters.per(Second).of(12.5), ledSpacing);
+    LEDPattern gradient = LEDPattern.gradient(LEDPattern.GradientType.kContinuous, color1, color2)
+        .scrollAtAbsoluteSpeed(Centimeters.per(Second).of(12.5), ledSpacing);
     gradient.applyTo(ledBuffer);
     led.setData(ledBuffer);
   }
 
   /** setRainbow() - Rainbow that will scroll across the LEDs continously */
   private void setRainbow() {
-    LEDPattern rainbow = LEDPattern.rainbow(255, 128);
+    LEDPattern rainbow          = LEDPattern.rainbow(255, 128);
     LEDPattern scrollingRainbow = rainbow.scrollAtAbsoluteSpeed(MetersPerSecond.of(1), ledSpacing);
     scrollingRainbow.applyTo(ledBuffer);
     led.setData(ledBuffer);
@@ -230,7 +231,7 @@ public class LED extends SubsystemBase {
   }
 
   public void setRobotState(RobotState newRobotState, double timeSeconds) {
-    this.robotState = newRobotState;
+    this.robotState        = newRobotState;
     timeToResetToBaseState = timeSeconds;
     resetToBaseStateTimer.restart();
   }
@@ -242,17 +243,13 @@ public class LED extends SubsystemBase {
    */
   @SuppressWarnings("unused")
   private void setAudioLevelMeter(int bpm) {
-    double theta = levelMeterCount * 0.02 * Math.PI * bpm / 60.0;
-    double volume =
-        1
-            + Math.abs(11.0 * Math.sin(theta))
-            + (3.0 * Math.sin(theta * 7.0))
-            + (1.0 * Math.sin(theta * 17.0));
-    double mappedVolume = (volume / 15) * 100;
-    LEDPattern volumeMask = LEDPattern.progressMaskLayer(() -> (mappedVolume) / 100);
-    LEDPattern volumeGradient =
-        LEDPattern.gradient(LEDPattern.GradientType.kDiscontinuous, Color.kGreen, Color.kRed)
-            .mask(volumeMask);
+    double     theta          = levelMeterCount * 0.02 * Math.PI * bpm / 60.0;
+    double     volume         = 1 + Math.abs(11.0 * Math.sin(theta)) + (3.0 * Math.sin(theta * 7.0))
+        + (1.0 * Math.sin(theta * 17.0));
+    double     mappedVolume   = (volume / 15) * 100;
+    LEDPattern volumeMask     = LEDPattern.progressMaskLayer(() -> (mappedVolume) / 100);
+    LEDPattern volumeGradient = LEDPattern.gradient(LEDPattern.GradientType.kDiscontinuous, Color.kGreen, Color.kRed)
+        .mask(volumeMask);
     volumeGradient.applyTo(ledBuffer);
     led.setData(ledBuffer);
     levelMeterCount += 1;
@@ -260,15 +257,14 @@ public class LED extends SubsystemBase {
 
   /** setSeaLevelGraphic() - Looks like the side view of a changing sea level */
   private void setSeaLevelGraphic() {
-    double seaLevel = 2 + Math.sin(levelMeterCount * .01) + Math.sin(levelMeterCount * .02);
-    double mappedSeaLevel = (seaLevel / 4) * 100;
-    LEDPattern seaMask = LEDPattern.progressMaskLayer(() -> (mappedSeaLevel) / 100);
-    Color deepSea = new Color(0.0, 0.01, 0.025);
-    Color shallowSea = new Color(0.0, 0.3, 0.4);
-    Color seaColor = Color.lerpRGB(shallowSea, deepSea, mappedSeaLevel / 100);
-    LEDPattern seaGradient =
-        LEDPattern.gradient(LEDPattern.GradientType.kDiscontinuous, deepSea, seaColor)
-            .mask(seaMask);
+    double     seaLevel       = 2 + Math.sin(levelMeterCount * .01) + Math.sin(levelMeterCount * .02);
+    double     mappedSeaLevel = (seaLevel / 4) * 100;
+    LEDPattern seaMask        = LEDPattern.progressMaskLayer(() -> (mappedSeaLevel) / 100);
+    Color      deepSea        = new Color(0.0, 0.01, 0.025);
+    Color      shallowSea     = new Color(0.0, 0.3, 0.4);
+    Color      seaColor       = Color.lerpRGB(shallowSea, deepSea, mappedSeaLevel / 100);
+    LEDPattern seaGradient    = LEDPattern.gradient(LEDPattern.GradientType.kDiscontinuous, deepSea, seaColor)
+        .mask(seaMask);
     seaGradient.applyTo(ledBuffer);
     led.setData(ledBuffer);
     levelMeterCount += 1;
@@ -277,10 +273,10 @@ public class LED extends SubsystemBase {
   /** zooming dot animation */
   private void setZoomingDot() {
     double percent = Math.sin(zoomingDotSpeed.get() * Timer.getFPGATimestamp()) * 0.5 + 0.5;
-    int center = (int) (percent * ledBuffer.getLength());
+    int    center  = (int) (percent * ledBuffer.getLength());
     for (var i = 0; i < ledBuffer.getLength(); i++) {
       // Sets the specified LED to the RGB values for red
-      int dist = Math.abs(center - i);
+      int    dist     = Math.abs(center - i);
       double strength = Math.pow(Math.E, -Math.pow(dist, 2) * 0.5);
       ledBuffer.setRGB(i, (int) (255 * strength), (int) (255 * strength), (int) (255 * strength));
     }
@@ -313,7 +309,8 @@ public class LED extends SubsystemBase {
 
   public boolean sameAsPrevBuffer() {
     for (int i = 0; i < ledBuffer.getLength(); i++) {
-      if (!ledBuffer.getLED(i).equals(previousBuffer.getLED(i))) return false;
+      if (!ledBuffer.getLED(i).equals(previousBuffer.getLED(i)))
+        return false;
     }
 
     return true;
@@ -324,24 +321,12 @@ public class LED extends SubsystemBase {
   }
 
   public enum RobotState {
-    ZERO_SUBSYSTEMS,
-    BRAKE_MODE_OFF,
-    BRAKE_MODE_ON,
-    BASE,
-    BRAKE_MODE_FAILED,
-    SCORING,
-    TWENTY_SECOND_WARNING,
-    HOME_SUBSYSTEMS,
-    INTAKE_SUCCESS
+    ZERO_SUBSYSTEMS, BRAKE_MODE_OFF, BRAKE_MODE_ON, BASE, BRAKE_MODE_FAILED, SCORING, TWENTY_SECOND_WARNING,
+    HOME_SUBSYSTEMS, INTAKE_SUCCESS
   }
 
   public enum BaseRobotState {
-    GAMEPIECE_STATUS,
-    AUTO_GAMEPIECE_PICKUP,
-    SCORING_ALIGNMENT,
-    INTAKE_SUCCESS,
-    AUTO_DRIVE_TO_POSE,
-    GOAL_LINE_UP,
+    GAMEPIECE_STATUS, AUTO_GAMEPIECE_PICKUP, SCORING_ALIGNMENT, INTAKE_SUCCESS, AUTO_DRIVE_TO_POSE, GOAL_LINE_UP,
     LEVEL_MODE
   }
 }

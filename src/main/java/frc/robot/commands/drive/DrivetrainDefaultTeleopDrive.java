@@ -22,17 +22,14 @@ import java.util.function.DoubleSupplier;
 public class DrivetrainDefaultTeleopDrive extends Command {
   private static final String ROOT_TABLE = "TeleopDrive";
 
-  private static final LoggerGroup logGroup = LoggerGroup.build(ROOT_TABLE);
-  private static final LoggerEntry.Decimal log_XSupplier = logGroup.buildDecimal("XSupplier");
-  private static final LoggerEntry.Decimal log_YSupplier = logGroup.buildDecimal("YSupplier");
-  private static final LoggerEntry.Decimal log_OmegaSupplier =
-      logGroup.buildDecimal("OmegaSupplier");
-  private static final LoggerEntry.Decimal log_LinearMagnitude =
-      logGroup.buildDecimal("LinearMagnitude");
-  private static final LoggerEntry.Decimal log_LinearDirection =
-      logGroup.buildDecimal("LinearDirection");
-  private static final LoggerEntry.Struct<Translation2d> log_LinearVelocity =
-      logGroup.buildStruct(Translation2d.class, "LinearVelocity");
+  private static final LoggerGroup                       logGroup            = LoggerGroup.build(ROOT_TABLE);
+  private static final LoggerEntry.Decimal               log_XSupplier       = logGroup.buildDecimal("XSupplier");
+  private static final LoggerEntry.Decimal               log_YSupplier       = logGroup.buildDecimal("YSupplier");
+  private static final LoggerEntry.Decimal               log_OmegaSupplier   = logGroup.buildDecimal("OmegaSupplier");
+  private static final LoggerEntry.Decimal               log_LinearMagnitude = logGroup.buildDecimal("LinearMagnitude");
+  private static final LoggerEntry.Decimal               log_LinearDirection = logGroup.buildDecimal("LinearDirection");
+  private static final LoggerEntry.Struct<Translation2d> log_LinearVelocity  = logGroup.buildStruct(Translation2d.class,
+      "LinearVelocity");
 
   /** Creates a new DrivetrainDefaultTeleopDrive. */
   private final DrivetrainWrapper drivetrain;
@@ -43,16 +40,13 @@ public class DrivetrainDefaultTeleopDrive extends Command {
 
   private double DEADBAND = 0.1;
 
-  public DrivetrainDefaultTeleopDrive(
-      DrivetrainWrapper drivetrain,
-      DoubleSupplier xSupplier,
-      DoubleSupplier ySupplier,
+  public DrivetrainDefaultTeleopDrive(DrivetrainWrapper drivetrain, DoubleSupplier xSupplier, DoubleSupplier ySupplier,
       DoubleSupplier omegaSupplier) {
 
     this.drivetrain = drivetrain;
 
-    this.xSupplier = xSupplier;
-    this.ySupplier = ySupplier;
+    this.xSupplier     = xSupplier;
+    this.ySupplier     = ySupplier;
     this.omegaSupplier = omegaSupplier;
 
     addRequirements(drivetrain.getRequirements());
@@ -62,26 +56,25 @@ public class DrivetrainDefaultTeleopDrive extends Command {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double x = xSupplier.getAsDouble();
-    double y = ySupplier.getAsDouble();
-    double linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), DEADBAND);
+    double     x               = xSupplier.getAsDouble();
+    double     y               = ySupplier.getAsDouble();
+    double     linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), DEADBAND);
     Rotation2d linearDirection = x != 0 || y != 0 ? new Rotation2d(x, y) : Rotation2d.kZero;
-    double omega = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
+    double     omega           = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
 
     // Square values
     linearMagnitude = linearMagnitude * linearMagnitude;
-    omega = Math.copySign(omega * omega, omega);
+    omega           = Math.copySign(omega * omega, omega);
 
     // Calcaulate new linear velocity
-    Translation2d linearVelocity =
-        new Pose2d(Constants.zeroTranslation2d, linearDirection)
-            .transformBy(new Transform2d(linearMagnitude, 0.0, Constants.zeroRotation2d))
-            .getTranslation();
+    Translation2d linearVelocity = new Pose2d(Constants.zeroTranslation2d, linearDirection)
+        .transformBy(new Transform2d(linearMagnitude, 0.0, Constants.zeroRotation2d)).getTranslation();
 
     var correctedLinearVelocity = AllianceFlipUtil.flipVelocitiesForAlliance(linearVelocity);
 
@@ -94,21 +87,18 @@ public class DrivetrainDefaultTeleopDrive extends Command {
     log_LinearVelocity.info(linearVelocity);
 
     // Convert to field relative speeds & send command
-    ChassisSpeeds chassisSpeeds =
-        new ChassisSpeeds(
-            correctedLinearVelocity.getX()
-                * drivetrain.getMaxLinearSpeed().in(Units.MetersPerSecond),
-            correctedLinearVelocity.getY()
-                * drivetrain.getMaxLinearSpeed().in(Units.MetersPerSecond),
-            omega * drivetrain.getMaxAngularSpeed().in(Units.RadiansPerSecond));
+    ChassisSpeeds chassisSpeeds = new ChassisSpeeds(
+        correctedLinearVelocity.getX() * drivetrain.getMaxLinearSpeed().in(Units.MetersPerSecond),
+        correctedLinearVelocity.getY() * drivetrain.getMaxLinearSpeed().in(Units.MetersPerSecond),
+        omega * drivetrain.getMaxAngularSpeed().in(Units.RadiansPerSecond));
 
-    drivetrain.setVelocity(
-        ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, drivetrain.getRotationGyroOnly()));
+    drivetrain.setVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, drivetrain.getRotationGyroOnly()));
   }
 
   // Called once the command ends or is interrupted.
   @Override
-  public void end(boolean interrupted) {}
+  public void end(boolean interrupted) {
+  }
 
   // Returns true when the command should end.
   @Override

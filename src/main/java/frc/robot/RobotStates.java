@@ -19,11 +19,7 @@ import java.util.function.Supplier;
 public class RobotStates {
   // End Effector states
   public enum EndEffectorDesiredAction {
-    Idle(false),
-    DepotIntake(false),
-    GroundIntake(false),
-    ShootFuel(true),
-    PassCoralToEndEffector(false),
+    Idle(false), DepotIntake(false), GroundIntake(false), ShootFuel(true), PassCoralToEndEffector(false),
     PassToIntake(false);
 
     public final boolean alignmentActive;
@@ -36,58 +32,44 @@ public class RobotStates {
   // Mechanism (Arm + Elevator) States
 
   public enum MechState {
-    Idle,
-    Override,
-    StowPosition,
-    ClimbPosition,
-    AvoidIntake,
-    Default,
-    AutoPrep,
+    Idle, Override, StowPosition, ClimbPosition, AvoidIntake, Default, AutoPrep,
   }
 
   // Desired mech to hold coral
 
   public enum TargetCoralPosition {
-    Intake,
-    EndEffector
+    Intake, EndEffector
   }
 
   public enum RobotGoal {
-    None,
-    Auto,
-    Score,
-    Pass,
-    Climb
+    None, Auto, Score, Pass, Climb
   }
 
   // Logging
 
   private LoggerGroup logGroup = LoggerGroup.build("RobotState");
 
-  private LoggerEntry.Bool logGamepieceInIntakeState =
-      logGroup.buildBoolean("GamepieceInIntakeState");
+  private LoggerEntry.Bool logGamepieceInIntakeState = logGroup.buildBoolean("GamepieceInIntakeState");
 
-  private LoggerEntry.EnumValue<EndEffectorDesiredAction> logEndEffectorDesiredAction =
-      logGroup.buildEnum("EndEffectorDesiredAction");
-  private LoggerEntry.EnumValue<MechState> logMechState = logGroup.buildEnum("MechState");
+  private LoggerEntry.EnumValue<EndEffectorDesiredAction> logEndEffectorDesiredAction = logGroup
+      .buildEnum("EndEffectorDesiredAction");
+  private LoggerEntry.EnumValue<MechState>                logMechState                = logGroup.buildEnum("MechState");
 
-  private LoggerGroup logSubsystemsInUse = logGroup.subgroup("SubsystemsInUse");
-  private LoggerEntry.Bool logMechInUse = logSubsystemsInUse.buildBoolean("MechInUse");
-  private LoggerEntry.Bool logEndEffectorInUse =
-      logSubsystemsInUse.buildBoolean("EndEffectorInUse");
+  private LoggerGroup      logSubsystemsInUse  = logGroup.subgroup("SubsystemsInUse");
+  private LoggerEntry.Bool logMechInUse        = logSubsystemsInUse.buildBoolean("MechInUse");
+  private LoggerEntry.Bool logEndEffectorInUse = logSubsystemsInUse.buildBoolean("EndEffectorInUse");
 
-  private LoggerGroup logSubsystemsInTargetStates = logGroup.subgroup("SubsystemsInTargetStates");
-  private LoggerEntry.Bool logIntakeInTargetState =
-      logSubsystemsInTargetStates.buildBoolean("IntakeInTargetState");
-  private LoggerEntry.Bool logMechInTargetState =
-      logSubsystemsInTargetStates.buildBoolean("MechInTargetState");
-  private LoggerEntry.Text logGoal = logSubsystemsInTargetStates.buildString("Goal");
-  private LoggerEntry.Text logWantedGoal = logSubsystemsInTargetStates.buildString("WantedGoal");
+  private LoggerGroup      logSubsystemsInTargetStates = logGroup.subgroup("SubsystemsInTargetStates");
+  private LoggerEntry.Bool logIntakeInTargetState      = logSubsystemsInTargetStates
+      .buildBoolean("IntakeInTargetState");
+  private LoggerEntry.Bool logMechInTargetState        = logSubsystemsInTargetStates.buildBoolean("MechInTargetState");
+  private LoggerEntry.Text logGoal                     = logSubsystemsInTargetStates.buildString("Goal");
+  private LoggerEntry.Text logWantedGoal               = logSubsystemsInTargetStates.buildString("WantedGoal");
 
   // States
 
-  public EndEffectorDesiredAction endEffectorDesiredAction = EndEffectorDesiredAction.Idle;
-  public double endEffectorOverrideVelocity = Double.NaN;
+  public EndEffectorDesiredAction endEffectorDesiredAction    = EndEffectorDesiredAction.Idle;
+  public double                   endEffectorOverrideVelocity = Double.NaN;
 
   public MechState mechState = MechState.Idle;
 
@@ -107,40 +89,33 @@ public class RobotStates {
   public boolean mechInTargetState;
 
   public boolean coralExpectedInEndEffector = true;
-  public boolean coralExpectedInIntake = true;
+  public boolean coralExpectedInIntake      = true;
 
-  private RobotGoal goal = RobotGoal.None;
+  private RobotGoal goal       = RobotGoal.None;
   private RobotGoal wantedGoal = RobotGoal.None;
 
   // Commands
 
-  public RobotStates() {}
+  public RobotStates() {
+  }
 
-  private Intake intake;
+  private Intake            intake;
   private DrivetrainWrapper drivetrain;
 
   private RotateToFaceHelper rtfHelper;
-  private DriveToPoseHelper dtpHelpter;
-  private boolean driveSlow = false;
-  private Pose2d targetPose = null;
-  private Supplier<Boolean> intaking = null;
+  private DriveToPoseHelper  dtpHelpter;
+  private boolean            driveSlow  = false;
+  private Pose2d             targetPose = null;
+  private Supplier<Boolean>  intaking   = null;
 
-  public void setSubsystems(
-      Intake intake, DrivetrainWrapper drivetrain, Supplier<Boolean> intaking) {
-    this.intake = intake;
+  public void setSubsystems(Intake intake, DrivetrainWrapper drivetrain, Supplier<Boolean> intaking) {
+    this.intake     = intake;
     this.drivetrain = drivetrain;
-    this.intaking = intaking;
-    dtpHelpter =
-        new DriveToPoseHelper(
-            this.drivetrain,
-            () -> targetPose,
-            () -> drivetrain.getRawOdometryPose(),
-            () -> driveSlow);
-    rtfHelper =
-        new RotateToFaceHelper(
-            this.drivetrain,
-            () -> targetPose.getTranslation(),
-            () -> drivetrain.getRawOdometryPose());
+    this.intaking   = intaking;
+    dtpHelpter      = new DriveToPoseHelper(this.drivetrain, () -> targetPose, () -> drivetrain.getRawOdometryPose(),
+        () -> driveSlow);
+    rtfHelper       = new RotateToFaceHelper(this.drivetrain, () -> targetPose.getTranslation(),
+        () -> drivetrain.getRawOdometryPose());
   }
 
   public void changeEndEffectorIfNotAligning(EndEffectorDesiredAction action) {
@@ -150,7 +125,8 @@ public class RobotStates {
   }
 
   private void handleGoalTransition() {
-    if (wantedGoal == goal) return;
+    if (wantedGoal == goal)
+      return;
     if (DriverStation.isAutonomous() && wantedGoal != RobotGoal.Auto) {
       wantedGoal = RobotGoal.Auto;
       return;
@@ -187,21 +163,15 @@ public class RobotStates {
         // TODO: run the auto state machene
         break;
       case Score:
-        targetPose =
-            AllianceFlipUtil.flipPoseForAlliance(
-                new Pose2d(FieldConstants.BLUE_HUB_CENTER_POSE, Rotation2d.kZero));
+        targetPose = AllianceFlipUtil
+            .flipPoseForAlliance(new Pose2d(FieldConstants.BLUE_HUB_CENTER_POSE, Rotation2d.kZero));
         shoot();
         intakeIfWanted();
         break;
       case Pass:
-        targetPose =
-            new Pose2d(
-                AllianceFlipUtil.getClosestTranslation(
-                    new Translation2d[] {
-                      FieldConstants.RIGHT_PASS_AIM_POINT, FieldConstants.LEFT_PASS_AIM_POINT
-                    },
-                    drivetrain.getRawOdometryPose()),
-                Rotation2d.kZero);
+        targetPose = new Pose2d(AllianceFlipUtil.getClosestTranslation(
+            new Translation2d[] { FieldConstants.RIGHT_PASS_AIM_POINT, FieldConstants.LEFT_PASS_AIM_POINT },
+            drivetrain.getRawOdometryPose()), Rotation2d.kZero);
         shoot();
         intakeIfWanted();
         break;
@@ -233,8 +203,8 @@ public class RobotStates {
 
     logGamepieceInIntakeState.info(fuelInIntake);
 
-    mechanismInUse = false;
-    intakeInUse = false;
+    mechanismInUse   = false;
+    intakeInUse      = false;
     endEffectorInUse = false;
   }
 
@@ -249,19 +219,19 @@ public class RobotStates {
   private void shoot() {
     rtfHelper.execute();
     // shooter.setAngle()hjmhjmh <- landon did this
-    if (rtfHelper.withinTolerance() /*&& shooter.withinTolerance() */) {
+    if (rtfHelper.withinTolerance() /* && shooter.withinTolerance() */) {
       // pew pew
     }
   }
 
   public void setMechState(MechState state) {
-    mechState = state;
+    mechState      = state;
     mechanismInUse = true;
   }
 
   public void setEndEffectorState(EndEffectorDesiredAction state) {
     endEffectorDesiredAction = state;
-    endEffectorInUse = true;
+    endEffectorInUse         = true;
   }
 
   public RobotGoal getRobotGoal() {

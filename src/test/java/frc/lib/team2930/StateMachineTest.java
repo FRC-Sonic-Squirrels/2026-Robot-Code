@@ -120,23 +120,21 @@ public class StateMachineTest {
 
     StateHandler state1() {
       gotState1 = true;
-      return suspendForCommand(
-          new Command() {
-            @Override
-            public void execute() {
-              gotCmd = true;
-            }
+      return suspendForCommand(new Command() {
+        @Override
+        public void execute() {
+          gotCmd = true;
+        }
 
-            @Override
-            public boolean isFinished() {
-              return gotCmd;
-            }
+        @Override
+        public boolean isFinished() {
+          return gotCmd;
+        }
 
-            public boolean runsWhenDisabled() {
-              return true;
-            }
-          },
-          this::state2);
+        public boolean runsWhenDisabled() {
+          return true;
+        }
+      }, this::state2);
     }
 
     StateHandler state2(Command command) {
@@ -184,15 +182,13 @@ public class StateMachineTest {
   @Test()
   public void testSubCommands() throws InterruptedException {
     var scheduler = CommandScheduler.getInstance();
-    var quit = new AtomicBoolean();
+    var quit      = new AtomicBoolean();
 
-    var thread =
-        new Thread(
-            () -> {
-              while (!quit.get()) {
-                scheduler.run();
-              }
-            });
+    var thread = new Thread(() -> {
+      while (!quit.get()) {
+        scheduler.run();
+      }
+    });
 
     thread.start();
 

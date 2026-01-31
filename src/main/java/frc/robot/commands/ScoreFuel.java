@@ -12,14 +12,8 @@ import java.util.function.Consumer;
 
 public class ScoreFuel extends StateMachine {
 
-  public ScoreFuel(
-      DrivetrainWrapper wrapper,
-      LED led,
-      Consumer<Double> rumble,
-      RobotConfig config,
-      boolean driverConfirmation,
-      Optional<ChoreoTrajectoryWithName> optionalPresetPath,
-      RobotStates robotStates) {
+  public ScoreFuel(DrivetrainWrapper wrapper, LED led, Consumer<Double> rumble, RobotConfig config,
+      boolean driverConfirmation, Optional<ChoreoTrajectoryWithName> optionalPresetPath, RobotStates robotStates) {
     super("ScoreCoral");
 
     led.setBaseRobotState(BaseRobotState.SCORING_ALIGNMENT);

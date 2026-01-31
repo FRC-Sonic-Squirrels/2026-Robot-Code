@@ -21,11 +21,10 @@ import org.littletonrobotics.junction.LogDataReceiver;
 import org.littletonrobotics.junction.LogTable;
 
 public class LoggerGroup {
-  private static final String logWriter_extraHeader = "AdvantageKit";
+  private static final String logWriter_extraHeader   = "AdvantageKit";
   private static final String logWriter_entryMetadata = "{\"source\":\"AdvantageKit\"}";
 
-  private static final double logWriter_timestampUpdateDelay =
-      5.0; // Wait several seconds after DS attached to
+  private static final double logWriter_timestampUpdateDelay = 5.0; // Wait several seconds after DS attached to
 
   // ensure timestamp/timezone is updated
   @SuppressWarnings("unused")
@@ -34,17 +33,17 @@ public class LoggerGroup {
   @SuppressWarnings("unused")
   private static final double logWriter_defaultWritePeriodSim = 0.01;
 
-  private static final Object g_lock = new Object();
+  private static final Object                   g_lock = new Object();
   private static final Map<Class<?>, Struct<?>> structTypeCache;
-  private static final List<Struct<?>> structTypePendingSchema;
-  private static final List<Struct<?>> structTypePendingSchemaForDataLog;
-  private static final List<Struct<?>> structTypeSchemaForDataLog;
+  private static final List<Struct<?>>          structTypePendingSchema;
+  private static final List<Struct<?>>          structTypePendingSchemaForDataLog;
+  private static final List<Struct<?>>          structTypeSchemaForDataLog;
 
   static {
-    structTypeCache = new HashMap<>();
-    structTypePendingSchema = new ArrayList<>();
+    structTypeCache                   = new HashMap<>();
+    structTypePendingSchema           = new ArrayList<>();
     structTypePendingSchemaForDataLog = new ArrayList<>();
-    structTypeSchemaForDataLog = new ArrayList<>();
+    structTypeSchemaForDataLog        = new ArrayList<>();
   }
 
   static int dataLogIdNotInitialized = -2;
@@ -54,41 +53,40 @@ public class LoggerGroup {
     T apply(String name, int updateFrequency);
   }
 
-  private static final String rootKey = "/AdvantageKit";
-  public static final String timestampKey = "/Timestamp";
+  private static final String rootKey      = "/AdvantageKit";
+  public static final String  timestampKey = "/Timestamp";
 
-  private static final NetworkTable akitTable;
+  private static final NetworkTable     akitTable;
   private static final IntegerPublisher timestampPublisher;
-  private static double currentTimestmap;
-  private static long currentTimestmapLog;
+  private static double                 currentTimestmap;
+  private static long                   currentTimestmapLog;
 
-  private static DataLog dataLog_handle;
-  private static boolean dataLog_handleFailure;
-  private static int dataLog_flushDelay;
-  private static String dataLog_folder;
-  private static String dataLog_filename;
-  private static boolean dataLog_syncedDriverStation;
-  private static Double dataLog_initialTime;
-  private static Double dataLog_dsAttachedTime;
+  private static DataLog       dataLog_handle;
+  private static boolean       dataLog_handleFailure;
+  private static int           dataLog_flushDelay;
+  private static String        dataLog_folder;
+  private static String        dataLog_filename;
+  private static boolean       dataLog_syncedDriverStation;
+  private static Double        dataLog_initialTime;
+  private static Double        dataLog_dsAttachedTime;
   private static LocalDateTime dataLog_logDate;
-  private static Throwable dataLog_failure;
+  private static Throwable     dataLog_failure;
 
   //
 
   private static final Object spoolerSignal = new Object();
-  private static Thread spoolerThread;
+  private static Thread       spoolerThread;
 
   public static final LoggerGroup root;
 
-  private final String path;
-  private LoggerGroup[] groups = new LoggerGroup[0];
+  private final String  path;
+  private LoggerGroup[] groups  = new LoggerGroup[0];
   private LoggerEntry[] entries = new LoggerEntry[0];
 
   static {
-    root = new LoggerGroup("");
-    akitTable = NetworkTableInstance.getDefault().getTable(rootKey);
-    timestampPublisher =
-        akitTable.getIntegerTopic(timestampKey.substring(1)).publish(PubSubOption.sendAll(true));
+    root               = new LoggerGroup("");
+    akitTable          = NetworkTableInstance.getDefault().getTable(rootKey);
+    timestampPublisher = akitTable.getIntegerTopic(timestampKey.substring(1)).publish(PubSubOption.sendAll(true));
   }
 
   static Topic getNetworkTableTopic(LoggerEntry entry) {
@@ -97,19 +95,15 @@ public class LoggerGroup {
 
   static int getDataLogTopic(LoggerEntry entry) {
     if (dataLog_handle != null) {
-      return dataLog_handle.start(
-          "NT:/" + logWriter_extraHeader + "/" + entry.key,
-          entry.getWpiLogType(),
-          logWriter_entryMetadata,
-          currentTimestmapLog);
+      return dataLog_handle.start("NT:/" + logWriter_extraHeader + "/" + entry.key, entry.getWpiLogType(),
+          logWriter_entryMetadata, currentTimestmapLog);
     }
 
     return dataLogIdNotInitialized;
   }
 
   @SuppressWarnings("unchecked")
-  static <T extends StructSerializable> edu.wpi.first.util.struct.Struct<T> findStructType(
-      Class<T> classObj) {
+  static <T extends StructSerializable> edu.wpi.first.util.struct.Struct<T> findStructType(Class<T> classObj) {
     synchronized (g_lock) {
       var res = (edu.wpi.first.util.struct.Struct<T>) structTypeCache.get(classObj);
       if (res == null) {
@@ -118,10 +112,7 @@ public class LoggerGroup {
           res = (edu.wpi.first.util.struct.Struct<T>) field.get(null);
 
           structTypePendingSchema.add(res);
-        } catch (NoSuchFieldException
-            | SecurityException
-            | IllegalArgumentException
-            | IllegalAccessException ignored) {
+        } catch (NoSuchFieldException | SecurityException | IllegalArgumentException | IllegalAccessException ignored) {
         }
 
         structTypeCache.put(classObj, res);
@@ -250,7 +241,7 @@ public class LoggerGroup {
         if (dataLog_dsAttachedTime == null) {
           dataLog_dsAttachedTime = robotTime;
         } else if (robotTime - dataLog_dsAttachedTime > logWriter_timestampUpdateDelay) {
-          dataLog_logDate = LocalDateTime.now();
+          dataLog_logDate             = LocalDateTime.now();
           dataLog_syncedDriverStation = true;
         } else {
           dataLog_dsAttachedTime = null;
@@ -258,7 +249,7 @@ public class LoggerGroup {
       }
 
       if (RobotBase.isSimulation()) {
-        dataLog_logDate = LocalDateTime.now();
+        dataLog_logDate             = LocalDateTime.now();
         dataLog_syncedDriverStation = true;
       }
     }
@@ -275,13 +266,12 @@ public class LoggerGroup {
     // Update match
     var matchType = DriverStation.getMatchType();
     if (matchType != DriverStation.MatchType.None) {
-      String logMatchText =
-          switch (matchType) {
-            case Practice -> "p";
-            case Qualification -> "q";
-            case Elimination -> "e";
-            default -> "";
-          };
+      String logMatchText = switch (matchType) {
+        case Practice -> "p";
+        case Qualification -> "q";
+        case Elimination -> "e";
+        default -> "";
+      };
       logMatchText += DriverStation.getMatchNumber();
       newFilenameBuilder.append("_");
       newFilenameBuilder.append(logMatchText);
@@ -305,7 +295,8 @@ public class LoggerGroup {
       synchronized (g_lock) {
         root.resetDataLogId();
 
-        // Since we are closing the data log file, we need to resend all the structure schemas.
+        // Since we are closing the data log file, we need to resend all the structure
+        // schemas.
         structTypePendingSchemaForDataLog.clear();
         structTypePendingSchemaForDataLog.addAll(structTypeSchemaForDataLog);
       }
@@ -352,7 +343,7 @@ public class LoggerGroup {
   }
 
   public static void periodic() {
-    currentTimestmap = Utils.getCurrentTimeSeconds();
+    currentTimestmap    = Utils.getCurrentTimeSeconds();
     currentTimestmapLog = HALUtil.getFPGATime();
   }
 
@@ -487,8 +478,7 @@ public class LoggerGroup {
   }
 
   public LoggerEntry.Text buildString(String name, int updateFrequencyInSeconds) {
-    return buildInner(
-        name, updateFrequencyInSeconds, LoggerEntry.Text.class, LoggerEntry.Text::new);
+    return buildInner(name, updateFrequencyInSeconds, LoggerEntry.Text.class, LoggerEntry.Text::new);
   }
 
   public LoggerEntry.TextArray buildStringArray(String name) {
@@ -496,8 +486,7 @@ public class LoggerGroup {
   }
 
   public LoggerEntry.TextArray buildStringArray(String name, int updateFrequencyInSeconds) {
-    return buildInner(
-        name, updateFrequencyInSeconds, LoggerEntry.TextArray.class, LoggerEntry.TextArray::new);
+    return buildInner(name, updateFrequencyInSeconds, LoggerEntry.TextArray.class, LoggerEntry.TextArray::new);
   }
 
   // -- //
@@ -507,11 +496,9 @@ public class LoggerGroup {
   }
 
   @SuppressWarnings("unchecked")
-  public <E extends Enum<E>> LoggerEntry.EnumValue<E> buildEnum(
-      String name, int updateFrequencyInSeconds) {
-    //noinspection unchecked
-    return buildInner(
-        name, updateFrequencyInSeconds, LoggerEntry.EnumValue.class, LoggerEntry.EnumValue::new);
+  public <E extends Enum<E>> LoggerEntry.EnumValue<E> buildEnum(String name, int updateFrequencyInSeconds) {
+    // noinspection unchecked
+    return buildInner(name, updateFrequencyInSeconds, LoggerEntry.EnumValue.class, LoggerEntry.EnumValue::new);
   }
 
   // -- //
@@ -527,8 +514,7 @@ public class LoggerGroup {
   }
 
   public LoggerEntry.Bool buildBoolean(String name, int updateFrequencyInSeconds) {
-    return buildInner(
-        name, updateFrequencyInSeconds, LoggerEntry.Bool.class, LoggerEntry.Bool::new);
+    return buildInner(name, updateFrequencyInSeconds, LoggerEntry.Bool.class, LoggerEntry.Bool::new);
   }
 
   // -- //
@@ -538,8 +524,7 @@ public class LoggerGroup {
   }
 
   public LoggerEntry.BoolArray buildBooleanArray(String name, int updateFrequencyInSeconds) {
-    return buildInner(
-        name, updateFrequencyInSeconds, LoggerEntry.BoolArray.class, LoggerEntry.BoolArray::new);
+    return buildInner(name, updateFrequencyInSeconds, LoggerEntry.BoolArray.class, LoggerEntry.BoolArray::new);
   }
 
   // -- //
@@ -549,8 +534,7 @@ public class LoggerGroup {
   }
 
   public LoggerEntry.Integer buildInteger(String name, int updateFrequencyInSeconds) {
-    return buildInner(
-        name, updateFrequencyInSeconds, LoggerEntry.Integer.class, LoggerEntry.Integer::new);
+    return buildInner(name, updateFrequencyInSeconds, LoggerEntry.Integer.class, LoggerEntry.Integer::new);
   }
 
   public LoggerEntry.IntegerArray buildIntegerArray(String name) {
@@ -558,11 +542,7 @@ public class LoggerGroup {
   }
 
   public LoggerEntry.IntegerArray buildIntegerArray(String name, int updateFrequencyInSeconds) {
-    return buildInner(
-        name,
-        updateFrequencyInSeconds,
-        LoggerEntry.IntegerArray.class,
-        LoggerEntry.IntegerArray::new);
+    return buildInner(name, updateFrequencyInSeconds, LoggerEntry.IntegerArray.class, LoggerEntry.IntegerArray::new);
   }
 
   // -- //
@@ -572,23 +552,15 @@ public class LoggerGroup {
   }
 
   public LoggerEntry.DecimalFloat buildDecimalFloat(String name, int updateFrequencyInSeconds) {
-    return buildInner(
-        name,
-        updateFrequencyInSeconds,
-        LoggerEntry.DecimalFloat.class,
-        LoggerEntry.DecimalFloat::new);
+    return buildInner(name, updateFrequencyInSeconds, LoggerEntry.DecimalFloat.class, LoggerEntry.DecimalFloat::new);
   }
 
   public LoggerEntry.DecimalFloatArray buildDecimalFloatArray(String name) {
     return buildDecimalFloatArray(name, 50);
   }
 
-  public LoggerEntry.DecimalFloatArray buildDecimalFloatArray(
-      String name, int updateFrequencyInSeconds) {
-    return buildInner(
-        name,
-        updateFrequencyInSeconds,
-        LoggerEntry.DecimalFloatArray.class,
+  public LoggerEntry.DecimalFloatArray buildDecimalFloatArray(String name, int updateFrequencyInSeconds) {
+    return buildInner(name, updateFrequencyInSeconds, LoggerEntry.DecimalFloatArray.class,
         LoggerEntry.DecimalFloatArray::new);
   }
 
@@ -599,8 +571,7 @@ public class LoggerGroup {
   }
 
   public LoggerEntry.Decimal buildDecimal(String name, int updateFrequencyInSeconds) {
-    return buildInner(
-        name, updateFrequencyInSeconds, LoggerEntry.Decimal.class, LoggerEntry.Decimal::new);
+    return buildInner(name, updateFrequencyInSeconds, LoggerEntry.Decimal.class, LoggerEntry.Decimal::new);
   }
 
   public LoggerEntry.DecimalArray buildDecimalArray(String name) {
@@ -608,11 +579,7 @@ public class LoggerGroup {
   }
 
   public LoggerEntry.DecimalArray buildDecimalArray(String name, int updateFrequencyInSeconds) {
-    return buildInner(
-        name,
-        updateFrequencyInSeconds,
-        LoggerEntry.DecimalArray.class,
-        LoggerEntry.DecimalArray::new);
+    return buildInner(name, updateFrequencyInSeconds, LoggerEntry.DecimalArray.class, LoggerEntry.DecimalArray::new);
   }
 
   // -- //
@@ -622,43 +589,34 @@ public class LoggerGroup {
   }
 
   public LoggerEntry.Mechanism buildMechanism2d(String name, int updateFrequencyInSeconds) {
-    return buildInner(
-        name, updateFrequencyInSeconds, LoggerEntry.Mechanism.class, LoggerEntry.Mechanism::new);
+    return buildInner(name, updateFrequencyInSeconds, LoggerEntry.Mechanism.class, LoggerEntry.Mechanism::new);
   }
 
   // -- //
 
-  public <T extends StructSerializable> LoggerEntry.Struct<T> buildStruct(
-      Class<T> clz, String name) {
+  public <T extends StructSerializable> LoggerEntry.Struct<T> buildStruct(Class<T> clz, String name) {
     return buildStruct(clz, name, 50);
   }
 
   @SuppressWarnings("unchecked")
-  public <T extends StructSerializable> LoggerEntry.Struct<T> buildStruct(
-      Class<T> clz, String name, int updateFrequencyInSeconds) {
-    //noinspection unchecked
-    return buildInner(
-        name,
-        updateFrequencyInSeconds,
-        LoggerEntry.Struct.class,
+  public <T extends StructSerializable> LoggerEntry.Struct<T> buildStruct(Class<T> clz, String name,
+      int updateFrequencyInSeconds) {
+    // noinspection unchecked
+    return buildInner(name, updateFrequencyInSeconds, LoggerEntry.Struct.class,
         (key, u) -> new LoggerEntry.Struct<>(clz, key, u));
   }
 
   // -- //
 
-  public <T extends StructSerializable> LoggerEntry.StructArray<T> buildStructArray(
-      Class<T> clz, String name) {
+  public <T extends StructSerializable> LoggerEntry.StructArray<T> buildStructArray(Class<T> clz, String name) {
     return buildStructArray(clz, name, 50);
   }
 
   @SuppressWarnings("unchecked")
-  public <T extends StructSerializable> LoggerEntry.StructArray<T> buildStructArray(
-      Class<T> clz, String name, int updateFrequencyInSeconds) {
-    //noinspection unchecked
-    return buildInner(
-        name,
-        updateFrequencyInSeconds,
-        LoggerEntry.StructArray.class,
+  public <T extends StructSerializable> LoggerEntry.StructArray<T> buildStructArray(Class<T> clz, String name,
+      int updateFrequencyInSeconds) {
+    // noinspection unchecked
+    return buildInner(name, updateFrequencyInSeconds, LoggerEntry.StructArray.class,
         (key, u) -> new LoggerEntry.StructArray<>(clz, key, u));
   }
 
@@ -667,18 +625,17 @@ public class LoggerGroup {
   }
 
   public LoggerEntry.ByteArray buildBytes(String name, int updateFrequencyInSeconds) {
-    return buildInner(
-        name, updateFrequencyInSeconds, LoggerEntry.ByteArray.class, LoggerEntry.ByteArray::new);
+    return buildInner(name, updateFrequencyInSeconds, LoggerEntry.ByteArray.class, LoggerEntry.ByteArray::new);
   }
 
   // -- //
 
-  private synchronized <T extends LoggerEntry> T buildInner(
-      String name, int updateFrequencyInSeconds, Class<T> clz, EntrySupplier<T> supplier) {
+  private synchronized <T extends LoggerEntry> T buildInner(String name, int updateFrequencyInSeconds, Class<T> clz,
+      EntrySupplier<T> supplier) {
     var ptr = this;
     int pos = name.indexOf('/');
     if (pos >= 0) {
-      var path = name.substring(0, pos);
+      var path    = name.substring(0, pos);
       var subName = name.substring(pos + 1);
 
       if (!path.isEmpty()) {
@@ -697,7 +654,7 @@ public class LoggerGroup {
 
     var newEntry = supplier.apply(key, updateFrequencyInSeconds);
     newEntry.registerPublisher();
-    entries = Arrays.copyOf(entries, entries.length + 1);
+    entries                     = Arrays.copyOf(entries, entries.length + 1);
     entries[entries.length - 1] = newEntry;
     return newEntry;
   }
@@ -710,7 +667,7 @@ public class LoggerGroup {
     var ptr = this;
     int pos = name.indexOf('/');
     if (pos >= 0) {
-      var path = name.substring(0, pos);
+      var path    = name.substring(0, pos);
       var subName = name.substring(pos + 1);
 
       if (!path.isEmpty()) {
@@ -728,7 +685,7 @@ public class LoggerGroup {
     }
 
     var newGroup = new LoggerGroup(fullPath);
-    groups = Arrays.copyOf(groups, groups.length + 1);
+    groups                    = Arrays.copyOf(groups, groups.length + 1);
     groups[groups.length - 1] = newGroup;
     return newGroup;
   }
@@ -743,88 +700,77 @@ public class LoggerGroup {
 
       for (var field : newMap.entrySet()) {
         // Check if field has changed
-        var key = field.getKey();
+        var key   = field.getKey();
         var value = field.getValue();
 
         var callback = lookup.get(key);
         if (callback == null) {
           switch (value.type) {
-            case Raw:
-              {
-                var l = root.buildBytes(key);
-                callback = (v) -> l.info(v.getRaw());
-                break;
-              }
+            case Raw: {
+              var l = root.buildBytes(key);
+              callback = (v) -> l.info(v.getRaw());
+              break;
+            }
 
-            case Boolean:
-              {
-                var l = root.buildBoolean(key);
-                callback = (v) -> l.info(v.getBoolean());
-                break;
-              }
+            case Boolean: {
+              var l = root.buildBoolean(key);
+              callback = (v) -> l.info(v.getBoolean());
+              break;
+            }
 
-            case BooleanArray:
-              {
-                var l = root.buildBooleanArray(key);
-                callback = (v) -> l.info(v.getBooleanArray());
-                break;
-              }
+            case BooleanArray: {
+              var l = root.buildBooleanArray(key);
+              callback = (v) -> l.info(v.getBooleanArray());
+              break;
+            }
 
-            case Integer:
-              {
-                var l = root.buildInteger(key);
-                callback = (v) -> l.info(v.getInteger());
-                break;
-              }
+            case Integer: {
+              var l = root.buildInteger(key);
+              callback = (v) -> l.info(v.getInteger());
+              break;
+            }
 
-            case IntegerArray:
-              {
-                var l = root.buildIntegerArray(key);
-                callback = (v) -> l.info(v.getIntegerArray());
-                break;
-              }
+            case IntegerArray: {
+              var l = root.buildIntegerArray(key);
+              callback = (v) -> l.info(v.getIntegerArray());
+              break;
+            }
 
-            case Float:
-              {
-                var l = root.buildDecimalFloat(key);
-                callback = (v) -> l.info(v.getFloat());
-                break;
-              }
+            case Float: {
+              var l = root.buildDecimalFloat(key);
+              callback = (v) -> l.info(v.getFloat());
+              break;
+            }
 
-            case FloatArray:
-              {
-                var l = root.buildDecimalFloatArray(key);
-                callback = (v) -> l.info(v.getFloatArray());
-                break;
-              }
+            case FloatArray: {
+              var l = root.buildDecimalFloatArray(key);
+              callback = (v) -> l.info(v.getFloatArray());
+              break;
+            }
 
-            case Double:
-              {
-                var l = root.buildDecimal(key);
-                callback = (v) -> l.info(v.getDouble());
-                break;
-              }
+            case Double: {
+              var l = root.buildDecimal(key);
+              callback = (v) -> l.info(v.getDouble());
+              break;
+            }
 
-            case DoubleArray:
-              {
-                var l = root.buildDecimalArray(key);
-                callback = (v) -> l.info(v.getDoubleArray());
-                break;
-              }
+            case DoubleArray: {
+              var l = root.buildDecimalArray(key);
+              callback = (v) -> l.info(v.getDoubleArray());
+              break;
+            }
 
-            case String:
-              {
-                var l = root.buildString(key);
-                callback = (v) -> l.info(v.getString());
-                break;
-              }
+            case String: {
+              var l = root.buildString(key);
+              callback = (v) -> l.info(v.getString());
+              break;
+            }
 
-            case StringArray:
-              {
-                var l = root.buildStringArray(key);
-                callback = (v) -> l.info(v.getStringArray());
-                break;
-              }
+            case StringArray: {
+              var l = root.buildStringArray(key);
+              callback = (v) -> l.info(v.getStringArray());
+              break;
+            }
 
             default:
               // Not supported.

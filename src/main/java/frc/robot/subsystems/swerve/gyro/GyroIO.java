@@ -23,10 +23,10 @@ import java.util.List;
 public interface GyroIO {
   class Inputs extends BaseInputs {
     public Rotation2d yawPosition = Constants.zeroRotation2d;
-    public double yawVelocityRadPerSec;
-    public double xAcceleration;
-    public double yAcceleration;
-    public double zAcceleration;
+    public double     yawVelocityRadPerSec;
+    public double     xAcceleration;
+    public double     yAcceleration;
+    public double     zAcceleration;
 
     public Inputs(LoggerGroup logInputs) {
       super(logInputs);
@@ -35,7 +35,8 @@ public interface GyroIO {
 
   public class Fake implements GyroIO {
     @Override
-    public void registerSignalForOdometry(List<BaseStatusSignal> signal) {}
+    public void registerSignalForOdometry(List<BaseStatusSignal> signal) {
+    }
 
     @Override
     public Rotation2d updateOdometry(Inputs inputs) {
@@ -43,7 +44,8 @@ public interface GyroIO {
     }
 
     @Override
-    public void updateInputs(Inputs inputs) {}
+    public void updateInputs(Inputs inputs) {
+    }
   }
 
   void registerSignalForOdometry(List<BaseStatusSignal> signal);

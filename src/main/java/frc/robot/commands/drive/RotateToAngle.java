@@ -19,35 +19,27 @@ import java.util.function.Supplier;
 public class RotateToAngle extends Command {
   private static final String ROOT_TABLE = "RotateToAngle";
 
-  private static final LoggerGroup logGroup = LoggerGroup.build(ROOT_TABLE);
-  private static final LoggerEntry.Decimal log_rotVel = logGroup.buildDecimal("rotVel");
-  private static final LoggerEntry.Decimal log_targetRotation =
-      logGroup.buildDecimal("targetRotation");
-  private static final LoggerEntry.Decimal log_currentRotation =
-      logGroup.buildDecimal("currentRotation");
-  private static final LoggerEntry.Decimal log_positionErrorDeg =
-      logGroup.buildDecimal("positionErrorDeg");
+  private static final LoggerGroup         logGroup             = LoggerGroup.build(ROOT_TABLE);
+  private static final LoggerEntry.Decimal log_rotVel           = logGroup.buildDecimal("rotVel");
+  private static final LoggerEntry.Decimal log_targetRotation   = logGroup.buildDecimal("targetRotation");
+  private static final LoggerEntry.Decimal log_currentRotation  = logGroup.buildDecimal("currentRotation");
+  private static final LoggerEntry.Decimal log_positionErrorDeg = logGroup.buildDecimal("positionErrorDeg");
 
-  private static final TunableNumberGroup groupTunable = new TunableNumberGroup(ROOT_TABLE);
-  private static final LoggedTunableNumber tunableKP = groupTunable.build("kP", 4.9);
-  private static final LoggedTunableNumber cruiseVelocity =
-      groupTunable.build("cruiseVelocity", 2 * Math.PI);
-  private static final LoggedTunableNumber maxAcceleration =
-      groupTunable.build("maxAcceleration", 4 * Math.PI);
-  private static final LoggedTunableNumber toleranceDegrees =
-      groupTunable.build("toleranceDegrees", 1);
+  private static final TunableNumberGroup  groupTunable     = new TunableNumberGroup(ROOT_TABLE);
+  private static final LoggedTunableNumber tunableKP        = groupTunable.build("kP", 4.9);
+  private static final LoggedTunableNumber cruiseVelocity   = groupTunable.build("cruiseVelocity", 2 * Math.PI);
+  private static final LoggedTunableNumber maxAcceleration  = groupTunable.build("maxAcceleration", 4 * Math.PI);
+  private static final LoggedTunableNumber toleranceDegrees = groupTunable.build("toleranceDegrees", 1);
 
-  private final DrivetrainWrapper wrapper;
-  private final Supplier<Rotation2d> angle;
-  private final Supplier<Pose2d> currentPose;
-  private final ProfiledPIDController rotationalPID =
-      new ProfiledPIDController(0, 0, 0, new Constraints(0.0, 0.0));
+  private final DrivetrainWrapper     wrapper;
+  private final Supplier<Rotation2d>  angle;
+  private final Supplier<Pose2d>      currentPose;
+  private final ProfiledPIDController rotationalPID = new ProfiledPIDController(0, 0, 0, new Constraints(0.0, 0.0));
 
   /** Creates a new RotateToAngle. */
-  public RotateToAngle(
-      DrivetrainWrapper wrapper, Supplier<Rotation2d> angle, Supplier<Pose2d> pose2d) {
-    this.wrapper = wrapper;
-    this.angle = angle;
+  public RotateToAngle(DrivetrainWrapper wrapper, Supplier<Rotation2d> angle, Supplier<Pose2d> pose2d) {
+    this.wrapper     = wrapper;
+    this.angle       = angle;
     this.currentPose = pose2d;
     // Use addRequirements() here to declare subsystem dependencies.
   }
@@ -55,8 +47,7 @@ public class RotateToAngle extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    rotationalPID.reset(
-        currentPose.get().getRotation().getRadians(),
+    rotationalPID.reset(currentPose.get().getRotation().getRadians(),
         wrapper.getFieldRelativeVelocities().getRotation().getRadians());
     rotationalPID.setP(tunableKP.get());
     rotationalPID.setConstraints(new Constraints(cruiseVelocity.get(), maxAcceleration.get()));
@@ -66,9 +57,9 @@ public class RotateToAngle extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    var target = angle.get();
+    var target              = angle.get();
     var currentPoseRotation = currentPose.get().getRotation();
-    var rotVel = rotationalPID.calculate(currentPoseRotation.getRadians(), target.getRadians());
+    var rotVel              = rotationalPID.calculate(currentPoseRotation.getRadians(), target.getRadians());
     wrapper.setRotationOverride(rotVel);
 
     log_rotVel.info(rotVel);

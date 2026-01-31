@@ -16,20 +16,21 @@ import frc.robot.Constants;
 public class DrivetrainWrapper {
 
   // Logging
-  private static final LoggerGroup logGroup = LoggerGroup.build("DrivetrainWrapper");
-  private static final LoggerEntry.Struct<ChassisSpeeds> logChassisSpeedsBase =
-      logGroup.buildStruct(ChassisSpeeds.class, "chassisSpeedsBase");
-  private static final LoggerEntry.Struct<ChassisSpeeds> logChassisSpeedsOverride =
-      logGroup.buildStruct(ChassisSpeeds.class, "chassisSpeedsOverride");
-  private static final LoggerEntry.Decimal logOmegaOverride =
-      logGroup.buildDecimal("omegaOverride");
-  private static final LoggerEntry.Decimal logGyroDrift = logGroup.buildDecimal("gyroDrift");
+  private static final LoggerGroup                       logGroup                 = LoggerGroup
+      .build("DrivetrainWrapper");
+  private static final LoggerEntry.Struct<ChassisSpeeds> logChassisSpeedsBase     = logGroup
+      .buildStruct(ChassisSpeeds.class, "chassisSpeedsBase");
+  private static final LoggerEntry.Struct<ChassisSpeeds> logChassisSpeedsOverride = logGroup
+      .buildStruct(ChassisSpeeds.class, "chassisSpeedsOverride");
+  private static final LoggerEntry.Decimal               logOmegaOverride         = logGroup
+      .buildDecimal("omegaOverride");
+  private static final LoggerEntry.Decimal               logGyroDrift             = logGroup.buildDecimal("gyroDrift");
 
   private final Drivetrain drivetrain;
 
   private ChassisSpeeds chassisSpeedsBase = new ChassisSpeeds();
   private ChassisSpeeds chassisSpeedsOverride;
-  private double omegaOverride = Double.NaN;
+  private double        omegaOverride     = Double.NaN;
 
   public DrivetrainWrapper(Drivetrain drivetrain) {
     this.drivetrain = drivetrain;
@@ -53,9 +54,8 @@ public class DrivetrainWrapper {
     // If omega override, use that for omega
     if (Double.isFinite(omegaOverride)) {
       prioritizeRotation = true;
-      chassisSpeeds =
-          new ChassisSpeeds(
-              chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond, omegaOverride);
+      chassisSpeeds      = new ChassisSpeeds(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond,
+          omegaOverride);
     } else {
       prioritizeRotation = false;
     }
@@ -73,10 +73,8 @@ public class DrivetrainWrapper {
     var pose1 = getHubPoseEstimatorPose(false);
     var pose2 = getHubPoseEstimatorPose(true);
 
-    logGyroDrift.info(
-        pose1
-            .getRotation()
-            .minus(pose2.getRotation())); // Dif between strictly gyro estimate and vision assisted
+    logGyroDrift.info(pose1.getRotation().minus(pose2.getRotation())); // Dif between strictly gyro estimate and vision
+                                                                       // assisted
     // estimate
   }
 
@@ -88,14 +86,16 @@ public class DrivetrainWrapper {
    * @param chassisSpeeds speeds (m/s, rad/s)
    */
   public void setVelocity(ChassisSpeeds chassisSpeeds) {
-    if (chassisSpeeds == null) chassisSpeeds = new ChassisSpeeds();
+    if (chassisSpeeds == null)
+      chassisSpeeds = new ChassisSpeeds();
     chassisSpeedsBase = chassisSpeeds;
   }
 
   /**
    * Sets robot-centric chassis speeds
    *
-   * <p>Overrides 'setVelocity' and 'setRotationOverride'
+   * <p>
+   * Overrides 'setVelocity' and 'setRotationOverride'
    *
    * @param chassisSpeeds speeds (m/s, rad/s)
    */
@@ -111,7 +111,8 @@ public class DrivetrainWrapper {
   /**
    * Sets robot rotational vel
    *
-   * <p>Overrides 'setVelocity'
+   * <p>
+   * Overrides 'setVelocity'
    *
    * @param omega
    */
@@ -125,9 +126,15 @@ public class DrivetrainWrapper {
   }
 
   public SysIdRoutine.Mechanism getSysIdMechanism() {
-    return new SysIdRoutine.Mechanism(
-        (voltage) -> drivetrain.runCharacterizationVolts(voltage.in(Units.Volts)),
-        null, // No log consumer, since data is recorded by AdvantageKit
+    return new SysIdRoutine.Mechanism((voltage) -> drivetrain.runCharacterizationVolts(voltage.in(Units.Volts)), null, // No
+                                                                                                                       // log
+                                                                                                                       // consumer,
+                                                                                                                       // since
+                                                                                                                       // data
+                                                                                                                       // is
+                                                                                                                       // recorded
+                                                                                                                       // by
+                                                                                                                       // AdvantageKit
         drivetrain);
   }
 

@@ -12,7 +12,8 @@ import frc.robot.Constants;
 
 public class GeometryUtil {
   public static Rotation2d getHeading(Translation2d pose, Translation2d targetPose) {
-    if (pose.getNorm() == 0 && targetPose.getNorm() == 0) return Rotation2d.kZero;
+    if (pose.getNorm() == 0 && targetPose.getNorm() == 0)
+      return Rotation2d.kZero;
     return new Rotation2d(targetPose.getX() - pose.getX(), targetPose.getY() - pose.getY());
   }
 
@@ -46,35 +47,34 @@ public class GeometryUtil {
   }
 
   public static double optimizeRotation(double theta) {
-    while (theta <= -Math.PI) theta += Math.PI * 2;
-    while (theta >= Math.PI) theta -= Math.PI * 2;
+    while (theta <= -Math.PI)
+      theta += Math.PI * 2;
+    while (theta >= Math.PI)
+      theta -= Math.PI * 2;
     return theta;
   }
 
   public static double optimizeRotationInDegrees(double theta) {
-    while (theta < -180) theta += 360;
-    while (theta > 180) theta -= 360;
+    while (theta < -180)
+      theta += 360;
+    while (theta > 180)
+      theta -= 360;
     return theta;
   }
 
-  public static Pose3d rotatePose3dAroundTranslation2d(
-      Pose3d initialPose, Translation2d referenceTranslation, Rotation2d rot) {
-    Translation2d offset =
-        initialPose.getTranslation().toTranslation2d().minus(referenceTranslation);
-    Pose3d zeroedPose =
-        new Pose3d(offset.getX(), offset.getY(), initialPose.getZ(), initialPose.getRotation());
-    Pose3d rotatedZeroedPose = zeroedPose.rotateBy(new Rotation3d(rot));
-    return new Pose3d(
-        rotatedZeroedPose.getX() + initialPose.getX() - offset.getX(),
-        rotatedZeroedPose.getY() + initialPose.getY() - offset.getY(),
-        rotatedZeroedPose.getZ(),
+  public static Pose3d rotatePose3dAroundTranslation2d(Pose3d initialPose, Translation2d referenceTranslation,
+      Rotation2d rot) {
+    Translation2d offset            = initialPose.getTranslation().toTranslation2d().minus(referenceTranslation);
+    Pose3d        zeroedPose        = new Pose3d(offset.getX(), offset.getY(), initialPose.getZ(),
+        initialPose.getRotation());
+    Pose3d        rotatedZeroedPose = zeroedPose.rotateBy(new Rotation3d(rot));
+    return new Pose3d(rotatedZeroedPose.getX() + initialPose.getX() - offset.getX(),
+        rotatedZeroedPose.getY() + initialPose.getY() - offset.getY(), rotatedZeroedPose.getZ(),
         rotatedZeroedPose.getRotation());
   }
 
   public static Pose2d flipPoseOnAlliance(Pose2d pose) {
-    return new Pose2d(
-        pose.getX(),
-        Constants.FieldConstants.FIELD_WIDTH.in(Units.Meter) - pose.getY(),
+    return new Pose2d(pose.getX(), Constants.FieldConstants.FIELD_WIDTH.in(Units.Meter) - pose.getY(),
         pose.getRotation().unaryMinus());
   }
 }

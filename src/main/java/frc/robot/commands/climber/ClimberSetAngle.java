@@ -20,7 +20,7 @@ public class ClimberSetAngle extends Command {
   }
 
   public ClimberSetAngle(Climber climber, Supplier<Rotation2d> angleSupplier) {
-    this.climber = climber;
+    this.climber       = climber;
     this.angleSupplier = angleSupplier;
 
     addRequirements(climber);

@@ -15,8 +15,7 @@ public class ConsumeSuppliedValue extends Command {
 
   private final Supplier<Double> supplier;
 
-  public ConsumeSuppliedValue(
-      Subsystem subsystem, Supplier<Double> supplier, Consumer<Double> consumer) {
+  public ConsumeSuppliedValue(Subsystem subsystem, Supplier<Double> supplier, Consumer<Double> consumer) {
     this.consumer = consumer;
     this.supplier = supplier;
 

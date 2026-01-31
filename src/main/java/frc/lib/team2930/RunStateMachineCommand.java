@@ -10,22 +10,19 @@ import java.util.function.Supplier;
 
 public class RunStateMachineCommand extends Command {
   private final Supplier<StateMachine> supplier;
-  private final boolean runsWhenDisabled;
-  private StateMachine stateMachine;
-  private Command command;
+  private final boolean                runsWhenDisabled;
+  private StateMachine                 stateMachine;
+  private Command                      command;
 
-  public RunStateMachineCommand(
-      Supplier<StateMachine> stateMachineSupplier, Subsystem... subsystems) {
+  public RunStateMachineCommand(Supplier<StateMachine> stateMachineSupplier, Subsystem... subsystems) {
     this(stateMachineSupplier, false, subsystems);
   }
 
-  public RunStateMachineCommand(
-      Supplier<StateMachine> stateMachineSupplier,
-      boolean runsWhenDiabled,
+  public RunStateMachineCommand(Supplier<StateMachine> stateMachineSupplier, boolean runsWhenDiabled,
       Subsystem... subsystems) {
-    this.supplier = stateMachineSupplier;
+    this.supplier         = stateMachineSupplier;
     this.runsWhenDisabled = runsWhenDiabled;
-    stateMachine = supplier.get();
+    stateMachine          = supplier.get();
 
     addRequirements(subsystems);
     // Use addRequirements() here to declare subsystem dependencies.
@@ -35,13 +32,14 @@ public class RunStateMachineCommand extends Command {
   @Override
   public void initialize() {
     stateMachine = supplier.get();
-    command = stateMachine.asCommand();
+    command      = stateMachine.asCommand();
     command.schedule();
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
-  public void execute() {}
+  public void execute() {
+  }
 
   // Called once the command ends or is interrupted.
   @Override

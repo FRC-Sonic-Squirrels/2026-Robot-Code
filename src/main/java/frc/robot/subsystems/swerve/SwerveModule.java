@@ -35,11 +35,9 @@ public class SwerveModule {
   public static final int ODOMETRY_FREQUENCY = 250;
 
   // Logging
-  public static final TunableNumberGroup group = new TunableNumberGroup("RobotConfig");
-  public static final LoggedTunableNumber turnCruiseVelocity =
-      group.build("SwerveTurnCruiseVelocity", 200);
-  public static final LoggedTunableNumber turnAcceleration =
-      group.build("SwerveTurnAcceleration", 200);
+  public static final TunableNumberGroup  group              = new TunableNumberGroup("RobotConfig");
+  public static final LoggedTunableNumber turnCruiseVelocity = group.build("SwerveTurnCruiseVelocity", 200);
+  public static final LoggedTunableNumber turnAcceleration   = group.build("SwerveTurnAcceleration", 200);
 
   private final LoggerEntry.Decimal log_drivePositionRad;
   private final LoggerEntry.Decimal log_driveVelocityRadPerSec;
@@ -53,11 +51,11 @@ public class SwerveModule {
   private final LoggerEntry.Decimal log_turnAppliedVolts;
   private final LoggerEntry.Decimal log_turnCurrentAmps;
   private final LoggerEntry.Decimal log_angle;
-  private final ExecutionTiming timing;
+  private final ExecutionTiming     timing;
 
-  private final SwerveModuleIO io;
+  private final SwerveModuleIO        io;
   private final SwerveModuleIO.Inputs inputs;
-  private final double wheelRadius;
+  private final double                wheelRadius;
 
   // Tunable numbers
   private final LoggedTunableNumber driveKS;
@@ -72,9 +70,9 @@ public class SwerveModule {
 
   private final double maxSpeedMetersPerSecond;
 
-  private Rotation2d angleSetpoint; // Setpoint for closed loop control, null for open loop
-  private Double speedSetpoint; // Setpoint for closed loop control, null for open loop
-  private double driveMotorMotionMagicAcceleration;
+  private Rotation2d angleSetpoint;                    // Setpoint for closed loop control, null for open loop
+  private Double     speedSetpoint;                    // Setpoint for closed loop control, null for open loop
+  private double     driveMotorMotionMagicAcceleration;
 
   private boolean motionMagicDrive;
 
@@ -83,22 +81,22 @@ public class SwerveModule {
 
     // Logging
 
-    String key = "SwerveModule" + index;
-    var group = LoggerGroup.build(key);
-    log_drivePositionRad = group.buildDecimal("DrivePositionRad");
-    log_driveVelocityRadPerSec = group.buildDecimal("DriveVelocityRadPerSec");
-    log_driveVelocityMetersPerSec = group.buildDecimal("DriveVelocityMetersPerSec");
+    String key   = "SwerveModule" + index;
+    var    group = LoggerGroup.build(key);
+    log_drivePositionRad                = group.buildDecimal("DrivePositionRad");
+    log_driveVelocityRadPerSec          = group.buildDecimal("DriveVelocityRadPerSec");
+    log_driveVelocityMetersPerSec       = group.buildDecimal("DriveVelocityMetersPerSec");
     log_driveTargetVelocityMetersPerSec = group.buildDecimal("DriveTargetVelocityMetersPerSec");
-    log_driveAppliedVolts = group.buildDecimal("DriveAppliedVolts");
-    log_driveCurrentAmps = group.buildDecimal("DriveCurrentAmps");
-    log_turnAbsolutePosition = group.buildDecimal("TurnAbsolutePosition");
-    log_turnPosition = group.buildDecimal("TurnPosition");
-    log_turnVelocityRadPerSec = group.buildDecimal("TurnVelocityRadPerSec");
-    log_turnAppliedVolts = group.buildDecimal("TurnAppliedVolts");
-    log_turnCurrentAmps = group.buildDecimal("TurnCurrentAmps");
-    log_angle = group.buildDecimal("Angle");
-    timing = new ExecutionTiming(key);
-    inputs = new SwerveModuleIO.Inputs(group);
+    log_driveAppliedVolts               = group.buildDecimal("DriveAppliedVolts");
+    log_driveCurrentAmps                = group.buildDecimal("DriveCurrentAmps");
+    log_turnAbsolutePosition            = group.buildDecimal("TurnAbsolutePosition");
+    log_turnPosition                    = group.buildDecimal("TurnPosition");
+    log_turnVelocityRadPerSec           = group.buildDecimal("TurnVelocityRadPerSec");
+    log_turnAppliedVolts                = group.buildDecimal("TurnAppliedVolts");
+    log_turnCurrentAmps                 = group.buildDecimal("TurnCurrentAmps");
+    log_angle                           = group.buildDecimal("Angle");
+    timing                              = new ExecutionTiming(key);
+    inputs                              = new SwerveModuleIO.Inputs(group);
 
     wheelRadius = config.getWheelRadius().in(Units.Meters);
 
@@ -126,8 +124,8 @@ public class SwerveModule {
   }
 
   /**
-   * Update inputs without running the rest of the periodic logic. This is useful since these
-   * updates need to be properly thread-locked.
+   * Update inputs without running the rest of the periodic logic. This is useful
+   * since these updates need to be properly thread-locked.
    */
   public void updateInputs() {
     // Ideally nothing else lives here and is put in periodic() instead
@@ -152,15 +150,9 @@ public class SwerveModule {
 
       // update Tuneable PID and FF values
       int hc = hashCode();
-      if (driveKS.hasChanged(hc)
-          || driveKV.hasChanged(hc)
-          || driveKA.hasChanged(hc)
-          || driveKP.hasChanged(hc)
-          || driveKD.hasChanged(hc)
-          || angleKP.hasChanged(hc)
-          || angleKD.hasChanged(hc)
-          || turnCruiseVelocity.hasChanged(hc)
-          || turnAcceleration.hasChanged(hc)) {
+      if (driveKS.hasChanged(hc) || driveKV.hasChanged(hc) || driveKA.hasChanged(hc) || driveKP.hasChanged(hc)
+          || driveKD.hasChanged(hc) || angleKP.hasChanged(hc) || angleKD.hasChanged(hc)
+          || turnCruiseVelocity.hasChanged(hc) || turnAcceleration.hasChanged(hc)) {
         updateConstants();
       }
 
@@ -180,11 +172,9 @@ public class SwerveModule {
   }
 
   private void updateConstants() {
-    io.setDriveClosedLoopConstraints(
-        driveKP.get(), driveKD.get(), driveKS.get(), driveKV.get(), driveKA.get());
+    io.setDriveClosedLoopConstraints(driveKP.get(), driveKD.get(), driveKS.get(), driveKV.get(), driveKA.get());
 
-    io.setTurnClosedLoopConstraints(
-        angleKP.get(), angleKD.get(), turnCruiseVelocity.get(), turnAcceleration.get());
+    io.setTurnClosedLoopConstraints(angleKP.get(), angleKD.get(), turnCruiseVelocity.get(), turnAcceleration.get());
   }
 
   public SwerveModulePosition updateOdometry() {
@@ -193,9 +183,12 @@ public class SwerveModule {
 
   // Setters
 
-  /** Runs the module with the specified setpoint state. Returns the optimized state. */
-  public SwerveModuleState runSetpoint(
-      SwerveModuleState state, double driveMotorMotionMagicAcceleration, boolean motionMagicDrive) {
+  /**
+   * Runs the module with the specified setpoint state. Returns the optimized
+   * state.
+   */
+  public SwerveModuleState runSetpoint(SwerveModuleState state, double driveMotorMotionMagicAcceleration,
+      boolean motionMagicDrive) {
     // Optimize state based on current angle
     // Controllers run in "periodic" when the setpoint is not null
     state.optimize(getAngle());
@@ -205,12 +198,14 @@ public class SwerveModule {
     speedSetpoint = state.speedMetersPerSecond;
 
     this.driveMotorMotionMagicAcceleration = driveMotorMotionMagicAcceleration;
-    this.motionMagicDrive = motionMagicDrive;
+    this.motionMagicDrive                  = motionMagicDrive;
 
     return state;
   }
 
-  /** Runs the module with the specified voltage while controlling to zero degrees. */
+  /**
+   * Runs the module with the specified voltage while controlling to zero degrees.
+   */
   public void runCharacterization(double volts) {
     io.setDriveVoltage(volts);
     speedSetpoint = null;

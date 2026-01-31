@@ -20,96 +20,89 @@ import java.util.List;
 public class ChoreoHelper {
   private static final String ROOT_TABLE = "ChoreoHelper";
 
-  private static final LoggerGroup logGroup = LoggerGroup.build(ROOT_TABLE);
-  private static final LoggerEntry.Decimal log_stateLinearVel =
-      logGroup.buildDecimal("stateLinearVel");
-  private static final LoggerEntry.Decimal log_stateLinearVelError =
-      logGroup.buildDecimal("stateLinearVelError");
-  private static final LoggerEntry.Decimal log_stateScaleVel =
-      logGroup.buildDecimal("stateScaleVel");
-  private static final LoggerEntry.Decimal log_stateTimeOffset =
-      logGroup.buildDecimal("stateTimeOffset");
-  private static final LoggerEntry.Decimal log_stateTimestamp =
-      logGroup.buildDecimal("stateTimestamp");
-  private static final LoggerEntry.Struct<Pose2d> log_closestPose =
-      logGroup.buildStruct(Pose2d.class, "closestPose");
-  private static final LoggerEntry.Struct<Pose2d> log_optimalPose =
-      logGroup.buildStruct(Pose2d.class, "optimalPose");
-  private static final LoggerEntry.Struct<Pose2d> log_desiredVelocity =
-      logGroup.buildStruct(Pose2d.class, "desiredVelocity");
-  private static final LoggerEntry.Decimal log_distanceError =
-      logGroup.buildDecimal("distanceError");
-  private static final LoggerEntry.Decimal log_offsetError = logGroup.buildDecimal("offsetError");
-  private static final LoggerEntry.Decimal log_targetError = logGroup.buildDecimal("targetError");
-  private static final LoggerEntry.Decimal log_headingError = logGroup.buildDecimal("headingError");
-  private static final LoggerEntry.Decimal log_pidXVelEffort =
-      logGroup.buildDecimal("pidXVelEffort");
-  private static final LoggerEntry.Decimal log_pidYVelEffort =
-      logGroup.buildDecimal("pidYVelEffort");
-  private static final LoggerEntry.Decimal log_pidVelEffort = logGroup.buildDecimal("pidVelEffort");
-  private static final LoggerEntry.StructArray<Pose2d> log_path =
-      logGroup.buildStructArray(Pose2d.class, "Path");
-  private static final LoggerEntry.Text log_stallReason = logGroup.buildString("stallReason");
+  private static final LoggerGroup                     logGroup                = LoggerGroup.build(ROOT_TABLE);
+  private static final LoggerEntry.Decimal             log_stateLinearVel      = logGroup
+      .buildDecimal("stateLinearVel");
+  private static final LoggerEntry.Decimal             log_stateLinearVelError = logGroup
+      .buildDecimal("stateLinearVelError");
+  private static final LoggerEntry.Decimal             log_stateScaleVel       = logGroup.buildDecimal("stateScaleVel");
+  private static final LoggerEntry.Decimal             log_stateTimeOffset     = logGroup
+      .buildDecimal("stateTimeOffset");
+  private static final LoggerEntry.Decimal             log_stateTimestamp      = logGroup
+      .buildDecimal("stateTimestamp");
+  private static final LoggerEntry.Struct<Pose2d>      log_closestPose         = logGroup.buildStruct(Pose2d.class,
+      "closestPose");
+  private static final LoggerEntry.Struct<Pose2d>      log_optimalPose         = logGroup.buildStruct(Pose2d.class,
+      "optimalPose");
+  private static final LoggerEntry.Struct<Pose2d>      log_desiredVelocity     = logGroup.buildStruct(Pose2d.class,
+      "desiredVelocity");
+  private static final LoggerEntry.Decimal             log_distanceError       = logGroup.buildDecimal("distanceError");
+  private static final LoggerEntry.Decimal             log_offsetError         = logGroup.buildDecimal("offsetError");
+  private static final LoggerEntry.Decimal             log_targetError         = logGroup.buildDecimal("targetError");
+  private static final LoggerEntry.Decimal             log_headingError        = logGroup.buildDecimal("headingError");
+  private static final LoggerEntry.Decimal             log_pidXVelEffort       = logGroup.buildDecimal("pidXVelEffort");
+  private static final LoggerEntry.Decimal             log_pidYVelEffort       = logGroup.buildDecimal("pidYVelEffort");
+  private static final LoggerEntry.Decimal             log_pidVelEffort        = logGroup.buildDecimal("pidVelEffort");
+  private static final LoggerEntry.StructArray<Pose2d> log_path                = logGroup.buildStructArray(Pose2d.class,
+      "Path");
+  private static final LoggerEntry.Text                log_stallReason         = logGroup.buildString("stallReason");
 
   private static final LoggerEntry.Bool log_isPaused = logGroup.buildBoolean("isPaused");
 
-  private static final TunableNumberGroup group = new TunableNumberGroup(ROOT_TABLE);
+  private static final TunableNumberGroup  group         = new TunableNumberGroup(ROOT_TABLE);
   private static final LoggedTunableNumber useCorrection = group.build("useCorrection", 1);
   private static final LoggedTunableNumber minVelToPause = group.build("MinVelToPause_m/s", 2.0);
 
   private final Trajectory<SwerveSample> traj;
-  private final PIDController xFeedback;
-  private final PIDController yFeedback;
-  private final PIDController rotationalFeedback;
-  private final double initialTime;
-  private final double lagThreshold;
+  private final PIDController            xFeedback;
+  private final PIDController            yFeedback;
+  private final PIDController            rotationalFeedback;
+  private final double                   initialTime;
+  private final double                   lagThreshold;
 
-  private double timeOffset;
-  private double pausedTime = Double.NaN;
+  private double       timeOffset;
+  private double       pausedTime = Double.NaN;
   private SwerveSample stateTooBehind;
 
-  private double finalOffsetErrorLimit = Double.NaN;
-  private double finalTargetErrorLimit = Double.NaN;
+  private double finalOffsetErrorLimit  = Double.NaN;
+  private double finalTargetErrorLimit  = Double.NaN;
   private double finalHeadingErrorLimit = Double.NaN;
-  private double finalErrorMaxWait = 2;
+  private double finalErrorMaxWait      = 2;
   private double finalErrorWaitDeadline = Double.NaN;
 
-  public record ChassisSpeedsWithPathEnd(ChassisSpeeds chassisSpeeds, boolean atEndOfPath) {}
+  public record ChassisSpeedsWithPathEnd(ChassisSpeeds chassisSpeeds, boolean atEndOfPath) {
+  }
 
   /**
    * Helper class to go from timestamps of path to desired chassis speeds
    *
-   * @param initialTime timestamp of path starting
-   * @param initialPose initial pose of robot
-   * @param trajWithName trajectory to follow
-   * @param lagThreshold distance meters before pausing path (for PID to catch up)
+   * @param initialTime            timestamp of path starting
+   * @param initialPose            initial pose of robot
+   * @param trajWithName           trajectory to follow
+   * @param lagThreshold           distance meters before pausing path (for PID to
+   *                               catch up)
    * @param translationalFeedbackX pid in x directions
    * @param translationalFeedbackY pid in y directions
-   * @param rotationalFeedback pid for angular velocity
+   * @param rotationalFeedback     pid for angular velocity
    */
-  public ChoreoHelper(
-      double initialTime,
-      Pose2d initialPose,
-      ChoreoTrajectoryWithName trajWithName,
-      double lagThreshold,
-      PIDController translationalFeedbackX,
-      PIDController translationalFeedbackY,
+  public ChoreoHelper(double initialTime, Pose2d initialPose, ChoreoTrajectoryWithName trajWithName,
+      double lagThreshold, PIDController translationalFeedbackX, PIDController translationalFeedbackY,
       PIDController rotationalFeedback) {
-    this.traj = trajWithName.states();
-    this.lagThreshold = lagThreshold;
-    this.xFeedback = translationalFeedbackX;
-    this.yFeedback = translationalFeedbackY;
+    this.traj               = trajWithName.states();
+    this.lagThreshold       = lagThreshold;
+    this.xFeedback          = translationalFeedbackX;
+    this.yFeedback          = translationalFeedbackY;
     this.rotationalFeedback = rotationalFeedback;
     this.rotationalFeedback.enableContinuousInput(-Math.PI, Math.PI);
 
-    SwerveSample closestState = null;
-    double closestDistance = Double.MAX_VALUE;
-    double lastDistance = Double.MAX_VALUE;
+    SwerveSample closestState    = null;
+    double       closestDistance = Double.MAX_VALUE;
+    double       lastDistance    = Double.MAX_VALUE;
 
     if (useCorrection.get() != 0) {
       for (SwerveSample state : getStates(traj)) {
         SwerveSample stateComputed = traj.sampleAt(state.t, false).orElseThrow();
-        double stateDistance = GeometryUtil.getDist(initialPose, stateComputed.getPose());
+        double       stateDistance = GeometryUtil.getDist(initialPose, stateComputed.getPose());
 
         if (stateDistance > lastDistance) {
           // Moving away, give up.
@@ -117,7 +110,7 @@ public class ChoreoHelper {
         }
 
         if (closestState == null || stateDistance < closestDistance) {
-          closestState = state;
+          closestState    = state;
           closestDistance = stateDistance;
         }
 
@@ -164,7 +157,7 @@ public class ChoreoHelper {
   public void resume(double timestamp) {
     if ((isPaused())) {
       timeOffset += (pausedTime - timestamp);
-      pausedTime = Double.NaN;
+      pausedTime  = Double.NaN;
     }
   }
 
@@ -196,11 +189,13 @@ public class ChoreoHelper {
       var lookaheadTime = Constants.kDefaultPeriod;
 
       var stateAhead = isFutureStateCloser(robotPose, state, lookaheadTime);
-      if (stateAhead == null) break;
+      if (stateAhead == null)
+        break;
 
       timeOffset += lookaheadTime;
-      state = stateAhead;
-      if (stateTooBehind != null) stateTooBehind = state;
+      state       = stateAhead;
+      if (stateTooBehind != null)
+        stateTooBehind = state;
     }
 
     log_stateTimestamp.info(state.t);
@@ -214,7 +209,7 @@ public class ChoreoHelper {
 
     var distanceError = Math.hypot(xDesired - xRobot, yDesired - yRobot);
 
-    var statePose = new Pose2d(state.x, state.y, new Rotation2d(state.heading));
+    var statePose        = new Pose2d(state.x, state.y, new Rotation2d(state.heading));
     var robotToStatePose = robotPose.relativeTo(statePose);
 
     double targetError = robotToStatePose.getX();
@@ -248,7 +243,8 @@ public class ChoreoHelper {
         atTheEndOfPath = true;
       }
 
-      // If we are paused, scale down the velocity, to avoid fighting the Feedback PID.
+      // If we are paused, scale down the velocity, to avoid fighting the Feedback
+      // PID.
       scaleVelocity *= Math.exp(-(timestamp - pausedTime));
     }
 
@@ -271,16 +267,16 @@ public class ChoreoHelper {
     log_stateLinearVel.info(Math.hypot(state.vx, state.vy));
     log_stateLinearVelError.info(Math.hypot(state.vx - xVel, state.vy - yVel));
 
-    Rotation2d rotation = robotPose.getRotation();
-    double theta = rotation.getRadians();
-    double omegaVel = state.omega + rotationalFeedback.calculate(theta, state.heading);
-    double headingError = Math.toDegrees(GeometryUtil.optimizeRotation(theta - state.heading));
+    Rotation2d rotation     = robotPose.getRotation();
+    double     theta        = rotation.getRadians();
+    double     omegaVel     = state.omega + rotationalFeedback.calculate(theta, state.heading);
+    double     headingError = Math.toDegrees(GeometryUtil.optimizeRotation(theta - state.heading));
 
     String waitingOn = "";
 
     if (atTheEndOfPath) {
-      var waitForOffset = Double.isFinite(finalOffsetErrorLimit);
-      var waitForTarget = Double.isFinite(finalTargetErrorLimit);
+      var waitForOffset  = Double.isFinite(finalOffsetErrorLimit);
+      var waitForTarget  = Double.isFinite(finalTargetErrorLimit);
       var waitForHeading = Double.isFinite(finalHeadingErrorLimit);
 
       if (waitForOffset || waitForTarget || waitForHeading) {
@@ -292,17 +288,17 @@ public class ChoreoHelper {
         // Only delay end of path if timer has not fired.
         if (timestamp < finalErrorWaitDeadline) {
           if (waitForOffset && Math.abs(offsetError) > finalOffsetErrorLimit) {
-            waitingOn = (waitingOn + " Offset").trim();
+            waitingOn      = (waitingOn + " Offset").trim();
             atTheEndOfPath = false;
           }
 
           if (waitForTarget && Math.abs(targetError) > finalTargetErrorLimit) {
-            waitingOn = (waitingOn + " Target").trim();
+            waitingOn      = (waitingOn + " Target").trim();
             atTheEndOfPath = false;
           }
 
           if (waitForOffset && Math.abs(headingError) > finalHeadingErrorLimit) {
-            waitingOn = (waitingOn + " Heading").trim();
+            waitingOn      = (waitingOn + " Heading").trim();
             atTheEndOfPath = false;
           }
         }
@@ -319,11 +315,10 @@ public class ChoreoHelper {
     return new ChassisSpeedsWithPathEnd(chassisSpeeds, atTheEndOfPath);
   }
 
-  private SwerveSample isFutureStateCloser(
-      Pose2d robotPose, SwerveSample state, double lookaheadTime) {
+  private SwerveSample isFutureStateCloser(Pose2d robotPose, SwerveSample state, double lookaheadTime) {
     var stateAhead = traj.sampleAt(state.t + lookaheadTime, false).orElseThrow();
 
-    double stateDistance = distanceToState(robotPose, state);
+    double stateDistance      = distanceToState(robotPose, state);
     double stateDistanceAhead = distanceToState(robotPose, stateAhead);
     return stateDistanceAhead < stateDistance ? stateAhead : null;
   }
@@ -338,53 +333,30 @@ public class ChoreoHelper {
     return Math.hypot(xDesired - xRobot, yDesired - yRobot);
   }
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
-  public static Trajectory<SwerveSample> rescale(
-      Trajectory<SwerveSample> traj, double speedScaling) {
+  @SuppressWarnings({ "rawtypes", "unchecked" })
+  public static Trajectory<SwerveSample> rescale(Trajectory<SwerveSample> traj, double speedScaling) {
     if (speedScaling == 1.0) {
       return traj;
     }
 
     var newStates = new ArrayList<SwerveSample>();
     for (var state : getStates(traj)) {
-      newStates.add(
-          new SwerveSample(
-              state.t * speedScaling,
-              state.x,
-              state.y,
-              state.heading,
-              state.vx / speedScaling,
-              state.vy / speedScaling,
-              state.omega / speedScaling,
-              state.ax / speedScaling,
-              state.ay / speedScaling,
-              state.alpha / speedScaling,
-              state.moduleForcesX(),
-              state.moduleForcesY()));
+      newStates.add(new SwerveSample(state.t * speedScaling, state.x, state.y, state.heading, state.vx / speedScaling,
+          state.vy / speedScaling, state.omega / speedScaling, state.ax / speedScaling, state.ay / speedScaling,
+          state.alpha / speedScaling, state.moduleForcesX(), state.moduleForcesY()));
     }
 
     return new Trajectory(traj.name(), newStates, traj.splits(), traj.events());
   }
 
-  @SuppressWarnings({"rawtypes", "unchecked"})
+  @SuppressWarnings({ "rawtypes", "unchecked" })
   public static Trajectory<SwerveSample> flipOnAlliance(Trajectory<SwerveSample> states) {
     var newStates = new ArrayList<SwerveSample>();
 
     for (var state : getStates(states)) {
-      newStates.add(
-          new SwerveSample(
-              state.t,
-              state.x,
-              Constants.FieldConstants.FIELD_WIDTH.in(Units.Meter) - state.y,
-              -state.heading,
-              state.vx,
-              -state.vy,
-              -state.omega,
-              state.ax,
-              -state.ay,
-              -state.alpha,
-              state.moduleForcesX(),
-              state.moduleForcesY()));
+      newStates.add(new SwerveSample(state.t, state.x, Constants.FieldConstants.FIELD_WIDTH.in(Units.Meter) - state.y,
+          -state.heading, state.vx, -state.vy, -state.omega, state.ax, -state.ay, -state.alpha, state.moduleForcesX(),
+          state.moduleForcesY()));
     }
 
     return new Trajectory(states.name(), newStates, states.splits(), states.events());
@@ -395,7 +367,7 @@ public class ChoreoHelper {
     try {
       var f = traj.getClass().getDeclaredField("samples");
       f.setAccessible(true);
-      //noinspection unchecked
+      // noinspection unchecked
       return (List<SwerveSample>) f.get(traj);
     } catch (NoSuchFieldException | IllegalAccessException e) {
       throw new RuntimeException(e);

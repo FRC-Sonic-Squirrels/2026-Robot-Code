@@ -18,16 +18,17 @@ import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
  */
 
 /**
- * WARNING: adapted from 6328. Instead of using a constant boolean to determine tuning mode, tuning
- * mode is always active if FMS is disconnected. This effectively means tuneable numbers will always
- * be tuneable unless connected to the FMS/playing on the competition field.
+ * WARNING: adapted from 6328. Instead of using a constant boolean to determine
+ * tuning mode, tuning mode is always active if FMS is disconnected. This
+ * effectively means tuneable numbers will always be tuneable unless connected
+ * to the FMS/playing on the competition field.
  */
 public class LoggedTunableNumber {
   private static final String tableKey = "TunableNumbers";
 
-  private final String key;
-  private boolean hasDefault = false;
-  private double defaultValue;
+  private final String        key;
+  private boolean             hasDefault = false;
+  private double              defaultValue;
   private LoggedNetworkNumber dashboardNumber;
 
   private final Map<Integer, Double> lastHasChangedValues = new HashMap<>();
@@ -59,7 +60,7 @@ public class LoggedTunableNumber {
    */
   public void initDefault(double defaultValue) {
     if (!hasDefault) {
-      hasDefault = true;
+      hasDefault        = true;
       this.defaultValue = defaultValue;
 
       // if not on the competition field
@@ -85,14 +86,15 @@ public class LoggedTunableNumber {
   /**
    * Checks whether the number has changed since our last check
    *
-   * @param id Unique identifier for the caller to avoid conflicts when shared between multiple
-   *     objects. Recommended approach is to pass the result of "hashCode()"
-   * @return True if the number has changed since the last time this method was called, false
-   *     otherwise.
+   * @param id Unique identifier for the caller to avoid conflicts when shared
+   *           between multiple objects. Recommended approach is to pass the
+   *           result of "hashCode()"
+   * @return True if the number has changed since the last time this method was
+   *         called, false otherwise.
    */
   public boolean hasChanged(int id) {
     double currentValue = get();
-    Double lastValue = lastHasChangedValues.get(id);
+    Double lastValue    = lastHasChangedValues.get(id);
     if (lastValue == null || currentValue != lastValue) {
       lastHasChangedValues.put(id, currentValue);
       return true;

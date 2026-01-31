@@ -19,17 +19,23 @@ public interface ClimberIO {
   }
 
   /** Updates the set of loggable inputs. */
-  public default void updateWinchInputs(Inputs inputs) {}
+  public default void updateWinchInputs(Inputs inputs) {
+  }
 
-  public default void setWinchVoltage(double volts) {}
+  public default void setWinchVoltage(double volts) {
+  }
 
-  public default void resetWinchSensorPosition(Rotation2d angle) {}
+  public default void resetWinchSensorPosition(Rotation2d angle) {
+  }
 
-  public default void setWinchClosedLoopPosition(Rotation2d angle) {}
+  public default void setWinchClosedLoopPosition(Rotation2d angle) {
+  }
 
-  public default void setClimberServoAngle(Rotation2d angle) {}
+  public default void setClimberServoAngle(Rotation2d angle) {
+  }
 
-  public default void setWinchClosedLoopConstants(double kP, double kD, double kG) {}
+  public default void setWinchClosedLoopConstants(double kP, double kD, double kG) {
+  }
 
   public default boolean setWinchNeutralMode(NeutralModeValue value) {
     return false;

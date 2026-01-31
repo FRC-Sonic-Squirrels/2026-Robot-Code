@@ -29,18 +29,14 @@ public class DriveToGamepiece extends Command {
   private Supplier<Pose2d> pose;
 
   /** Drives robot to gamepiece, intended for ground gamepieces only */
-  public DriveToGamepiece(
-      LED led,
-      Supplier<ProcessedGamepieceData> targetGamepiece,
-      DrivetrainWrapper wrapper,
-      Supplier<Boolean> gamepieceIntaked,
-      Supplier<Pose2d> pose) {
+  public DriveToGamepiece(LED led, Supplier<ProcessedGamepieceData> targetGamepiece, DrivetrainWrapper wrapper,
+      Supplier<Boolean> gamepieceIntaked, Supplier<Pose2d> pose) {
     // Use addRequirements() here to declare subsystem dependencies.
-    this.led = led;
-    this.targetGamepiece = targetGamepiece;
-    this.wrapper = wrapper;
+    this.led              = led;
+    this.targetGamepiece  = targetGamepiece;
+    this.wrapper          = wrapper;
     this.gamepieceIntaked = gamepieceIntaked;
-    this.pose = pose;
+    this.pose             = pose;
 
     setName("DriveToGamepiece");
   }
@@ -48,24 +44,24 @@ public class DriveToGamepiece extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    helper =
-        new DriveToGamepieceHelper(
-            wrapper.getHubPoseEstimatorPose(true), wrapper.getFieldRelativeVelocities());
+    helper = new DriveToGamepieceHelper(wrapper.getHubPoseEstimatorPose(true), wrapper.getFieldRelativeVelocities());
   }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
     ProcessedGamepieceData gamepieceData = targetGamepiece.get();
-    ChassisSpeeds speeds;
+    ChassisSpeeds          speeds;
     if (gamepieceData != null) {
       speeds = helper.calculateChassisSpeeds(gamepieceData.globalPose.getTranslation(), pose.get());
     } else {
       speeds = null;
     }
 
-    if (speeds != null) wrapper.setVelocityOverride(speeds);
-    else wrapper.resetVelocityOverride();
+    if (speeds != null)
+      wrapper.setVelocityOverride(speeds);
+    else
+      wrapper.resetVelocityOverride();
   }
 
   // Called once the command ends or is interrupted.

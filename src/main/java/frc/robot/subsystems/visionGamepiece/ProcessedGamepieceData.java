@@ -14,7 +14,7 @@ public class ProcessedGamepieceData {
   public double timestamp_RIOFPGA_capture;
 
   public ProcessedGamepieceData(Pose2d globalPose, double timestamp_RIOFPGA_capture) {
-    this.globalPose = globalPose;
+    this.globalPose                = globalPose;
     this.timestamp_RIOFPGA_capture = timestamp_RIOFPGA_capture;
   }
 
@@ -38,7 +38,7 @@ public class ProcessedGamepieceData {
    */
   public Rotation2d getPitch(Pose2d pose) {
     double distance = getDistance(pose).in(Units.Meters);
-    double height = Constants.VisionGamepieceConstants.GAMEPIECE_CAMERA_POSE.getZ();
+    double height   = Constants.VisionGamepieceConstants.GAMEPIECE_CAMERA_POSE.getZ();
     return Rotation2d.fromRadians(Math.atan2(height, distance));
   }
 

@@ -143,7 +143,7 @@ spotless {
             exclude '**/build/**', '**/build-*/**'
         }
         toggleOffOn()
-        googleJavaFormat()
+        eclipse().configFile("eclipse-style-config.xml")
         removeUnusedImports()
         trimTrailingWhitespace()
         endWithNewline()

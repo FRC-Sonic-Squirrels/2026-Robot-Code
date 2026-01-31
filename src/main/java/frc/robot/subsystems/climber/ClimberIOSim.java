@@ -12,23 +12,21 @@ import frc.robot.Constants;
 
 // anything commented out is arm code that we are not using yet
 public class ClimberIOSim implements ClimberIO {
-  private TalonFXSim climberSim =
-      new TalonFXSim(
-          DCMotor.getKrakenX60Foc(1),
-          Constants.ClimberConstants.WINCH_GEAR_RATIO,
-          Constants.ClimberConstants.WINCH_MOI);
+  private TalonFXSim climberSim = new TalonFXSim(DCMotor.getKrakenX60Foc(1),
+      Constants.ClimberConstants.WINCH_GEAR_RATIO, Constants.ClimberConstants.WINCH_MOI);
 
-  private VoltageOut openLoopControl = new VoltageOut(0);
+  private VoltageOut         openLoopControl        = new VoltageOut(0);
   private MotionMagicVoltage winchClosedLoopControl = new MotionMagicVoltage(0);
 
-  public ClimberIOSim() {}
+  public ClimberIOSim() {
+  }
 
   @Override
   public void updateWinchInputs(Inputs inputs) {
     climberSim.update(Constants.kDefaultPeriod);
 
-    inputs.winchPosition = climberSim.getPosition().in(Units.Degree);
-    inputs.winchAppliedVolts = climberSim.getVoltage();
+    inputs.winchPosition                 = climberSim.getPosition().in(Units.Degree);
+    inputs.winchAppliedVolts             = climberSim.getVoltage();
     inputs.winchVelocityDegreesPerSecond = climberSim.getVelocity().in(Units.DegreesPerSecond);
   }
 
@@ -44,8 +42,8 @@ public class ClimberIOSim implements ClimberIO {
 
   @Override
   public void setWinchClosedLoopConstants(double kP, double kD, double kG) {
-    TalonFXConfiguration config = new TalonFXConfiguration();
-    Slot0Configs slot0Configs = new Slot0Configs();
+    TalonFXConfiguration config       = new TalonFXConfiguration();
+    Slot0Configs         slot0Configs = new Slot0Configs();
 
     slot0Configs.kP = kP;
     slot0Configs.kD = kD;

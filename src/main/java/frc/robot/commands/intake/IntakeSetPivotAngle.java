@@ -24,10 +24,9 @@ public class IntakeSetPivotAngle extends Command {
     this(intake, () -> angle, states);
   }
 
-  public IntakeSetPivotAngle(
-      Intake intake, Supplier<Rotation2d> angleSupplier, RobotStates states) {
-    this.intake = intake;
-    this.states = states;
+  public IntakeSetPivotAngle(Intake intake, Supplier<Rotation2d> angleSupplier, RobotStates states) {
+    this.intake        = intake;
+    this.states        = states;
     this.angleSupplier = angleSupplier;
 
     addRequirements(intake);

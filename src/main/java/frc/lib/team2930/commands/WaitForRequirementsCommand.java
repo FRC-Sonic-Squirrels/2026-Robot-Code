@@ -8,9 +8,10 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 /**
- * When scheduling commands that have conflicting requirements, only one would win in the stock WPI
- * code. This command keeps monitoring the in-use requirements and only tries to schedule the target
- * command when the coast is clear.
+ * When scheduling commands that have conflicting requirements, only one would
+ * win in the stock WPI code. This command keeps monitoring the in-use
+ * requirements and only tries to schedule the target command when the coast is
+ * clear.
  */
 public class WaitForRequirementsCommand extends Command {
   private Command command;
@@ -27,7 +28,8 @@ public class WaitForRequirementsCommand extends Command {
 
       // Keep checking if any of the requirements are in use.
       for (var requirement : command.getRequirements()) {
-        if (scheduler.requiring(requirement) != null) return;
+        if (scheduler.requiring(requirement) != null)
+          return;
       }
 
       // If not, we can schedule the actual command.

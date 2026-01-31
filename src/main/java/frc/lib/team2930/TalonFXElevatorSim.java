@@ -17,7 +17,7 @@ import frc.robot.Constants;
 public class TalonFXElevatorSim {
 
   private final ElevatorSim sim;
-  private ControlMode controlMode = ControlMode.VOLTAGE;
+  private ControlMode       controlMode = ControlMode.VOLTAGE;
 
   private double targetVoltage;
   private double targetHeight;
@@ -25,10 +25,10 @@ public class TalonFXElevatorSim {
   private double output;
 
   private ProfiledPIDController controller;
-  private double kG;
+  private double                kG;
 
   public TalonFXElevatorSim(ElevatorSim coreSim) {
-    sim = coreSim;
+    sim        = coreSim;
     controller = new ProfiledPIDController(0, 0, 0, new Constraints(0, 0));
   }
 
@@ -37,10 +37,7 @@ public class TalonFXElevatorSim {
     if (controlMode == ControlMode.VOLTAGE) {
       output = targetVoltage;
     } else {
-      output =
-          controller.calculate(
-                  Units.Meters.of(sim.getPositionMeters()).in(Units.Inches), targetHeight)
-              + kG;
+      output = controller.calculate(Units.Meters.of(sim.getPositionMeters()).in(Units.Inches), targetHeight) + kG;
     }
 
     output = MathUtil.clamp(output, -Constants.MAX_VOLTAGE, Constants.MAX_VOLTAGE);
@@ -53,13 +50,13 @@ public class TalonFXElevatorSim {
 
   public void setControl(VoltageOut request) {
     targetVoltage = request.Output;
-    controlMode = ControlMode.VOLTAGE;
+    controlMode   = ControlMode.VOLTAGE;
   }
 
   /** Note: this uses INCHES for position control */
   public void setControl(MotionMagicVoltage request) {
     targetHeight = request.Position;
-    controlMode = ControlMode.POSITION;
+    controlMode  = ControlMode.POSITION;
   }
 
   public double getVoltage() {
@@ -81,9 +78,7 @@ public class TalonFXElevatorSim {
     controller.setPID(slot0Configs.kP, slot0Configs.kI, slot0Configs.kD);
     kG = slot0Configs.kG;
     controller.setConstraints(
-        new Constraints(
-            config.MotionMagic.MotionMagicCruiseVelocity,
-            config.MotionMagic.MotionMagicAcceleration));
+        new Constraints(config.MotionMagic.MotionMagicCruiseVelocity, config.MotionMagic.MotionMagicAcceleration));
   }
 
   public void setState(double positionMeters, double velocityMetersPerSecond) {

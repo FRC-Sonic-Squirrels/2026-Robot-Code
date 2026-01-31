@@ -26,44 +26,30 @@ public class SwerveModules {
   private final SwerveModule back_left;
   private final SwerveModule back_right;
 
-  public SwerveModules(
-      SwerveModule frontLeft,
-      SwerveModule frontRight,
-      SwerveModule backLeft,
-      SwerveModule backRight) {
-    front_left = frontLeft;
+  public SwerveModules(SwerveModule frontLeft, SwerveModule frontRight, SwerveModule backLeft, SwerveModule backRight) {
+    front_left  = frontLeft;
     front_right = frontRight;
-    back_left = backLeft;
-    back_right = backRight;
+    back_left   = backLeft;
+    back_right  = backRight;
   }
 
   public SwerveModuleState[] getModuleStates() {
-    return new SwerveModuleState[] {
-      front_left.getState(), front_right.getState(), back_left.getState(), back_right.getState()
-    };
+    return new SwerveModuleState[] { front_left.getState(), front_right.getState(), back_left.getState(),
+        back_right.getState() };
   }
 
   public Angle[] getRawModuleDrivePosition() {
-    return new Angle[] {
-      front_left.getRawDrivePosition(),
-      front_right.getRawDrivePosition(),
-      back_left.getRawDrivePosition(),
-      back_right.getRawDrivePosition()
-    };
+    return new Angle[] { front_left.getRawDrivePosition(), front_right.getRawDrivePosition(),
+        back_left.getRawDrivePosition(), back_right.getRawDrivePosition() };
   }
 
-  public SwerveModuleState[] runSetpoints(
-      SwerveModuleState[] setpointStates,
-      double driveMotorMotionMagicAcceleration,
+  public SwerveModuleState[] runSetpoints(SwerveModuleState[] setpointStates, double driveMotorMotionMagicAcceleration,
       boolean motionMagicDrive) {
     return new SwerveModuleState[] {
-      front_left.runSetpoint(
-          setpointStates[0], driveMotorMotionMagicAcceleration, motionMagicDrive),
-      front_right.runSetpoint(
-          setpointStates[1], driveMotorMotionMagicAcceleration, motionMagicDrive),
-      back_left.runSetpoint(setpointStates[2], driveMotorMotionMagicAcceleration, motionMagicDrive),
-      back_right.runSetpoint(setpointStates[3], driveMotorMotionMagicAcceleration, motionMagicDrive)
-    };
+        front_left.runSetpoint(setpointStates[0], driveMotorMotionMagicAcceleration, motionMagicDrive),
+        front_right.runSetpoint(setpointStates[1], driveMotorMotionMagicAcceleration, motionMagicDrive),
+        back_left.runSetpoint(setpointStates[2], driveMotorMotionMagicAcceleration, motionMagicDrive),
+        back_right.runSetpoint(setpointStates[3], driveMotorMotionMagicAcceleration, motionMagicDrive) };
   }
 
   public void runCharacterizationVolts(double volts) {
@@ -74,12 +60,9 @@ public class SwerveModules {
   }
 
   public AngularVelocity getCharacterizationVelocity() {
-    AngularVelocity driveVelocityAverage =
-        front_left
-            .getCharacterizationVelocity()
-            .plus(front_right.getCharacterizationVelocity())
-            .plus(back_left.getCharacterizationVelocity())
-            .plus(back_right.getCharacterizationVelocity());
+    AngularVelocity driveVelocityAverage = front_left.getCharacterizationVelocity()
+        .plus(front_right.getCharacterizationVelocity()).plus(back_left.getCharacterizationVelocity())
+        .plus(back_right.getCharacterizationVelocity());
 
     return driveVelocityAverage.div(4);
   }
@@ -92,12 +75,8 @@ public class SwerveModules {
   }
 
   public SwerveModulePosition[] updateOdometry() {
-    return new SwerveModulePosition[] {
-      front_left.updateOdometry(),
-      front_right.updateOdometry(),
-      back_left.updateOdometry(),
-      back_right.updateOdometry()
-    };
+    return new SwerveModulePosition[] { front_left.updateOdometry(), front_right.updateOdometry(),
+        back_left.updateOdometry(), back_right.updateOdometry() };
   }
 
   public void updateInputs() {

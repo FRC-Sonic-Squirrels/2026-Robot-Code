@@ -20,14 +20,12 @@ public class WheelRadiusCharacterization extends Command {
   /** Creates a new WheelRadiusCharacterization. */
   private static final LoggerGroup loggerGroup = LoggerGroup.build("WheelRadiusCharacterization");
 
-  private static final LoggerEntry.Decimal loggerCurrentEstimatedRadius =
-      loggerGroup.buildDecimal("CurrentEstimatedRadius");
+  private static final LoggerEntry.Decimal loggerCurrentEstimatedRadius = loggerGroup
+      .buildDecimal("CurrentEstimatedRadius");
 
-  private static final TunableNumberGroup group =
-      new TunableNumberGroup("WheelRadiusCharacterization");
+  private static final TunableNumberGroup group = new TunableNumberGroup("WheelRadiusCharacterization");
   // radians per second
-  private static final LoggedTunableNumber characterizationSpeed =
-      group.build("characterizationSpeed", 0.5);
+  private static final LoggedTunableNumber characterizationSpeed = group.build("characterizationSpeed", 0.5);
 
   private final DrivetrainWrapper drivetrainWrapper;
   // inches
@@ -43,14 +41,14 @@ public class WheelRadiusCharacterization extends Command {
   // and outputs the radius of the wheels in inches
   public WheelRadiusCharacterization(DrivetrainWrapper drivetrainWrapper, RobotConfig config) {
     this.drivetrainWrapper = drivetrainWrapper;
-    driveBaseRadius = Units.Meters.of(config.getDriveBaseRadius()).in(Units.Inches);
+    driveBaseRadius        = Units.Meters.of(config.getDriveBaseRadius()).in(Units.Inches);
   }
 
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    lastYaw = drivetrainWrapper.getHubPoseEstimatorPose(true).getRotation().getRadians();
-    totalYaw = 0.0;
+    lastYaw               = drivetrainWrapper.getHubPoseEstimatorPose(true).getRotation().getRadians();
+    totalYaw              = 0.0;
     initialWheelRotations = drivetrainWrapper.getModuleRotations();
 
     drivetrainWrapper.setRotationOverride(characterizationSpeed.get());
@@ -60,17 +58,15 @@ public class WheelRadiusCharacterization extends Command {
   @Override
   public void execute() {
 
-    totalYaw +=
-        MathUtil.angleModulus(
-            drivetrainWrapper.getHubPoseEstimatorPose(true).getRotation().getRadians() - lastYaw);
-    lastYaw = drivetrainWrapper.getHubPoseEstimatorPose(true).getRotation().getRadians();
+    totalYaw += MathUtil
+        .angleModulus(drivetrainWrapper.getHubPoseEstimatorPose(true).getRotation().getRadians() - lastYaw);
+    lastYaw   = drivetrainWrapper.getHubPoseEstimatorPose(true).getRotation().getRadians();
 
-    double averageWheelRotation = 0.0;
-    Angle[] wheelRotations = drivetrainWrapper.getModuleRotations();
+    double  averageWheelRotation = 0.0;
+    Angle[] wheelRotations       = drivetrainWrapper.getModuleRotations();
     for (int i = 0; i < 4; i++) {
-      averageWheelRotation +=
-          Math.abs(
-              wheelRotations[i].in(Units.Radians) - initialWheelRotations[i].in(Units.Radians));
+      averageWheelRotation += Math
+          .abs(wheelRotations[i].in(Units.Radians) - initialWheelRotations[i].in(Units.Radians));
     }
     averageWheelRotation /= 4;
     double currentEstimatedRadius = (totalYaw * driveBaseRadius) / averageWheelRotation;

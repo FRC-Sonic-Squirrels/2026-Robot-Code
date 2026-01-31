@@ -17,13 +17,12 @@ import frc.robot.Constants;
 public class DriveToGamepieceHelper {
   private static final String ROOT_TABLE = "DriveToGamepiece";
 
-  private static final LoggerGroup logGroup = LoggerGroup.build(ROOT_TABLE);
-  private static final LoggerEntry.Decimal log_rotationalErrorDegrees =
-      logGroup.buildDecimal("rotationalError");
-  private static final LoggerEntry.Decimal log_xVel = logGroup.buildDecimal("xVel");
-  private static final LoggerEntry.Decimal log_yVel = logGroup.buildDecimal("yVel");
-  private static final LoggerEntry.Decimal log_rotVel = logGroup.buildDecimal("rotVel");
-  private static final LoggerEntry.Bool log_isAtTarget = logGroup.buildBoolean("isAtTarget");
+  private static final LoggerGroup         logGroup                   = LoggerGroup.build(ROOT_TABLE);
+  private static final LoggerEntry.Decimal log_rotationalErrorDegrees = logGroup.buildDecimal("rotationalError");
+  private static final LoggerEntry.Decimal log_xVel                   = logGroup.buildDecimal("xVel");
+  private static final LoggerEntry.Decimal log_yVel                   = logGroup.buildDecimal("yVel");
+  private static final LoggerEntry.Decimal log_rotVel                 = logGroup.buildDecimal("rotVel");
+  private static final LoggerEntry.Bool    log_isAtTarget             = logGroup.buildBoolean("isAtTarget");
 
   private static final TunableNumberGroup group = new TunableNumberGroup(ROOT_TABLE);
 
@@ -33,24 +32,20 @@ public class DriveToGamepieceHelper {
 
   private static final LoggedTunableNumber rotationKp = group.build("rotationKp", 4.8);
 
-  private static final LoggedTunableNumber rotationMaxAcceleration =
-      group.build("rotationMaxAcceleration", 720.0);
+  private static final LoggedTunableNumber rotationMaxAcceleration = group.build("rotationMaxAcceleration", 720.0);
 
-  private static final LoggedTunableNumber rotationMaxVelocity =
-      group.build("rotationMaxVelocity", 360.0);
+  private static final LoggedTunableNumber rotationMaxVelocity = group.build("rotationMaxVelocity", 360.0);
 
-  private static final LoggedTunableNumber allowedRotationalErrorDegrees =
-      group.build("allowedRotationalErrorDegrees", 10);
+  private static final LoggedTunableNumber allowedRotationalErrorDegrees = group.build("allowedRotationalErrorDegrees",
+      10);
 
-  private static final LoggedTunableNumber advancedMode =
-      group.build("advancedMode/doAdvancedMotion", 1);
+  private static final LoggedTunableNumber advancedMode = group.build("advancedMode/doAdvancedMotion", 1);
 
   private static final LoggedTunableNumber maxSpeed = group.build("advancedMode/maxSpeed", 3);
 
-  private final PIDController xController = new PIDController(0, 0, 0);
-  private final PIDController yController = new PIDController(0, 0, 0);
-  private final ProfiledPIDController rotController =
-      new ProfiledPIDController(0, 0, 0, new Constraints(0, 0));
+  private final PIDController         xController   = new PIDController(0, 0, 0);
+  private final PIDController         yController   = new PIDController(0, 0, 0);
+  private final ProfiledPIDController rotController = new ProfiledPIDController(0, 0, 0, new Constraints(0, 0));
 
   private Rotation2d gamepieceDirection = Constants.zeroRotation2d;
 
@@ -67,28 +62,24 @@ public class DriveToGamepieceHelper {
     yController.setD(kD.get());
     yController.setTolerance(0.05);
 
-    rotController.reset(
-        currentPose.getRotation().getRadians(), currentVel.getRotation().getRadians());
+    rotController.reset(currentPose.getRotation().getRadians(), currentVel.getRotation().getRadians());
     rotController.enableContinuousInput(-Math.PI, Math.PI);
     rotController.setP(rotationKp.get());
     rotController.setConstraints(
-        new Constraints(
-            Math.toRadians(rotationMaxVelocity.get()),
-            Math.toRadians(rotationMaxAcceleration.get())));
+        new Constraints(Math.toRadians(rotationMaxVelocity.get()), Math.toRadians(rotationMaxAcceleration.get())));
     rotController.setTolerance(Math.toRadians(2));
   }
 
   public ChassisSpeeds calculateChassisSpeeds(Translation2d targetGamepiece, Pose2d pose) {
-    if (targetGamepiece == null) return null;
+    if (targetGamepiece == null)
+      return null;
     double rotationalErrorDegrees;
     double xVel;
     double yVel;
     double rotVel;
 
     if (GeometryUtil.getDist(pose.getTranslation(), targetGamepiece) > 0.2) {
-      gamepieceDirection =
-          new Rotation2d(
-              targetGamepiece.getX() - pose.getX(), targetGamepiece.getY() - pose.getY());
+      gamepieceDirection = new Rotation2d(targetGamepiece.getX() - pose.getX(), targetGamepiece.getY() - pose.getY());
     }
 
     rotationalErrorDegrees = gamepieceDirection.minus(pose.getRotation()).getDegrees();
@@ -97,21 +88,18 @@ public class DriveToGamepieceHelper {
 
     double allowedRotationalErrorDegreesValue = allowedRotationalErrorDegrees.get();
     if (advancedMode.get() == 0) {
-      xVel =
-          rotationalErrorDegrees < allowedRotationalErrorDegreesValue
-              ? xController.calculate(pose.getX(), targetGamepiece.getX())
-              : 0.0;
-      yVel =
-          rotationalErrorDegrees < allowedRotationalErrorDegreesValue
-              ? yController.calculate(pose.getY(), targetGamepiece.getY())
-              : 0.0;
+      xVel = rotationalErrorDegrees < allowedRotationalErrorDegreesValue
+          ? xController.calculate(pose.getX(), targetGamepiece.getX())
+          : 0.0;
+      yVel = rotationalErrorDegrees < allowedRotationalErrorDegreesValue
+          ? yController.calculate(pose.getY(), targetGamepiece.getY())
+          : 0.0;
     } else {
       xVel = xController.calculate(pose.getX(), targetGamepiece.getX());
       yVel = yController.calculate(pose.getY(), targetGamepiece.getY());
 
       if (rotationalErrorDegrees > allowedRotationalErrorDegreesValue) {
-        double errorScaling =
-            Math.min(allowedRotationalErrorDegreesValue / rotationalErrorDegrees, 1.0);
+        double errorScaling = Math.min(allowedRotationalErrorDegreesValue / rotationalErrorDegrees, 1.0);
         xVel *= errorScaling;
         yVel *= errorScaling;
       }
@@ -128,15 +116,13 @@ public class DriveToGamepieceHelper {
     xVel = vel.getX();
     yVel = vel.getY();
 
-    rotVel =
-        rotController.calculate(pose.getRotation().getRadians(), gamepieceDirection.getRadians());
+    rotVel = rotController.calculate(pose.getRotation().getRadians(), gamepieceDirection.getRadians());
 
     log_rotationalErrorDegrees.info(rotationalErrorDegrees);
     log_xVel.info(xVel);
     log_yVel.info(yVel);
     log_rotVel.info(rotVel);
-    log_isAtTarget.info(
-        xController.atSetpoint() && yController.atSetpoint() && rotController.atSetpoint());
+    log_isAtTarget.info(xController.atSetpoint() && yController.atSetpoint() && rotController.atSetpoint());
 
     return ChassisSpeeds.fromFieldRelativeSpeeds(xVel, yVel, rotVel, pose.getRotation());
   }

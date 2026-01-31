@@ -10,14 +10,14 @@ import java.util.function.DoubleSupplier;
 
 public class IntakeSetRPM extends Command {
 
-  private Intake intake;
+  private Intake         intake;
   private DoubleSupplier RPM;
 
   /** Creates a new IntakeSetRPM. */
   public IntakeSetRPM(Intake intake, DoubleSupplier RPM) {
 
     this.intake = intake;
-    this.RPM = RPM;
+    this.RPM    = RPM;
 
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(intake);
@@ -29,7 +29,8 @@ public class IntakeSetRPM extends Command {
 
   // Called when the command is initially scheduled.
   @Override
-  public void initialize() {}
+  public void initialize() {
+  }
 
   // Called every time the scheduler runs while the command is scheduled.
   @Override

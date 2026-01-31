@@ -25,15 +25,14 @@ import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.MotorConstants.KrakenConstants;
 
 public class ClimberIOReal implements ClimberIO {
-  private final StatusSignal<Voltage> winchAppliedVoltage;
-  private final StatusSignal<Angle> winchPosition;
-  private final StatusSignal<Current> winchCurrent;
-  private final StatusSignal<Temperature> winchTemp;
+  private final StatusSignal<Voltage>         winchAppliedVoltage;
+  private final StatusSignal<Angle>           winchPosition;
+  private final StatusSignal<Current>         winchCurrent;
+  private final StatusSignal<Temperature>     winchTemp;
   private final StatusSignal<AngularVelocity> winchVelocity;
 
-  private final PositionVoltage winchClosedLoopControl =
-      new PositionVoltage(0.0).withEnableFOC(true);
-  private final VoltageOut winchOpenLoopControl = new VoltageOut(0.0).withEnableFOC(true);
+  private final PositionVoltage winchClosedLoopControl = new PositionVoltage(0.0).withEnableFOC(true);
+  private final VoltageOut      winchOpenLoopControl   = new VoltageOut(0.0).withEnableFOC(true);
 
   private final TalonFX winchMotor = new TalonFX(Constants.CanIDs.CLIMBER_WINCH_CAN_ID);
 
@@ -45,24 +44,22 @@ public class ClimberIOReal implements ClimberIO {
     // Winch motor config
     TalonFXConfiguration winchConfig = new TalonFXConfiguration();
 
-    winchConfig.CurrentLimits.SupplyCurrentLimit = ClimberConstants.SUPPLY_CURRENT_LIMIT;
+    winchConfig.CurrentLimits.SupplyCurrentLimit       = ClimberConstants.SUPPLY_CURRENT_LIMIT;
     winchConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     winchConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    winchConfig.MotorOutput.Inverted = InvertedValue.Clockwise_Positive;
+    winchConfig.MotorOutput.Inverted    = InvertedValue.Clockwise_Positive;
 
     winchConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
     winchConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
 
-    winchConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
-        Constants.ClimberConstants.MAX_CLIMBER_ANGLE.getRotations();
-    winchConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold =
-        Constants.ClimberConstants.MIN_CLIMBER_ANGLE
-            .minus(Rotation2d.fromDegrees(2.0))
-            .getRotations();
+    winchConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Constants.ClimberConstants.MAX_CLIMBER_ANGLE
+        .getRotations();
+    winchConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = Constants.ClimberConstants.MIN_CLIMBER_ANGLE
+        .minus(Rotation2d.fromDegrees(2.0)).getRotations();
 
     winchConfig.Feedback.SensorToMechanismRatio = ClimberConstants.WINCH_GEAR_RATIO;
-    winchConfig.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
+    winchConfig.Slot0.GravityType               = GravityTypeValue.Arm_Cosine;
 
     winchConfig.Voltage.SupplyVoltageTimeConstant = KrakenConstants.SUPPLY_VOLTAGE_TIME;
 
@@ -71,34 +68,31 @@ public class ClimberIOReal implements ClimberIO {
     // Status signals
 
     winchAppliedVoltage = winchMotor.getMotorVoltage();
-    winchPosition = winchMotor.getPosition();
-    winchCurrent = winchMotor.getStatorCurrent();
-    winchTemp = winchMotor.getDeviceTemp();
-    winchVelocity = winchMotor.getVelocity();
+    winchPosition       = winchMotor.getPosition();
+    winchCurrent        = winchMotor.getStatorCurrent();
+    winchTemp           = winchMotor.getDeviceTemp();
+    winchVelocity       = winchMotor.getVelocity();
 
     // Update status signals
 
-    BaseStatusSignal.setUpdateFrequencyForAll(
-        100, winchAppliedVoltage, winchPosition, winchVelocity);
+    BaseStatusSignal.setUpdateFrequencyForAll(100, winchAppliedVoltage, winchPosition, winchVelocity);
     BaseStatusSignal.setUpdateFrequencyForAll(50, winchCurrent);
     BaseStatusSignal.setUpdateFrequencyForAll(1, winchTemp);
 
     winchMotor.optimizeBusUtilization();
 
-    winchRefreshSet =
-        new BaseStatusSignal[] {
-          winchAppliedVoltage, winchPosition, winchCurrent, winchTemp, winchVelocity
-        };
+    winchRefreshSet = new BaseStatusSignal[] { winchAppliedVoltage, winchPosition, winchCurrent, winchTemp,
+        winchVelocity };
   }
 
   @Override
   public void updateWinchInputs(Inputs inputs) {
     inputs.refreshAll(winchRefreshSet);
 
-    inputs.winchPosition = winchPosition.getValue().in(Units.Degrees);
-    inputs.winchAppliedVolts = winchAppliedVoltage.getValue().in(Units.Volts);
-    inputs.winchCurrentAmps = winchCurrent.getValue().in(Units.Amps);
-    inputs.winchTempCelsius = winchTemp.getValue().in(Units.Celsius);
+    inputs.winchPosition                 = winchPosition.getValue().in(Units.Degrees);
+    inputs.winchAppliedVolts             = winchAppliedVoltage.getValue().in(Units.Volts);
+    inputs.winchCurrentAmps              = winchCurrent.getValue().in(Units.Amps);
+    inputs.winchTempCelsius              = winchTemp.getValue().in(Units.Celsius);
     inputs.winchVelocityDegreesPerSecond = winchVelocity.getValue().in(Units.DegreesPerSecond);
   }
 
@@ -139,7 +133,8 @@ public class ClimberIOReal implements ClimberIO {
 
     var status = winchMotor.getConfigurator().refresh(config);
 
-    if (status != StatusCode.OK) return false;
+    if (status != StatusCode.OK)
+      return false;
 
     config.NeutralMode = value;
 

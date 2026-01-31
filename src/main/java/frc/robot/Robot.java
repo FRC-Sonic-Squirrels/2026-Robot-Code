@@ -34,49 +34,46 @@ import org.littletonrobotics.junction.wpilog.WPILOGReader;
 import org.littletonrobotics.junction.wpilog.WPILOGWriter;
 
 /**
- * The VM is configured to automatically run this class, and to call the functions corresponding to
- * each mode, as described in the TimedRobot documentation. If you change the name of this class or
- * the package after creating this project, you must also update the build.gradle file in the
+ * The VM is configured to automatically run this class, and to call the
+ * functions corresponding to each mode, as described in the TimedRobot
+ * documentation. If you change the name of this class or the package after
+ * creating this project, you must also update the build.gradle file in the
  * project.
  */
 public class Robot extends LoggedRobot {
-  private static final ExecutionTiming timingCommandScheduler =
-      new ExecutionTiming("CommandScheduler");
+  private static final ExecutionTiming timingCommandScheduler = new ExecutionTiming("CommandScheduler");
 
-  private static final LoggerGroup logGroupDIO = LoggerGroup.build("DIO");
-  private static final LoggerEntry.Bool logBreakModeButton = logGroupDIO.buildBoolean("0");
+  private static final LoggerGroup      logGroupDIO          = LoggerGroup.build("DIO");
+  private static final LoggerEntry.Bool logBreakModeButton   = logGroupDIO.buildBoolean("0");
   private static final LoggerEntry.Bool logHomeSensorsButton = logGroupDIO.buildBoolean("1");
 
   private static final LoggerGroup logGroupActiveCommands = LoggerGroup.build("ActiveCommands");
 
-  private static final LoggerGroup logGroupAuto = LoggerGroup.build("Auto");
-  private static final LoggerEntry.Text logCurrentChooserValue =
-      logGroupAuto.buildString("currentChooserValue");
-  private static final LoggerEntry.Text logSelectedAuto = logGroupAuto.buildString("SelectedAuto");
-  private static final LoggerEntry.Text logAllianceColor =
-      logGroupAuto.buildString("AllianceColor");
+  private static final LoggerGroup      logGroupAuto           = LoggerGroup.build("Auto");
+  private static final LoggerEntry.Text logCurrentChooserValue = logGroupAuto.buildString("currentChooserValue");
+  private static final LoggerEntry.Text logSelectedAuto        = logGroupAuto.buildString("SelectedAuto");
+  private static final LoggerEntry.Text logAllianceColor       = logGroupAuto.buildString("AllianceColor");
 
-  private static final LoggerGroup logGroupSimulatedRobot = LoggerGroup.build("SimulatedRobot");
-  private static final LoggerEntry.Decimal logBatteryVoltage =
-      logGroupSimulatedRobot.buildDecimal("batteryVoltage");
+  private static final LoggerGroup         logGroupSimulatedRobot = LoggerGroup.build("SimulatedRobot");
+  private static final LoggerEntry.Decimal logBatteryVoltage      = logGroupSimulatedRobot
+      .buildDecimal("batteryVoltage");
 
-  private static final LoggerGroup logGroupPDH = LoggerGroup.build("PowerDistribution");
-  private static final LoggerEntry.Decimal logVoltage = logGroupPDH.buildDecimal("Voltage");
-  private static final LoggerEntry.Decimal logTotalCurrent =
-      logGroupPDH.buildDecimal("TotalCurrent");
-  private static final LoggerEntry.Decimal logTotalPower = logGroupPDH.buildDecimal("TotalPower");
+  private static final LoggerGroup         logGroupPDH     = LoggerGroup.build("PowerDistribution");
+  private static final LoggerEntry.Decimal logVoltage      = logGroupPDH.buildDecimal("Voltage");
+  private static final LoggerEntry.Decimal logTotalCurrent = logGroupPDH.buildDecimal("TotalCurrent");
+  private static final LoggerEntry.Decimal logTotalPower   = logGroupPDH.buildDecimal("TotalPower");
 
   private RobotContainer robotContainer;
 
-  private LoggedDashboardChooser<String> autonomousChooser = null;
-  private Auto selectedAuto;
-  private String selectedAutoName;
-  private boolean selectedAutoFlipped;
-  private Command autoCommand;
-  private Pose2d selectedInitialPose;
-  private Pose2d desiredInitialPose;
-  private boolean hasEnteredTeleAtSomePoint = false;
-  private boolean hasEnteredAutoAtSomePoint = false;
+  private LoggedDashboardChooser<String> autonomousChooser         = null;
+  private Auto                           selectedAuto;
+  private String                         selectedAutoName;
+  private boolean                        selectedAutoFlipped;
+  private Command                        autoCommand;
+  private Pose2d                         selectedInitialPose;
+  private Pose2d                         desiredInitialPose;
+  private boolean                        hasEnteredTeleAtSomePoint = false;
+  private boolean                        hasEnteredAutoAtSomePoint = false;
 
   private boolean teleopPrepped = false;
 
@@ -84,8 +81,8 @@ public class Robot extends LoggedRobot {
   private final PowerDistribution powerDistribution = new PowerDistribution(1, ModuleType.kRev);
 
   /**
-   * This function is run when the robot is first started up and should be used for any
-   * initialization code.
+   * This function is run when the robot is first started up and should be used
+   * for any initialization code.
    */
   @Override
   public void robotInit() {
@@ -150,20 +147,15 @@ public class Robot extends LoggedRobot {
     var commandScheduler = CommandScheduler.getInstance();
     commandScheduler.schedule(robotContainer.threadCommand());
 
-    commandScheduler.onCommandInitialize(
-        command -> logGroupActiveCommands.buildBoolean(command.getName()).info(true));
-    commandScheduler.onCommandInterrupt(
-        command -> logGroupActiveCommands.buildBoolean(command.getName()).info(false));
-    commandScheduler.onCommandFinish(
-        command -> logGroupActiveCommands.buildBoolean(command.getName()).info(false));
+    commandScheduler.onCommandInitialize(command -> logGroupActiveCommands.buildBoolean(command.getName()).info(true));
+    commandScheduler.onCommandInterrupt(command -> logGroupActiveCommands.buildBoolean(command.getName()).info(false));
+    commandScheduler.onCommandFinish(command -> logGroupActiveCommands.buildBoolean(command.getName()).info(false));
     robotContainer.resetSubsystems();
 
     // Dashboard buttons to turn off/on cameras
-    SmartDashboard.putData(
-        "PV Camera power OFF",
+    SmartDashboard.putData("PV Camera power OFF",
         new RunsWhenDisabledInstantCommand(() -> powerDistribution.setSwitchableChannel(false)));
-    SmartDashboard.putData(
-        "PV Camera power ON",
+    SmartDashboard.putData("PV Camera power ON",
         new RunsWhenDisabledInstantCommand(() -> powerDistribution.setSwitchableChannel(true)));
   }
 
@@ -228,7 +220,8 @@ public class Robot extends LoggedRobot {
       }
     }
 
-    // set gyro zero based on vision during pre match disable. This allows for imprecise robot
+    // set gyro zero based on vision during pre match disable. This allows for
+    // imprecise robot
     // placement on the field to be fixed by vision
     // fms = has ever entered auto or tele then never reset
     // no fms = always reset
@@ -244,7 +237,10 @@ public class Robot extends LoggedRobot {
     logHomeSensorsButton.info(robotContainer.zeroSensorsButton.get());
   }
 
-  /** This autonomous runs the autonomous command selected by your {@link RobotContainer} class. */
+  /**
+   * This autonomous runs the autonomous command selected by your
+   * {@link RobotContainer} class.
+   */
   @Override
   public void autonomousInit() {
     robotContainer.enterAutonomous();
@@ -259,7 +255,8 @@ public class Robot extends LoggedRobot {
 
   /** This function is called periodically during autonomous. */
   @Override
-  public void autonomousPeriodic() {}
+  public void autonomousPeriodic() {
+  }
 
   @Override
   public void autonomousExit() {
@@ -270,13 +267,15 @@ public class Robot extends LoggedRobot {
   /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {
-    if (!teleopPrepped) prepForTeleop();
+    if (!teleopPrepped)
+      prepForTeleop();
     hasEnteredTeleAtSomePoint = true;
   }
 
   /** This function is called periodically during operator control. */
   @Override
-  public void teleopPeriodic() {}
+  public void teleopPeriodic() {
+  }
 
   /** This function is called once when test mode is enabled. */
   @Override
@@ -287,11 +286,13 @@ public class Robot extends LoggedRobot {
 
   /** This function is called periodically during test mode. */
   @Override
-  public void testPeriodic() {}
+  public void testPeriodic() {
+  }
 
   /** This function is called once when the robot is first started up. */
   @Override
-  public void simulationInit() {}
+  public void simulationInit() {
+  }
 
   /** This function is called periodically whilst in simulation. */
   @Override

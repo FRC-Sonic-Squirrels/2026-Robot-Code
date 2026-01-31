@@ -28,8 +28,8 @@ import java.util.List;
 
 /** IO implementation for Pigeon2 */
 public class GyroIOPigeon2 implements GyroIO {
-  private final Pigeon2 pigeon;
-  private final StatusSignal<Angle> yaw;
+  private final Pigeon2                       pigeon;
+  private final StatusSignal<Angle>           yaw;
   private final StatusSignal<AngularVelocity> yawVelocity;
 
   private final StatusSignal<LinearAcceleration> xAcceleration;
@@ -42,8 +42,8 @@ public class GyroIOPigeon2 implements GyroIO {
     // Pigeon config
     Pigeon2Configuration pigeonConfig = new Pigeon2Configuration();
     pigeonConfig.MountPose.MountPosePitch = config.getGyroMountingPitch();
-    pigeonConfig.MountPose.MountPoseRoll = config.getGyroMountingRoll();
-    pigeonConfig.MountPose.MountPoseYaw = config.getGyroMountingYaw();
+    pigeonConfig.MountPose.MountPoseRoll  = config.getGyroMountingRoll();
+    pigeonConfig.MountPose.MountPoseYaw   = config.getGyroMountingYaw();
 
     pigeon = new Pigeon2(canID, config.getCANBusName());
 
@@ -51,7 +51,7 @@ public class GyroIOPigeon2 implements GyroIO {
 
     // Status signals
 
-    yaw = pigeon.getYaw();
+    yaw         = pigeon.getYaw();
     yawVelocity = pigeon.getAngularVelocityZDevice();
 
     xAcceleration = pigeon.getAccelerationX();
@@ -70,7 +70,7 @@ public class GyroIOPigeon2 implements GyroIO {
 
     pigeon.optimizeBusUtilization();
 
-    refreshSet = new BaseStatusSignal[] {yawVelocity, xAcceleration, yAcceleration, zAcceleration};
+    refreshSet = new BaseStatusSignal[] { yawVelocity, xAcceleration, yAcceleration, zAcceleration };
   }
 
   @Override
@@ -90,8 +90,8 @@ public class GyroIOPigeon2 implements GyroIO {
     inputs.refreshAll(refreshSet);
 
     inputs.yawVelocityRadPerSec = yawVelocity.getValue().in(Units.RadiansPerSecond);
-    inputs.xAcceleration = xAcceleration.getValue().in(Units.MetersPerSecondPerSecond);
-    inputs.yAcceleration = yAcceleration.getValue().in(Units.MetersPerSecondPerSecond);
-    inputs.zAcceleration = zAcceleration.getValue().in(Units.MetersPerSecondPerSecond);
+    inputs.xAcceleration        = xAcceleration.getValue().in(Units.MetersPerSecondPerSecond);
+    inputs.yAcceleration        = yAcceleration.getValue().in(Units.MetersPerSecondPerSecond);
+    inputs.zAcceleration        = zAcceleration.getValue().in(Units.MetersPerSecondPerSecond);
   }
 }

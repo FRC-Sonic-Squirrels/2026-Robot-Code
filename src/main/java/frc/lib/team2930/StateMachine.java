@@ -15,9 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 public class StateMachine {
   public enum Status {
-    Running,
-    Done,
-    Stopped
+    Running, Done, Stopped
   }
 
   @Retention(RUNTIME)
@@ -47,30 +45,30 @@ public class StateMachine {
 
   static class EventState {
     EventState next;
-    Method md;
-    double trigger;
+    Method     md;
+    double     trigger;
 
     EventState(Method md, TimerEvent anno) {
-      this.md = md;
+      this.md      = md;
       this.trigger = anno.after();
     }
   }
 
   private static final LoggerGroup logGroup = LoggerGroup.build("StateMachine");
 
-  private final String name;
+  private final String           name;
   private final LoggerEntry.Text logName;
-  private Status status;
-  private StateHandler currentState;
-  private double startTime;
-  private double startTimeOfState;
-  private EventState nextEvent;
-  private StateHandler interruptedState = () -> setDone();
-  private ArrayList<Command> commands = new ArrayList<Command>(0);
+  private Status                 status;
+  private StateHandler           currentState;
+  private double                 startTime;
+  private double                 startTimeOfState;
+  private EventState             nextEvent;
+  private StateHandler           interruptedState = () -> setDone();
+  private ArrayList<Command>     commands         = new ArrayList<Command>(0);
 
   protected StateMachine(String name) {
     this.name = name;
-    logName = logGroup.buildString(name);
+    logName   = logGroup.buildString(name);
 
     var events = new ArrayList<EventState>();
 
@@ -99,7 +97,7 @@ public class StateMachine {
   }
 
   protected void setInitialState(StateHandler initialState) {
-    status = Status.Running;
+    status    = Status.Running;
     startTime = Timer.getFPGATimestamp();
     setNextState(initialState);
   }
@@ -119,7 +117,7 @@ public class StateMachine {
   }
 
   private void setNextState(StateHandler nextState) {
-    currentState = nextState;
+    currentState     = nextState;
     startTimeOfState = Timer.getFPGATimestamp();
 
     if (currentState instanceof StateHandlerWithName stateWithName) {
@@ -177,7 +175,8 @@ public class StateMachine {
       processEvents();
 
       var nextState = currentState.advance();
-      if (nextState == null) break;
+      if (nextState == null)
+        break;
 
       setNextState(nextState);
     }
@@ -239,26 +238,21 @@ public class StateMachine {
     return null;
   }
 
-  protected StateHandler suspendForSubStateMachine(
-      StateMachine subStateMachine, ResumeStateHandler handler) {
-    return stateWithName(
-        "waitFor" + subStateMachine.name,
-        () -> {
-          subStateMachine.advance();
-          if (subStateMachine.isRunning()) return null;
+  protected StateHandler suspendForSubStateMachine(StateMachine subStateMachine, ResumeStateHandler handler) {
+    return stateWithName("waitFor" + subStateMachine.name, () -> {
+      subStateMachine.advance();
+      if (subStateMachine.isRunning())
+        return null;
 
-          return handler.advance(subStateMachine);
-        });
+      return handler.advance(subStateMachine);
+    });
   }
 
-  protected Command spawnStateMachineAsCommand(
-      StateMachine subStateMachine, ResumeStateHandlerFromCommand handler) {
+  protected Command spawnStateMachineAsCommand(StateMachine subStateMachine, ResumeStateHandlerFromCommand handler) {
     return spawnStateMachineAsCommand(subStateMachine, handler, false);
   }
 
-  protected Command spawnStateMachineAsCommand(
-      StateMachine subStateMachine,
-      ResumeStateHandlerFromCommand handler,
+  protected Command spawnStateMachineAsCommand(StateMachine subStateMachine, ResumeStateHandlerFromCommand handler,
       boolean runsWhenDiabled) {
     Command command = subStateMachine.asCommand(runsWhenDiabled);
     spawnCommand(command, handler);
@@ -268,40 +262,35 @@ public class StateMachine {
   protected StateHandler suspendForCommand(Command command, ResumeStateHandlerFromCommand handler) {
     AtomicBoolean done = new AtomicBoolean();
 
-    spawnCommand(
-        command,
-        (c) -> {
-          done.set(true);
-          return null;
-        });
+    spawnCommand(command, (c) -> {
+      done.set(true);
+      return null;
+    });
 
     var name = command.getName();
-    return stateWithName(
-        "waitForCmd " + name,
-        () -> {
-          if (!done.get()) return null;
+    return stateWithName("waitForCmd " + name, () -> {
+      if (!done.get())
+        return null;
 
-          return handler.advance(command);
-        });
+      return handler.advance(command);
+    });
   }
 
   protected Command spawnCommand(Command command, ResumeStateHandlerFromCommand handler) {
-    var sequence =
-        command.andThen(
-            new InstantCommand(
-                () -> {
-                  if (!isRunning()) return;
+    var sequence = command.andThen(new InstantCommand(() -> {
+      if (!isRunning())
+        return;
 
-                  var nextState = handler.advance(command);
-                  if (nextState != null) {
-                    setNextState(nextState);
-                  }
-                }) {
-              @Override
-              public boolean runsWhenDisabled() {
-                return true;
-              }
-            });
+      var nextState = handler.advance(command);
+      if (nextState != null) {
+        setNextState(nextState);
+      }
+    }) {
+      @Override
+      public boolean runsWhenDisabled() {
+        return true;
+      }
+    });
 
     commands.add(sequence);
 

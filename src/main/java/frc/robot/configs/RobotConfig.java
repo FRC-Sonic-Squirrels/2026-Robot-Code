@@ -56,8 +56,9 @@ public abstract class RobotConfig {
   }
 
   /**
-   * the maximum velocity, in meters per second, at which the robot can be moving while disabled
-   * before the drive motors are changed from brake to coast mode. Defaults to 0.
+   * the maximum velocity, in meters per second, at which the robot can be moving
+   * while disabled before the drive motors are changed from brake to coast mode.
+   * Defaults to 0.
    */
   public abstract double getRobotMaxCoastVelocity();
 
@@ -87,31 +88,31 @@ public abstract class RobotConfig {
   public abstract double getSwerveModuleTurnGearRatio();
 
   /**
-   * Returns the trackwidth (i.e., the center-to-center distance between the left and right wheels)
-   * of the robot in meters. Must be overridden.
+   * Returns the trackwidth (i.e., the center-to-center distance between the left
+   * and right wheels) of the robot in meters. Must be overridden.
    *
-   * @return the trackwidth (i.e., the center-to-center distance between the left and right wheels)
-   *     of the robot in meters
+   * @return the trackwidth (i.e., the center-to-center distance between the left
+   *         and right wheels) of the robot in meters
    */
   public abstract Distance getTrackWidth_Y();
 
   /**
-   * Returns the wheelbase (i.e., the center-to-center distance between the front and back wheels)
-   * of the robot in meters. Must be overridden.
+   * Returns the wheelbase (i.e., the center-to-center distance between the front
+   * and back wheels) of the robot in meters. Must be overridden.
    *
-   * @return the wheelbase (i.e., the center-to-center distance between the front and back wheels)
-   *     of the robot in meters
+   * @return the wheelbase (i.e., the center-to-center distance between the front
+   *         and back wheels) of the robot in meters
    */
   public abstract Distance getTrackWidth_X();
 
   public double getDriveBaseRadius() {
-    return Math.hypot(
-        getTrackWidth_X().in(Units.Meters) / 2.0, getTrackWidth_Y().in(Units.Meters) / 2.0);
+    return Math.hypot(getTrackWidth_X().in(Units.Meters) / 2.0, getTrackWidth_Y().in(Units.Meters) / 2.0);
   }
 
   /**
-   * Returns the swerve drive kinematics object for the robot. The geometry and coordinate systems
-   * can be confusing. Refer to this document for a detailed explanation:
+   * Returns the swerve drive kinematics object for the robot. The geometry and
+   * coordinate systems can be confusing. Refer to this document for a detailed
+   * explanation:
    * https://docs.google.com/document/d/17dg5cIfqVOlQTTbo2ust4QxTZlUoPNzuBu2oe58Ov84/edit#heading=h.x4ppzp81ed1
    *
    * @return the swerve drive kinematics object for the robot
@@ -125,15 +126,14 @@ public abstract class RobotConfig {
     double widthX = getTrackWidth_X().in(Units.Meters) / 2.0;
     double widthY = getTrackWidth_Y().in(Units.Meters) / 2.0;
     return new Translation2d[] {
-      // Front left
-      new Translation2d(widthX, widthY),
-      // Front right
-      new Translation2d(widthX, -widthY),
-      // Back left
-      new Translation2d(-widthX, widthY),
-      // Back right
-      new Translation2d(-widthX, -widthY)
-    };
+        // Front left
+        new Translation2d(widthX, widthY),
+        // Front right
+        new Translation2d(widthX, -widthY),
+        // Back left
+        new Translation2d(-widthX, widthY),
+        // Back right
+        new Translation2d(-widthX, -widthY) };
   }
 
   // -------- CURRENT LIMITS -------------

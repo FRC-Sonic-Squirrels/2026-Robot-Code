@@ -18,40 +18,34 @@ import frc.robot.Constants.IntakeConstants.RollerConstants;
 
 public class IntakeIOSim implements IntakeIO {
 
-  private TalonFXSim rollerMotor =
-      new TalonFXSim(
-          DCMotor.getKrakenX60Foc(1), RollerConstants.ROLLER_GEARING, RollerConstants.MOI);
+  private TalonFXSim rollerMotor = new TalonFXSim(DCMotor.getKrakenX60Foc(1), RollerConstants.ROLLER_GEARING,
+      RollerConstants.MOI);
 
-  private TalonFXArmSim pivotSim =
-      new TalonFXArmSim(
-          new SingleJointedArmSim(
-              DCMotor.getFalcon500Foc(1),
-              frc.robot.Constants.IntakeConstants.PivotConstants.GEAR_RATIO,
-              PivotConstants.MOI,
-              PivotConstants.PIVOT_LENGTH.in(Units.Meters),
-              PivotConstants.MIN_PIVOT_ANGLE.getRadians(),
-              PivotConstants.MAX_PIVOT_ANGLE.getRadians(),
-              false,
-              Constants.IntakeConstants.PivotConstants.INITIAL_PIVOT_ANGLE.getRadians()));
+  private TalonFXArmSim pivotSim = new TalonFXArmSim(
+      new SingleJointedArmSim(DCMotor.getFalcon500Foc(1), frc.robot.Constants.IntakeConstants.PivotConstants.GEAR_RATIO,
+          PivotConstants.MOI, PivotConstants.PIVOT_LENGTH.in(Units.Meters), PivotConstants.MIN_PIVOT_ANGLE.getRadians(),
+          PivotConstants.MAX_PIVOT_ANGLE.getRadians(), false,
+          Constants.IntakeConstants.PivotConstants.INITIAL_PIVOT_ANGLE.getRadians()));
 
-  private VoltageOut rollerOpenLoopControl = new VoltageOut(0);
+  private VoltageOut      rollerOpenLoopControl   = new VoltageOut(0);
   private VelocityVoltage rollerClosedLoopControl = new VelocityVoltage(0);
 
-  private VoltageOut pivotOpenLoopControl = new VoltageOut(0);
+  private VoltageOut         pivotOpenLoopControl   = new VoltageOut(0);
   private MotionMagicVoltage pivotClosedLoopControl = new MotionMagicVoltage(0);
 
-  public IntakeIOSim() {}
+  public IntakeIOSim() {
+  }
 
   @Override
   public void updateInputs(Inputs inputs) {
     rollerMotor.update(Constants.kDefaultPeriod);
     inputs.rollerAppliedVolts = rollerMotor.getVoltage();
-    inputs.rollerVelocityRPM = rollerMotor.getVelocity().in(Units.RPM);
+    inputs.rollerVelocityRPM  = rollerMotor.getVelocity().in(Units.RPM);
 
     pivotSim.update(Constants.kDefaultPeriod);
 
-    inputs.pivotPosition = new Rotation2d(pivotSim.getPosition());
-    inputs.pivotAppliedVolts = pivotSim.getVoltage().in(Units.Volts);
+    inputs.pivotPosition                 = new Rotation2d(pivotSim.getPosition());
+    inputs.pivotAppliedVolts             = pivotSim.getVoltage().in(Units.Volts);
     inputs.pivotVelocityDegreesPerSecond = pivotSim.getVelocity().in(Units.DegreesPerSecond);
   }
 
@@ -66,10 +60,9 @@ public class IntakeIOSim implements IntakeIO {
   }
 
   @Override
-  public void setRollerClosedLoopConstants(
-      double kP, double kV, double kS, double maxProfiledAcceleration) {
-    TalonFXConfiguration config = new TalonFXConfiguration();
-    Slot0Configs slot0Configs = new Slot0Configs();
+  public void setRollerClosedLoopConstants(double kP, double kV, double kS, double maxProfiledAcceleration) {
+    TalonFXConfiguration config       = new TalonFXConfiguration();
+    Slot0Configs         slot0Configs = new Slot0Configs();
 
     slot0Configs.kP = kP;
     slot0Configs.kV = kV;
@@ -91,16 +84,15 @@ public class IntakeIOSim implements IntakeIO {
   }
 
   @Override
-  public void setPivotClosedLoopConstants(
-      double kP, double kD, double kG, MotionMagicConfigs mmConfigs) {
-    TalonFXConfiguration config = new TalonFXConfiguration();
-    Slot0Configs slot0Configs = new Slot0Configs();
+  public void setPivotClosedLoopConstants(double kP, double kD, double kG, MotionMagicConfigs mmConfigs) {
+    TalonFXConfiguration config       = new TalonFXConfiguration();
+    Slot0Configs         slot0Configs = new Slot0Configs();
 
     slot0Configs.kP = kP;
     slot0Configs.kD = kD;
     slot0Configs.kG = kG;
 
-    config.Slot0 = slot0Configs;
+    config.Slot0       = slot0Configs;
     config.MotionMagic = mmConfigs;
 
     pivotSim.setConfig(config);

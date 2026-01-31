@@ -21,31 +21,31 @@ import java.util.function.BooleanSupplier;
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class Climb extends Command {
 
-  private final Climber climber;
+  private final Climber         climber;
   private final BooleanSupplier confirmButton;
-  private final RobotStates states;
+  private final RobotStates     states;
 
   private boolean prevConfirm = true;
-  private int stage = 0;
+  private int     stage       = 0;
 
   private final TunableNumberGroup tunableGroup = new TunableNumberGroup("Climb");
 
   private final LoggedTunableNumber zerothAngle = tunableGroup.build("Stage1AngleRot", 3.5);
-  private final LoggedTunableNumber firstAngle = tunableGroup.build("Stage2AngleRot", 2.5);
+  private final LoggedTunableNumber firstAngle  = tunableGroup.build("Stage2AngleRot", 2.5);
   private final LoggedTunableNumber secondAngle = tunableGroup.build("Stage3AngleRot", 5.4);
-  private final LoggedTunableNumber thirdAngle = tunableGroup.build("Stage4AngleRot", 1.0);
+  private final LoggedTunableNumber thirdAngle  = tunableGroup.build("Stage4AngleRot", 1.0);
 
-  private final LoggerGroup logGroup = LoggerGroup.build("Climb");
-  private final LoggerEntry.Bool logConfirm = logGroup.buildBoolean("Confirm");
-  private final LoggerEntry.Integer logStage = logGroup.buildInteger("Stage");
+  private final LoggerGroup         logGroup   = LoggerGroup.build("Climb");
+  private final LoggerEntry.Bool    logConfirm = logGroup.buildBoolean("Confirm");
+  private final LoggerEntry.Integer logStage   = logGroup.buildInteger("Stage");
 
   private final Timer servoTimer = new Timer();
 
   /** Creates a new Climb. */
   public Climb(Climber climber, BooleanSupplier confirmButton, RobotStates states) {
-    this.climber = climber;
+    this.climber       = climber;
     this.confirmButton = confirmButton;
-    this.states = states;
+    this.states        = states;
 
     // Use addRequirements() here to declare subsystem dependencies.
     addRequirements(climber);
@@ -57,9 +57,9 @@ public class Climb extends Command {
     states.mechState = MechState.ClimbPosition;
     states.setIntakeState(IntakeState.Climb);
     states.mechanismInUse = true;
-    states.intakeInUse = true;
+    states.intakeInUse    = true;
     climber.setServoAngle(ClimberConstants.SERVO_UNLOCK_ANGLE);
-    stage = 0;
+    stage       = 0;
     prevConfirm = true;
     servoTimer.reset();
   }
@@ -77,7 +77,8 @@ public class Climb extends Command {
     if (stage == 0) {
       Rotation2d target = Rotation2d.fromRotations(zerothAngle.get());
       climber.setWinchAngle(target);
-      if (climber.isWinchAtTargetAngle(target)) stage++;
+      if (climber.isWinchAtTargetAngle(target))
+        stage++;
     } else if (stage == 1) {
       climber.setWinchAngle(Rotation2d.fromRotations(firstAngle.get()));
     } else if (stage == 2) {
@@ -86,7 +87,8 @@ public class Climb extends Command {
       climber.setWinchAngle(Rotation2d.fromRotations(thirdAngle.get()));
       states.setIntakeState(IntakeState.Stow);
       servoTimer.start();
-      if (servoTimer.get() > 1) climber.setServoAngle(ClimberConstants.SERVO_LOCK_ANGLE);
+      if (servoTimer.get() > 1)
+        climber.setServoAngle(ClimberConstants.SERVO_LOCK_ANGLE);
     }
 
     logStage.info(stage);
@@ -98,7 +100,7 @@ public class Climb extends Command {
   @Override
   public void end(boolean interrupted) {
     states.mechanismInUse = false;
-    states.intakeInUse = false;
+    states.intakeInUse    = false;
   }
 
   // Returns true when the command should end.

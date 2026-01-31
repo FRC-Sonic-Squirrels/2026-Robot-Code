@@ -27,61 +27,36 @@ public class RobotConfig2024 extends RobotConfig {
 
   // ------ SWERVE MODULE CONFIGURATIONS: CANID + OFFSET + INVERTS --------------
   // 0
-  private static final IndividualSwerveModuleConfig FRONT_LEFT_MODULE_CONFIG =
-      new IndividualSwerveModuleConfig(
-          1,
-          11,
-          21,
-          Rotation2d.fromRotations(0.199),
-          InvertedValue.CounterClockwise_Positive,
-          InvertedValue.Clockwise_Positive,
-          InvertedValue.Clockwise_Positive);
+  private static final IndividualSwerveModuleConfig FRONT_LEFT_MODULE_CONFIG = new IndividualSwerveModuleConfig(1, 11,
+      21, Rotation2d.fromRotations(0.199), InvertedValue.CounterClockwise_Positive, InvertedValue.Clockwise_Positive,
+      InvertedValue.Clockwise_Positive);
   // 1
-  private static final IndividualSwerveModuleConfig FRONT_RIGHT_MODULE_CONFIG =
-      new IndividualSwerveModuleConfig(
-          2,
-          12,
-          22,
-          Rotation2d.fromRotations(0.152),
-          InvertedValue.CounterClockwise_Positive,
-          InvertedValue.Clockwise_Positive,
-          InvertedValue.Clockwise_Positive);
+  private static final IndividualSwerveModuleConfig FRONT_RIGHT_MODULE_CONFIG = new IndividualSwerveModuleConfig(2, 12,
+      22, Rotation2d.fromRotations(0.152), InvertedValue.CounterClockwise_Positive, InvertedValue.Clockwise_Positive,
+      InvertedValue.Clockwise_Positive);
   // 2
-  private static final IndividualSwerveModuleConfig BACK_LEFT_MODULE_CONFIG =
-      new IndividualSwerveModuleConfig(
-          3,
-          13,
-          23,
-          Rotation2d.fromRotations(-0.326),
-          InvertedValue.CounterClockwise_Positive,
-          InvertedValue.Clockwise_Positive,
-          InvertedValue.Clockwise_Positive);
+  private static final IndividualSwerveModuleConfig BACK_LEFT_MODULE_CONFIG = new IndividualSwerveModuleConfig(3, 13,
+      23, Rotation2d.fromRotations(-0.326), InvertedValue.CounterClockwise_Positive, InvertedValue.Clockwise_Positive,
+      InvertedValue.Clockwise_Positive);
   // 3
-  private static final IndividualSwerveModuleConfig BACK_RIGHT_MODULE_CONFIG =
-      new IndividualSwerveModuleConfig(
-          4,
-          14,
-          24,
-          Rotation2d.fromRotations(0.448),
-          InvertedValue.CounterClockwise_Positive,
-          InvertedValue.Clockwise_Positive,
-          InvertedValue.Clockwise_Positive);
+  private static final IndividualSwerveModuleConfig BACK_RIGHT_MODULE_CONFIG = new IndividualSwerveModuleConfig(4, 14,
+      24, Rotation2d.fromRotations(0.448), InvertedValue.CounterClockwise_Positive, InvertedValue.Clockwise_Positive,
+      InvertedValue.Clockwise_Positive);
 
   // -------- SWERVE CURRENT LIMITS ---------
-  private static final CurrentLimitsConfigs DRIVE_TALON_CURRENT_LIMIT_CONFIGS =
-      new CurrentLimitsConfigs().withSupplyCurrentLimit(20).withSupplyCurrentLimitEnable(true);
+  private static final CurrentLimitsConfigs DRIVE_TALON_CURRENT_LIMIT_CONFIGS = new CurrentLimitsConfigs()
+      .withSupplyCurrentLimit(20).withSupplyCurrentLimitEnable(true);
 
-  private static final CurrentLimitsConfigs STEER_TALON_CURRENT_LIMIT_CONFIGS =
-      new CurrentLimitsConfigs().withSupplyCurrentLimit(25).withSupplyCurrentLimitEnable(true);
+  private static final CurrentLimitsConfigs STEER_TALON_CURRENT_LIMIT_CONFIGS = new CurrentLimitsConfigs()
+      .withSupplyCurrentLimit(25).withSupplyCurrentLimitEnable(true);
 
   // --------- SWERVE GEAR RATIO ---------
-  public static final double SWERVE_DRIVE_GEAR_RATIO =
-      SwerveModuleConstants.MK4I.LEVEL_3_GEARING_DRIVE_GEAR_RATIO_PLUS_SPEED_KIT;
-  public static final double SWERVE_STEER_GEAR_RATIO =
-      SwerveModuleConstants.MK4I.GEARING_TURN_GEAR_RATIO;
+  public static final double SWERVE_DRIVE_GEAR_RATIO = SwerveModuleConstants.MK4I.LEVEL_3_GEARING_DRIVE_GEAR_RATIO_PLUS_SPEED_KIT;
+  public static final double SWERVE_STEER_GEAR_RATIO = SwerveModuleConstants.MK4I.GEARING_TURN_GEAR_RATIO;
 
   // ---------- SWERVE STEERING MOTOR PID CONSTANTS -----------
-  // FIXE: RN copied from Mechanical advantage (6328) 2023 codebase. Should learn to tune
+  // FIXE: RN copied from Mechanical advantage (6328) 2023 codebase. Should learn
+  // to tune
   // ourselves
   private static final LoggedTunableNumber ANGLE_KP = group.build("ANGLE_KP", 200.0);
   private static final LoggedTunableNumber ANGLE_KD = group.build("ANGLE_KD", 2.0);
@@ -115,79 +90,56 @@ public class RobotConfig2024 extends RobotConfig {
   private static final Distance TRACK_WIDTH_Y = Units.Inches.of(21.75);
 
   // ------- ROBOT MAX SPEED --------
-  private static final double MAX_VELOCITY_METERS_PER_SECOND = 5.0;
+  private static final double MAX_VELOCITY_METERS_PER_SECOND       = 5.0;
   private static final double MAX_COAST_VELOCITY_METERS_PER_SECOND = 0.05;
 
   // ------- AUTONOMOUS CONSTANTS -------
-  private static final LoggedTunableNumber AUTO_MAX_SPEED_METERS_PER_SECOND =
-      group.build("AUTO_MAX_SPEED", 5.0);
-  private static final LoggedTunableNumber AUTO_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED =
-      group.build("AUTO_MAX_ACCEL", 5.0);
-  private static final LoggedTunableNumber AUTO_MAX_ANGULAR_VEL_RADIANS_PER_SECOND =
-      group.build("AUTO_MAX_ANGULAR_VEL_RAD_PER_SECOND", Math.PI * 2);
-  private static final LoggedTunableNumber
-      AUTO_MAX_ANGULAR_ACCELERATION_RADIANS_PER_SECOND_SQUARED =
-          group.build("AUTO_MAX_ANGULAR_ACCEL_RAD_PER_SECOND_SQUARED", Math.PI * 4);
+  private static final LoggedTunableNumber AUTO_MAX_SPEED_METERS_PER_SECOND                         = group
+      .build("AUTO_MAX_SPEED", 5.0);
+  private static final LoggedTunableNumber AUTO_MAX_ACCELERATION_METERS_PER_SECOND_SQUARED          = group
+      .build("AUTO_MAX_ACCEL", 5.0);
+  private static final LoggedTunableNumber AUTO_MAX_ANGULAR_VEL_RADIANS_PER_SECOND                  = group
+      .build("AUTO_MAX_ANGULAR_VEL_RAD_PER_SECOND", Math.PI * 2);
+  private static final LoggedTunableNumber AUTO_MAX_ANGULAR_ACCELERATION_RADIANS_PER_SECOND_SQUARED = group
+      .build("AUTO_MAX_ANGULAR_ACCEL_RAD_PER_SECOND_SQUARED", Math.PI * 4);
 
-  private static final LoggedTunableNumber AUTO_TRANSLATION_KP =
-      group.build("AUTO_TRANSLATION_KP", 2.4);
-  private static final LoggedTunableNumber AUTO_TRANSLATION_KI =
-      group.build("AUTO_TRANSLATION_KI", 0.0);
-  private static final LoggedTunableNumber AUTO_TRANSLATION_KD =
-      group.build("AUTO_TRANSLATION_KD", 0.0);
-  private static final LoggedTunableNumber AUTO_THETA_KP = group.build("AUTO_THETA_KP", 4.0);
-  private static final LoggedTunableNumber AUTO_THETA_KI = group.build("AUTO_THETA_KI", 0.0);
-  private static final LoggedTunableNumber AUTO_THETA_KD = group.build("AUTO_THETA_KD", 0.0);
+  private static final LoggedTunableNumber AUTO_TRANSLATION_KP = group.build("AUTO_TRANSLATION_KP", 2.4);
+  private static final LoggedTunableNumber AUTO_TRANSLATION_KI = group.build("AUTO_TRANSLATION_KI", 0.0);
+  private static final LoggedTunableNumber AUTO_TRANSLATION_KD = group.build("AUTO_TRANSLATION_KD", 0.0);
+  private static final LoggedTunableNumber AUTO_THETA_KP       = group.build("AUTO_THETA_KP", 4.0);
+  private static final LoggedTunableNumber AUTO_THETA_KI       = group.build("AUTO_THETA_KI", 0.0);
+  private static final LoggedTunableNumber AUTO_THETA_KD       = group.build("AUTO_THETA_KD", 0.0);
 
-  private final com.pathplanner.lib.config.RobotConfig PATH_PLANNER_CONFIG =
-      new com.pathplanner.lib.config.RobotConfig(
-          Units.Kilogram.of(1),
-          Units.KilogramSquareMeters.of(1),
-          new ModuleConfig(
-              WHEEL_RADIUS,
-              Units.MetersPerSecond.of(MAX_VELOCITY_METERS_PER_SECOND),
-              0.65,
-              DCMotor.getKrakenX60Foc(4),
-              SWERVE_DRIVE_GEAR_RATIO,
-              Units.Amps.of(DRIVE_TALON_CURRENT_LIMIT_CONFIGS.SupplyCurrentLimit),
-              1),
-          getModuleTranslations());
+  private final com.pathplanner.lib.config.RobotConfig PATH_PLANNER_CONFIG = new com.pathplanner.lib.config.RobotConfig(
+      Units.Kilogram.of(1), Units.KilogramSquareMeters.of(1),
+      new ModuleConfig(WHEEL_RADIUS, Units.MetersPerSecond.of(MAX_VELOCITY_METERS_PER_SECOND), 0.65,
+          DCMotor.getKrakenX60Foc(4), SWERVE_DRIVE_GEAR_RATIO,
+          Units.Amps.of(DRIVE_TALON_CURRENT_LIMIT_CONFIGS.SupplyCurrentLimit), 1),
+      getModuleTranslations());
 
-  // ---- VISION  -------
-  public static final Transform3d SHOOTER_SIDE_LEFT =
-      new Transform3d(
-          new Translation3d(
-              Units.Inches.of(-11.25).in(Units.Meters),
-              Units.Inches.of(8).in(Units.Meters),
-              Units.Inches.of(10.75).in(Units.Meters)),
-          new Rotation3d(Math.toRadians(0), Math.toRadians(0.0), Math.toRadians(210.0)));
+  // ---- VISION -------
+  public static final Transform3d SHOOTER_SIDE_LEFT = new Transform3d(
+      new Translation3d(Units.Inches.of(-11.25).in(Units.Meters), Units.Inches.of(8).in(Units.Meters),
+          Units.Inches.of(10.75).in(Units.Meters)),
+      new Rotation3d(Math.toRadians(0), Math.toRadians(0.0), Math.toRadians(210.0)));
 
-  public static final Transform3d SHOOTER_SIDE_RIGHT =
-      new Transform3d(
-          new Translation3d(
-              Units.Inches.of(-11.25).in(Units.Meters),
-              Units.Inches.of(-8.25).in(Units.Meters),
-              Units.Inches.of(10.75).in(Units.Meters)),
-          new Rotation3d(Math.toRadians(0), Math.toRadians(0.0), Math.toRadians(150.0)));
+  public static final Transform3d SHOOTER_SIDE_RIGHT = new Transform3d(
+      new Translation3d(Units.Inches.of(-11.25).in(Units.Meters), Units.Inches.of(-8.25).in(Units.Meters),
+          Units.Inches.of(10.75).in(Units.Meters)),
+      new Rotation3d(Math.toRadians(0), Math.toRadians(0.0), Math.toRadians(150.0)));
 
-  public static final Transform3d INTAKE_SIDE_LEFT =
-      new Transform3d(
-          new Translation3d(
-              Units.Inches.of(2.143069).in(Units.Meters),
-              Units.Inches.of(12.127149).in(Units.Meters),
-              Units.Inches.of(24.990728).in(Units.Meters)),
-          new Rotation3d(Math.toRadians(0.0), Math.toRadians(-22.0), Math.toRadians(35.0)));
+  public static final Transform3d INTAKE_SIDE_LEFT = new Transform3d(
+      new Translation3d(Units.Inches.of(2.143069).in(Units.Meters), Units.Inches.of(12.127149).in(Units.Meters),
+          Units.Inches.of(24.990728).in(Units.Meters)),
+      new Rotation3d(Math.toRadians(0.0), Math.toRadians(-22.0), Math.toRadians(35.0)));
 
-  public static final Transform3d INTAKE_SIDE_RIGHT =
-      new Transform3d(
-          new Translation3d(
-              Units.Inches.of(2.143069).in(Units.Meters),
-              Units.Inches.of(-12.127149).in(Units.Meters),
-              Units.Inches.of(24.990728).in(Units.Meters)),
-          new Rotation3d(Math.toRadians(0.0), Math.toRadians(-22.0), Math.toRadians(325.0)));
+  public static final Transform3d INTAKE_SIDE_RIGHT = new Transform3d(
+      new Translation3d(Units.Inches.of(2.143069).in(Units.Meters), Units.Inches.of(-12.127149).in(Units.Meters),
+          Units.Inches.of(24.990728).in(Units.Meters)),
+      new Rotation3d(Math.toRadians(0.0), Math.toRadians(-22.0), Math.toRadians(325.0)));
 
-  public static final String OBJECT_DETECTION_CAMERA_NAME = "0_Object_Detection_ELP";
-  public static final String SHOOTER_SIDE_LEFT_CAMERA_NAME = "1_Shooter_Left_See3Cam";
+  public static final String OBJECT_DETECTION_CAMERA_NAME   = "0_Object_Detection_ELP";
+  public static final String SHOOTER_SIDE_LEFT_CAMERA_NAME  = "1_Shooter_Left_See3Cam";
   public static final String SHOOTER_SIDE_RIGHT_CAMERA_NAME = "2_Shooter_Right_See3Cam";
 
   public static final AprilTagFields APRIL_TAG_FIELD = AprilTagFields.k2025ReefscapeWelded;
@@ -197,16 +149,13 @@ public class RobotConfig2024 extends RobotConfig {
    *
    * FUNCTIONS RETURNING CONSTANTS:
    *
-   * YOU MUST CHANGED 2 METHODS:
-   * getSwerveModuleObjects()
-   * getVisionModuleObjects()
+   * YOU MUST CHANGED 2 METHODS: getSwerveModuleObjects() getVisionModuleObjects()
    *
    */
 
   @Override
   public SwerveModules getSwerveModuleObjects() {
-    return new SwerveModules(
-        new SwerveModule(0, this, new SwerveModuleIOTalonFX(this, FRONT_LEFT_MODULE_CONFIG)),
+    return new SwerveModules(new SwerveModule(0, this, new SwerveModuleIOTalonFX(this, FRONT_LEFT_MODULE_CONFIG)),
         new SwerveModule(1, this, new SwerveModuleIOTalonFX(this, FRONT_RIGHT_MODULE_CONFIG)),
         new SwerveModule(2, this, new SwerveModuleIOTalonFX(this, BACK_LEFT_MODULE_CONFIG)),
         new SwerveModule(3, this, new SwerveModuleIOTalonFX(this, BACK_RIGHT_MODULE_CONFIG)));
@@ -214,27 +163,23 @@ public class RobotConfig2024 extends RobotConfig {
 
   @Override
   public SwerveModules getReplaySwerveModuleObjects() {
-    return new SwerveModules(
-        new SwerveModule(0, this, new SwerveModuleIO.Fake()),
-        new SwerveModule(1, this, new SwerveModuleIO.Fake()),
-        new SwerveModule(2, this, new SwerveModuleIO.Fake()),
+    return new SwerveModules(new SwerveModule(0, this, new SwerveModuleIO.Fake()),
+        new SwerveModule(1, this, new SwerveModuleIO.Fake()), new SwerveModule(2, this, new SwerveModuleIO.Fake()),
         new SwerveModule(3, this, new SwerveModuleIO.Fake()));
   }
 
   @Override
   public VisionModuleConfiguration[] getVisionModuleObjects() {
     return new VisionModuleConfiguration[] {
-      VisionModuleConfiguration.build(SHOOTER_SIDE_LEFT_CAMERA_NAME, SHOOTER_SIDE_LEFT),
-      VisionModuleConfiguration.build(SHOOTER_SIDE_RIGHT_CAMERA_NAME, SHOOTER_SIDE_RIGHT)
-    };
+        VisionModuleConfiguration.build(SHOOTER_SIDE_LEFT_CAMERA_NAME, SHOOTER_SIDE_LEFT),
+        VisionModuleConfiguration.build(SHOOTER_SIDE_RIGHT_CAMERA_NAME, SHOOTER_SIDE_RIGHT) };
   }
 
   @Override
   public VisionModuleConfiguration[] getReplayVisionModules() {
     return new VisionModuleConfiguration[] {
-      VisionModuleConfiguration.buildReplayStub(SHOOTER_SIDE_LEFT_CAMERA_NAME, SHOOTER_SIDE_LEFT),
-      VisionModuleConfiguration.buildReplayStub(SHOOTER_SIDE_RIGHT_CAMERA_NAME, SHOOTER_SIDE_RIGHT)
-    };
+        VisionModuleConfiguration.buildReplayStub(SHOOTER_SIDE_LEFT_CAMERA_NAME, SHOOTER_SIDE_LEFT),
+        VisionModuleConfiguration.buildReplayStub(SHOOTER_SIDE_RIGHT_CAMERA_NAME, SHOOTER_SIDE_RIGHT) };
   }
 
   @Override
@@ -249,12 +194,8 @@ public class RobotConfig2024 extends RobotConfig {
 
   @Override
   public IndividualSwerveModuleConfig[] getIndividualModuleConfigurations() {
-    return new IndividualSwerveModuleConfig[] {
-      FRONT_LEFT_MODULE_CONFIG,
-      FRONT_RIGHT_MODULE_CONFIG,
-      BACK_LEFT_MODULE_CONFIG,
-      BACK_RIGHT_MODULE_CONFIG
-    };
+    return new IndividualSwerveModuleConfig[] { FRONT_LEFT_MODULE_CONFIG, FRONT_RIGHT_MODULE_CONFIG,
+        BACK_LEFT_MODULE_CONFIG, BACK_RIGHT_MODULE_CONFIG };
   }
 
   @Override
@@ -344,8 +285,7 @@ public class RobotConfig2024 extends RobotConfig {
 
   @Override
   public PIDController getAutoTranslationPidController() {
-    return new PIDController(
-        AUTO_TRANSLATION_KP.get(), AUTO_TRANSLATION_KI.get(), AUTO_TRANSLATION_KD.get());
+    return new PIDController(AUTO_TRANSLATION_KP.get(), AUTO_TRANSLATION_KI.get(), AUTO_TRANSLATION_KD.get());
   }
 
   @Override

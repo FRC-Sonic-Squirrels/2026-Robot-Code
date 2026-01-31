@@ -17,7 +17,7 @@ import frc.robot.Constants;
 public class TalonFXSim {
 
   private DCMotorSim motor;
-  private double gearing;
+  private double     gearing;
 
   private ControlMode control = ControlMode.VOLTAGE;
 
@@ -41,7 +41,7 @@ public class TalonFXSim {
   private double lastPos;
 
   public TalonFXSim(DCMotor motorType, double gearing, double MOI) {
-    motor = new DCMotorSim(LinearSystemId.createDCMotorSystem(motorType, MOI, gearing), motorType);
+    motor        = new DCMotorSim(LinearSystemId.createDCMotorSystem(motorType, MOI, gearing), motorType);
     this.gearing = gearing;
   }
 
@@ -88,22 +88,22 @@ public class TalonFXSim {
 
   public void setControl(VoltageOut request) {
     targetOutput = request.Output;
-    control = ControlMode.VOLTAGE;
+    control      = ControlMode.VOLTAGE;
   }
 
   public void setControl(VelocityVoltage request) {
     targetOutput = request.Velocity;
-    control = ControlMode.VELOCITY;
+    control      = ControlMode.VELOCITY;
   }
 
   public void setControl(PositionDutyCycle request) {
     targetOutput = request.Position;
-    control = ControlMode.POSITION;
+    control      = ControlMode.POSITION;
   }
 
   public void setControl(MotionMagicVoltage request) {
     targetOutput = request.Position;
-    control = ControlMode.POSITION;
+    control      = ControlMode.POSITION;
   }
 
   public void setConfig(TalonFXConfiguration config) {
@@ -132,8 +132,6 @@ public class TalonFXSim {
   }
 
   public enum ControlMode {
-    VOLTAGE,
-    VELOCITY,
-    POSITION
+    VOLTAGE, VELOCITY, POSITION
   }
 }

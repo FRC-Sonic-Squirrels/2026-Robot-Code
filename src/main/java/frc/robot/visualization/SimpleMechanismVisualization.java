@@ -14,29 +14,24 @@ import org.littletonrobotics.junction.mechanism.LoggedMechanismLigament2d;
 import org.littletonrobotics.junction.mechanism.LoggedMechanismRoot2d;
 
 public class SimpleMechanismVisualization {
-  private static final LoggerGroup logGroup = LoggerGroup.build("Mechanism");
-  private static final LoggerEntry.Mechanism logMech = logGroup.buildMechanism2d("SimpleMechanism");
+  private static final LoggerGroup           logGroup = LoggerGroup.build("Mechanism");
+  private static final LoggerEntry.Mechanism logMech  = logGroup.buildMechanism2d("SimpleMechanism");
 
-  private static final TunableNumberGroup tunableGroup =
-      new TunableNumberGroup("SimpleMechanismVisualization");
+  private static final TunableNumberGroup tunableGroup = new TunableNumberGroup("SimpleMechanismVisualization");
 
   @SuppressWarnings("unused")
   private static final LoggedTunableNumber testTunable = tunableGroup.build("TestTunable", 0);
 
-  static LoggedMechanism2d mechanism2d =
-      new LoggedMechanism2d(
-          Units.Inches.of(32.0).in(Units.Meters), Units.Inches.of(60.0).in(Units.Meters));
+  static LoggedMechanism2d mechanism2d = new LoggedMechanism2d(Units.Inches.of(32.0).in(Units.Meters),
+      Units.Inches.of(60.0).in(Units.Meters));
 
-  static LoggedMechanismRoot2d mechRoot =
-      mechanism2d.getRoot(
-          "mechRoot", Units.Inches.of(9.75).in(Units.Meters), Units.Inches.of(4).in(Units.Meters));
+  static LoggedMechanismRoot2d mechRoot = mechanism2d.getRoot("mechRoot", Units.Inches.of(9.75).in(Units.Meters),
+      Units.Inches.of(4).in(Units.Meters));
 
-  static LoggedMechanismLigament2d elevatorLigament =
-      mechRoot.append(new LoggedMechanismLigament2d("mech", 0.001, 90));
+  static LoggedMechanismLigament2d elevatorLigament = mechRoot.append(new LoggedMechanismLigament2d("mech", 0.001, 90));
 
-  static LoggedMechanismLigament2d armLigament =
-      elevatorLigament.append(
-          new LoggedMechanismLigament2d("mech", ArmConstants.ARM_LENGTH.in(Units.Meters), 90));
+  static LoggedMechanismLigament2d armLigament = elevatorLigament
+      .append(new LoggedMechanismLigament2d("mech", ArmConstants.ARM_LENGTH.in(Units.Meters), 90));
 
   static {
     elevatorLigament.setColor(new Color8Bit(0, 0, 255));

@@ -15,45 +15,38 @@ import frc.robot.Constants.RobotMode.RobotType;
 
 public class Climber extends SubsystemBase {
   // Execution timing
-  private static final ExecutionTiming winchTiming =
-      new ExecutionTiming(ClimberConstants.WINCH_ROOT_TABLE);
+  private static final ExecutionTiming winchTiming = new ExecutionTiming(ClimberConstants.WINCH_ROOT_TABLE);
   // Logging
-  private static final LoggerGroup winchLogGroup =
-      LoggerGroup.build(ClimberConstants.WINCH_ROOT_TABLE);
-  private static final LoggerEntry.Decimal logInputs_winchAngle =
-      winchLogGroup.buildDecimal("AngleDegrees");
-  private static final LoggerEntry.Decimal logInputs_winchAppliedVolts =
-      winchLogGroup.buildDecimal("AppliedVolts");
-  private static final LoggerEntry.Decimal logInputs_winchCurrentAmps =
-      winchLogGroup.buildDecimal("CurrentAmps");
-  private static final LoggerEntry.Decimal logInputs_winchTempCelsius =
-      winchLogGroup.buildDecimal("TempCelsius");
-  private static final LoggerEntry.Decimal logInputs_winchVelocityDegreesPerSecond =
-      winchLogGroup.buildDecimal("VelocityDegreesPerSecond");
-  private static final LoggerEntry.EnumValue<ControlMode> logWinchControlMode =
-      winchLogGroup.buildEnum("ControlMode");
-  private static final LoggerEntry.Decimal logTargetAngleDegrees =
-      winchLogGroup.buildDecimal("targetAngleDegrees");
+  private static final LoggerGroup                        winchLogGroup                           = LoggerGroup
+      .build(ClimberConstants.WINCH_ROOT_TABLE);
+  private static final LoggerEntry.Decimal                logInputs_winchAngle                    = winchLogGroup
+      .buildDecimal("AngleDegrees");
+  private static final LoggerEntry.Decimal                logInputs_winchAppliedVolts             = winchLogGroup
+      .buildDecimal("AppliedVolts");
+  private static final LoggerEntry.Decimal                logInputs_winchCurrentAmps              = winchLogGroup
+      .buildDecimal("CurrentAmps");
+  private static final LoggerEntry.Decimal                logInputs_winchTempCelsius              = winchLogGroup
+      .buildDecimal("TempCelsius");
+  private static final LoggerEntry.Decimal                logInputs_winchVelocityDegreesPerSecond = winchLogGroup
+      .buildDecimal("VelocityDegreesPerSecond");
+  private static final LoggerEntry.EnumValue<ControlMode> logWinchControlMode                     = winchLogGroup
+      .buildEnum("ControlMode");
+  private static final LoggerEntry.Decimal                logTargetAngleDegrees                   = winchLogGroup
+      .buildDecimal("targetAngleDegrees");
 
-  private static final LoggerGroup servoLogGroup =
-      LoggerGroup.build(ClimberConstants.SERO_ROOT_TABLE);
-  private static final LoggerEntry.Decimal log_servoTargetAngle =
-      servoLogGroup.buildDecimal("TargetAngle");
+  private static final LoggerGroup         servoLogGroup        = LoggerGroup.build(ClimberConstants.SERO_ROOT_TABLE);
+  private static final LoggerEntry.Decimal log_servoTargetAngle = servoLogGroup.buildDecimal("TargetAngle");
 
   // Tunable Numbers
-  private static final TunableNumberGroup winchGroup =
-      new TunableNumberGroup(ClimberConstants.WINCH_ROOT_TABLE);
+  private static final TunableNumberGroup winchGroup = new TunableNumberGroup(ClimberConstants.WINCH_ROOT_TABLE);
 
   private static final LoggedTunableNumber winchkP = winchGroup.build("kP");
   private static final LoggedTunableNumber winchkD = winchGroup.build("kD");
   private static final LoggedTunableNumber winchkG = winchGroup.build("kG");
 
-  private static final LoggedTunableNumber maxVelocityConfig =
-      winchGroup.build("MaxVelocityConfig");
-  private static final LoggedTunableNumber winchTargetAccelerationConfig =
-      winchGroup.build("TargetAccelerationConfig");
-  private static final LoggedTunableNumber toleranceDegrees =
-      winchGroup.build("ToleranceDegrees", 40);
+  private static final LoggedTunableNumber maxVelocityConfig             = winchGroup.build("MaxVelocityConfig");
+  private static final LoggedTunableNumber winchTargetAccelerationConfig = winchGroup.build("TargetAccelerationConfig");
+  private static final LoggedTunableNumber toleranceDegrees              = winchGroup.build("ToleranceDegrees", 40);
 
   // Tunable numbers
 
@@ -81,13 +74,14 @@ public class Climber extends SubsystemBase {
     }
   }
 
-  private final ClimberIO io;
+  private final ClimberIO        io;
   private final ClimberIO.Inputs winchInputs = new ClimberIO.Inputs(winchLogGroup);
 
-  private ControlMode winchControlMode = ControlMode.OPEN_LOOP;
-  private Rotation2d winchTargetAngleDegrees = Constants.zeroRotation2d;
+  private ControlMode winchControlMode        = ControlMode.OPEN_LOOP;
+  private Rotation2d  winchTargetAngleDegrees = Constants.zeroRotation2d;
 
-  // This also acts as its current angle because the servo cannot tell us where it is
+  // This also acts as its current angle because the servo cannot tell us where it
+  // is
   private Rotation2d servoTargetAngle = Constants.ClimberConstants.SERVO_LOCK_ANGLE;
 
   /** Creates a new ClimberSubsystem. */
@@ -129,14 +123,11 @@ public class Climber extends SubsystemBase {
   }
 
   public void setWinchAngle(Rotation2d angle) {
-    angle =
-        Rotation2d.fromDegrees(
-            MathUtil.clamp(
-                angle.getDegrees(),
-                Constants.ClimberConstants.MIN_CLIMBER_ANGLE.getDegrees(),
-                Constants.ClimberConstants.MAX_CLIMBER_ANGLE.getDegrees()));
+    angle = Rotation2d
+        .fromDegrees(MathUtil.clamp(angle.getDegrees(), Constants.ClimberConstants.MIN_CLIMBER_ANGLE.getDegrees(),
+            Constants.ClimberConstants.MAX_CLIMBER_ANGLE.getDegrees()));
 
-    winchControlMode = ControlMode.CLOSED_LOOP;
+    winchControlMode        = ControlMode.CLOSED_LOOP;
     winchTargetAngleDegrees = angle;
     io.setWinchClosedLoopPosition(angle);
     logTargetAngleDegrees.info(winchTargetAngleDegrees);

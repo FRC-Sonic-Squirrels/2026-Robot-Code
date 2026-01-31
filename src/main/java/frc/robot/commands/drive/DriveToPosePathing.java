@@ -37,74 +37,67 @@ import java.util.function.Supplier;
 public class DriveToPosePathing extends Command {
 
   private final DrivetrainWrapper wrapper;
-  private final RobotConfig config;
-  private final Supplier<Pose2d> currentPose;
-  private final Supplier<Pose2d> targetPose;
+  private final RobotConfig       config;
+  private final Supplier<Pose2d>  currentPose;
+  private final Supplier<Pose2d>  targetPose;
 
   private ChoreoHelper helper;
-  private boolean pathFinished = false;
+  private boolean      pathFinished = false;
 
-  private static TunableNumberGroup tunableGroup = new TunableNumberGroup("DriveToPosePathing");
-  private static LoggedTunableNumber reefCirclingDistMeters =
-      tunableGroup.build(
-          "ReefCirclingDistMeters",
+  private static TunableNumberGroup  tunableGroup                 = new TunableNumberGroup("DriveToPosePathing");
+  private static LoggedTunableNumber reefCirclingDistMeters       = tunableGroup
+      .build("ReefCirclingDistMeters",
           Constants.FieldConstants.HUB_DIAGONAL_WIDTH
-                  .plus(Constants.RobotDimensions.ROBOT_DIMENSIONS_WITH_BUMPERS.getMeasureY())
-                  .div(2)
-                  .in(Units.Meters)
+              .plus(Constants.RobotDimensions.ROBOT_DIMENSIONS_WITH_BUMPERS.getMeasureY()).div(2).in(Units.Meters)
               + 0.1);
-  private static LoggedTunableNumber headingToleranceNearElements =
-      tunableGroup.build("HeadingToleranceNearElements", 40.0);
-  private static LoggedTunableNumber stallMaxVelocity =
-      tunableGroup.build("Stall/MaxVelocity", 0.4);
-  private static LoggedTunableNumber stallMinDistance =
-      tunableGroup.build("Stall/MinDistance", 0.05);
-  private static LoggedTunableNumber stallDebounce = tunableGroup.build("Stall/Debounce", 0.15);
+  private static LoggedTunableNumber headingToleranceNearElements = tunableGroup.build("HeadingToleranceNearElements",
+      40.0);
+  private static LoggedTunableNumber stallMaxVelocity             = tunableGroup.build("Stall/MaxVelocity", 0.4);
+  private static LoggedTunableNumber stallMinDistance             = tunableGroup.build("Stall/MinDistance", 0.05);
+  private static LoggedTunableNumber stallDebounce                = tunableGroup.build("Stall/Debounce", 0.15);
 
-  private static LoggerGroup logGroup = LoggerGroup.build("DriveToPosePathing");
-  private static LoggerGroup pathGenLogGroup = logGroup.subgroup("PathGeneration");
-  private static LoggerGroup pathFollowingLogGroup = logGroup.subgroup("PathFollowing");
-  private static LoggerEntry.Struct<Pose2d> log_intermediatePose =
-      pathGenLogGroup.buildStruct(Pose2d.class, "IntermediatePose");
-  private static LoggerEntry.Struct<Pose2d> log_intersectingPose =
-      pathGenLogGroup.buildStruct(Pose2d.class, "IntersectingPose");
-  private static LoggerEntry.StructArray<Pose2d> log_unAttemptedPath =
-      pathGenLogGroup.buildStructArray(Pose2d.class, "UnAttemptedPath");
-  private static LoggerEntry.Struct<Pose2d> log_targetChassisSpeeds =
-      pathFollowingLogGroup.buildStruct(Pose2d.class, "TargetChassisSpeeds");
-  private static LoggerEntry.Bool log_pathStalling = pathFollowingLogGroup.buildBoolean("Stalling");
+  private static LoggerGroup                     logGroup                = LoggerGroup.build("DriveToPosePathing");
+  private static LoggerGroup                     pathGenLogGroup         = logGroup.subgroup("PathGeneration");
+  private static LoggerGroup                     pathFollowingLogGroup   = logGroup.subgroup("PathFollowing");
+  private static LoggerEntry.Struct<Pose2d>      log_intermediatePose    = pathGenLogGroup.buildStruct(Pose2d.class,
+      "IntermediatePose");
+  private static LoggerEntry.Struct<Pose2d>      log_intersectingPose    = pathGenLogGroup.buildStruct(Pose2d.class,
+      "IntersectingPose");
+  private static LoggerEntry.StructArray<Pose2d> log_unAttemptedPath     = pathGenLogGroup
+      .buildStructArray(Pose2d.class, "UnAttemptedPath");
+  private static LoggerEntry.Struct<Pose2d>      log_targetChassisSpeeds = pathFollowingLogGroup
+      .buildStruct(Pose2d.class, "TargetChassisSpeeds");
+  private static LoggerEntry.Bool                log_pathStalling        = pathFollowingLogGroup
+      .buildBoolean("Stalling");
 
-  private boolean debugRotationClamping = false;
-  private boolean debugRerouting = false;
+  private boolean debugRotationClamping             = false;
+  private boolean debugRerouting                    = false;
   private boolean debugGenerateStartAndEndRotations = false;
-  private boolean debugIsRobotNextToReef = false;
+  private boolean debugIsRobotNextToReef            = false;
 
-  private double finalOffsetErrorLimit = Double.NaN;
-  private double finalTargetErrorLimit = Double.NaN;
+  private double finalOffsetErrorLimit  = Double.NaN;
+  private double finalTargetErrorLimit  = Double.NaN;
   private double finalHeadingErrorLimit = Double.NaN;
-  private double finalErrorMaxWait = 2;
+  private double finalErrorMaxWait      = 2;
 
   // private double distToTarget;
   // private Double prevdistToTarget = Double.NaN;
   // private LinearFilter velocityToTarget = LinearFilter.movingAverage(8);
   // private double prevTime;
   // private Trigger stalled =
-  //     new Trigger(
-  //             () ->
-  //                 (velocityToTarget.lastValue() < stallMaxVelocity.get()
-  //                     && distToTarget > stallMinDistance.get()))
-  //         .debounce(stallDebounce.get());
+  // new Trigger(
+  // () ->
+  // (velocityToTarget.lastValue() < stallMaxVelocity.get()
+  // && distToTarget > stallMinDistance.get()))
+  // .debounce(stallDebounce.get());
 
   /** Creates a new DriveToPosePathing. */
-  public DriveToPosePathing(
-      DrivetrainWrapper wrapper,
-      RobotConfig config,
-      Supplier<Pose2d> currentPose,
+  public DriveToPosePathing(DrivetrainWrapper wrapper, RobotConfig config, Supplier<Pose2d> currentPose,
       Supplier<Pose2d> targetPose) {
-    this.wrapper = wrapper;
-    this.config = config;
+    this.wrapper     = wrapper;
+    this.config      = config;
     this.currentPose = currentPose;
-    this.targetPose = targetPose;
+    this.targetPose  = targetPose;
   }
 
   public DriveToPosePathing setFinalOffsetError(double maxError) {
@@ -130,7 +123,7 @@ public class DriveToPosePathing extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    Pose2d robotPose = wrapper.getHubPoseEstimatorPose(true);
+    Pose2d robotPose  = wrapper.getHubPoseEstimatorPose(true);
     Pose2d targetPose = this.targetPose.get();
     if (GeometryUtil.getDist(robotPose, targetPose) < 0.0002) {
       this.cancel();
@@ -142,7 +135,7 @@ public class DriveToPosePathing extends Command {
 
   public void initializeNoCheck() {
     Pose2d targetPose = this.targetPose.get();
-    var rotations = generateStartAndEndRotations(targetPose, currentPose.get());
+    var    rotations  = generateStartAndEndRotations(targetPose, currentPose.get());
 
     var traj = generatePath(rotations.getFirst(), rotations.getSecond());
     if (traj == null) {
@@ -150,15 +143,10 @@ public class DriveToPosePathing extends Command {
       return;
     }
 
-    helper =
-        new ChoreoHelper(
-            Timer.getFPGATimestamp(),
-            traj.getInitialPose(false).orElseThrow(),
-            new ChoreoTrajectoryWithName("DriveToPose", traj),
-            config.getDriveBaseRadius() / 2,
-            config.getAutoTranslationPidController(),
-            config.getAutoTranslationPidController(),
-            config.getAutoThetaPidController());
+    helper = new ChoreoHelper(Timer.getFPGATimestamp(), traj.getInitialPose(false).orElseThrow(),
+        new ChoreoTrajectoryWithName("DriveToPose", traj), config.getDriveBaseRadius() / 2,
+        config.getAutoTranslationPidController(), config.getAutoTranslationPidController(),
+        config.getAutoThetaPidController());
 
     helper.setFinalErrorMaxWait(finalErrorMaxWait);
     helper.setFinalOffsetError(finalOffsetErrorLimit);
@@ -180,18 +168,16 @@ public class DriveToPosePathing extends Command {
 
     // System.out.println("TIME DIF: " + (time - prevTime));
     // if (!prevdistToTarget.isNaN())
-    //   velocityToTarget.calculate(Math.abs((distToTarget - prevdistToTarget) / (time -
+    // velocityToTarget.calculate(Math.abs((distToTarget - prevdistToTarget) / (time
+    // -
     // prevTime)));
 
     // log_velToTarget.info(velocityToTarget.lastValue());
     log_pathStalling.info(pathStalling());
 
-    ChassisSpeedsWithPathEnd result =
-        helper.calculateChassisSpeeds(currentPose.get(), Timer.getFPGATimestamp());
-    log_targetChassisSpeeds.info(
-        new Pose2d(
-            result.chassisSpeeds().vxMetersPerSecond,
-            result.chassisSpeeds().vyMetersPerSecond,
+    ChassisSpeedsWithPathEnd result = helper.calculateChassisSpeeds(currentPose.get(), Timer.getFPGATimestamp());
+    log_targetChassisSpeeds
+        .info(new Pose2d(result.chassisSpeeds().vxMetersPerSecond, result.chassisSpeeds().vyMetersPerSecond,
             Rotation2d.fromRadians(result.chassisSpeeds().omegaRadiansPerSecond)));
     wrapper.setVelocityOverride(result.chassisSpeeds());
     pathFinished = result.atEndOfPath();
@@ -219,9 +205,9 @@ public class DriveToPosePathing extends Command {
 
   private boolean trajIntersectsWithReef(Trajectory<SwerveSample> traj) {
     for (SwerveSample sample : traj.samples()) {
-      Pose2d pose = sample.getPose();
+      Pose2d pose        = sample.getPose();
       double distToStart = GeometryUtil.getDist(pose, traj.getInitialPose(false).get());
-      double distToEnd = GeometryUtil.getDist(pose, traj.getFinalPose(false).get());
+      double distToEnd   = GeometryUtil.getDist(pose, traj.getFinalPose(false).get());
       if (poseIntersectsWithReef(pose) && distToStart > 0.3 && distToEnd > 0.3) {
         log_intersectingPose.info(pose);
         return true;
@@ -232,23 +218,25 @@ public class DriveToPosePathing extends Command {
   }
 
   private boolean poseIntersectsWithReef(Pose2d pose) {
-    if (!isRobotNextToReef(pose)) return false;
+    if (!isRobotNextToReef(pose))
+      return false;
 
     for (Translation2d corner : getRobotCorners(pose)) {
-      if (translationIntersectsWithReef(corner)) return true;
+      if (translationIntersectsWithReef(corner))
+        return true;
     }
 
     return false;
   }
 
   private boolean translationIntersectsWithReef(Translation2d translation) {
-    double reefx = Constants.FieldConstants.REEF_CENTER_POSE().getX();
-    double reefy = Constants.FieldConstants.REEF_CENTER_POSE().getY();
+    double reefx        = Constants.FieldConstants.REEF_CENTER_POSE().getX();
+    double reefy        = Constants.FieldConstants.REEF_CENTER_POSE().getY();
     double translationx = translation.getX();
     double translationy = translation.getY();
-    double reefRad = Constants.FieldConstants.HUB_DIAGONAL_WIDTH.div(2.0).in(Units.Meter);
-    double angledSlope = Math.atan(Math.toRadians(30));
-    double xOffset = translationx - reefx;
+    double reefRad      = Constants.FieldConstants.HUB_DIAGONAL_WIDTH.div(2.0).in(Units.Meter);
+    double angledSlope  = Math.atan(Math.toRadians(30));
+    double xOffset      = translationx - reefx;
     // All sides of hexagon
     boolean check1 = translationx > reefx - reefRad;
     boolean check2 = translationx < reefx + reefRad;
@@ -263,26 +251,18 @@ public class DriveToPosePathing extends Command {
     double xRad = Constants.RobotDimensions.ROBOT_DIMENSIONS_WITH_BUMPERS.getX() / 2.0;
     double yRad = Constants.RobotDimensions.ROBOT_DIMENSIONS_WITH_BUMPERS.getY() / 2.0;
 
-    Translation2d[] robotRelativeCorners =
-        new Translation2d[] {
-          new Translation2d(xRad, yRad),
-          new Translation2d(-xRad, yRad),
-          new Translation2d(xRad, -yRad),
-          new Translation2d(-xRad, -yRad)
-        };
+    Translation2d[] robotRelativeCorners = new Translation2d[] { new Translation2d(xRad, yRad),
+        new Translation2d(-xRad, yRad), new Translation2d(xRad, -yRad), new Translation2d(-xRad, -yRad) };
 
     for (int i = 0; i < corners.length; i++) {
-      corners[i] =
-          pose.getTranslation()
-              .plus(
-                  robotRelativeCorners[i].rotateBy(
-                      pose.getRotation())); // TODO: change to corners of bumpers
+      corners[i] = pose.getTranslation().plus(robotRelativeCorners[i].rotateBy(pose.getRotation())); // TODO: change to
+                                                                                                     // corners of
+                                                                                                     // bumpers
     }
     return corners;
   }
 
-  private Trajectory<SwerveSample> rerouteTrajectory(
-      Trajectory<SwerveSample> traj, Pose2d start, Pose2d end) {
+  private Trajectory<SwerveSample> rerouteTrajectory(Trajectory<SwerveSample> traj, Pose2d start, Pose2d end) {
 
     if (!trajIntersectsWithReef(traj)) {
       log_intermediatePose.info(Pose2d.kZero);
@@ -296,63 +276,45 @@ public class DriveToPosePathing extends Command {
 
     log_unAttemptedPath.info(traj.getPoses());
 
-    Translation2d reefCenter = Constants.FieldConstants.REEF_CENTER_POSE();
-    Rotation2d reefCenterToStartHeading =
-        GeometryUtil.getHeading(reefCenter, start.getTranslation());
-    Rotation2d reefCenterToEndHeading = GeometryUtil.getHeading(reefCenter, end.getTranslation());
-    Rotation2d halfWayAngle = midRotation(reefCenterToStartHeading, reefCenterToEndHeading);
-    Translation2d midTranslation =
-        reefCenter.plus(new Translation2d(reefCirclingDistMeters.get(), halfWayAngle));
+    Translation2d reefCenter               = Constants.FieldConstants.REEF_CENTER_POSE();
+    Rotation2d    reefCenterToStartHeading = GeometryUtil.getHeading(reefCenter, start.getTranslation());
+    Rotation2d    reefCenterToEndHeading   = GeometryUtil.getHeading(reefCenter, end.getTranslation());
+    Rotation2d    halfWayAngle             = midRotation(reefCenterToStartHeading, reefCenterToEndHeading);
+    Translation2d midTranslation           = reefCenter
+        .plus(new Translation2d(reefCirclingDistMeters.get(), halfWayAngle));
 
     double reefCenterToStartHeadingDeg = reefCenterToStartHeading.getDegrees();
-    double reefCenterToEndHeadingDeg = reefCenterToEndHeading.getDegrees();
-    double halfWayAngleDeg = halfWayAngle.getDegrees();
+    double reefCenterToEndHeadingDeg   = reefCenterToEndHeading.getDegrees();
+    double halfWayAngleDeg             = halfWayAngle.getDegrees();
 
-    double reefCenterToStartHeadingDegOptimized =
-        GeometryUtil.optimizeRotationInDegrees(reefCenterToStartHeading.getDegrees());
-    double halfWayAngleDegOptimized =
-        GeometryUtil.optimizeRotationInDegrees(halfWayAngle.getDegrees());
+    double reefCenterToStartHeadingDegOptimized = GeometryUtil
+        .optimizeRotationInDegrees(reefCenterToStartHeading.getDegrees());
+    double halfWayAngleDegOptimized             = GeometryUtil.optimizeRotationInDegrees(halfWayAngle.getDegrees());
 
     if (debugRerouting) {
-      System.out.println(
-          "Headings: reefCenterToStartHeading: "
-              + reefCenterToStartHeadingDeg
-              + " reefCenterToEndHeading: "
-              + reefCenterToEndHeadingDeg
-              + " halfWayAngle: "
-              + halfWayAngleDeg);
+      System.out.println("Headings: reefCenterToStartHeading: " + reefCenterToStartHeadingDeg
+          + " reefCenterToEndHeading: " + reefCenterToEndHeadingDeg + " halfWayAngle: " + halfWayAngleDeg);
 
-      System.out.println(
-          "HeadingsOptimized: reefCenterToStartHeading: "
-              + reefCenterToStartHeadingDegOptimized
-              + " halfWayAngle: "
-              + halfWayAngleDegOptimized);
+      System.out.println("HeadingsOptimized: reefCenterToStartHeading: " + reefCenterToStartHeadingDegOptimized
+          + " halfWayAngle: " + halfWayAngleDegOptimized);
     }
 
-    boolean flipRotation =
-        (Math.abs(reefCenterToStartHeadingDegOptimized - 180)
-                    + Math.abs(halfWayAngleDegOptimized + 180)
-                < Math.abs(reefCenterToStartHeadingDegOptimized - halfWayAngleDegOptimized))
-            || (Math.abs(reefCenterToStartHeadingDegOptimized - 180)
-                    + Math.abs(halfWayAngleDegOptimized + 180)
-                < Math.abs(reefCenterToStartHeadingDegOptimized - halfWayAngleDegOptimized));
+    boolean flipRotation = (Math.abs(reefCenterToStartHeadingDegOptimized - 180)
+        + Math.abs(halfWayAngleDegOptimized + 180) < Math
+            .abs(reefCenterToStartHeadingDegOptimized - halfWayAngleDegOptimized))
+        || (Math.abs(reefCenterToStartHeadingDegOptimized - 180) + Math.abs(halfWayAngleDegOptimized + 180) < Math
+            .abs(reefCenterToStartHeadingDegOptimized - halfWayAngleDegOptimized));
 
-    Pose2d midWaypoint =
-        new Pose2d(
-            midTranslation,
-            halfWayAngle.plus(
-                logicalXOR(
-                        reefCenterToStartHeadingDegOptimized < halfWayAngleDegOptimized,
-                        flipRotation)
-                    ? Rotation2d.kCCW_90deg
-                    : Rotation2d.kCW_90deg));
+    Pose2d midWaypoint = new Pose2d(midTranslation,
+        halfWayAngle.plus(logicalXOR(reefCenterToStartHeadingDegOptimized < halfWayAngleDegOptimized, flipRotation)
+            ? Rotation2d.kCCW_90deg
+            : Rotation2d.kCW_90deg));
     log_intermediatePose.info(midWaypoint);
 
-    Pair<Rotation2d, Rotation2d> newRotations =
-        generateStartAndEndRotations(midWaypoint, midWaypoint);
+    Pair<Rotation2d, Rotation2d> newRotations = generateStartAndEndRotations(midWaypoint, midWaypoint);
 
     start = new Pose2d(start.getTranslation(), newRotations.getFirst());
-    end = new Pose2d(end.getTranslation(), newRotations.getSecond());
+    end   = new Pose2d(end.getTranslation(), newRotations.getSecond());
 
     if (debugRerouting) {
       System.out.println("END REROUTING DEBUG -------------------");
@@ -366,10 +328,10 @@ public class DriveToPosePathing extends Command {
     double bDeg = b.getDegrees();
 
     double higher = Math.max(aDeg, bDeg);
-    double lower = Math.min(aDeg, bDeg);
+    double lower  = Math.min(aDeg, bDeg);
 
     double wrappedDist = 360 - higher + lower;
-    double regDist = higher - lower;
+    double regDist     = higher - lower;
 
     if (regDist < wrappedDist) {
       return a.plus(b).div(2);
@@ -378,8 +340,7 @@ public class DriveToPosePathing extends Command {
     }
   }
 
-  private Trajectory<SwerveSample> generatePath(
-      Rotation2d startDirection, Rotation2d endDirection) {
+  private Trajectory<SwerveSample> generatePath(Rotation2d startDirection, Rotation2d endDirection) {
     Pose2d initPose = currentPose.get();
 
     Pose2d startPoint = new Pose2d(initPose.getTranslation(), startDirection);
@@ -397,27 +358,18 @@ public class DriveToPosePathing extends Command {
   }
 
   private Trajectory<SwerveSample> generateSimplePath(List<Waypoint> waypoints) {
-    PathConstraints constraints =
-        new PathConstraints(
-            config.getPathingMaxSpeedMPS().get(),
-            config.getPathingMaxAccelerationMPSPS().get(),
-            config.getPathingMaxAngularVelocityRadPerSecond().get(),
-            config.getPathingMaxAngularAccelerationRadPerSecondSquared().get());
+    PathConstraints constraints = new PathConstraints(config.getPathingMaxSpeedMPS().get(),
+        config.getPathingMaxAccelerationMPSPS().get(), config.getPathingMaxAngularVelocityRadPerSecond().get(),
+        config.getPathingMaxAngularAccelerationRadPerSecondSquared().get());
 
-    PathPlannerPath path =
-        new PathPlannerPath(
-            waypoints,
-            constraints,
-            null, // The ideal starting state, this is only relevant for pre-planned paths, so can
-            // be null for on-the-fly paths.
-            new GoalEndState(
-                0.0,
-                targetPose
-                    .get()
-                    .getRotation()) // Goal end state. You can set a holonomic rotation here. If
-            // using a
-            // differential drivetrain, the rotation will have no effect.
-            );
+    PathPlannerPath path = new PathPlannerPath(waypoints, constraints, null, // The ideal starting state, this is only
+                                                                             // relevant for pre-planned paths, so can
+        // be null for on-the-fly paths.
+        new GoalEndState(0.0, targetPose.get().getRotation()) // Goal end state. You can set a holonomic rotation here.
+                                                              // If
+    // using a
+    // differential drivetrain, the rotation will have no effect.
+    );
 
     path.preventFlipping = true;
 
@@ -425,11 +377,8 @@ public class DriveToPosePathing extends Command {
       return null;
     }
 
-    PathPlannerTrajectory traj =
-        path.generateTrajectory(
-            wrapper.getCurrentRobotRelativeChassisSpeeds(),
-            wrapper.getRotationGyroOnly(),
-            config.pathPlannerConfig());
+    PathPlannerTrajectory traj = path.generateTrajectory(wrapper.getCurrentRobotRelativeChassisSpeeds(),
+        wrapper.getRotationGyroOnly(), config.pathPlannerConfig());
 
     return TrajectoryUtil.pathPlannerToChoreo(traj);
   }
@@ -443,21 +392,15 @@ public class DriveToPosePathing extends Command {
       System.out.println("START IS ROBOT NEXT TO REEF DEBUG ----------------");
     }
 
-    double robotDistToReef = getRobotDistToReef(pose);
-    double minAllowedDistanceAway =
-        Constants.FieldConstants.HUB_DIAGONAL_WIDTH.div(2.0).in(Units.Meters)
-            + (Math.max(
-                    Constants.RobotDimensions.ROBOT_DIMENSIONS_WITH_BUMPERS.getX(),
-                    Constants.RobotDimensions.ROBOT_DIMENSIONS_WITH_BUMPERS.getY())
-                / 2.0);
+    double robotDistToReef        = getRobotDistToReef(pose);
+    double minAllowedDistanceAway = Constants.FieldConstants.HUB_DIAGONAL_WIDTH.div(2.0).in(Units.Meters)
+        + (Math.max(Constants.RobotDimensions.ROBOT_DIMENSIONS_WITH_BUMPERS.getX(),
+            Constants.RobotDimensions.ROBOT_DIMENSIONS_WITH_BUMPERS.getY()) / 2.0);
 
     if (debugIsRobotNextToReef) {
 
       System.out.println(
-          "Distances: RobotDistToReef: "
-              + robotDistToReef
-              + " MinAllowedDistanceAway: "
-              + minAllowedDistanceAway);
+          "Distances: RobotDistToReef: " + robotDistToReef + " MinAllowedDistanceAway: " + minAllowedDistanceAway);
 
       System.out.println("END IS ROBOT NEXT TO REEF DEBUG ----------------");
     }
@@ -468,17 +411,15 @@ public class DriveToPosePathing extends Command {
   private double clampRotation(double rot, double topBound, double bottomBound) {
     if (debugRotationClamping) {
       System.out.println("START CLAMPING DEBUG -----------------");
-      System.out.println(
-          "Inputs: rot: " + rot + " topBound: " + topBound + " bottomBound: " + bottomBound);
+      System.out.println("Inputs: rot: " + rot + " topBound: " + topBound + " bottomBound: " + bottomBound);
     }
 
-    rot = GeometryUtil.optimizeRotationInDegrees(rot);
-    topBound = GeometryUtil.optimizeRotationInDegrees(topBound);
+    rot         = GeometryUtil.optimizeRotationInDegrees(rot);
+    topBound    = GeometryUtil.optimizeRotationInDegrees(topBound);
     bottomBound = GeometryUtil.optimizeRotationInDegrees(bottomBound);
 
     if (debugRotationClamping) {
-      System.out.println(
-          "Optimized: rot: " + rot + " topBound: " + topBound + " bottomBound: " + bottomBound);
+      System.out.println("Optimized: rot: " + rot + " topBound: " + topBound + " bottomBound: " + bottomBound);
     }
 
     boolean inside = bottomBound < topBound;
@@ -489,10 +430,10 @@ public class DriveToPosePathing extends Command {
 
     if (inside) {
       if (!(rot < topBound && rot > bottomBound)) {
-        double minTopDistance = -1;
+        double minTopDistance    = -1;
         double minBottomDistance = -1;
         for (int i = 0; i < 3; i++) {
-          double testTopDistance = Math.abs(topBound + 360 * (1 - i) - rot);
+          double testTopDistance    = Math.abs(topBound + 360 * (1 - i) - rot);
           double testBottomDistance = Math.abs(bottomBound + 360 * (1 - i) - rot);
 
           if (debugRotationClamping) {
@@ -544,10 +485,8 @@ public class DriveToPosePathing extends Command {
 
     boolean outsideUp = currentRot > targetRot;
 
-    double outsideDist =
-        (outsideUp
-            ? (Math.abs(currentRot - 180) + Math.abs(targetRot + 180))
-            : -(Math.abs(targetRot - 180) + Math.abs(currentRot + 180)));
+    double outsideDist = (outsideUp ? (Math.abs(currentRot - 180) + Math.abs(targetRot + 180))
+        : -(Math.abs(targetRot - 180) + Math.abs(currentRot + 180)));
 
     boolean inside = Math.abs(targetRot - currentRot) < Math.abs(outsideDist);
 
@@ -566,21 +505,20 @@ public class DriveToPosePathing extends Command {
     return output;
   }
 
-  private Pair<Rotation2d, Rotation2d> generateStartAndEndRotations(
-      Pose2d target, Pose2d endRotationReferencePose) {
+  private Pair<Rotation2d, Rotation2d> generateStartAndEndRotations(Pose2d target, Pose2d endRotationReferencePose) {
 
     if (debugGenerateStartAndEndRotations) {
       System.out.println("START DEBUG GENERATE START AND END ROTATIONS ---------------------");
     }
 
     double startBottomRotationBound = -180;
-    double startTopRotationBound = 180;
+    double startTopRotationBound    = 180;
 
     double endBottomRotationBound = -180;
-    double endTopRotationBound = 180;
+    double endTopRotationBound    = 180;
 
     boolean currentPoseNextToReef = isRobotNextToReef(currentPose.get());
-    boolean targetPoseNextToReef = isRobotNextToReef(targetPose.get());
+    boolean targetPoseNextToReef  = isRobotNextToReef(targetPose.get());
 
     if (debugGenerateStartAndEndRotations) {
       System.out.println("CurrentPoseNextToReef: " + currentPoseNextToReef);
@@ -588,54 +526,41 @@ public class DriveToPosePathing extends Command {
     }
 
     if (currentPoseNextToReef) {
-      double headingAwayFromReef =
-          GeometryUtil.getHeading(
-                  Constants.FieldConstants.REEF_CENTER_POSE(), currentPose.get().getTranslation())
-              .getDegrees();
+      double headingAwayFromReef = GeometryUtil
+          .getHeading(Constants.FieldConstants.REEF_CENTER_POSE(), currentPose.get().getTranslation()).getDegrees();
       startBottomRotationBound = headingAwayFromReef - headingToleranceNearElements.get();
-      startTopRotationBound = headingAwayFromReef + headingToleranceNearElements.get();
+      startTopRotationBound    = headingAwayFromReef + headingToleranceNearElements.get();
     }
 
     if (targetPoseNextToReef) {
-      double headingTowardReef =
-          GeometryUtil.getHeading(
-                  targetPose.get().getTranslation(), Constants.FieldConstants.REEF_CENTER_POSE())
-              .getDegrees();
+      double headingTowardReef = GeometryUtil
+          .getHeading(targetPose.get().getTranslation(), Constants.FieldConstants.REEF_CENTER_POSE()).getDegrees();
 
       endBottomRotationBound = headingTowardReef - headingToleranceNearElements.get();
-      endTopRotationBound = headingTowardReef + headingToleranceNearElements.get();
+      endTopRotationBound    = headingTowardReef + headingToleranceNearElements.get();
     }
 
-    Rotation2d headingToTarget =
-        GeometryUtil.getHeading(currentPose.get().getTranslation(), target.getTranslation());
+    Rotation2d headingToTarget = GeometryUtil.getHeading(currentPose.get().getTranslation(), target.getTranslation());
 
-    Rotation2d endHeadingToTarget =
-        GeometryUtil.getHeading(
-            endRotationReferencePose.getTranslation(), targetPose.get().getTranslation());
+    Rotation2d endHeadingToTarget = GeometryUtil.getHeading(endRotationReferencePose.getTranslation(),
+        targetPose.get().getTranslation());
 
-    double velHeading =
-        GeometryUtil.getHeading(
-                Translation2d.kZero, wrapper.getFieldRelativeVelocities().getTranslation())
-            .getDegrees();
+    double velHeading = GeometryUtil
+        .getHeading(Translation2d.kZero, wrapper.getFieldRelativeVelocities().getTranslation()).getDegrees();
 
-    double optimalStartAngle =
-        approachRotation(
-            velHeading,
-            headingToTarget.getDegrees(),
-            wrapper.getFieldRelativeVelocities().getTranslation().getNorm()
-                / config.getRobotMaxLinearVelocity());
+    double optimalStartAngle = approachRotation(velHeading, headingToTarget.getDegrees(),
+        wrapper.getFieldRelativeVelocities().getTranslation().getNorm() / config.getRobotMaxLinearVelocity());
 
-    double clampedStartAngle =
-        clampRotation(optimalStartAngle, startTopRotationBound, startBottomRotationBound);
-    double clampedEndAngle =
-        clampRotation(endHeadingToTarget.getDegrees(), endTopRotationBound, endBottomRotationBound);
+    double clampedStartAngle = clampRotation(optimalStartAngle, startTopRotationBound, startBottomRotationBound);
+    double clampedEndAngle   = clampRotation(endHeadingToTarget.getDegrees(), endTopRotationBound,
+        endBottomRotationBound);
 
     if (debugGenerateStartAndEndRotations) {
       System.out.println("END DEBUG GENERATE START AND END ROTATIONS ---------------------");
     }
 
-    return new Pair<Rotation2d, Rotation2d>(
-        Rotation2d.fromDegrees(clampedStartAngle), Rotation2d.fromDegrees(clampedEndAngle));
+    return new Pair<Rotation2d, Rotation2d>(Rotation2d.fromDegrees(clampedStartAngle),
+        Rotation2d.fromDegrees(clampedEndAngle));
   }
 
   public static boolean logicalXOR(boolean x, boolean y) {

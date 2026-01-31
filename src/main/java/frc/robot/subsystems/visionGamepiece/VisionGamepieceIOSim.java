@@ -17,7 +17,7 @@ import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class VisionGamepieceIOSim implements VisionGamepieceIO {
 
-  private final PhotonCamera camera;
+  private final PhotonCamera    camera;
   private final PhotonCameraSim cameraSim;
   private final VisionSystemSim visionSim;
 
@@ -28,27 +28,22 @@ public class VisionGamepieceIOSim implements VisionGamepieceIO {
 
     this.poseSupplier = poseSupplier;
     var cameraProp = new SimCameraProperties();
-    cameraProp.setCalibration(
-        VisionGamepieceConstants.RESOLUTION_WIDTH_PIXELS,
-        VisionGamepieceConstants.RESOLUTION_HEIGHT_PIXELS,
-        VisionGamepieceConstants.FOV_DIAGONAL);
-    cameraProp.setCalibError(
-        VisionGamepieceConstants.AVERAGE_ERROR_PIXELS,
+    cameraProp.setCalibration(VisionGamepieceConstants.RESOLUTION_WIDTH_PIXELS,
+        VisionGamepieceConstants.RESOLUTION_HEIGHT_PIXELS, VisionGamepieceConstants.FOV_DIAGONAL);
+    cameraProp.setCalibError(VisionGamepieceConstants.AVERAGE_ERROR_PIXELS,
         VisionGamepieceConstants.AVERAGE_STANDARD_DEVIATION_PIXELS);
     cameraProp.setFPS(VisionGamepieceConstants.FPS);
     cameraProp.setAvgLatencyMs(VisionGamepieceConstants.AVERAGE_LATENCY_MS);
     cameraProp.setLatencyStdDevMs(VisionGamepieceConstants.AVERAGE_STANDARD_DEVIATION_MS);
 
     var networkName = "gamepieceCameraSim";
-    this.camera = new PhotonCamera(networkName);
+    this.camera    = new PhotonCamera(networkName);
     this.visionSim = new VisionSystemSim(networkName);
     visionSim.addAprilTags(config.getAprilTagFieldLayout());
     this.cameraSim = new PhotonCameraSim(camera, cameraProp);
 
-    var asTransform = Constants.VisionGamepieceConstants.GAMEPIECE_CAMERA_POSE.minus(new Pose3d());
-    var robotToCamera =
-        asTransform.plus(
-            new Transform3d(0, 0, Units.Inch.of(20).in(Units.Meter), new Rotation3d()));
+    var asTransform   = Constants.VisionGamepieceConstants.GAMEPIECE_CAMERA_POSE.minus(new Pose3d());
+    var robotToCamera = asTransform.plus(new Transform3d(0, 0, Units.Inch.of(20).in(Units.Meter), new Rotation3d()));
 
     visionSim.addCamera(cameraSim, robotToCamera);
 

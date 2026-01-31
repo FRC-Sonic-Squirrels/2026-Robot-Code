@@ -14,16 +14,13 @@ public class AllianceFlipUtil {
     return Constants.isRedAlliance() ? originalVelocity.unaryMinus() : originalVelocity;
   }
 
-  public static Translation2d rotateTranslation2DAroundCenterPoint(
-      Translation2d originalTranslation) {
-    return new Translation2d(
-        Constants.FieldConstants.FIELD_LENGTH.in(Units.Meters) - originalTranslation.getX(),
+  public static Translation2d rotateTranslation2DAroundCenterPoint(Translation2d originalTranslation) {
+    return new Translation2d(Constants.FieldConstants.FIELD_LENGTH.in(Units.Meters) - originalTranslation.getX(),
         Constants.FieldConstants.FIELD_WIDTH.in(Units.Meters) - originalTranslation.getY());
   }
 
   public static Pose2d rotatePose2DAroundCenterPoint(Pose2d originalPose) {
-    return new Pose2d(
-        rotateTranslation2DAroundCenterPoint(originalPose.getTranslation()),
+    return new Pose2d(rotateTranslation2DAroundCenterPoint(originalPose.getTranslation()),
         originalPose.getRotation().plus(Rotation2d.k180deg));
   }
 
@@ -36,15 +33,10 @@ public class AllianceFlipUtil {
   }
 
   public static Pose3d rotatePose3DAroundCenterPoint(Pose3d originalPose) {
-    Pose2d internalPose2d = originalPose.toPose2d();
+    Pose2d internalPose2d        = originalPose.toPose2d();
     Pose2d flippedInternalPose2d = rotatePose2DAroundCenterPoint(internalPose2d);
-    return new Pose3d(
-        flippedInternalPose2d.getX(),
-        flippedInternalPose2d.getY(),
-        originalPose.getZ(),
-        new Rotation3d(
-            originalPose.getRotation().getX(),
-            originalPose.getRotation().getY(),
+    return new Pose3d(flippedInternalPose2d.getX(), flippedInternalPose2d.getY(), originalPose.getZ(),
+        new Rotation3d(originalPose.getRotation().getX(), originalPose.getRotation().getY(),
             flippedInternalPose2d.getRotation().getRadians()));
   }
 
@@ -56,9 +48,7 @@ public class AllianceFlipUtil {
   }
 
   public static Pose2d[] flipPoseArrayForAlliance(Pose2d[] originalPose) {
-    return Constants.isRedAlliance()
-        ? rotatePose2DArrayAroundCenterPoint(originalPose)
-        : originalPose;
+    return Constants.isRedAlliance() ? rotatePose2DArrayAroundCenterPoint(originalPose) : originalPose;
   }
 
   public static Pose3d flipPoseForAlliance(Pose3d originalPose) {
@@ -69,35 +59,32 @@ public class AllianceFlipUtil {
    * @return blue alliance reference translation
    */
   public static Translation2d flipTranslationForAlliance(Translation2d originalTranslation) {
-    return Constants.isRedAlliance()
-        ? rotateTranslation2DAroundCenterPoint(originalTranslation)
-        : originalTranslation;
+    return Constants.isRedAlliance() ? rotateTranslation2DAroundCenterPoint(originalTranslation) : originalTranslation;
   }
 
   public static Translation2d getClosestTranslation(Translation2d[] selection, Pose2d currentPose) {
     Translation2d lowestDistTranslation = null;
-    double lowestDist = Double.MAX_VALUE;
+    double        lowestDist            = Double.MAX_VALUE;
     for (Translation2d translation : selection) {
-      double distance =
-          currentPose.getTranslation().getDistance(flipTranslationForAlliance(translation));
+      double distance = currentPose.getTranslation().getDistance(flipTranslationForAlliance(translation));
       if (distance < lowestDist) {
         lowestDistTranslation = translation;
-        lowestDist = distance;
+        lowestDist            = distance;
       }
     }
-    for (int i = 0; i < selection.length; i++) {}
+    for (int i = 0; i < selection.length; i++) {
+    }
     return lowestDistTranslation;
   }
 
   public static Pose2d getClosestPose(Pose2d[] selection, Pose2d currentPose) {
     Pose2d lowestDistPose = null;
-    double lowestDist = Double.MAX_VALUE;
+    double lowestDist     = Double.MAX_VALUE;
     for (Pose2d pose : selection) {
-      double distance =
-          currentPose.getTranslation().getDistance(flipPoseForAlliance(pose).getTranslation());
+      double distance = currentPose.getTranslation().getDistance(flipPoseForAlliance(pose).getTranslation());
       if (distance < lowestDist) {
         lowestDistPose = pose;
-        lowestDist = distance;
+        lowestDist     = distance;
       }
     }
     return lowestDistPose;

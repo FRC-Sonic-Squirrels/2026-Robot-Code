@@ -12,25 +12,23 @@ import org.littletonrobotics.junction.Logger;
 import org.littletonrobotics.junction.mechanism.LoggedMechanism2d;
 
 public abstract class LoggerEntry {
-  public final String key;
-  public final double updateFrequency;
-  public double lastRefresh;
+  public final String        key;
+  public final double        updateFrequency;
+  public double              lastRefresh;
   protected GenericPublisher publisher;
-  boolean notFirstValue;
-  boolean changed;
-  int dataLogId = LoggerGroup.dataLogIdNotInitialized;
+  boolean                    notFirstValue;
+  boolean                    changed;
+  int                        dataLogId = LoggerGroup.dataLogIdNotInitialized;
 
   protected LoggerEntry(String key, int updateFrequencyInSeconds) {
-    this.key = key;
+    this.key             = key;
     this.updateFrequency = 1.0 / updateFrequencyInSeconds;
   }
 
   void registerPublisher() {
     String nt4Type = getNT4Type();
     if (nt4Type != null) {
-      this.publisher =
-          LoggerGroup.getNetworkTableTopic(this)
-              .genericPublish(nt4Type, PubSubOption.sendAll(true));
+      this.publisher = LoggerGroup.getNetworkTableTopic(this).genericPublish(nt4Type, PubSubOption.sendAll(true));
     }
   }
 
@@ -61,8 +59,8 @@ public abstract class LoggerEntry {
     }
 
     public class State {
-      private double timeStart = Double.NaN;
-      private double timeTrigger = Double.NaN;
+      private double  timeStart   = Double.NaN;
+      private double  timeTrigger = Double.NaN;
       private boolean state;
 
       public void start() {
@@ -101,11 +99,11 @@ public abstract class LoggerEntry {
       }
     }
 
-    public final LoggerEntry.Bool log_condition;
+    public final LoggerEntry.Bool    log_condition;
     public final LoggerEntry.Decimal log_conditionDelay;
 
     public Condition(LoggerGroup group, String prefix) {
-      log_condition = group.buildBoolean(prefix);
+      log_condition      = group.buildBoolean(prefix);
       log_conditionDelay = group.buildDecimal(prefix + "_Latency");
     }
   }
@@ -137,7 +135,7 @@ public abstract class LoggerEntry {
     }
 
     public void info(String value) {
-      this.value = value;
+      this.value   = value;
       this.changed = !Objects.equals(value, valuePrevious) || !notFirstValue;
     }
   }
@@ -168,7 +166,7 @@ public abstract class LoggerEntry {
     }
 
     public void info(String... value) {
-      this.value = value;
+      this.value   = value;
       this.changed = !Arrays.equals(value, valuePrevious) || !notFirstValue;
     }
   }
@@ -201,7 +199,7 @@ public abstract class LoggerEntry {
     }
 
     public void info(E value) {
-      this.value = value;
+      this.value   = value;
       this.changed = value != valuePrevious || !notFirstValue;
     }
   }
@@ -231,7 +229,7 @@ public abstract class LoggerEntry {
     }
 
     public void info(boolean value) {
-      this.value = value;
+      this.value   = value;
       this.changed = value != valuePrevious || !notFirstValue;
     }
   }
@@ -261,7 +259,7 @@ public abstract class LoggerEntry {
     }
 
     public void info(boolean... value) {
-      this.value = value;
+      this.value   = value;
       this.changed = value != valuePrevious || !notFirstValue;
     }
   }
@@ -291,7 +289,7 @@ public abstract class LoggerEntry {
     }
 
     public void info(long value) {
-      this.value = value;
+      this.value   = value;
       this.changed = value != valuePrevious || !notFirstValue;
     }
   }
@@ -322,7 +320,7 @@ public abstract class LoggerEntry {
     }
 
     public void info(long... value) {
-      this.value = value;
+      this.value   = value;
       this.changed = !Arrays.equals(value, valuePrevious) || !notFirstValue;
     }
   }
@@ -352,7 +350,7 @@ public abstract class LoggerEntry {
     }
 
     public void info(double value) {
-      this.value = value;
+      this.value   = value;
       this.changed = value != valuePrevious || !notFirstValue;
     }
 
@@ -387,7 +385,7 @@ public abstract class LoggerEntry {
     }
 
     public void info(double... value) {
-      this.value = value;
+      this.value   = value;
       this.changed = !Arrays.equals(value, valuePrevious) || !notFirstValue;
     }
   }
@@ -417,7 +415,7 @@ public abstract class LoggerEntry {
     }
 
     public void info(float value) {
-      this.value = value;
+      this.value   = value;
       this.changed = value != valuePrevious || !notFirstValue;
     }
   }
@@ -448,7 +446,7 @@ public abstract class LoggerEntry {
     }
 
     public void info(float... value) {
-      this.value = value;
+      this.value   = value;
       this.changed = !Arrays.equals(value, valuePrevious) || !notFirstValue;
     }
   }
@@ -479,7 +477,7 @@ public abstract class LoggerEntry {
     }
 
     public void info(byte[] value) {
-      this.value = value;
+      this.value   = value;
       this.changed = !Arrays.equals(value, valuePrevious) || !notFirstValue;
     }
   }
@@ -503,26 +501,27 @@ public abstract class LoggerEntry {
 
     @Override
     public void publish() {
-      // This uses internal implementation details of LoggedMechanism2d, keeping it on AdvantageKit
+      // This uses internal implementation details of LoggedMechanism2d, keeping it on
+      // AdvantageKit
       // logging.
       Logger.recordOutput(key, value);
     }
 
     public void info(LoggedMechanism2d value) {
-      this.value = value;
+      this.value   = value;
       this.changed = true;
     }
   }
 
   public static class Struct<T extends StructSerializable> extends LoggerEntry {
     private final edu.wpi.first.util.struct.Struct<T> struct;
-    private final StructBuffer<T> structBuffer;
-    private T value;
+    private final StructBuffer<T>                     structBuffer;
+    private T                                         value;
 
     Struct(Class<T> clz, String key, int updateFrequencyInSeconds) {
       super(key, updateFrequencyInSeconds);
 
-      struct = LoggerGroup.findStructType(clz);
+      struct       = LoggerGroup.findStructType(clz);
       structBuffer = struct != null ? StructBuffer.create(struct) : null;
     }
 
@@ -543,31 +542,31 @@ public abstract class LoggerEntry {
     @Override
     public void publish() {
       if (structBuffer != null) {
-        ByteBuffer bb = structBuffer.write(value);
-        byte[] array = new byte[bb.position()];
+        ByteBuffer bb    = structBuffer.write(value);
+        byte[]     array = new byte[bb.position()];
         bb.position(0);
         bb.get(array);
 
-        //        Logger.recordOutput(key, value);
+        // Logger.recordOutput(key, value);
         LoggerGroup.emit(publisher, array, getDataLogId());
       }
     }
 
     public void info(T value) {
-      this.value = value;
+      this.value   = value;
       this.changed = true;
     }
   }
 
   public static class StructArray<T extends StructSerializable> extends LoggerEntry {
     private final edu.wpi.first.util.struct.Struct<T> struct;
-    private final StructBuffer<T> structBuffer;
-    private T[] value;
+    private final StructBuffer<T>                     structBuffer;
+    private T[]                                       value;
 
     StructArray(Class<T> clz, String key, int updateFrequencyInSeconds) {
       super(key, updateFrequencyInSeconds);
 
-      struct = LoggerGroup.findStructType(clz);
+      struct       = LoggerGroup.findStructType(clz);
       structBuffer = struct != null ? StructBuffer.create(struct) : null;
     }
 
@@ -588,18 +587,18 @@ public abstract class LoggerEntry {
     @Override
     public void publish() {
       if (structBuffer != null) {
-        ByteBuffer bb = structBuffer.writeArray(value);
-        byte[] array = new byte[bb.position()];
+        ByteBuffer bb    = structBuffer.writeArray(value);
+        byte[]     array = new byte[bb.position()];
         bb.position(0);
         bb.get(array);
 
-        //        Logger.recordOutput(key, value);
+        // Logger.recordOutput(key, value);
         LoggerGroup.emit(publisher, array, getDataLogId());
       }
     }
 
     public void info(T[] value) {
-      this.value = value;
+      this.value   = value;
       this.changed = true;
     }
   }
@@ -619,10 +618,11 @@ public abstract class LoggerEntry {
   }
 
   void publishIfNeeded() {
-    if (shouldNotRefresh()) return;
+    if (shouldNotRefresh())
+      return;
 
     if (changed) {
-      changed = false;
+      changed       = false;
       notFirstValue = true;
       publish();
     }

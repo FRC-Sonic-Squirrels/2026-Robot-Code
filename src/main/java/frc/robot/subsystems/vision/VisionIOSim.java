@@ -17,24 +17,20 @@ import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 public class VisionIOSim implements VisionIO {
-  private double lastTimestamp = 0;
-  private PhotonPipelineResult lastResult = new PhotonPipelineResult();
+  private double               lastTimestamp = 0;
+  private PhotonPipelineResult lastResult    = new PhotonPipelineResult();
 
   private final Supplier<Pose2d> poseSupplier;
 
   private final AprilTagFieldLayout layout;
 
-  private final PhotonCamera camera;
+  private final PhotonCamera    camera;
   private final PhotonCameraSim cameraSim;
   private final VisionSystemSim visionSim;
 
-  public VisionIOSim(
-      RobotConfig config,
-      Supplier<Pose2d> poseSupplier,
-      Transform3d robotToCamera,
-      String networkName) {
+  public VisionIOSim(RobotConfig config, Supplier<Pose2d> poseSupplier, Transform3d robotToCamera, String networkName) {
     this.poseSupplier = poseSupplier;
-    this.layout = config.getAprilTagFieldLayout();
+    this.layout       = config.getAprilTagFieldLayout();
 
     Vision.logConfigTagAmount.info(config.getAprilTagFieldLayout().getTags().size());
 
@@ -45,7 +41,7 @@ public class VisionIOSim implements VisionIO {
     cameraProp.setAvgLatencyMs(25);
     cameraProp.setLatencyStdDevMs(10);
 
-    this.camera = new PhotonCamera(networkName);
+    this.camera    = new PhotonCamera(networkName);
     this.visionSim = new VisionSystemSim(networkName);
     visionSim.addAprilTags(layout);
     this.cameraSim = new PhotonCameraSim(camera, cameraProp);
@@ -57,29 +53,24 @@ public class VisionIOSim implements VisionIO {
 
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
     /*
-       * based on
-    https://docs.wpilib.org/en/latest/docs/software/networktables/listening-for-change.html#listening-for-changes
-       * and
-    https://github.com/Mechanical-Advantage/RobotCode2022/blob/main/src/main/java/frc/robot/subsystems/vision
-    * /VisionIOPhotonVision.java
-       */
-    DoubleArraySubscriber targetPoseSub =
-        inst.getTable("/photonvision/" + networkName)
-            .getDoubleArrayTopic("targetPose")
-            .subscribe(new double[0]);
+     * based on
+     * https://docs.wpilib.org/en/latest/docs/software/networktables/listening-for-
+     * change.html#listening-for-changes and
+     * https://github.com/Mechanical-Advantage/RobotCode2022/blob/main/src/main/java
+     * /frc/robot/subsystems/vision /VisionIOPhotonVision.java
+     */
+    DoubleArraySubscriber targetPoseSub = inst.getTable("/photonvision/" + networkName)
+        .getDoubleArrayTopic("targetPose").subscribe(new double[0]);
 
-    inst.addListener(
-        targetPoseSub,
-        EnumSet.of(NetworkTableEvent.Kind.kValueAll),
-        event -> {
-          for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
-            double timestamp = result.getTimestampSeconds();
-            synchronized (VisionIOSim.this) {
-              lastTimestamp = timestamp;
-              lastResult = result;
-            }
-          }
-        });
+    inst.addListener(targetPoseSub, EnumSet.of(NetworkTableEvent.Kind.kValueAll), event -> {
+      for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
+        double timestamp = result.getTimestampSeconds();
+        synchronized (VisionIOSim.this) {
+          lastTimestamp = timestamp;
+          lastResult    = result;
+        }
+      }
+    });
   }
 
   @Override
@@ -87,8 +78,8 @@ public class VisionIOSim implements VisionIO {
     visionSim.update(poseSupplier.get());
 
     inputs.lastTimestampCTRETime = this.lastTimestamp;
-    inputs.lastResult = this.lastResult;
-    inputs.connected = camera.isConnected();
+    inputs.lastResult            = this.lastResult;
+    inputs.connected             = camera.isConnected();
   }
 
   @Override

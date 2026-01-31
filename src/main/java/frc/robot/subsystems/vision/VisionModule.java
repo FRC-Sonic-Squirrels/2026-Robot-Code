@@ -15,61 +15,59 @@ import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.common.dataflow.structures.Packet;
 
 public class VisionModule {
-  final VisionIO visionIO;
-  final Inputs visionIOInputs;
+  final VisionIO            visionIO;
+  final Inputs              visionIOInputs;
   final PhotonPoseEstimator photonPoseEstimator;
-  final Transform3d RobotToCamera;
-  final String name;
-  final int id;
+  final Transform3d         RobotToCamera;
+  final String              name;
+  final int                 id;
 
   public VisionResultLoggedFields loggedFields;
-  public double lastSuccessfullyProcessedResultTimeStampCTRETime;
-  public VisionResultStatus lastStatus;
+  public double                   lastSuccessfullyProcessedResultTimeStampCTRETime;
+  public VisionResultStatus       lastStatus;
 
   public final Alert missingCameraAlert;
 
   // Logging
 
   public final LoggerEntry.ByteArray log_photonPacketBytes;
-  public final LoggerEntry.Decimal log_lastTimestampCTRETime;
-  public final LoggerEntry.Bool log_connected;
-  public final LoggerEntry.Decimal log_medianLatency;
-  public final LoggerEntry.Decimal log_medianUpdateTime;
+  public final LoggerEntry.Decimal   log_lastTimestampCTRETime;
+  public final LoggerEntry.Bool      log_connected;
+  public final LoggerEntry.Decimal   log_medianLatency;
+  public final LoggerEntry.Decimal   log_medianUpdateTime;
 
-  public final LoggerEntry.Decimal log_lastTimestampCTRETimeSuccessful;
-  public final LoggerEntry.Text log_status;
+  public final LoggerEntry.Decimal        log_lastTimestampCTRETimeSuccessful;
+  public final LoggerEntry.Text           log_status;
   public final LoggerEntry.Struct<Pose3d> log_cameraPose;
   public final LoggerEntry.Struct<Pose3d> log_calculatedRobotPose3d;
   public final LoggerEntry.Struct<Pose2d> log_calculatedRobotPose2d;
-  public final LoggerEntry.Integer log_numSeenTargets;
-  public final LoggerEntry.Decimal log_distanceFromExistingPoseEstimate;
-  public final LoggerEntry.Decimal log_averageDistanceFromTags;
-  public final LoggerEntry.Decimal log_tagAmbiguity;
-  public final LoggerEntry.Decimal log_xyStandardDeviation;
-  public final LoggerEntry.Decimal log_thetaStandardDeviation;
-  public final LoggerEntry.Bool log_successfulResult;
-  public final LoggerEntry.DecimalArray log_seenTargetsIDs;
-  public final LoggerEntry.Decimal log_xOffset;
-  public final LoggerEntry.Decimal log_yOffset;
+  public final LoggerEntry.Integer        log_numSeenTargets;
+  public final LoggerEntry.Decimal        log_distanceFromExistingPoseEstimate;
+  public final LoggerEntry.Decimal        log_averageDistanceFromTags;
+  public final LoggerEntry.Decimal        log_tagAmbiguity;
+  public final LoggerEntry.Decimal        log_xyStandardDeviation;
+  public final LoggerEntry.Decimal        log_thetaStandardDeviation;
+  public final LoggerEntry.Bool           log_successfulResult;
+  public final LoggerEntry.DecimalArray   log_seenTargetsIDs;
+  public final LoggerEntry.Decimal        log_xOffset;
+  public final LoggerEntry.Decimal        log_yOffset;
 
-  public VisionModule(
-      LoggerGroup logGroup,
-      VisionModuleConfiguration config,
-      AprilTagFieldLayout aprilTagFieldLayout,
+  public VisionModule(LoggerGroup logGroup, VisionModuleConfiguration config, AprilTagFieldLayout aprilTagFieldLayout,
       int id) {
-    this.visionIO = config.visionIO;
+    this.visionIO       = config.visionIO;
     this.visionIOInputs = new Inputs();
-    this.RobotToCamera = config.robotToCamera;
-    this.name = config.logName;
-    this.id = id;
+    this.RobotToCamera  = config.robotToCamera;
+    this.name           = config.logName;
+    this.id             = id;
 
-    this.loggedFields = VisionResultLoggedFields.unsuccessfulResult(VisionResultStatus.INIT);
+    this.loggedFields                                     = VisionResultLoggedFields
+        .unsuccessfulResult(VisionResultStatus.INIT);
     this.lastSuccessfullyProcessedResultTimeStampCTRETime = -1.0;
 
-    this.photonPoseEstimator =
-        new PhotonPoseEstimator(
-            aprilTagFieldLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, RobotToCamera);
-    // might as well do lowest ambiguity since we this will likely only happen when only 1 target is
+    this.photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
+        RobotToCamera);
+    // might as well do lowest ambiguity since we this will likely only happen when
+    // only 1 target is
     // seen
     // no point filtering for the best target when there is only 1.
     photonPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT);
@@ -80,37 +78,33 @@ public class VisionModule {
 
     logGroup = logGroup.subgroup(name);
 
-    log_photonPacketBytes = logGroup.buildBytes("photonPacketBytes");
+    log_photonPacketBytes     = logGroup.buildBytes("photonPacketBytes");
     log_lastTimestampCTRETime = logGroup.buildDecimal("lastTimestampCTRETime");
-    log_connected = logGroup.buildBoolean("connected");
-    log_medianLatency = logGroup.buildDecimal("medianLatency");
-    log_medianUpdateTime = logGroup.buildDecimal("medianUpdateTime");
+    log_connected             = logGroup.buildBoolean("connected");
+    log_medianLatency         = logGroup.buildDecimal("medianLatency");
+    log_medianUpdateTime      = logGroup.buildDecimal("medianUpdateTime");
 
-    log_lastTimestampCTRETimeSuccessful = logGroup.buildDecimal("lastTimestampCTRETimeSuccessful");
-    log_status = logGroup.buildString("*STATUS");
-    log_cameraPose = logGroup.buildStruct(Pose3d.class, "CameraPose");
-    log_calculatedRobotPose3d = logGroup.buildStruct(Pose3d.class, "calculatedRobotPose3d");
-    log_calculatedRobotPose2d = logGroup.buildStruct(Pose2d.class, "calculatedRobotPose2d");
-    log_numSeenTargets = logGroup.buildInteger("numSeenTargets");
-    log_distanceFromExistingPoseEstimate =
-        logGroup.buildDecimal("distanceFromExistingPoseEstimate");
-    log_averageDistanceFromTags = logGroup.buildDecimal("averageDistanceFromTags");
-    log_tagAmbiguity = logGroup.buildDecimal("tagAmbiguity");
-    log_xyStandardDeviation = logGroup.buildDecimal("xyStandardDeviation");
-    log_thetaStandardDeviation = logGroup.buildDecimal("thetaStandardDeviation");
-    log_successfulResult = logGroup.buildBoolean("SUCCESSFUL_RESULT?");
-    log_seenTargetsIDs = logGroup.buildDecimalArray("seenTargetsIDs");
-    log_xOffset = logGroup.buildDecimal("tagOffset/yaw");
-    log_yOffset = logGroup.buildDecimal("tagOffset/pitch");
+    log_lastTimestampCTRETimeSuccessful  = logGroup.buildDecimal("lastTimestampCTRETimeSuccessful");
+    log_status                           = logGroup.buildString("*STATUS");
+    log_cameraPose                       = logGroup.buildStruct(Pose3d.class, "CameraPose");
+    log_calculatedRobotPose3d            = logGroup.buildStruct(Pose3d.class, "calculatedRobotPose3d");
+    log_calculatedRobotPose2d            = logGroup.buildStruct(Pose2d.class, "calculatedRobotPose2d");
+    log_numSeenTargets                   = logGroup.buildInteger("numSeenTargets");
+    log_distanceFromExistingPoseEstimate = logGroup.buildDecimal("distanceFromExistingPoseEstimate");
+    log_averageDistanceFromTags          = logGroup.buildDecimal("averageDistanceFromTags");
+    log_tagAmbiguity                     = logGroup.buildDecimal("tagAmbiguity");
+    log_xyStandardDeviation              = logGroup.buildDecimal("xyStandardDeviation");
+    log_thetaStandardDeviation           = logGroup.buildDecimal("thetaStandardDeviation");
+    log_successfulResult                 = logGroup.buildBoolean("SUCCESSFUL_RESULT?");
+    log_seenTargetsIDs                   = logGroup.buildDecimalArray("seenTargetsIDs");
+    log_xOffset                          = logGroup.buildDecimal("tagOffset/yaw");
+    log_yOffset                          = logGroup.buildDecimal("tagOffset/pitch");
   }
 
   public void log(Pose3d robotPose, Translation2d tagOffset) {
     if (Constants.unusedCode) {
       byte[] photonPacketBytes = new byte[visionIOInputs.lastResult.getPacketSize()];
-      visionIOInputs
-          .lastResult
-          .getSerde()
-          .pack(new Packet(photonPacketBytes), visionIOInputs.lastResult);
+      visionIOInputs.lastResult.getSerde().pack(new Packet(photonPacketBytes), visionIOInputs.lastResult);
       log_photonPacketBytes.info(photonPacketBytes);
     }
     log_lastTimestampCTRETime.info(visionIOInputs.lastTimestampCTRETime);
