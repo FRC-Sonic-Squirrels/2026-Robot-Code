@@ -126,11 +126,15 @@ public class Drivetrain extends SubsystemBase {
   private static final LoggerEntry.Struct<Pose2d> logLocalization_RobotPosition_RAW_ODOMETRY =
       logGroupLocalization.buildStruct(Pose2d.class, "RobotPosition_RAW_ODOMETRY");
 
-  private static final LoggerEntry.Struct<Pose2d> logLocalization_HubRobotPosition =
-      logGroupLocalization.buildStruct(Pose2d.class, "HubRobotPosition");
+  private static final LoggerEntry.Struct<Pose2d> logLocalization_ReefRobotPosition =
+      logGroupLocalization.buildStruct(Pose2d.class, "ReefRobotPosition");
+  private static final LoggerEntry.Struct<Pose2d> logLocalization_CoralStationRobotPosition =
+      logGroupLocalization.buildStruct(Pose2d.class, "CoralStationRobotPosition");
 
-  private static final LoggerEntry.Decimal logTimeSinceVisionHub =
-      logGroupLocalization.buildDecimal("timeSinceVisionHub");
+  private static final LoggerEntry.Decimal logTimeSinceVisionReef =
+      logGroupLocalization.buildDecimal("timeSinceVisionReef");
+  private static final LoggerEntry.Decimal logTimeSinceVisionStation =
+      logGroupLocalization.buildDecimal("timeSinceVisionStation");
   private static final LoggerEntry.Integer logRejectionCutoff =
       logGroupLocalization.buildInteger("rejectionCutoff");
   private static final LoggerEntry.Integer logRejectionInvalidTags =
@@ -175,10 +179,11 @@ public class Drivetrain extends SubsystemBase {
   private final SwerveDriveKinematics kinematics;
   private Pose2d rawOdometryPose = Constants.zeroPose2d;
 
-  private final PoseEstimator hubPoseEstimator;
+  private final PoseEstimator reefPoseEstimator;
+  private final PoseEstimator coralStationPoseEstimator;
 
-  private final Field2d hubField2d = new Field2d();
-
+  private final Field2d reefField2d = new Field2d();
+  private final Field2d coralField2d = new Field2d();
   private final Field2d rawOdometryField2d = new Field2d();
 
   private Pose2d prevVel = Constants.zeroPose2d;
@@ -211,9 +216,11 @@ public class Drivetrain extends SubsystemBase {
 
     // Define pose estimators
 
-    int[] hubTags = {2, 3, 4, 5, 8, 9, 10, 11, 18, 19, 20, 21, 24, 25, 26, 27};
+    int[] reefTags = {6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 21, 22};
+    int[] coralStationTags = {1, 2, 12, 13};
 
-    hubPoseEstimator = new PoseEstimator(0.1, 0.1, 0.1, hubTags);
+    reefPoseEstimator = new PoseEstimator(0.1, 0.1, 0.1, reefTags);
+    coralStationPoseEstimator = new PoseEstimator(0.6, 0.6, 0.3, coralStationTags);
 
     // High speed odometry thread
 
@@ -266,13 +273,19 @@ public class Drivetrain extends SubsystemBase {
 
       prevVel = getFieldRelativeVelocities();
 
-      var hubPoseEstimatorPose = getHubPoseEstimatorPose();
-      var hubVisionStaleness = getHubVisionStaleness();
+      var reefPoseEstimatorPose = getReefPoseEstimatorPose();
+      var coralPoseEstimatorPose = getCoralStationPoseEstimatorPose();
+      var reefVisionStaleness = getReefVisionStaleness();
+      var stationVisionStaleness = getCoralStationVisionStaleness();
 
       // Log robot poses
-      logLocalization_HubRobotPosition.info(hubPoseEstimatorPose);
+      logLocalization_ReefRobotPosition.info(reefPoseEstimatorPose);
+      logLocalization_CoralStationRobotPosition.info(coralPoseEstimatorPose);
 
-      SmartDashboard.putData("Localization/hubField2d", hubField2d);
+      reefField2d.setRobotPose(reefPoseEstimatorPose);
+      coralField2d.setRobotPose(coralPoseEstimatorPose);
+      SmartDashboard.putData("Localization/reefField2d", reefField2d);
+      SmartDashboard.putData("Localization/coralField2d", coralField2d);
 
       rawOdometryField2d.setRobotPose(rawOdometryPose);
       logLocalization_RobotPosition_RAW_ODOMETRY.info(rawOdometryPose);
@@ -280,10 +293,11 @@ public class Drivetrain extends SubsystemBase {
 
       // Log other vision information
 
-      logTimeSinceVisionHub.info(hubVisionStaleness);
-      logRejectionCutoff.info(hubPoseEstimator.rejectionCutoff);
-      logRejectionInvalidTags.info(hubPoseEstimator.rejectionInvalidTags);
-      logRejectionNoDriveData.info(hubPoseEstimator.rejectionNoDriveData);
+      logTimeSinceVisionReef.info(reefVisionStaleness);
+      logTimeSinceVisionStation.info(stationVisionStaleness);
+      logRejectionCutoff.info(reefPoseEstimator.rejectionCutoff);
+      logRejectionInvalidTags.info(reefPoseEstimator.rejectionInvalidTags);
+      logRejectionNoDriveData.info(reefPoseEstimator.rejectionNoDriveData);
 
       // Log which gyro in use
 
@@ -436,7 +450,8 @@ public class Drivetrain extends SubsystemBase {
             // Apply the twist (change since last sample) to the current pose
             rawOdometryPose = rawOdometryPose.exp(twist);
 
-            hubPoseEstimator.addDriveData(timestamp, twist);
+            reefPoseEstimator.addDriveData(timestamp, twist);
+            coralStationPoseEstimator.addDriveData(timestamp, twist);
           }
         }
       } catch (Exception e) {
@@ -450,12 +465,74 @@ public class Drivetrain extends SubsystemBase {
    *
    * @param speeds Speeds in meters/sec
    */
-  public void runVelocity(boolean prioritizeRotation, boolean motionMagicDrive) {
+  public void runVelocity(
+      ChassisSpeeds speeds, boolean prioritizeRotation, boolean motionMagicDrive) {
     // new Double().compareTo(null)
+    if (prioritizeRotation
+        && speeds.vxMetersPerSecond > 0.001
+        && speeds.vyMetersPerSecond > 0.001) {
+      // Calculate module setpoints
 
+      SwerveModuleState[] justRotationSetpointStates =
+          kinematics.toSwerveModuleStates(
+              new ChassisSpeeds(0.0, 0.0, speeds.omegaRadiansPerSecond));
+
+      SwerveModuleState[] calculatedSetpointStates = kinematics.toSwerveModuleStates(speeds);
+
+      double realMaxSpeed = 0;
+      for (SwerveModuleState moduleState : calculatedSetpointStates) {
+        realMaxSpeed = Math.max(realMaxSpeed, Math.abs(moduleState.speedMetersPerSecond));
+      }
+      if (realMaxSpeed > config.getRobotMaxLinearVelocity()) {
+        /*
+
+        linear cannot exceed the leftover amount after rotation
+        Vmax - abs(Vr) = hypot(Vx, Vy)
+
+        preserve xy ratio
+        Vyprev      Vy
+        -------- = ----
+        Vxprev      Vx
+
+        solve system of equations for Vx and Vy
+
+        Vx = Vxprev / hypot(Vxprev, Vyprev) * abs(max(0.0, Vmax - abs(Vr)))
+
+        Vy = Vyprev * Vx / Vxprev
+
+        */
+
+        double rotationSpeedMetersPerSecond = justRotationSetpointStates[0].speedMetersPerSecond;
+        double vxMetersPerSecond =
+            (speeds.vxMetersPerSecond
+                    / Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond))
+                * Math.abs(
+                    Math.max(
+                        0.0,
+                        config.getRobotMaxLinearVelocity()
+                            - Math.abs(rotationSpeedMetersPerSecond)));
+
+        double vyMetersPerSecond =
+            speeds.vyMetersPerSecond * vxMetersPerSecond / speeds.vxMetersPerSecond;
+
+        speeds =
+            new ChassisSpeeds(vxMetersPerSecond, vyMetersPerSecond, speeds.omegaRadiansPerSecond);
+
+        logDrivetrain_leftoverVelocity.info(
+            config.getRobotMaxLinearVelocity() - rotationSpeedMetersPerSecond);
+      }
+    }
+
+    logDrivetrain_speedsX.info(speeds.vxMetersPerSecond);
+    logDrivetrain_speedsY.info(speeds.vyMetersPerSecond);
+    logDrivetrain_linearSpeed.info(Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond));
     logDrivetrain_linearSpeedMax.info(config.getRobotMaxLinearVelocity());
+    logDrivetrain_speedsRot.info(speeds.omegaRadiansPerSecond);
 
     // Calculate module setpoints
+    ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, Constants.kDefaultPeriod);
+    SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
+    SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, config.getRobotMaxLinearVelocity());
 
     // Send setpoints to modules
     // The module returns the optimized state, useful for logging
@@ -466,6 +543,18 @@ public class Drivetrain extends SubsystemBase {
     } else {
       driveMotorAcceleration = driveMotorAccelerationTele.get();
     }
+
+    var optimizedSetpointStates =
+        modules.runSetpoints(setpointStates, driveMotorAcceleration, motionMagicDrive);
+
+    // Log setpoint states
+    logSwerveStatesSetpoints.info(setpointStates);
+    logSwerveStatesSetpointsOptimized.info(optimizedSetpointStates);
+  }
+
+  /** Stops the drive. */
+  public void stop() {
+    runVelocity(new ChassisSpeeds(), false, true);
   }
 
   /**
@@ -480,6 +569,7 @@ public class Drivetrain extends SubsystemBase {
       headings[i] = config.getModuleTranslations()[i].getAngle();
     }
     kinematics.resetHeadings(headings);
+    stop();
   }
 
   /** Runs forwards at the commanded voltage. */
@@ -529,7 +619,8 @@ public class Drivetrain extends SubsystemBase {
     try (var ignored = odometryLock.lock()) // Prevents odometry updates while reading data
     {
       try (var ignored2 = timing_vision.start()) {
-        hubPoseEstimator.addVisionData(visionData);
+        reefPoseEstimator.addVisionData(visionData);
+        coralStationPoseEstimator.addVisionData(visionData);
       }
     }
   }
@@ -542,28 +633,53 @@ public class Drivetrain extends SubsystemBase {
     return rawOdometryPose;
   }
 
-  public Pose2d getHubPoseEstimatorPose() {
+  public Pose2d getReefPoseEstimatorPose() {
     try (var ignored = odometryLock.lock()) // Prevents odometry updates while reading data
     {
       try (var ignored2 = timing_pose.start()) {
-        return hubPoseEstimator.getLatestPose();
+        return reefPoseEstimator.getLatestPose();
       }
     }
   }
 
-  public double getHubVisionStaleness() {
+  public Pose2d getCoralStationPoseEstimatorPose() {
     try (var ignored = odometryLock.lock()) // Prevents odometry updates while reading data
     {
       try (var ignored2 = timing_pose.start()) {
-        return hubPoseEstimator.getVisionStaleness();
+        return coralStationPoseEstimator.getLatestPose();
       }
     }
   }
 
-  public Pose2d getHubPoseEstimatorPoseAtTimestamp(double timestamp) {
+  public double getReefVisionStaleness() {
     try (var ignored = odometryLock.lock()) // Prevents odometry updates while reading data
     {
-      return hubPoseEstimator.getPoseAtTime(timestamp);
+      try (var ignored2 = timing_pose.start()) {
+        return reefPoseEstimator.getVisionStaleness();
+      }
+    }
+  }
+
+  public double getCoralStationVisionStaleness() {
+    try (var ignored = odometryLock.lock()) // Prevents odometry updates while reading data
+    {
+      try (var ignored2 = timing_pose.start()) {
+        return coralStationPoseEstimator.getVisionStaleness();
+      }
+    }
+  }
+
+  public Pose2d getReefPoseEstimatorPoseAtTimestamp(double timestamp) {
+    try (var ignored = odometryLock.lock()) // Prevents odometry updates while reading data
+    {
+      return reefPoseEstimator.getPoseAtTime(timestamp);
+    }
+  }
+
+  public Pose2d getCoralStationPoseEstimatorPoseAtTimestamp(double timestamp) {
+    try (var ignored = odometryLock.lock()) // Prevents odometry updates while reading data
+    {
+      return coralStationPoseEstimator.getPoseAtTime(timestamp);
     }
   }
 
@@ -575,10 +691,16 @@ public class Drivetrain extends SubsystemBase {
   public void setPose(Pose2d pose) {
     try (var ignored = odometryLock.lock()) // Prevents odometry updates while reading data
     {
-      this.hubPoseEstimator.resetPose(pose, Utils.getCurrentTimeSeconds() + 0.2);
+      this.reefPoseEstimator.resetPose(pose, Utils.getCurrentTimeSeconds() + 0.2);
+      this.coralStationPoseEstimator.resetPose(pose, Utils.getCurrentTimeSeconds() + 0.2);
 
       this.rawOdometryPose = pose;
     }
+  }
+
+  public void setCoralStationPoseToReefPose() {
+    this.coralStationPoseEstimator.resetPose(
+        reefPoseEstimator.getLatestPose(), Utils.getCurrentTimeSeconds() + 0.2);
   }
 
   public void setRawOdometryPose(Pose2d pose) {
