@@ -53,7 +53,6 @@ public class ShooterIOReal implements ShooterIO {
 
   private final BaseStatusSignal[] refreshSet;
 
-  // FIX: add FOC
   private final MotionMagicVoltage hoodClosedLoopControl =
       new MotionMagicVoltage(0).withEnableFOC(true);
   private final VoltageOut hoodOpenLoop = new VoltageOut(0.0).withEnableFOC(true);
