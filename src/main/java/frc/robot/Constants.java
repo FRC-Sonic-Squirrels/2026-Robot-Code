@@ -98,10 +98,10 @@ public final class Constants {
       // by only creating the specific config object corresponding to the robot type
       ROBOT_SIMBOT(SimulatorRobotConfig::new),
       ROBOT_SIMBOT_REAL_CAMERAS(SimulatorRobotConfig::new),
-      ROBOT_2023_RETIRED_ROBER(RobotConfig2023Rober::new),
-      ROBOT_2024_RETIRED_MAESTRO(RobotConfig2024Maestro::new),
+      ROBOT_2023_RETIRED_ROBER(RobotConfig2023::new),
+      ROBOT_2024_RETIRED_MAESTRO(RobotConfig2024::new),
       ROBOT_2025_RETIRED_HOLO(RobotConfig2025::new),
-      ROBOT_2026(RobotConfig2026::new); //Someone please name it...
+      ROBOT_2026(RobotConfig2026::new); // Someone please name it...
 
       public final Supplier<RobotConfig> config;
 

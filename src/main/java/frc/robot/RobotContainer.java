@@ -458,48 +458,6 @@ public class RobotContainer {
                   drivetrain::isGyroConnected,
                   () -> elevator.getHeight().in(Units.Inches) > 0.3,
                   robotStates);
-
-          break;
-
-        case ROBOT_2026_NEXT:
-          drivetrain =
-              new Drivetrain(
-                  config,
-                  new GyroIOPigeon2(config, config.getGyroCANID()),
-                  new GyroIO.Fake(),
-                  config.getSwerveModuleObjects(),
-                  () -> is_autonomous);
-
-          vision =
-              new Vision(
-                  aprilTagLayout,
-                  drivetrain::getReefPoseEstimatorPose,
-                  drivetrain::getRotationGyroOnly,
-                  drivetrain::addVisionEstimate,
-                  config.getVisionModuleObjects());
-
-          visionGamepiece = null;
-
-          if (!Constants.unusedCode) {
-            arm = new Arm(new ArmIO() {});
-            elevator = new Elevator(new ElevatorIO() {});
-            intake = new Intake(new IntakeIO() {}, robotStates);
-            endEffector = new EndEffector(new EndEffectorIO() {}, robotStates);
-            climber = new Climber(new ClimberIO() {});
-          } else {
-            intake = new Intake(new IntakeIOReal(), robotStates);
-            endEffector = new EndEffector(new EndEffectorIOReal(), robotStates);
-            elevator = new Elevator(new ElevatorIOReal());
-            arm = new Arm(new ArmIOReal());
-            climber = new Climber(new ClimberIOReal());
-          }
-
-          led =
-              new LED(
-                  () -> brakeModeTriggered,
-                  drivetrain::isGyroConnected,
-                  () -> elevator.getHeight().in(Units.Inches) > 0.3,
-                  robotStates);
           break;
 
         default:
@@ -565,7 +523,7 @@ public class RobotContainer {
 
     var subsystems = new AutosSubsystems(drivetrainWrapper, mech, endEffector, led, intake);
 
-        autoManager =
+    autoManager =
         new AutosManager(
             subsystems,
             config,
