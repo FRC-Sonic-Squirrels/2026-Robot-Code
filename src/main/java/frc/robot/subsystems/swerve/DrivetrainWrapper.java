@@ -12,7 +12,6 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 import frc.robot.Constants;
-import java.util.function.DoubleSupplier;
 
 public class DrivetrainWrapper {
 
@@ -27,15 +26,13 @@ public class DrivetrainWrapper {
   private static final LoggerEntry.Decimal logGyroDrift = logGroup.buildDecimal("gyroDrift");
 
   private final Drivetrain drivetrain;
-  private final DoubleSupplier baseSpeedScalar;
 
   private ChassisSpeeds chassisSpeedsBase = new ChassisSpeeds();
   private ChassisSpeeds chassisSpeedsOverride;
   private double omegaOverride = Double.NaN;
 
-  public DrivetrainWrapper(Drivetrain drivetrain, DoubleSupplier baseSpeedScalar) {
+  public DrivetrainWrapper(Drivetrain drivetrain) {
     this.drivetrain = drivetrain;
-    this.baseSpeedScalar = baseSpeedScalar;
   }
 
   /** Updated periodically, updates swerve state. */
@@ -49,29 +46,20 @@ public class DrivetrainWrapper {
     }
     logOmegaOverride.info(omegaOverride);
 
-    ChassisSpeeds chassisSpeeds = chassisSpeedsBase.times(baseSpeedScalar.getAsDouble());
-
     boolean prioritizeRotation;
 
     // If omega override, use that for omega
     if (Double.isFinite(omegaOverride)) {
       prioritizeRotation = true;
-      chassisSpeeds =
-          new ChassisSpeeds(
-              chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond, omegaOverride);
     } else {
       prioritizeRotation = false;
     }
 
     // If chassisSpeedsOverride, replace chassisSpeeds with that
 
-    if (chassisSpeedsOverride != null) {
-      chassisSpeeds = chassisSpeedsOverride;
-    }
-
     // Run drivetrain
 
-    drivetrain.runVelocity(chassisSpeeds, prioritizeRotation, chassisSpeedsOverride != null);
+    drivetrain.runVelocity(prioritizeRotation, chassisSpeedsOverride != null);
 
     var pose1 = getHubPoseEstimatorPose(false);
     var pose2 = getHubPoseEstimatorPose(true);

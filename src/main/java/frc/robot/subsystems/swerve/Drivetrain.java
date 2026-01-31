@@ -450,74 +450,12 @@ public class Drivetrain extends SubsystemBase {
    *
    * @param speeds Speeds in meters/sec
    */
-  public void runVelocity(
-      ChassisSpeeds speeds, boolean prioritizeRotation, boolean motionMagicDrive) {
+  public void runVelocity(boolean prioritizeRotation, boolean motionMagicDrive) {
     // new Double().compareTo(null)
-    if (prioritizeRotation
-        && speeds.vxMetersPerSecond > 0.001
-        && speeds.vyMetersPerSecond > 0.001) {
-      // Calculate module setpoints
 
-      SwerveModuleState[] justRotationSetpointStates =
-          kinematics.toSwerveModuleStates(
-              new ChassisSpeeds(0.0, 0.0, speeds.omegaRadiansPerSecond));
-
-      SwerveModuleState[] calculatedSetpointStates = kinematics.toSwerveModuleStates(speeds);
-
-      double realMaxSpeed = 0;
-      for (SwerveModuleState moduleState : calculatedSetpointStates) {
-        realMaxSpeed = Math.max(realMaxSpeed, Math.abs(moduleState.speedMetersPerSecond));
-      }
-      if (realMaxSpeed > config.getRobotMaxLinearVelocity()) {
-        /*
-
-        linear cannot exceed the leftover amount after rotation
-        Vmax - abs(Vr) = hypot(Vx, Vy)
-
-        preserve xy ratio
-        Vyprev      Vy
-        -------- = ----
-        Vxprev      Vx
-
-        solve system of equations for Vx and Vy
-
-        Vx = Vxprev / hypot(Vxprev, Vyprev) * abs(max(0.0, Vmax - abs(Vr)))
-
-        Vy = Vyprev * Vx / Vxprev
-
-        */
-
-        double rotationSpeedMetersPerSecond = justRotationSetpointStates[0].speedMetersPerSecond;
-        double vxMetersPerSecond =
-            (speeds.vxMetersPerSecond
-                    / Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond))
-                * Math.abs(
-                    Math.max(
-                        0.0,
-                        config.getRobotMaxLinearVelocity()
-                            - Math.abs(rotationSpeedMetersPerSecond)));
-
-        double vyMetersPerSecond =
-            speeds.vyMetersPerSecond * vxMetersPerSecond / speeds.vxMetersPerSecond;
-
-        speeds =
-            new ChassisSpeeds(vxMetersPerSecond, vyMetersPerSecond, speeds.omegaRadiansPerSecond);
-
-        logDrivetrain_leftoverVelocity.info(
-            config.getRobotMaxLinearVelocity() - rotationSpeedMetersPerSecond);
-      }
-    }
-
-    logDrivetrain_speedsX.info(speeds.vxMetersPerSecond);
-    logDrivetrain_speedsY.info(speeds.vyMetersPerSecond);
-    logDrivetrain_linearSpeed.info(Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond));
     logDrivetrain_linearSpeedMax.info(config.getRobotMaxLinearVelocity());
-    logDrivetrain_speedsRot.info(speeds.omegaRadiansPerSecond);
 
     // Calculate module setpoints
-    ChassisSpeeds discreteSpeeds = ChassisSpeeds.discretize(speeds, Constants.kDefaultPeriod);
-    SwerveModuleState[] setpointStates = kinematics.toSwerveModuleStates(discreteSpeeds);
-    SwerveDriveKinematics.desaturateWheelSpeeds(setpointStates, config.getRobotMaxLinearVelocity());
 
     // Send setpoints to modules
     // The module returns the optimized state, useful for logging
@@ -528,18 +466,6 @@ public class Drivetrain extends SubsystemBase {
     } else {
       driveMotorAcceleration = driveMotorAccelerationTele.get();
     }
-
-    var optimizedSetpointStates =
-        modules.runSetpoints(setpointStates, driveMotorAcceleration, motionMagicDrive);
-
-    // Log setpoint states
-    logSwerveStatesSetpoints.info(setpointStates);
-    logSwerveStatesSetpointsOptimized.info(optimizedSetpointStates);
-  }
-
-  /** Stops the drive. */
-  public void stop() {
-    runVelocity(new ChassisSpeeds(), false, true);
   }
 
   /**
@@ -554,7 +480,6 @@ public class Drivetrain extends SubsystemBase {
       headings[i] = config.getModuleTranslations()[i].getAngle();
     }
     kinematics.resetHeadings(headings);
-    stop();
   }
 
   /** Runs forwards at the commanded voltage. */

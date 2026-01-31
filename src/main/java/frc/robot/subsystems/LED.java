@@ -60,23 +60,17 @@ public class LED extends SubsystemBase {
   private final int robotLoopsTillReady = 30;
   private final Supplier<Boolean> brakeMode;
   private final Supplier<Boolean> gyroConnected;
-  private final Supplier<Boolean> motorsZeroed;
   private double timeToResetToBaseState = 0;
   private Timer resetToBaseStateTimer = new Timer();
   private boolean autoConfirmed = false;
   private Supplier<Boolean> preloadComplete;
 
-  public LED(
-      Supplier<Boolean> brakeMode,
-      Supplier<Boolean> gyroConnected,
-      Supplier<Boolean> motorsZeroed,
-      RobotStates states) {
+  public LED(Supplier<Boolean> brakeMode, Supplier<Boolean> gyroConnected, RobotStates states) {
     led.setLength(ledBuffer.getLength());
     led.setData(ledBuffer);
     led.start();
     this.brakeMode = brakeMode;
     this.gyroConnected = gyroConnected;
-    this.motorsZeroed = motorsZeroed;
   }
 
   public void setPreloadSupplier(Supplier<Boolean> preloadComplete) {
@@ -102,9 +96,6 @@ public class LED extends SubsystemBase {
                 setSnake(Color.kGreen, Color.kCrimson);
               } else if (!preloadComplete.get()) { // Code preload incomplete indication
                 setRainbow();
-              } else if (!motorsZeroed.get()
-                  && DriverStation.isDisabled()) { // moters not zeroed indication
-                setSnake(Color.kRed, Color.kPurple);
               } else if (!gyroConnected.get()
                   && !Constants.RobotMode.isSimBot()) { // gyro disconnected indication
                 setBlinking(Color.kAquamarine);
