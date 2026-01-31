@@ -44,12 +44,8 @@ public class EndEffector extends SubsystemBase {
   private static final LoggerEntry.Decimal logInputs_nonScoringSideTOFSignalStrength =
       logGroup.buildDecimal("ToF/NonScoringSideTOFSignalStrength");
 
-  private static final LoggerEntry.Decimal logTargetVelocityRPM =
-      logGroup.buildDecimal("TargetVelocityRPM");
   private static final LoggerEntry.EnumValue<ControlMode> logControlMode =
       logGroup.buildEnum("ControlMode");
-  private static final LoggerEntry.Decimal logVelocityOverride =
-      logGroup.buildDecimal("VelocityOverride");
 
   // Tunable numbers
 

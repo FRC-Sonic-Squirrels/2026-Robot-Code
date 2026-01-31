@@ -5,20 +5,12 @@
 package frc.robot.autonomous;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.units.Units;
-import frc.lib.team2930.AllianceFlipUtil;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 import frc.lib.team2930.StateMachine;
-import frc.lib.team6328.GeomUtil;
-import frc.robot.Constants;
 import frc.robot.RobotStates;
 import frc.robot.autonomous.records.ChoreoTrajectoryWithName;
 import frc.robot.autonomous.records.OppositeSide;
-import frc.robot.autonomous.records.PickupLocation;
 import frc.robot.configs.RobotConfig;
 import frc.robot.subsystems.LED;
 import frc.robot.subsystems.intake.Intake;
@@ -41,8 +33,6 @@ public class AutoStateMachine extends StateMachine {
 
   private static LoggerGroup logGroup = LoggerGroup.build("AutoStateMachine");
 
-  private static LoggerEntry.Struct<Pose3d> log_usedCoralTag =
-      logGroup.buildStruct(Pose3d.class, "UsedCoralTag");
   private static LoggerEntry.Bool log_foundPath = logGroup.buildBoolean("PathFound");
   private static LoggerEntry.Struct<Pose2d> log_startingLocation =
       logGroup.buildStruct(Pose2d.class, "StartigLocation");
@@ -106,30 +96,5 @@ public class AutoStateMachine extends StateMachine {
     ChoreoTrajectoryWithName traj = scoringPaths.get(0);
     if (traj == null) return null;
     return traj.getInitialPose(false);
-  }
-
-  private Pose2d getCoralStationPose(PickupLocation location) {
-    boolean top = location == PickupLocation.IA || location == PickupLocation.IB;
-    Pose3d tagPose = config.getAprilTagFieldLayout().getTagPose(top ? 13 : 12).get();
-    log_usedCoralTag.info(tagPose);
-    Pose2d pose = tagPose.toPose2d();
-    Pose2d centerPickup =
-        new Pose2d(
-            pose.getTranslation()
-                .plus(
-                    new Translation2d(
-                        Constants.RobotDimensions.ROBOT_DIMENSIONS_WITH_BUMPERS.getX() / 2.0,
-                        pose.getRotation())),
-            pose.getRotation().plus(Rotation2d.k180deg));
-
-    boolean left = location == PickupLocation.IA || location == PickupLocation.IC;
-
-    Pose2d offsetPickup =
-        centerPickup.plus(
-            GeomUtil.translationToTransform(
-                new Translation2d(
-                    Constants.FieldConstants.CORAL_STATION_WIDTH.div(4).in(Units.Meter),
-                    left ? Rotation2d.kCW_90deg : Rotation2d.kCCW_90deg)));
-    return AllianceFlipUtil.flipPoseForAlliance(offsetPickup);
   }
 }

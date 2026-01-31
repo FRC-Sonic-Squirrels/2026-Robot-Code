@@ -210,7 +210,7 @@ public class Robot extends LoggedRobot {
     if (autonomousChooser == null) {
       autonomousChooser = robotContainer.getAutonomousChooser();
     }
-    
+
     var autoName = autonomousChooser.get();
 
     if (desiredInitialPose != null && !desiredInitialPose.equals(selectedInitialPose)) {

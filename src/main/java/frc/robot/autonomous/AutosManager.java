@@ -17,7 +17,6 @@ import frc.robot.autonomous.records.ChoreoTrajectoryWithName;
 import frc.robot.autonomous.records.PickupLocation;
 import frc.robot.configs.RobotConfig;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.function.BooleanSupplier;
@@ -28,9 +27,6 @@ public class AutosManager {
   private static final LoggerGroup logGroupSysid = LoggerGroup.build("Sysid");
   private static final LoggerEntry.EnumValue<SysIdRoutineLog.State> logSwerveSysidState =
       logGroupSysid.buildEnum("swervesysidstate");
-
-  private static final LoggerGroup logGroupCustom = LoggerGroup.build("AutoCustom");
-  private static final LoggerEntry.Text logCustomAutoPlan = logGroupCustom.buildString("Plan");
 
   private final AutosSubsystems subsystems;
   private final RobotConfig config;
@@ -55,26 +51,6 @@ public class AutosManager {
     this.config = config;
     this.flipAuto = flipAuto;
     this.states = states;
-  }
-
-  private List<Supplier<Auto>> allCompetitionAutos(
-      Supplier<List<PickupLocation>> customCoralStationLocations) {
-    var list = new ArrayList<Supplier<Auto>>();
-
-    if (includeDebugPaths) {
-      list.add(this::swerveCharacterization);
-      // list.add(() -> testPath("TestDrive1Meter", true));
-      // list.add(() -> testPath("TestDrive10Meter", true));
-      // list.add(() -> testPath("TestDrive2Meters", true));
-      // list.add(() -> testPath("TestDrive2MetersRotating", true));
-      // list.add(() -> testPath("TestDrive2MetersThenLeft", true));
-      // list.add(() -> testPath("TestDrive2MetersThenLeftRotating", true));
-      // list.add(() -> testPath("TestCircle", true));
-      // list.add(() -> testPath("TestCircle", false, "TestCircleDontResetPose"));
-      // list.add(() -> testPath("TestZigZag", false));
-    }
-
-    return list;
   }
 
   public Auto doNothing() {
@@ -248,10 +224,6 @@ public class AutosManager {
             .andThen(Commands.runOnce(() -> logSwerveSysidState.info(SysIdRoutineLog.State.kNone)));
 
     return new Auto("swerveCharacterization", finalCommand, Constants.zeroPose2d);
-  }
-
-  private Auto stateToAuto(String name, AutoStateMachine state) {
-    return new Auto(name, state.asCommand(), state.initPose());
   }
 
   public boolean preloadingComplete() {
