@@ -403,8 +403,9 @@ public final class Constants {
     public static final Distance SHOOTER_BASE_HEIGHT = Units.Inches.of(4.0);
     public static final Distance SHOOTER_LENGTH = Units.Inches.of(12.0);
     public static final Distance MAX_SHOOTING_DISTANCE = Units.Inches.of(180.0);
-    public static final double SUPPLY_CURRENT_LIMIT = 40;
-    public static final double STATOR_CURRENT_LIMIT = 40;
+    public static final double FLYWHEEL_SUPPLY_CURRENT_LIMIT = 40;
+    public static final double FLYWHEEL_STATOR_CURRENT_LIMIT = 40;
+    public static final double KICKER_SUPPLY_CURRENT_LIMIT = 40;
 
     public static final double SHOOTING_SPEED =
         SHOOTING_RPM / 60.0 * Flywheel.WHEEL_DIAMETER.in(Units.Meters) * Math.PI;
