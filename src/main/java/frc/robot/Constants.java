@@ -464,6 +464,7 @@ public final class Constants {
       public static final double GEARING = 1.0;
       public static final double KICKING_PERCENT_OUT = 0.8;
       public static final double SUPPLY_CURRENT_LIMIT = 40;
+      public static final double SENSOR_TO_MECHANISM_RATIO = 1.42;
     }
   }
 
