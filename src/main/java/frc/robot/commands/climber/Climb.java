@@ -13,9 +13,9 @@ import frc.lib.team2930.TunableNumberGroup;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants.ClimberConstants;
 import frc.robot.RobotStates;
-import frc.robot.RobotStates.IntakeState;
 import frc.robot.RobotStates.MechState;
 import frc.robot.subsystems.climber.Climber;
+import frc.robot.subsystems.intake.Intake.IntakeState;
 import java.util.function.BooleanSupplier;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
@@ -55,7 +55,7 @@ public class Climb extends Command {
   @Override
   public void initialize() {
     states.mechState = MechState.ClimbPosition;
-    states.intakeState = IntakeState.Climb;
+    states.setIntakeState(IntakeState.Climb);
     states.mechanismInUse = true;
     states.intakeInUse = true;
     climber.setServoAngle(ClimberConstants.SERVO_UNLOCK_ANGLE);
@@ -84,7 +84,7 @@ public class Climb extends Command {
       climber.setWinchAngle(Rotation2d.fromRotations(secondAngle.get()));
     } else {
       climber.setWinchAngle(Rotation2d.fromRotations(thirdAngle.get()));
-      states.intakeState = IntakeState.Stow;
+      states.setIntakeState(IntakeState.Stow);
       servoTimer.start();
       if (servoTimer.get() > 1) climber.setServoAngle(ClimberConstants.SERVO_LOCK_ANGLE);
     }
