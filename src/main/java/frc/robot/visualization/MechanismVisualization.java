@@ -96,14 +96,6 @@ public class MechanismVisualization {
 
     Pose3d rotatedArmPose = arm.rotateBy(new Rotation3d(robotPose.getRotation()));
 
-    coralInEndEffector =
-        new Pose3d(
-                robotPose.getX() + rotatedArmPose.getX(),
-                robotPose.getY() + rotatedArmPose.getY(),
-                states.coralInEndEffector ? rotatedArmPose.getZ() : -100,
-                rotatedArmPose.getRotation())
-            .transformBy(new Transform3d(0, 0, 0.46, new Rotation3d(0, Math.toRadians(5), 0)));
-
     camViewFromArm =
         new Pose3d(
                 robotPose.getX() + rotatedArmPose.getX(),

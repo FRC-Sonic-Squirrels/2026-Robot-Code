@@ -8,16 +8,13 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.Constants.EndEffectorConstants;
 import frc.robot.Constants.RobotMode.RobotType;
 import frc.robot.RobotStates;
-import frc.robot.RobotStates.EndEffectorDesiredAction;
 
 public class EndEffector extends SubsystemBase {
   // Execution timing
@@ -47,12 +44,8 @@ public class EndEffector extends SubsystemBase {
   private static final LoggerEntry.Decimal logInputs_nonScoringSideTOFSignalStrength =
       logGroup.buildDecimal("ToF/NonScoringSideTOFSignalStrength");
 
-  private static final LoggerEntry.Decimal logTargetVelocityRPM =
-      logGroup.buildDecimal("TargetVelocityRPM");
   private static final LoggerEntry.EnumValue<ControlMode> logControlMode =
       logGroup.buildEnum("ControlMode");
-  private static final LoggerEntry.Decimal logVelocityOverride =
-      logGroup.buildDecimal("VelocityOverride");
 
   // Tunable numbers
 
@@ -64,25 +57,6 @@ public class EndEffector extends SubsystemBase {
   private static final LoggedTunableNumber kV = group.build("kV");
   private static final LoggedTunableNumber targetAccelerationConfig =
       group.build("MaxAccelerationConstraint");
-
-  private static final LoggedTunableNumber intakingVelocitySlow =
-      group.build("intakingVelocitySlow", 800);
-  private static final LoggedTunableNumber intakingVelocityHigh =
-      group.build("intakingVelocity", 1500);
-
-  private static final LoggedTunableNumber scoringVelocityRPM =
-      group.build("ScoringVelocityRPM", -3000);
-  private static final LoggedTunableNumber passOffVelocityRPM =
-      group.build("passOffVelocityRPM", -1000);
-  private static final LoggedTunableNumber holdAlgaeRPM = group.build("passOffVelocityRPM", -1500);
-
-  private static final LoggedTunableNumber correctionVelocity = group.build("alignVelocity", 300);
-  private static final LoggedTunableNumber alignTarget = group.build("alignTarget", 1);
-  private static final LoggedTunableNumber alignTolerance = group.build("alignTolerance", 2);
-  private static final LoggedTunableNumber alignL1Turns = group.build("alignL1Turns", 0.75);
-  private static final LoggedTunableNumber alignL2Turns = group.build("alignL2Turns", 0.15);
-  private static final LoggedTunableNumber alignL3Turns = group.build("alignL3Turns", 1.8);
-  private static final LoggedTunableNumber alignL4Turns = group.build("alignL4Turns", 1.8);
 
   // Motion constants
 
@@ -110,10 +84,6 @@ public class EndEffector extends SubsystemBase {
   private final EndEffectorIO.Inputs inputs = new EndEffectorIO.Inputs(logGroup);
 
   private ControlMode controlMode = ControlMode.OPEN_LOOP;
-  private double zeroCoralPosition;
-
-  private Trigger stallDetected =
-      new Trigger(() -> inputs.velocityRPM <= 50 && inputs.appliedVolts >= 0.5).debounce(.1);
 
   /** Creates a new EndEffector. */
   public EndEffector(EndEffectorIO io, RobotStates states) {
@@ -144,14 +114,6 @@ public class EndEffector extends SubsystemBase {
       // Logging
       io.updateInputs(inputs);
 
-      var coralInEndEffectorScoringSide = scoringSideTofSeenGamepiece();
-      var coralInEndEffectorNonScoringSide = nonScoringSideTOFSeenGamepiece();
-      var coralInEndEffector = coralInEndEffectorScoringSide || coralInEndEffectorNonScoringSide;
-
-      states.coralInEndEffectorScoringSide = coralInEndEffectorScoringSide;
-      states.coralInEndEffectorNonScoringSide = coralInEndEffectorNonScoringSide;
-      states.coralInEndEffector = states.coralExpectedInEndEffector && coralInEndEffector;
-
       logInputs_velocityRPM.info(inputs.velocityRPM);
       logInputs_currentAmps.info(inputs.currentAmps);
       logInputs_tempCelsius.info(inputs.tempCelsius);
@@ -164,195 +126,15 @@ public class EndEffector extends SubsystemBase {
       logInputs_nonScoringSideTOFSignalStrength.info(inputs.nonScoringSideSignalStrength);
 
       logControlMode.info(controlMode);
-
-      logVelocityOverride.info(states.endEffectorOverrideVelocity);
-
-      // Update tunable numbers
-
-      var hc = hashCode();
-      if (kS.hasChanged(hc)
-          || kP.hasChanged(hc)
-          || kV.hasChanged(hc)
-          || targetAccelerationConfig.hasChanged(hc)) {
-        setConstants();
-      }
-
-      var desiredAction = states.endEffectorDesiredAction;
-
-      if (DriverStation.isDisabled()) {
-        if (desiredAction != EndEffectorDesiredAction.AlignedCoral) {
-          desiredAction = EndEffectorDesiredAction.Idle;
-        }
-        states.endEffectorOverrideVelocity = Double.NaN;
-      }
-
-      if (Double.isFinite(states.endEffectorOverrideVelocity)) { // Velocity override
-        setVelocity(states.endEffectorOverrideVelocity);
-      } else {
-        var endEffectorSim = getSim();
-        // End Effector state machine
-        while (true) {
-          switch (desiredAction) {
-            case Idle:
-              if (coralInEndEffectorScoringSide
-                  && coralInEndEffectorNonScoringSide) { // If coral possessed, align it
-                desiredAction = EndEffectorDesiredAction.AlignCoral;
-              } else {
-                setPercentOut(0);
-              }
-              break;
-
-            case CoralStationIntake:
-              if (coralInEndEffectorNonScoringSide) { // Coral recieved, align it
-                desiredAction = EndEffectorDesiredAction.AlignCoral;
-              } else if (coralInEndEffectorScoringSide) { // Coral first sensed, slow down
-                setVelocity(intakingVelocitySlow.get());
-              } else { // Waiting for coral
-                setVelocity(intakingVelocityHigh.get());
-              }
-              break;
-
-            case GroundIntake:
-              if (coralInEndEffectorScoringSide) { // Coral recieved, align it
-                desiredAction = EndEffectorDesiredAction.AlignCoral;
-              } else if (coralInEndEffectorNonScoringSide) { // Coral first sensed, slow down
-                setVelocity(-(intakingVelocitySlow.get()));
-              } else { // Waiting for coral
-                setVelocity(-(intakingVelocityHigh.get()));
-              }
-              break;
-
-            case AlignCoral:
-              if (!coralInEndEffector) { // No coral, go to idle
-                desiredAction = EndEffectorDesiredAction.Idle;
-              } else if (!coralInEndEffectorNonScoringSide) {
-                // Keep moving the coral in.
-                setVelocity(correctionVelocity.get());
-              } else {
-                // Start backtracking the coral.
-                setVelocity(-correctionVelocity.get());
-                desiredAction = EndEffectorDesiredAction.AlignCoralPhase2;
-              }
-              break;
-
-            case AlignCoralPhase2:
-              if (!coralInEndEffectorNonScoringSide) {
-                // Now reverse until we see it again.
-                setVelocity(correctionVelocity.get());
-
-                desiredAction = EndEffectorDesiredAction.AlignCoralPhase3;
-              }
-              break;
-
-            case AlignCoralPhase3:
-              if (coralInEndEffectorNonScoringSide) {
-                zeroCoralPosition = getMotorPosition();
-
-                desiredAction = EndEffectorDesiredAction.AlignCoralPhase4;
-              }
-              break;
-
-            case AlignCoralPhase4:
-              double diff = Math.abs(getMotorPosition() - zeroCoralPosition);
-              if (diff >= alignTarget.get()) { // coral moved to target
-                zeroCoralPosition = getMotorPosition();
-                desiredAction = EndEffectorDesiredAction.AlignedCoral;
-              }
-              break;
-
-            case AlignedCoral:
-              double pos = getMotorPosition() - zeroCoralPosition;
-              double desiredPos = 0;
-              switch (states
-                  .scoringLevel) { // Seperate coral positions in end effector based on scoring
-                  // target
-                case L1:
-                  desiredPos = alignL1Turns.get();
-                  break;
-                case L2:
-                  desiredPos = alignL2Turns.get();
-                  break;
-                case L3:
-                  desiredPos = alignL3Turns.get();
-                  break;
-                case L4:
-                  desiredPos = alignL4Turns.get();
-                  break;
-                default:
-                  setPercentOut(0);
-                  break;
-              }
-
-              // Centering
-
-              if (Math.abs(pos - desiredPos) < alignTolerance.get()) {
-                setPercentOut(0);
-              } else if (pos > desiredPos) {
-                setVelocity(-correctionVelocity.get());
-              } else if (pos < desiredPos) {
-                setVelocity(correctionVelocity.get());
-              }
-              break;
-
-            case ScoreFastForward:
-              setVelocity(scoringVelocityRPM.get());
-              if (!coralInEndEffector) { // Once coral is released, return to idle
-                desiredAction = EndEffectorDesiredAction.Idle;
-              }
-
-              if (endEffectorSim != null) { // Update no coral in sim
-                endEffectorSim.scoringSideTofDetecting = false;
-                endEffectorSim.nonScoringSideTofDetecting = false;
-              }
-              break;
-
-            case ScoreFastBackward:
-              setVelocity(-scoringVelocityRPM.get());
-              if (!coralInEndEffector) { // Once coral is released, return to idle
-                desiredAction = EndEffectorDesiredAction.Idle;
-              }
-
-              if (endEffectorSim != null) { // Update no coral in sim
-                endEffectorSim.scoringSideTofDetecting = false;
-                endEffectorSim.nonScoringSideTofDetecting = false;
-              }
-              break;
-            case PassCoralToEndEffector:
-              setVelocity(passOffVelocityRPM.get());
-              break;
-            case PassToIntake:
-              setVelocity(-passOffVelocityRPM.get());
-              break;
-            case HoldAlgae:
-              setVelocity(holdAlgaeRPM.get());
-              break;
-          }
-          if (states.endEffectorDesiredAction == desiredAction) {
-            break; // Once end effector state logic has been processed, exit while loop
-          }
-          states.endEffectorDesiredAction = desiredAction;
-        }
-      }
-
-      states.endEffectorDesiredAction = desiredAction;
     }
   }
+
+  // Update tunable numbers
 
   // Setters
 
   private void setConstants() {
     io.setClosedLoopConstants(kP.get(), kV.get(), kS.get(), targetAccelerationConfig.get());
-  }
-
-  private void setPercentOut(double percent) {
-    io.setVoltage(percent * Constants.MAX_VOLTAGE);
-    controlMode = ControlMode.OPEN_LOOP;
-  }
-
-  private void setVelocity(double revPerMin) {
-    io.setVelocity(revPerMin);
-    logTargetVelocityRPM.info(revPerMin);
-    controlMode = ControlMode.CLOSED_LOOP;
   }
 
   // Getters
@@ -382,9 +164,5 @@ public class EndEffector extends SubsystemBase {
 
   public double getMotorPosition() {
     return inputs.position;
-  }
-
-  public boolean rollerStallDetected() {
-    return stallDetected.getAsBoolean();
   }
 }

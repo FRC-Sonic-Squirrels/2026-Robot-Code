@@ -25,7 +25,6 @@ import frc.lib.team2930.TrajectoryUtil;
 import frc.lib.team2930.TunableNumberGroup;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
-import frc.robot.RobotStates.ScoringLevel;
 import frc.robot.autonomous.helpers.ChoreoHelper;
 import frc.robot.autonomous.helpers.ChoreoHelper.ChassisSpeedsWithPathEnd;
 import frc.robot.autonomous.records.ChoreoTrajectoryWithName;
@@ -73,10 +72,6 @@ public class DriveToPosePathing extends Command {
       pathGenLogGroup.buildStructArray(Pose2d.class, "UnAttemptedPath");
   private static LoggerEntry.Struct<Pose2d> log_targetChassisSpeeds =
       pathFollowingLogGroup.buildStruct(Pose2d.class, "TargetChassisSpeeds");
-  private static LoggerEntry.Decimal log_distToTarget =
-      pathFollowingLogGroup.buildDecimal("DistToTarget");
-  private static LoggerEntry.Decimal log_velToTarget =
-      pathFollowingLogGroup.buildDecimal("VelToTarget");
   private static LoggerEntry.Bool log_pathStalling = pathFollowingLogGroup.buildBoolean("Stalling");
 
   private boolean debugRotationClamping = false;
@@ -88,8 +83,6 @@ public class DriveToPosePathing extends Command {
   private double finalTargetErrorLimit = Double.NaN;
   private double finalHeadingErrorLimit = Double.NaN;
   private double finalErrorMaxWait = 2;
-
-  private final ScoringLevel level;
 
   // private double distToTarget;
   // private Double prevdistToTarget = Double.NaN;
@@ -107,13 +100,11 @@ public class DriveToPosePathing extends Command {
       DrivetrainWrapper wrapper,
       RobotConfig config,
       Supplier<Pose2d> currentPose,
-      Supplier<Pose2d> targetPose,
-      ScoringLevel level) {
+      Supplier<Pose2d> targetPose) {
     this.wrapper = wrapper;
     this.config = config;
     this.currentPose = currentPose;
     this.targetPose = targetPose;
-    this.level = level;
   }
 
   public DriveToPosePathing setFinalOffsetError(double maxError) {
@@ -139,7 +130,7 @@ public class DriveToPosePathing extends Command {
   // Called when the command is initially scheduled.
   @Override
   public void initialize() {
-    Pose2d robotPose = wrapper.getCoralStationPoseEstimatorPose(true);
+    Pose2d robotPose = wrapper.getHubPoseEstimatorPose(true);
     Pose2d targetPose = this.targetPose.get();
     if (GeometryUtil.getDist(robotPose, targetPose) < 0.0002) {
       this.cancel();
@@ -409,7 +400,7 @@ public class DriveToPosePathing extends Command {
     PathConstraints constraints =
         new PathConstraints(
             config.getPathingMaxSpeedMPS().get(),
-            level == ScoringLevel.L4 ? config.getPathingMaxAccelerationMPSPS().get() : 2.0,
+            config.getPathingMaxAccelerationMPSPS().get(),
             config.getPathingMaxAngularVelocityRadPerSecond().get(),
             config.getPathingMaxAngularAccelerationRadPerSecondSquared().get());
 
@@ -420,8 +411,7 @@ public class DriveToPosePathing extends Command {
             null, // The ideal starting state, this is only relevant for pre-planned paths, so can
             // be null for on-the-fly paths.
             new GoalEndState(
-                0.0, // TODO: consider having this not be 0? Slam into reef/coral station a little
-                // bit?
+                0.0,
                 targetPose
                     .get()
                     .getRotation()) // Goal end state. You can set a holonomic rotation here. If

@@ -49,12 +49,6 @@ public class Intake extends SubsystemBase {
   private static final LoggerEntry.EnumValue<ControlMode> logRollerControlMode =
       rollerLogGroup.buildEnum("ControlMode");
 
-  private static final LoggerGroup starLogGroup = logGroup.subgroup("StarRollers");
-  private static final LoggerEntry.Decimal logStarTargetVelocityRPM =
-      starLogGroup.buildDecimal("TargetVelocityRPM");
-  private static final LoggerEntry.EnumValue<ControlMode> logStarControlMode =
-      starLogGroup.buildEnum("ControlMode");
-
   // Pivot
   private static final LoggerGroup pivotLogGroup = logGroup.subgroup(PivotConstants.ROOT_TABLE);
   private static final LoggerEntry.Decimal logInputs_pivotAngle =
@@ -72,39 +66,15 @@ public class Intake extends SubsystemBase {
   private static final LoggerEntry.Decimal logPivotTargetAngleDegrees =
       pivotLogGroup.buildDecimal("TargetAngleDegrees");
 
-  // ToF
-  private static final LoggerGroup tofLogGroup = logGroup.subgroup("ToF");
-  private static final LoggerEntry.Decimal logToFDistance = tofLogGroup.buildDecimal("Distance");
-  private static final LoggerEntry.Bool logToFActivated = tofLogGroup.buildBoolean("Activated");
-  private static final LoggerEntry.Decimal logToFSignalStrength =
-      tofLogGroup.buildDecimal("SignalStrength");
-
   // Tunable numbers
 
   private static final TunableNumberGroup group =
       new TunableNumberGroup(IntakeConstants.ROOT_TABLE);
 
-  private static final LoggedTunableNumber intakingCoralVel =
-      group.build("Intaking/Coral/Vel", 3000);
-  private static final LoggedTunableNumber intakingAlgaeVel =
-      group.build("Intaking/Algae/Vel", 2000);
-  private static final LoggedTunableNumber intakingCoralPivotAngle =
-      group.build("Intaking/Coral/AngleDeg", 0);
-  private static final LoggedTunableNumber scoreCoralPivotAngle =
-      group.build("Score/Coral/AngleDeg", 60);
-  private static final LoggedTunableNumber scoreCoralVel =
-      group.build("Score/Coral/Velocity", -500);
-  private static final LoggedTunableNumber intakingAlgaePivotAngle =
-      group.build("Intaking/Algae/AngleDeg", 20);
-  private static final LoggedTunableNumber passOffPivotAngle = group.build("PassOff/AngleDeg", 92);
-  private static final LoggedTunableNumber passOffVelocity = group.build("PassOff/Vel", -2000);
-  private static final LoggedTunableNumber stowPivotAngle = group.build("StowAngleDeg", 110);
-  private static final LoggedTunableNumber algaeScoreVelocity =
-      group.build("Score/Algae/Velocity", -500.0);
-  private static final LoggedTunableNumber algaeScoreAngle =
-      group.build("Score/Algae/Angle", PivotConstants.ALGAE_SCORE_ANGLE.getDegrees());
-  private static final LoggedTunableNumber climbAngle =
-      group.build("ClimbAngle", PivotConstants.PIVOT_SAFE_ANGLE.getDegrees());
+  private static final LoggedTunableNumber ejectingFuelVelocity =
+      group.build("Score/Fuel/Velocity", -500.0);
+  private static final LoggedTunableNumber intakingFuelPivotAngle =
+      group.build("Intaking/Fuel/AngleDeg", 20);
 
   // Roller
   private static final TunableNumberGroup rollerSubgroup =
@@ -114,9 +84,6 @@ public class Intake extends SubsystemBase {
   private static final LoggedTunableNumber rKV = rollerSubgroup.build("KV");
   private static final LoggedTunableNumber rollerTargetAccelerationConfig =
       rollerSubgroup.build("MaxAccelerationConstraint");
-  private static final LoggedTunableNumber holdAlgaePercentOut =
-      rollerSubgroup.build("HoldAlgaeVel", 1);
-  private static final LoggedTunableNumber holdCoralVel = rollerSubgroup.build("HoldCoralVel", 200);
 
   // Pivot
   private static final TunableNumberGroup pivotSubgroup = group.subgroup(PivotConstants.ROOT_TABLE);
@@ -133,18 +100,18 @@ public class Intake extends SubsystemBase {
 
   // Motion constants
   static {
-    if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2024_RETIRED_MAESTRO) {
+    if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_RETIRED_HOLO) {
       rKS.initDefault(0);
-      rKP.initDefault(0.8);
-      rKV.initDefault(0.15);
-      rollerTargetAccelerationConfig.initDefault(300.0);
+      rKP.initDefault(0.4);
+      rKV.initDefault(0.13);
+      rollerTargetAccelerationConfig.initDefault(200);
 
-      pKP.initDefault(70.0);
-      pKD.initDefault(1.6);
-      pKG.initDefault(0.0);
+      pKP.initDefault(60);
+      pKD.initDefault(0.3);
+      pKG.initDefault(0.4);
 
-      pivotMaxVelocityConfig.initDefault(10);
-      pivotTargetAccelerationConfig.initDefault(10);
+      pivotMaxVelocityConfig.initDefault(200);
+      pivotTargetAccelerationConfig.initDefault(1500);
     } else if (Constants.RobotMode.isSimBot()) {
       rKS.initDefault(0);
       rKP.initDefault(0.00006);
@@ -179,15 +146,11 @@ public class Intake extends SubsystemBase {
   // Intake states
 
   private double rollerTargetRPM;
-  private double starTargetRPM;
 
   private ControlMode pivotControlMode = ControlMode.OPEN_LOOP;
   private Rotation2d pivotTargetAngle = PivotConstants.HOME_POSITION;
 
   private ControlMode rollerControlMode = ControlMode.OPEN_LOOP;
-  private ControlMode starControlMode = ControlMode.OPEN_LOOP;
-
-  public boolean holdAlgae;
 
   private Trigger stallDetected =
       new Trigger(() -> inputs.rollerVelocityRPM <= 50 && inputs.rollerAppliedVolts >= 0.5)
@@ -227,12 +190,6 @@ public class Intake extends SubsystemBase {
 
       logPivotControlMode.info(pivotControlMode);
 
-      logToFActivated.info(inputs.intakeTofDetected);
-      logToFDistance.info(inputs.intakeTofDistanceInches);
-      logToFSignalStrength.info(inputs.intakeTofSignalStrength);
-
-      logStarControlMode.info(starControlMode);
-
       // Update tunable numbers
 
       var rhc = hashCode();
@@ -259,80 +216,22 @@ public class Intake extends SubsystemBase {
         case Idle:
           setPivotVoltage(0);
           setRollerPercentOut(0);
-          setStarPercentOut(0);
-          break;
-        case IntakeCoral:
-          setRollerVelocity(intakingCoralVel.get());
-          setPivotAngle(Rotation2d.fromDegrees(intakingCoralPivotAngle.get()));
-          setStarVelocity(intakingCoralVel.get());
-          break;
-        case IntakeAlgae:
-          setRollerVelocity(intakingAlgaeVel.get());
-          setPivotAngle(Rotation2d.fromDegrees(intakingAlgaePivotAngle.get()));
-          setStarVelocity(intakingAlgaeVel.get());
-          break;
-        case PrepPassoff:
-          setRollerVelocity(holdCoralVel.get());
-          setPivotAngle(Rotation2d.fromDegrees(passOffPivotAngle.get()));
-          setStarPercentOut(0);
-          break;
-        case PassoffEndEffector:
-          setRollerVelocity(passOffVelocity.get());
-          setPivotAngle(Rotation2d.fromDegrees(passOffPivotAngle.get()));
-          setStarVelocity(passOffVelocity.get());
-          break;
-        case PassoffIntake:
-          setRollerVelocity(-passOffVelocity.get());
-          setPivotAngle(Rotation2d.fromDegrees(passOffPivotAngle.get()));
-          setStarVelocity(-passOffVelocity.get());
           break;
         case Stow:
           if (!states.coralExpectedInIntake) {
-            setRollerVelocity(holdAlgaePercentOut.get());
-            setStarVelocity(holdAlgaePercentOut.get());
-          } else if (states.coralInIntake) {
-            setRollerVelocity(holdCoralVel.get());
-            setStarPercentOut(0);
+
           } else {
             setRollerPercentOut(0);
-            setStarPercentOut(0);
           }
-          setPivotAngle(Rotation2d.fromDegrees(stowPivotAngle.get()));
-          break;
-
-        case ScoreAlgae:
-          setRollerVelocity(algaeScoreVelocity.get());
-          setPivotAngle(Rotation2d.fromDegrees(algaeScoreAngle.get()));
-          setStarVelocity(algaeScoreVelocity.get());
-          break;
-        case ScoreAlgaePrep:
-          setRollerPercentOut(holdAlgaePercentOut.get());
-          setPivotAngle(Rotation2d.fromDegrees(algaeScoreAngle.get()));
-          setStarPercentOut(holdAlgaePercentOut.get());
-          break;
         case Climb:
-          setPivotAngle(Rotation2d.fromDegrees(climbAngle.get()));
           setRollerPercentOut(0);
-          setStarPercentOut(0);
           break;
         case Down:
-          setPivotAngle(Rotation2d.fromDegrees(intakingCoralPivotAngle.get()));
+          setPivotAngle(Rotation2d.fromDegrees(intakingFuelPivotAngle.get()));
           setRollerPercentOut(0);
-          setStarPercentOut(0);
           break;
         case Eject:
-          setRollerVelocity(algaeScoreVelocity.get());
-          setStarPercentOut(algaeScoreVelocity.get());
-          break;
-        case ScoreCoralPrep:
-          setPivotAngle(Rotation2d.fromDegrees(scoreCoralPivotAngle.get()));
-          setRollerVelocity(holdCoralVel.get());
-          setStarPercentOut(0);
-          break;
-        case ScoreCoral:
-          setPivotAngle(Rotation2d.fromDegrees(scoreCoralPivotAngle.get()));
-          setRollerVelocity(scoreCoralVel.get());
-          setStarVelocity(scoreCoralVel.get());
+          setRollerVelocity(ejectingFuelVelocity.get());
           break;
         default:
           break;
@@ -358,18 +257,6 @@ public class Intake extends SubsystemBase {
     io.setRollerVelocity(revPerMin);
     rollerTargetRPM = revPerMin;
     logRollerTargetVelocityRPM.info(rollerTargetRPM);
-  }
-
-  public void setStarPercentOut(double percent) {
-    io.setStarVoltage(percent * Constants.MAX_VOLTAGE);
-    starControlMode = ControlMode.OPEN_LOOP;
-  }
-
-  public void setStarVelocity(double revPerMin) {
-    starControlMode = ControlMode.CLOSED_LOOP;
-    io.setStarVelocity(revPerMin);
-    starTargetRPM = revPerMin;
-    logStarTargetVelocityRPM.info(starTargetRPM);
   }
 
   private void setPivotConstants() {
@@ -411,10 +298,6 @@ public class Intake extends SubsystemBase {
     return io.setPivotNeutralMode(value);
   }
 
-  public void setHoldAlgae(boolean holdAlgae) {
-    this.holdAlgae = holdAlgae;
-  }
-
   // Getters
 
   public Current getRollerCurrentDraw() {
@@ -452,14 +335,6 @@ public class Intake extends SubsystemBase {
 
   public boolean rollerStallDetected() {
     return stallDetected.getAsBoolean();
-  }
-
-  public boolean intakeTimeOfFlight() {
-    return inputs.intakeTofDetected;
-  }
-
-  public Rotation2d getPassOffPivotAngle() {
-    return Rotation2d.fromDegrees(passOffPivotAngle.get());
   }
 
   public IntakeIOSim getSim() {
