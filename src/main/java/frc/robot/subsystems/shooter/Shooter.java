@@ -126,7 +126,7 @@ public class Shooter extends SubsystemBase {
   private double hoodPidLatency = 0.0;
 
   private Rotation2d targetHoodPosition = Constants.zeroRotation2d;
-  private double topRollerTargetFlywheelRPM = 0.0;
+  private double targetFlywheelRPM = 0.0;
 
   /** Creates a new ShooterSubsystem. */
   public Shooter(ShooterIO io) {
@@ -258,12 +258,12 @@ public class Shooter extends SubsystemBase {
 
   public void setFlywheelRPM(double topRollerRPM, double bottomRollerRPM) {
     io.setFlywheelRPM(topRollerRPM, bottomRollerRPM);
-    topRollerTargetFlywheelRPM = topRollerRPM;
+    targetFlywheelRPM = topRollerRPM;
   }
 
   public void setFlywheelRPM(double rpm) {
     io.setFlywheelRPM(rpm, rpm);
-    topRollerTargetFlywheelRPM = rpm;
+    targetFlywheelRPM = rpm;
   }
 
   public double getRPM() {
@@ -271,7 +271,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean isAtTargetRPM() {
-    return isAtTargetRPM(topRollerTargetFlywheelRPM);
+    return isAtTargetRPM(targetFlywheelRPM);
   }
 
   public boolean isAtTargetRPM(double rpm) {
