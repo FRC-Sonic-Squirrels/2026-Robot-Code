@@ -194,8 +194,8 @@ public class RobotContainer {
           new LED(
               () -> brakeModeTriggered,
               drivetrain::isGyroConnected,
-              robotStates,
-              () -> zeroButtonTriggered);
+              () -> zeroButtonTriggered,
+              robotStates);
     } else { // REAL and SIM robots HERE
       switch (robotType) {
         case ROBOT_SIMBOT_REAL_CAMERAS:
@@ -262,7 +262,12 @@ public class RobotContainer {
 
           intake = new Intake(new IntakeIOSim(), robotStates);
           climber = new Climber(new ClimberIOSim());
-          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, robotStates);
+          led =
+              new LED(
+                  () -> brakeModeTriggered,
+                  drivetrain::isGyroConnected,
+                  () -> zeroButtonTriggered,
+                  robotStates);
           break;
 
         case ROBOT_2023_RETIRED_ROBER:
@@ -292,7 +297,12 @@ public class RobotContainer {
             visionGamepiece = null;
           }
 
-          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, robotStates);
+          led =
+              new LED(
+                  () -> brakeModeTriggered,
+                  drivetrain::isGyroConnected,
+                  () -> zeroButtonTriggered,
+                  robotStates);
           break;
 
         case ROBOT_2024_RETIRED_MAESTRO:
@@ -321,7 +331,12 @@ public class RobotContainer {
             visionGamepiece = null;
           }
 
-          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, robotStates);
+          led =
+              new LED(
+                  () -> brakeModeTriggered,
+                  drivetrain::isGyroConnected,
+                  () -> zeroButtonTriggered,
+                  robotStates);
           break;
 
         case ROBOT_2025_RETIRED_HOLO:
@@ -355,7 +370,12 @@ public class RobotContainer {
             visionGamepiece = null;
           }
 
-          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, robotStates);
+          led =
+              new LED(
+                  () -> brakeModeTriggered,
+                  drivetrain::isGyroConnected,
+                  () -> zeroButtonTriggered,
+                  robotStates);
 
           break;
 
@@ -390,7 +410,12 @@ public class RobotContainer {
             visionGamepiece = null;
           }
 
-          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, robotStates);
+          led =
+              new LED(
+                  () -> brakeModeTriggered,
+                  drivetrain::isGyroConnected,
+                  () -> zeroButtonTriggered,
+                  robotStates);
           break;
 
         default:
@@ -419,7 +444,12 @@ public class RobotContainer {
             visionGamepiece = null;
           }
 
-          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, robotStates);
+          led =
+              new LED(
+                  () -> brakeModeTriggered,
+                  drivetrain::isGyroConnected,
+                  () -> zeroButtonTriggered,
+                  robotStates);
           break;
       }
     }
