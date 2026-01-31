@@ -393,7 +393,6 @@ public final class Constants {
     public static final Distance DIST_TO_START_INTAKING = Units.Meters.of(1.0);
   }
 
-  // TODO: Find literally all shooter constants
   public static class ShooterConstants {
     public static final Distance SHOOTER_LENGTH = Units.Inches.of(12.0);
 
@@ -402,7 +401,7 @@ public final class Constants {
 
       public static final Rotation2d MIN_ANGLE_RAD = Rotation2d.fromDegrees(12.0);
       public static final Rotation2d MAX_ANGLE_RAD =
-          Rotation2d.fromDegrees(59); // TRUE HARD STOP 59.67
+          Rotation2d.fromDegrees(59);
 
       public static final double SIM_INITIAL_ANGLE = Math.toRadians(14.0);
 
