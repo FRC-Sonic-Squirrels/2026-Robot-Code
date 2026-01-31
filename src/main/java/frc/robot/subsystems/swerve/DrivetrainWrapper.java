@@ -12,7 +12,6 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 import frc.robot.Constants;
-import java.util.function.DoubleSupplier;
 
 public class DrivetrainWrapper {
 
@@ -27,15 +26,13 @@ public class DrivetrainWrapper {
   private static final LoggerEntry.Decimal logGyroDrift = logGroup.buildDecimal("gyroDrift");
 
   private final Drivetrain drivetrain;
-  private final DoubleSupplier baseSpeedScalar;
 
   private ChassisSpeeds chassisSpeedsBase = new ChassisSpeeds();
   private ChassisSpeeds chassisSpeedsOverride;
   private double omegaOverride = Double.NaN;
 
-  public DrivetrainWrapper(Drivetrain drivetrain, DoubleSupplier baseSpeedScalar) {
+  public DrivetrainWrapper(Drivetrain drivetrain) {
     this.drivetrain = drivetrain;
-    this.baseSpeedScalar = baseSpeedScalar;
   }
 
   /** Updated periodically, updates swerve state. */
@@ -49,7 +46,7 @@ public class DrivetrainWrapper {
     }
     logOmegaOverride.info(omegaOverride);
 
-    ChassisSpeeds chassisSpeeds = chassisSpeedsBase.times(baseSpeedScalar.getAsDouble());
+    ChassisSpeeds chassisSpeeds = chassisSpeedsBase;
 
     boolean prioritizeRotation;
 
