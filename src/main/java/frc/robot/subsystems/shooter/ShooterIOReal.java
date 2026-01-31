@@ -11,7 +11,6 @@ import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -96,7 +95,6 @@ public class ShooterIOReal implements ShooterIO {
     flywheelConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
     hoodConfig.Feedback.SensorToMechanismRatio = Constants.ShooterConstants.Hood.GEARING;
-    hoodConfig.Slot0.GravityType = GravityTypeValue.Arm_Cosine;
     hoodConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
     hoodConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold =
