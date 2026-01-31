@@ -61,9 +61,6 @@ public class RobotStates {
 
   private LoggerEntry.Bool logGamepieceInIntakeState =
       logGroup.buildBoolean("GamepieceInIntakeState");
-  private LoggerEntry.Bool logCoralInIntakeState = logGroup.buildBoolean("CoralInIntakeState");
-
-  private LoggerEntry.Bool logHighStowMode = logGroup.buildBoolean("HighStowMode");
 
   private LoggerEntry.EnumValue<EndEffectorDesiredAction> logEndEffectorDesiredAction =
       logGroup.buildEnum("EndEffectorDesiredAction");
@@ -143,8 +140,6 @@ public class RobotStates {
       logIntakeState.info(intakeState);
 
       logGamepieceInIntakeState.info(fuelInIntake);
-      logCoralInIntakeState.info(fuelInIntake);
-      logHighStowMode.info(highStowMode);
 
       mechanismInUse = false;
       intakeInUse = false;

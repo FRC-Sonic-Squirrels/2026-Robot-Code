@@ -223,7 +223,9 @@ public class Intake extends SubsystemBase {
           } else {
             setRollerPercentOut(0);
           }
-          setPivotAngle(Rotation2d.fromDegrees(0));
+        case Climb:
+          setRollerPercentOut(0);
+          break;
         case Down:
           setPivotAngle(Rotation2d.fromDegrees(intakingFuelPivotAngle.get()));
           setRollerPercentOut(0);

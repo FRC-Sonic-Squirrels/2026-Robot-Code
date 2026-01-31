@@ -80,13 +80,6 @@ public final class Constants {
       if (!RobotBase.isReal()) {
         return RobotType.ROBOT_SIMBOT;
       }
-
-      if (ROBOT != RobotType.ROBOT_2024_RETIRED_MAESTRO
-          && ROBOT != RobotType.ROBOT_2025_RETIRED_HOLO) {
-        invalidRobotAlert.set(true);
-        return RobotType.ROBOT_2025_RETIRED_HOLO;
-      }
-
       return ROBOT;
     }
 

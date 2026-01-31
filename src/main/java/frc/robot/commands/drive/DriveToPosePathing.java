@@ -55,6 +55,11 @@ public class DriveToPosePathing extends Command {
               + 0.1);
   private static LoggedTunableNumber headingToleranceNearElements =
       tunableGroup.build("HeadingToleranceNearElements", 40.0);
+  private static LoggedTunableNumber stallMaxVelocity =
+      tunableGroup.build("Stall/MaxVelocity", 0.4);
+  private static LoggedTunableNumber stallMinDistance =
+      tunableGroup.build("Stall/MinDistance", 0.05);
+  private static LoggedTunableNumber stallDebounce = tunableGroup.build("Stall/Debounce", 0.15);
 
   private static LoggerGroup logGroup = LoggerGroup.build("DriveToPosePathing");
   private static LoggerGroup pathGenLogGroup = logGroup.subgroup("PathGeneration");
@@ -392,7 +397,12 @@ public class DriveToPosePathing extends Command {
   }
 
   private Trajectory<SwerveSample> generateSimplePath(List<Waypoint> waypoints) {
-    PathConstraints constraints = null;
+    PathConstraints constraints =
+        new PathConstraints(
+            config.getPathingMaxSpeedMPS().get(),
+            config.getPathingMaxAccelerationMPSPS().get(),
+            config.getPathingMaxAngularVelocityRadPerSecond().get(),
+            config.getPathingMaxAngularAccelerationRadPerSecondSquared().get());
 
     PathPlannerPath path =
         new PathPlannerPath(
@@ -401,8 +411,7 @@ public class DriveToPosePathing extends Command {
             null, // The ideal starting state, this is only relevant for pre-planned paths, so can
             // be null for on-the-fly paths.
             new GoalEndState(
-                0.0, // TODO: consider having this not be 0? Slam into reef/coral station a little
-                // bit?
+                0.0,
                 targetPose
                     .get()
                     .getRotation()) // Goal end state. You can set a holonomic rotation here. If
