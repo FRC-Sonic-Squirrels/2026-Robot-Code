@@ -50,7 +50,7 @@ public final class Constants {
   }
 
   public static class RobotMode {
-    private static final RobotType ROBOT = RobotType.ROBOT_2025_RETIRED_HOLO;
+    private static final RobotType ROBOT = RobotType.ROBOT_2026;
 
     public static boolean isSimBot() {
       switch (getRobot()) {
