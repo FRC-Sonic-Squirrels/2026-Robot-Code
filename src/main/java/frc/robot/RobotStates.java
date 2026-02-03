@@ -99,7 +99,8 @@ public class RobotStates {
   public RobotStates() {
   }
 
-  private Intake            intake;
+  private Intake            leftIntake;
+  private Intake            rightIntake;
   private DrivetrainWrapper drivetrain;
 
   private RotateToFaceHelper rtfHelper;
@@ -108,13 +109,15 @@ public class RobotStates {
   private Pose2d             targetPose = null;
   private Supplier<Boolean>  intaking   = null;
 
-  public void setSubsystems(Intake intake, DrivetrainWrapper drivetrain, Supplier<Boolean> intaking) {
-    this.intake     = intake;
-    this.drivetrain = drivetrain;
-    this.intaking   = intaking;
-    dtpHelpter      = new DriveToPoseHelper(this.drivetrain, () -> targetPose, () -> drivetrain.getRawOdometryPose(),
+  public void setSubsystems(Intake leftIntake, Intake rightIntake, DrivetrainWrapper drivetrain,
+      Supplier<Boolean> intaking) {
+    this.leftIntake  = leftIntake;
+    this.rightIntake = rightIntake;
+    this.drivetrain  = drivetrain;
+    this.intaking    = intaking;
+    dtpHelpter       = new DriveToPoseHelper(this.drivetrain, () -> targetPose, () -> drivetrain.getRawOdometryPose(),
         () -> driveSlow);
-    rtfHelper       = new RotateToFaceHelper(this.drivetrain, () -> targetPose.getTranslation(),
+    rtfHelper        = new RotateToFaceHelper(this.drivetrain, () -> targetPose.getTranslation(),
         () -> drivetrain.getRawOdometryPose());
   }
 
@@ -145,7 +148,8 @@ public class RobotStates {
       case Climb:
         break;
     }
-    intake.setState(IntakeState.Idle);
+    leftIntake.setState(IntakeState.Idle);
+    rightIntake.setState(IntakeState.Idle);
     dtpHelpter.initialize();
     rtfHelper.initialize();
     goal = wantedGoal;
@@ -157,7 +161,6 @@ public class RobotStates {
       case None:
         drivetrain.resetVelocityOverride();
         drivetrain.resetRotationOverride();
-        intakeIfWanted();
         break;
       case Auto:
         // TODO: run the auto state machene
@@ -166,14 +169,12 @@ public class RobotStates {
         targetPose = AllianceFlipUtil
             .flipPoseForAlliance(new Pose2d(FieldConstants.BLUE_HUB_CENTER_POSE, Rotation2d.kZero));
         shoot();
-        intakeIfWanted();
         break;
       case Pass:
         targetPose = new Pose2d(AllianceFlipUtil.getClosestTranslation(
             new Translation2d[] { FieldConstants.RIGHT_PASS_AIM_POINT, FieldConstants.LEFT_PASS_AIM_POINT },
             drivetrain.getRawOdometryPose()), Rotation2d.kZero);
         shoot();
-        intakeIfWanted();
         break;
       case Climb:
         // TODO: set proper tower positon
@@ -206,14 +207,6 @@ public class RobotStates {
     mechanismInUse   = false;
     intakeInUse      = false;
     endEffectorInUse = false;
-  }
-
-  private void intakeIfWanted() {
-    if (intaking.get()) {
-      intake.setState(IntakeState.IntakeCoral);
-    } else {
-      intake.setState(IntakeState.Idle);
-    }
   }
 
   private void shoot() {
@@ -252,6 +245,7 @@ public class RobotStates {
 
   // TODO: this should probrably be removed
   public void setIntakeState(Intake.IntakeState newState) {
-    intake.setState(newState);
+    leftIntake.setState(newState);
+    rightIntake.setState(newState);
   }
 }
