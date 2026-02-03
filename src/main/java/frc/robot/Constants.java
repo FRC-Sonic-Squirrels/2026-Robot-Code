@@ -313,6 +313,8 @@ public final class Constants {
     public static final int SHOOTER_FOLLOW_CAN_ID = 36;
     public static final int SHOOTER_HOOD_CAN_ID = 37;
     public static final int SHOOTER_KICKER_CAN_ID = 38;
+
+    public static final int HOPPER_ROLLER_CAN_ID = 26;
   }
 
   public static class DIOPorts {}

@@ -26,16 +26,14 @@ public class DrivetrainWrapper {
       .buildDecimal("omegaOverride");
   private static final LoggerEntry.Decimal               logGyroDrift             = logGroup.buildDecimal("gyroDrift");
 
-  private final Drivetrain     drivetrain;
-  private final DoubleSupplier baseSpeedScalar;
+  private final Drivetrain drivetrain;
 
   private ChassisSpeeds chassisSpeedsBase = new ChassisSpeeds();
   private ChassisSpeeds chassisSpeedsOverride;
   private double        omegaOverride     = Double.NaN;
 
-  public DrivetrainWrapper(Drivetrain drivetrain, DoubleSupplier baseSpeedScalar) {
-    this.drivetrain      = drivetrain;
-    this.baseSpeedScalar = baseSpeedScalar;
+  public DrivetrainWrapper(Drivetrain drivetrain) {
+    this.drivetrain = drivetrain;
   }
 
   /** Updated periodically, updates swerve state. */

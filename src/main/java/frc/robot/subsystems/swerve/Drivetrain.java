@@ -163,11 +163,9 @@ public class Drivetrain extends SubsystemBase {
   private final SwerveDriveKinematics kinematics;
   private Pose2d                      rawOdometryPose = Constants.zeroPose2d;
 
-  private final PoseEstimator reefPoseEstimator;
-  private final PoseEstimator coralStationPoseEstimator;
+  private final PoseEstimator hubPoseEstimator;
 
-  private final Field2d reefField2d        = new Field2d();
-  private final Field2d coralField2d       = new Field2d();
+  private final Field2d hubField2d         = new Field2d();
   private final Field2d rawOdometryField2d = new Field2d();
 
   private Pose2d prevVel = Constants.zeroPose2d;
@@ -196,8 +194,7 @@ public class Drivetrain extends SubsystemBase {
 
     int[] hubTags = { 2, 3, 4, 5, 8, 9, 10, 11, 18, 19, 20, 21, 24, 25, 26, 27 };
 
-    reefPoseEstimator         = new PoseEstimator(0.1, 0.1, 0.1, reefTags);
-    coralStationPoseEstimator = new PoseEstimator(0.6, 0.6, 0.3, coralStationTags);
+    hubPoseEstimator = new PoseEstimator(0.1, 0.1, 0.1, hubTags);
 
     // High speed odometry thread
 
@@ -504,11 +501,6 @@ public class Drivetrain extends SubsystemBase {
     runVelocity(new ChassisSpeeds(), false, true);
   }
 
-  /** Stops the drive. */
-  public void stop() {
-    runVelocity(new ChassisSpeeds(), false, true);
-  }
-
   /**
    * Stops the drive and turns the modules to an X arrangement to resist movement.
    * The modules will return to their normal orientations the next time a nonzero
@@ -624,10 +616,6 @@ public class Drivetrain extends SubsystemBase {
 
       this.rawOdometryPose = pose;
     }
-  }
-
-  public void setCoralStationPoseToReefPose() {
-    this.coralStationPoseEstimator.resetPose(reefPoseEstimator.getLatestPose(), Utils.getCurrentTimeSeconds() + 0.2);
   }
 
   public void setRawOdometryPose(Pose2d pose) {
