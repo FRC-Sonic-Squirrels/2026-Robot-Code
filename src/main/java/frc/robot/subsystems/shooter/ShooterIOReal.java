@@ -87,11 +87,6 @@ public class ShooterIOReal implements ShooterIO {
     // --- hood config ---
     TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
 
-    flywheelConfig.CurrentLimits.SupplyCurrentLimit = ShooterConstants.Hood.SUPPLY_CURRENT_LIMIT;
-    flywheelConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-    flywheelConfig.CurrentLimits.StatorCurrentLimit = ShooterConstants.Hood.STATOR_CURRENT_LIMIT;
-    flywheelConfig.CurrentLimits.StatorCurrentLimitEnable = true;
-
     hoodConfig.Feedback.SensorToMechanismRatio = Constants.ShooterConstants.Hood.GEARING;
     hoodConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 

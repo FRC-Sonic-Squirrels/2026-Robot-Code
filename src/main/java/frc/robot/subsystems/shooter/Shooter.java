@@ -9,10 +9,21 @@ import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.Constants.RobotMode.RobotType;
+import frc.robot.Constants.ShooterConstants;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.function.Supplier;
 
 public class Shooter extends SubsystemBase {
+
+  public enum ShooterStates {
+    Idle,
+    Shooting,
+    FlywheelPrep,
+    FlywheelReady,
+    Stop
+  }
+
   private static final String ROOT_TABLE = "Shooter";
 
   private static final ExecutionTiming timing = new ExecutionTiming(ROOT_TABLE);
@@ -114,6 +125,7 @@ public class Shooter extends SubsystemBase {
   }
 
   private final ShooterIO io;
+  private final ShooterStates shooterState = ShooterStates.Idle;
   private final ShooterIO.Inputs inputs = new ShooterIO.Inputs(logGroup);
 
   // Creates a new flat moving average filter
@@ -127,9 +139,12 @@ public class Shooter extends SubsystemBase {
   private Rotation2d targetHoodPosition = Constants.zeroRotation2d;
   private double targetFlywheelRPM = 0.0;
 
+  private final Supplier<Double> distanceSupplier;
+
   /** Creates a new ShooterSubsystem. */
-  public Shooter(ShooterIO io) {
+  public Shooter(ShooterIO io, Supplier<Double> distanceSupplier) {
     this.io = io;
+    this.distanceSupplier = distanceSupplier;
 
     io.setFlywheelClosedLoopConstants(
         flywheelkP.get(),
@@ -167,6 +182,22 @@ public class Shooter extends SubsystemBase {
       logPitchDegrees.info(inputs.hoodPosition.getDegrees());
       logTargetPitchDegrees.info(targetHoodPosition.getDegrees());
       logFlywheelRollersDifference.info(inputs.flywheelRPM[1] - inputs.flywheelRPM[0]);
+
+      switch (shooterState) {
+        case Idle:
+          setFlywheelRPM(ShooterConstants.Flywheel.IDLE_FLYWHEEL_RPM);
+          break;
+        case Shooting:
+          setFlywheelRPM(ShooterConstants.Flywheel.SHOOTING_FLYWHEEL_RPM);
+          if (Math.abs(inputs.flywheelRPM[0] - ShooterConstants.Flywheel.SHOOTING_FLYWHEEL_RPM)
+              < 50) {
+            setKickerVelocity(ShooterConstants.Kicker.SHOOTING_KICKER_RPM);
+          }
+          break;
+        case Stop:
+          setFlywheelRPM(ShooterConstants.Flywheel.STOP_FLYWHEEL_RPM);
+          break;
+      }
 
       if (Constants.unusedCode) {
         var timestamp = Timer.getFPGATimestamp();

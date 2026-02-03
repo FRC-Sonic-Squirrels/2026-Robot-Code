@@ -394,6 +394,7 @@ public final class Constants {
   }
 
   public static class ShooterConstants {
+
     public static final Distance SHOOTER_LENGTH = Units.Inches.of(12.0);
 
     public static class Hood {
@@ -403,9 +404,6 @@ public final class Constants {
       public static final Rotation2d MAX_ANGLE_RAD = Rotation2d.fromDegrees(59);
 
       public static final double SIM_INITIAL_ANGLE = Math.toRadians(14.0);
-
-      public static final double SUPPLY_CURRENT_LIMIT = 40;
-      public static final double STATOR_CURRENT_LIMIT = 40;
     }
 
     public static class Flywheel {
@@ -415,6 +413,9 @@ public final class Constants {
       public static final double STATOR_CURRENT_LIMIT = 40;
       public static final double PEAK_REVERSE_VOLTAGE = 0;
       public static final double SUPPLY_VOLTAGE_TIME = 0.02;
+      public static final double IDLE_FLYWHEEL_RPM = 2000;
+      public static final double SHOOTING_FLYWHEEL_RPM = 3000;
+      public static final double STOP_FLYWHEEL_RPM = 0;
     }
 
     public static class Kicker {
@@ -423,6 +424,7 @@ public final class Constants {
       public static final double SUPPLY_CURRENT_LIMIT = 40;
       public static final double STATOR_CURRENT_LIMIT = 40;
       public static final double SENSOR_TO_MECHANISM_RATIO = 1.42;
+      public static final double SHOOTING_KICKER_RPM = 100;
     }
   }
 
