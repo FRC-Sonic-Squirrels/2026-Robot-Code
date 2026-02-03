@@ -173,6 +173,12 @@ public class RobotContainer {
     var config = robotType.config.get();
     aprilTagLayout = config.getAprilTagFieldLayout();
 
+    IntakeIOConfig leftIntakeIOConfig  = new IntakeIOConfig(Constants.CanIDs.INTAKE_LEFT_PIVOT_CAN_ID,
+        Constants.CanIDs.INTAKE_LEFT_ROLLER_CAN_ID, InvertedValue.Clockwise_Positive, InvertedValue.Clockwise_Positive);
+    IntakeIOConfig rightIntakeIOConfig = new IntakeIOConfig(Constants.CanIDs.INTAKE_RIGHT_PIVOT_CAN_ID,
+        Constants.CanIDs.INTAKE_RIGHT_ROLLER_CAN_ID, InvertedValue.Clockwise_Positive,
+        InvertedValue.Clockwise_Positive);
+
     if (mode == Mode.REPLAY) {
       drivetrain = new Drivetrain(config, new GyroIO.Fake(), new GyroIO.Fake(), config.getReplaySwerveModuleObjects(),
           () -> is_autonomous);
