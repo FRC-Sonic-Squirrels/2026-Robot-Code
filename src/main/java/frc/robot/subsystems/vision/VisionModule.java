@@ -4,7 +4,6 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation2d;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 import frc.lib.team6328.Alert;
@@ -49,8 +48,6 @@ public class VisionModule {
   public final LoggerEntry.Decimal        log_thetaStandardDeviation;
   public final LoggerEntry.Bool           log_successfulResult;
   public final LoggerEntry.DecimalArray   log_seenTargetsIDs;
-  public final LoggerEntry.Decimal        log_xOffset;
-  public final LoggerEntry.Decimal        log_yOffset;
 
   public VisionModule(LoggerGroup logGroup, VisionModuleConfiguration config, AprilTagFieldLayout aprilTagFieldLayout,
       int id) {
@@ -60,8 +57,8 @@ public class VisionModule {
     this.name           = config.logName;
     this.id             = id;
 
-    this.loggedFields                                     = VisionResultLoggedFields
-        .unsuccessfulResult(VisionResultStatus.INIT);
+    this.loggedFields = VisionResultLoggedFields.unsuccessfulResult(VisionResultStatus.INIT);
+
     this.lastSuccessfullyProcessedResultTimeStampCTRETime = -1.0;
 
     this.photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
@@ -97,11 +94,9 @@ public class VisionModule {
     log_thetaStandardDeviation           = logGroup.buildDecimal("thetaStandardDeviation");
     log_successfulResult                 = logGroup.buildBoolean("SUCCESSFUL_RESULT?");
     log_seenTargetsIDs                   = logGroup.buildDecimalArray("seenTargetsIDs");
-    log_xOffset                          = logGroup.buildDecimal("tagOffset/yaw");
-    log_yOffset                          = logGroup.buildDecimal("tagOffset/pitch");
   }
 
-  public void log(Pose3d robotPose, Translation2d tagOffset) {
+  public void log(Pose3d robotPose, double currentTime) {
     if (Constants.unusedCode) {
       byte[] photonPacketBytes = new byte[visionIOInputs.lastResult.getPacketSize()];
       visionIOInputs.lastResult.getSerde().pack(new Packet(photonPacketBytes), visionIOInputs.lastResult);
@@ -111,15 +106,29 @@ public class VisionModule {
     log_connected.info(visionIOInputs.connected);
     log_medianLatency.info(visionIOInputs.medianLatency);
     log_medianUpdateTime.info(visionIOInputs.medianUpdateTime);
-    var fieldsToLog = loggedFields;
 
     log_lastTimestampCTRETimeSuccessful.info(lastSuccessfullyProcessedResultTimeStampCTRETime);
 
-    var status = fieldsToLog.status();
-    if (status == lastStatus && !status.success) {
-      // skip logging details of unsuccessful results that repeat
-      return;
+    // Logging
+    log_cameraPose.info(robotPose.transformBy(RobotToCamera));
+
+    var fieldsToLog = loggedFields;
+    var status      = fieldsToLog.status();
+    if (!status.success) {
+      if (status == lastStatus) {
+        // skip logging details of unsuccessful results that repeat
+        return;
+      }
+
+      double minSeparationInMilliseconds = 100.0 / 1000.0;
+
+      if (currentTime - lastSuccessfullyProcessedResultTimeStampCTRETime < minSeparationInMilliseconds) {
+        // skip logging details of unsuccessful results that are too close to a
+        // successful report.
+        return;
+      }
     }
+
     lastStatus = status;
 
     double[] seenTagsArray = new double[fieldsToLog.seenTags().length];
@@ -128,10 +137,7 @@ public class VisionModule {
       seenTagsArray[i] = fieldsToLog.seenTags()[i];
     }
 
-    // Logging
-
     log_status.info(status.name());
-    log_cameraPose.info(robotPose.transformBy(RobotToCamera));
     log_calculatedRobotPose3d.info(fieldsToLog.robotPose3d());
     log_calculatedRobotPose2d.info(fieldsToLog.robotPose3d().toPose2d());
     log_numSeenTargets.info(fieldsToLog.numSeenTargets());
@@ -142,8 +148,5 @@ public class VisionModule {
     log_thetaStandardDeviation.info(fieldsToLog.thetaStandardDeviation());
     log_successfulResult.info(status.success);
     log_seenTargetsIDs.info(seenTagsArray);
-
-    log_xOffset.info(tagOffset.getX());
-    log_yOffset.info(tagOffset.getY());
   }
 }
