@@ -60,6 +60,17 @@ public class Vision extends SubsystemBase {
   private static final LoggerEntry.StructArray<Pose2d> log_posesFedToPoseEstimator2D        = logGroupVisibleTags
       .buildStructArray(Pose2d.class, "posesFedToPoseEstimator2D");
 
+  private static final LoggerEntry.Struct<Pose3d> log_poseEstimatorError         = logGroupVisibleTags
+      .buildStruct(Pose3d.class, "poseEstimatorError");
+  private static final LoggerEntry.Decimal        log_poseEstimatorErrorDistance = logGroupVisibleTags
+      .buildDecimal("poseEstimatorErrorDistanceMeters");
+  private static final LoggerEntry.Decimal        log_poseEstimatorErrorPitch    = logGroupVisibleTags
+      .buildDecimal("poseEstimatorErrorPitchDegrees");
+  private static final LoggerEntry.Decimal        log_poseEstimatorErrorYaw      = logGroupVisibleTags
+      .buildDecimal("poseEstimatorErrorYawDegrees");
+  private static final LoggerEntry.Decimal        log_poseEstimatorErrorRoll     = logGroupVisibleTags
+      .buildDecimal("poseEstimatorErrorRollDegrees");
+
   // Tunable numbers
 
   protected static final TunableNumberGroup group = new TunableNumberGroup("Vision");
@@ -100,6 +111,12 @@ public class Vision extends SubsystemBase {
   private final Supplier<Rotation2d>                    currentGyroBasedRobotRotationSupplier;
   private int                                           useMaxDistanceAwayFromExistingEstimateCount;
   private int                                           useGyroBasedFilteringForVisionCount;
+
+  private Pose3d lastError         = new Pose3d();
+  private double lastErrorDistance = -1;
+  private double lastErrorPitch    = -1;
+  private double lastErrorYaw      = -1;
+  private double lastErrorRoll     = -1;
 
   private TagOffset[] tagOffsets;
 
@@ -191,6 +208,20 @@ public class Vision extends SubsystemBase {
       log_tagsActuallyUsedInPoseEstimation.info(tagsUsedInPoseEstimationPoses);
       log_posesFedToPoseEstimator3D.info(posesFedToPoseEstimator3D.toArray(new Pose3d[0]));
       log_posesFedToPoseEstimator2D.info(posesFedToPoseEstimator2D.toArray(new Pose2d[0]));
+
+      if (posesFedToPoseEstimator3D.size() > 1) {
+        lastError         = posesFedToPoseEstimator3D.get(0).relativeTo(posesFedToPoseEstimator3D.get(1));
+        lastErrorDistance = lastError.getTranslation().getNorm();
+        lastErrorPitch    = lastError.getRotation().getY();
+        lastErrorYaw      = lastError.getRotation().getZ();
+        lastErrorRoll     = lastError.getRotation().getX();
+      }
+
+      log_poseEstimatorError.info(lastError);
+      log_poseEstimatorErrorDistance.info(lastErrorDistance);
+      log_poseEstimatorErrorPitch.info(lastErrorPitch);
+      log_poseEstimatorErrorYaw.info(lastErrorYaw);
+      log_poseEstimatorErrorRoll.info(lastErrorRoll);
 
       tagsUsedInPoseEstimation.clear();
       posesFedToPoseEstimator3D.clear();

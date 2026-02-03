@@ -135,26 +135,15 @@ public class RobotConfig2026 extends RobotConfig {
 
   // ---- VISION -------
   public static final Transform3d SHOOTER_SIDE_LEFT = new Transform3d(
-      new Translation3d(Units.Inches.of(-11.25).in(Units.Meters), Units.Inches.of(8).in(Units.Meters),
-          Units.Inches.of(10.75).in(Units.Meters)),
-      new Rotation3d(Math.toRadians(0), Math.toRadians(0.0), Math.toRadians(210.0)));
+      new Translation3d(Units.Inches.of(-11.5).in(Units.Meters), Units.Inches.of(-8.065).in(Units.Meters),
+          Units.Inches.of(10).in(Units.Meters)),
+      new Rotation3d(Math.toRadians(0.0), Math.toRadians(-25.0), Math.toRadians(20.0 + 180)));
 
   public static final Transform3d SHOOTER_SIDE_RIGHT = new Transform3d(
-      new Translation3d(Units.Inches.of(-11.25).in(Units.Meters), Units.Inches.of(-8.25).in(Units.Meters),
-          Units.Inches.of(10.75).in(Units.Meters)),
-      new Rotation3d(Math.toRadians(0), Math.toRadians(0.0), Math.toRadians(150.0)));
+      new Translation3d(Units.Inches.of(-11.5).in(Units.Meters), Units.Inches.of(8.065).in(Units.Meters),
+          Units.Inches.of(10).in(Units.Meters)),
+      new Rotation3d(Math.toRadians(0.0), Math.toRadians(-25.0), Math.toRadians(-20.0 + 180)));
 
-  public static final Transform3d INTAKE_SIDE_LEFT = new Transform3d(
-      new Translation3d(Units.Inches.of(2.143069).in(Units.Meters), Units.Inches.of(12.127149).in(Units.Meters),
-          Units.Inches.of(24.990728).in(Units.Meters)),
-      new Rotation3d(Math.toRadians(0.0), Math.toRadians(-22.0), Math.toRadians(35.0)));
-
-  public static final Transform3d INTAKE_SIDE_RIGHT = new Transform3d(
-      new Translation3d(Units.Inches.of(2.143069).in(Units.Meters), Units.Inches.of(-12.127149).in(Units.Meters),
-          Units.Inches.of(24.990728).in(Units.Meters)),
-      new Rotation3d(Math.toRadians(0.0), Math.toRadians(-22.0), Math.toRadians(325.0)));
-
-  public static final String OBJECT_DETECTION_CAMERA_NAME   = "0_Object_Detection_ELP";
   public static final String SHOOTER_SIDE_LEFT_CAMERA_NAME  = "1_Shooter_Left_See3Cam";
   public static final String SHOOTER_SIDE_RIGHT_CAMERA_NAME = "2_Shooter_Right_See3Cam";
 
