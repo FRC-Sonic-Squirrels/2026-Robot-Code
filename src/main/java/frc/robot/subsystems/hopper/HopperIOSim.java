@@ -12,20 +12,20 @@ import frc.robot.Constants.IntakeConstants.RollerConstants;
 
 public class HopperIOSim implements HopperIO {
 
-  private TalonFXSim rollerMotor =
-      new TalonFXSim(
-          DCMotor.getKrakenX60Foc(1), RollerConstants.ROLLER_GEARING, RollerConstants.MOI);
+  private TalonFXSim rollerMotor = new TalonFXSim(DCMotor.getKrakenX60Foc(1), RollerConstants.ROLLER_GEARING,
+      RollerConstants.MOI);
 
-  private VoltageOut rollerOpenLoopControl = new VoltageOut(0);
+  private VoltageOut      rollerOpenLoopControl   = new VoltageOut(0);
   private VelocityVoltage rollerClosedLoopControl = new VelocityVoltage(0);
 
-  public HopperIOSim() {}
+  public HopperIOSim() {
+  }
 
   @Override
   public void updateInputs(Inputs inputs) {
     rollerMotor.update(Constants.kDefaultPeriod);
     inputs.rollerAppliedVolts = rollerMotor.getVoltage();
-    inputs.rollerVelocityRPM = rollerMotor.getVelocity().in(Units.RPM);
+    inputs.rollerVelocityRPM  = rollerMotor.getVelocity().in(Units.RPM);
   }
 
   @Override
@@ -39,10 +39,9 @@ public class HopperIOSim implements HopperIO {
   }
 
   @Override
-  public void setRollerClosedLoopConstants(
-      double kP, double kV, double kS, double maxProfiledAcceleration) {
-    TalonFXConfiguration config = new TalonFXConfiguration();
-    Slot0Configs slot0Configs = new Slot0Configs();
+  public void setRollerClosedLoopConstants(double kP, double kV, double kS, double maxProfiledAcceleration) {
+    TalonFXConfiguration config       = new TalonFXConfiguration();
+    Slot0Configs         slot0Configs = new Slot0Configs();
 
     slot0Configs.kP = kP;
     slot0Configs.kV = kV;

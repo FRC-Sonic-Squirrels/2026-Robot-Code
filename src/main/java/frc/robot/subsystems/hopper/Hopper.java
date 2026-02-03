@@ -20,9 +20,7 @@ import frc.robot.Constants.RobotMode.RobotType;
 public class Hopper extends SubsystemBase {
 
   public enum HopperState {
-    Idle,
-    Override,
-    Shooting
+    Idle, Override, Shooting
   }
 
   // Execution timing
@@ -32,34 +30,27 @@ public class Hopper extends SubsystemBase {
   private static final LoggerGroup logGroup = LoggerGroup.build(IntakeConstants.ROOT_TABLE);
 
   // Rollers
-  private static final LoggerGroup rollerLogGroup = logGroup.subgroup(RollerConstants.ROOT_TABLE);
-  private static final LoggerEntry.Decimal logInputs_rollerVelocityRPM =
-      rollerLogGroup.buildDecimal("VelocityRPM");
-  private static final LoggerEntry.Decimal logInputs_rollerCurrentAmps =
-      rollerLogGroup.buildDecimal("CurrentAmps");
-  private static final LoggerEntry.Decimal logInputs_rollerTempCelsius =
-      rollerLogGroup.buildDecimal("TempCelsius");
-  private static final LoggerEntry.Decimal logInputs_rollerAppliedVolts =
-      rollerLogGroup.buildDecimal("AppliedVolts");
+  private static final LoggerGroup         rollerLogGroup               = logGroup.subgroup(RollerConstants.ROOT_TABLE);
+  private static final LoggerEntry.Decimal logInputs_rollerVelocityRPM  = rollerLogGroup.buildDecimal("VelocityRPM");
+  private static final LoggerEntry.Decimal logInputs_rollerCurrentAmps  = rollerLogGroup.buildDecimal("CurrentAmps");
+  private static final LoggerEntry.Decimal logInputs_rollerTempCelsius  = rollerLogGroup.buildDecimal("TempCelsius");
+  private static final LoggerEntry.Decimal logInputs_rollerAppliedVolts = rollerLogGroup.buildDecimal("AppliedVolts");
 
-  private static final LoggerEntry.Decimal logRollerTargetVelocityRPM =
-      rollerLogGroup.buildDecimal("TargetVelocityRPM");
-  private static final LoggerEntry.EnumValue<ControlMode> logRollerControlMode =
-      rollerLogGroup.buildEnum("ControlMode");
+  private static final LoggerEntry.Decimal                logRollerTargetVelocityRPM = rollerLogGroup
+      .buildDecimal("TargetVelocityRPM");
+  private static final LoggerEntry.EnumValue<ControlMode> logRollerControlMode       = rollerLogGroup
+      .buildEnum("ControlMode");
 
-  private static final LoggerEntry.EnumValue<HopperState> logHopperState =
-      logGroup.buildEnum("HopperState");
+  private static final LoggerEntry.EnumValue<HopperState> logHopperState = logGroup.buildEnum("HopperState");
 
-  private static final TunableNumberGroup group =
-      new TunableNumberGroup(IntakeConstants.ROOT_TABLE);
+  private static final TunableNumberGroup group = new TunableNumberGroup(IntakeConstants.ROOT_TABLE);
   // Roller
-  private static final TunableNumberGroup rollerSubgroup =
-      group.subgroup(RollerConstants.ROOT_TABLE);
-  private static final LoggedTunableNumber rKS = rollerSubgroup.build("KS");
-  private static final LoggedTunableNumber rKP = rollerSubgroup.build("KP");
-  private static final LoggedTunableNumber rKV = rollerSubgroup.build("KV");
-  private static final LoggedTunableNumber rollerTargetAccelerationConfig =
-      rollerSubgroup.build("MaxAccelerationConstraint");
+  private static final TunableNumberGroup  rollerSubgroup                 = group.subgroup(RollerConstants.ROOT_TABLE);
+  private static final LoggedTunableNumber rKS                            = rollerSubgroup.build("KS");
+  private static final LoggedTunableNumber rKP                            = rollerSubgroup.build("KP");
+  private static final LoggedTunableNumber rKV                            = rollerSubgroup.build("KV");
+  private static final LoggedTunableNumber rollerTargetAccelerationConfig = rollerSubgroup
+      .build("MaxAccelerationConstraint");
 
   static {
     if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_RETIRED_HOLO) {
@@ -82,7 +73,7 @@ public class Hopper extends SubsystemBase {
     }
   }
 
-  private final HopperIO io;
+  private final HopperIO        io;
   private final HopperIO.Inputs inputs = new HopperIO.Inputs(logGroup);
 
   private HopperState hopperState = HopperState.Idle;
@@ -91,9 +82,8 @@ public class Hopper extends SubsystemBase {
 
   private ControlMode rollerControlMode = ControlMode.OPEN_LOOP;
 
-  private Trigger stallDetected =
-      new Trigger(() -> inputs.rollerVelocityRPM <= 50 && inputs.rollerAppliedVolts >= 0.5)
-          .debounce(.1);
+  private Trigger stallDetected = new Trigger(() -> inputs.rollerVelocityRPM <= 50 && inputs.rollerAppliedVolts >= 0.5)
+      .debounce(.1);
 
   public Hopper(HopperIO io) {
     this.io = io;
@@ -118,9 +108,7 @@ public class Hopper extends SubsystemBase {
       logHopperState.info(hopperState);
 
       var rhc = hashCode();
-      if (rKS.hasChanged(rhc)
-          || rKP.hasChanged(rhc)
-          || rKV.hasChanged(rhc)
+      if (rKS.hasChanged(rhc) || rKP.hasChanged(rhc) || rKV.hasChanged(rhc)
           || rollerTargetAccelerationConfig.hasChanged(rhc)) {
         setRollerConstants();
       }
@@ -147,8 +135,7 @@ public class Hopper extends SubsystemBase {
   // Setters
 
   private void setRollerConstants() {
-    io.setRollerClosedLoopConstants(
-        rKP.get(), rKV.get(), rKS.get(), rollerTargetAccelerationConfig.get());
+    io.setRollerClosedLoopConstants(rKP.get(), rKV.get(), rKS.get(), rollerTargetAccelerationConfig.get());
   }
 
   public void setRollerPercentOut(double percent) {

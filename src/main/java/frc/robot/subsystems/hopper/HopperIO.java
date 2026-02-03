@@ -16,12 +16,15 @@ public interface HopperIO {
     }
   }
 
-  public default void updateInputs(Inputs inputs) {}
+  public default void updateInputs(Inputs inputs) {
+  }
 
-  public default void setRollerVoltage(double volts) {}
+  public default void setRollerVoltage(double volts) {
+  }
 
-  public default void setRollerVelocity(double revPerMin) {}
+  public default void setRollerVelocity(double revPerMin) {
+  }
 
-  public default void setRollerClosedLoopConstants(
-      double kP, double kV, double kS, double targetAccelerationConfig) {}
+  public default void setRollerClosedLoopConstants(double kP, double kV, double kS, double targetAccelerationConfig) {
+  }
 }
