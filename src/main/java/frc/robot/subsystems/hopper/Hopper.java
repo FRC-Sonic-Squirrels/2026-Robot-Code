@@ -1,4 +1,3 @@
-// TODO CANID is 26, where do we notate this?
 package frc.robot.subsystems.hopper;
 
 import edu.wpi.first.units.Units;
