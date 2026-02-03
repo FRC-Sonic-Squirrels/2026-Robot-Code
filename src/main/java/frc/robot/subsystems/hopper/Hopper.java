@@ -1,5 +1,9 @@
+// TODO CANID is 26, where do we notate this?
 package frc.robot.subsystems.hopper;
 
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.AngularVelocity;
+import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.team2930.ControlMode;
@@ -11,7 +15,7 @@ import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.IntakeConstants.RollerConstants;
-import frc.robot.subsystems.intake.Intake.IntakeState;
+import frc.robot.Constants.RobotMode.RobotType;
 
 public class Hopper extends SubsystemBase {
 
@@ -43,8 +47,8 @@ public class Hopper extends SubsystemBase {
   private static final LoggerEntry.EnumValue<ControlMode> logRollerControlMode =
       rollerLogGroup.buildEnum("ControlMode");
 
-  private static final LoggerEntry.EnumValue<IntakeState> logIntakeState =
-      logGroup.buildEnum("IntakeState");
+  private static final LoggerEntry.EnumValue<HopperState> logHopperState =
+      logGroup.buildEnum("HopperState");
 
   private static final TunableNumberGroup group =
       new TunableNumberGroup(IntakeConstants.ROOT_TABLE);
@@ -56,6 +60,27 @@ public class Hopper extends SubsystemBase {
   private static final LoggedTunableNumber rKV = rollerSubgroup.build("KV");
   private static final LoggedTunableNumber rollerTargetAccelerationConfig =
       rollerSubgroup.build("MaxAccelerationConstraint");
+
+  static {
+    if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_RETIRED_HOLO) {
+      rKS.initDefault(0);
+      rKP.initDefault(0.4);
+      rKV.initDefault(0.13);
+      rollerTargetAccelerationConfig.initDefault(200);
+
+    } else if (Constants.RobotMode.isSimBot()) {
+      rKS.initDefault(0);
+      rKP.initDefault(0.00006);
+      rKV.initDefault(0.0002);
+      rollerTargetAccelerationConfig.initDefault(0.0);
+
+    } else {
+      rKS.initDefault(0);
+      rKP.initDefault(0.4);
+      rKV.initDefault(0.13);
+      rollerTargetAccelerationConfig.initDefault(200);
+    }
+  }
 
   private final HopperIO io;
   private final HopperIO.Inputs inputs = new HopperIO.Inputs(logGroup);
@@ -90,6 +115,8 @@ public class Hopper extends SubsystemBase {
 
       logRollerControlMode.info(rollerControlMode);
 
+      logHopperState.info(hopperState);
+
       var rhc = hashCode();
       if (rKS.hasChanged(rhc)
           || rKP.hasChanged(rhc)
@@ -103,9 +130,12 @@ public class Hopper extends SubsystemBase {
           break;
 
         case Idle:
+          setRollerVelocity(0);
+          setRollerPercentOut(0);
           break;
 
         case Shooting:
+          setRollerVelocity(240);
           break;
 
         default:
@@ -131,5 +161,31 @@ public class Hopper extends SubsystemBase {
     io.setRollerVelocity(revPerMin);
     rollerTargetRPM = revPerMin;
     logRollerTargetVelocityRPM.info(rollerTargetRPM);
+  }
+
+  public void setState(HopperState state) {
+    hopperState = state;
+  }
+
+  // Getters
+
+  public Current getRollerCurrentDraw() {
+    return Units.Amps.of(inputs.rollerCurrentAmps);
+  }
+
+  public AngularVelocity getRollerVelocity() {
+    return Units.RPM.of(inputs.rollerVelocityRPM);
+  }
+
+  public HopperIOSim getSim() {
+    if (io instanceof HopperIOSim) {
+      return (HopperIOSim) io;
+    }
+
+    return null;
+  }
+
+  public boolean rollerStallDetected() {
+    return stallDetected.getAsBoolean();
   }
 }
