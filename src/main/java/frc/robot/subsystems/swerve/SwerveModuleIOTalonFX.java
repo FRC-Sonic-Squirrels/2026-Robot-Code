@@ -103,7 +103,6 @@ public class SwerveModuleIOTalonFX implements SwerveModuleIO {
   private final BaseStatusSignal[] refreshSet;
 
   public SwerveModuleIOTalonFX(RobotConfig globalConfig, IndividualSwerveModuleConfig moduleSpecificConfig) {
-
     // --- define constants ---
 
     this.distanceToRotation = 1.0 / globalConfig.getWheelRadius().in(edu.wpi.first.units.Units.Meters);
@@ -127,9 +126,9 @@ public class SwerveModuleIOTalonFX implements SwerveModuleIO {
     steerMotorCurrentLimitConfig = globalConfig.getSteerTalonCurrentLimitConfig();
     // --- define constants ---
 
-    driveTalon = new TalonFX(driveMotorCANID, globalConfig.getCANBusName());
-    turnTalon  = new TalonFX(steerMotorCANID, globalConfig.getCANBusName());
-    cancoder   = new CANcoder(cancoderCANID, globalConfig.getCANBusName());
+    driveTalon = new TalonFX(driveMotorCANID, globalConfig.getCANBus());
+    turnTalon  = new TalonFX(steerMotorCANID, globalConfig.getCANBus());
+    cancoder   = new CANcoder(cancoderCANID, globalConfig.getCANBus());
 
     // -- DRIVE
     var driveTalonConfig = new TalonFXConfiguration();

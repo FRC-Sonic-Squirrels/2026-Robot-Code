@@ -5,6 +5,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
@@ -295,7 +296,7 @@ public class StateMachine {
     commands.add(sequence);
 
     sequence.setName("substate_" + command.getName());
-    sequence.schedule();
+    CommandScheduler.getInstance().schedule(sequence);
 
     return sequence;
   }

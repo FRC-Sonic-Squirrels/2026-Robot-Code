@@ -182,12 +182,10 @@ public class Drivetrain extends SubsystemBase {
     this.isAutonomous = isAutonomous;
 
     // Can bus
-    String canBusName = config.getCANBusName();
-    if (canBusName != null) {
-      canBus  = new CANBus(canBusName);
+    canBus = config.getCANBus();
+    if (canBus != null) {
       isCANFD = canBus.isNetworkFD();
     } else {
-      canBus  = null;
       isCANFD = false;
     }
 

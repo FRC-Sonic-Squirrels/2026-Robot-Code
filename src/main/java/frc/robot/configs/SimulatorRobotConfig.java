@@ -1,5 +1,6 @@
 package frc.robot.configs;
 
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.pathplanner.lib.config.ModuleConfig;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
@@ -206,7 +207,7 @@ public class SimulatorRobotConfig extends RobotConfig {
   }
 
   @Override
-  public String getCANBusName() {
+  public CANBus getCANBus() {
     return null;
   }
 

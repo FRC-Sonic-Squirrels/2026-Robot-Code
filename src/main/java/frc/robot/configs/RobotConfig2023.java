@@ -1,5 +1,6 @@
 package frc.robot.configs;
 
+import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.pathplanner.lib.config.ModuleConfig;
@@ -82,7 +83,7 @@ public class RobotConfig2023 extends RobotConfig {
   private static final double GYRO_MOUNTING_YAW = 0.0;
 
   // -------- CAN BUS NAME -----------
-  private static final String CAN_BUS_NAME = "CANivore";
+  private static final CANBus CAN_BUS_NAME = new CANBus("CANivore");
 
   // -------- ROBOT DIMENSIONS -----------
   // front to back
@@ -225,7 +226,7 @@ public class RobotConfig2023 extends RobotConfig {
   }
 
   @Override
-  public String getCANBusName() {
+  public CANBus getCANBus() {
     return CAN_BUS_NAME;
   }
 

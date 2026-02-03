@@ -49,21 +49,23 @@ public class CommandTest {
     cmd2.addRequirements(req1, req2);
     cmd3.addRequirements(req2, req3);
 
-    cmd1.schedule();
+    var instance = CommandScheduler.getInstance();
+
+    instance.schedule(cmd1);
     scheduler.run();
     scheduler.run();
     assertTrue(cmd1.executed > 0);
     assertFalse(cmd2.executed > 0);
     assertFalse(cmd3.executed > 0);
 
-    new WaitForRequirementsCommand(cmd2).schedule();
+    instance.schedule(new WaitForRequirementsCommand(cmd2));
     scheduler.run();
     scheduler.run();
     assertTrue(cmd1.executed > 0);
     assertFalse(cmd2.executed > 0);
     assertFalse(cmd3.executed > 0);
 
-    new WaitForRequirementsCommand(cmd3).schedule();
+    instance.schedule(new WaitForRequirementsCommand(cmd3));
     scheduler.run();
     scheduler.run();
     assertTrue(cmd1.executed > 0);

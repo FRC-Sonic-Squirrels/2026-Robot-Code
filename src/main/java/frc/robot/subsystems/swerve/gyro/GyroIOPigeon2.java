@@ -45,7 +45,7 @@ public class GyroIOPigeon2 implements GyroIO {
     pigeonConfig.MountPose.MountPoseRoll  = config.getGyroMountingRoll();
     pigeonConfig.MountPose.MountPoseYaw   = config.getGyroMountingYaw();
 
-    pigeon = new Pigeon2(canID, config.getCANBusName());
+    pigeon = new Pigeon2(canID, config.getCANBus());
 
     pigeon.getConfigurator().apply(pigeonConfig);
 

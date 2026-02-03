@@ -33,7 +33,7 @@ public class WaitForRequirementsCommand extends Command {
       }
 
       // If not, we can schedule the actual command.
-      command.schedule();
+      CommandScheduler.getInstance().schedule(command);
       command = null;
     }
   }

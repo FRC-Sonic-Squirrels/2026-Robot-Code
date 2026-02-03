@@ -5,6 +5,7 @@
 package frc.lib.team2930;
 
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import java.util.function.Supplier;
 
@@ -33,7 +34,7 @@ public class RunStateMachineCommand extends Command {
   public void initialize() {
     stateMachine = supplier.get();
     command      = stateMachine.asCommand();
-    command.schedule();
+    CommandScheduler.getInstance().schedule(command);
   }
 
   // Called every time the scheduler runs while the command is scheduled.
