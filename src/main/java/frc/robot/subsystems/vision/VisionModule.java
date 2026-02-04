@@ -130,6 +130,12 @@ public class VisionModule {
     }
 
     lastStatus = status;
+    log_status.info(status.name());
+    log_successfulResult.info(status.success);
+
+    if (!status.success) {
+      return;
+    }
 
     double[] seenTagsArray = new double[fieldsToLog.seenTags().length];
 
@@ -137,7 +143,6 @@ public class VisionModule {
       seenTagsArray[i] = fieldsToLog.seenTags()[i];
     }
 
-    log_status.info(status.name());
     log_calculatedRobotPose3d.info(fieldsToLog.robotPose3d());
     log_calculatedRobotPose2d.info(fieldsToLog.robotPose3d().toPose2d());
     log_numSeenTargets.info(fieldsToLog.numSeenTargets());
@@ -146,7 +151,6 @@ public class VisionModule {
     log_tagAmbiguity.info(fieldsToLog.tagAmbiguity());
     log_xyStandardDeviation.info(fieldsToLog.xyStandardDeviation());
     log_thetaStandardDeviation.info(fieldsToLog.thetaStandardDeviation());
-    log_successfulResult.info(status.success);
     log_seenTargetsIDs.info(seenTagsArray);
   }
 }

@@ -312,9 +312,10 @@ public class Vision extends SubsystemBase {
       var yawDelta = GeometryUtil.optimizeRotation(poseYaw - gyroYaw.getRadians());
 
       var absError = Math.toDegrees(Math.abs(yawDelta));
+      logRejectByGyroError.info(absError);
+
       if (absError > gyroFilteringToleranceDegrees.get()) {
         logRejectByGyro.info(++useGyroBasedFilteringForVisionCount);
-        logRejectByGyroError.info(absError);
         return VisionResultLoggedFields.unsuccessfulResult(VisionResultStatus.NOT_CLOSE_ENOUGH_TO_GYRO_ROTATION);
       }
     }

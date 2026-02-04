@@ -28,7 +28,7 @@ public class PoseEstimator {
   private final PoseUpdate headPoseUpdate = new PoseUpdate(-Double.MAX_VALUE, null);
   private final PoseUpdate tailPoseUpdate = new PoseUpdate(Double.MAX_VALUE, null);
   private final double[]   q;
-  private final int        tagsMask;
+  private final long       tagsMask;
   private double           visionCutoff;
   public int               rejectionCutoff;
   public int               rejectionInvalidTags;
@@ -37,9 +37,9 @@ public class PoseEstimator {
   public PoseEstimator(double x, double y, double theta, int[] validTags) {
     q = new double[] { x * x, y * y, theta * theta };
 
-    var tagsMask = 0;
+    var tagsMask = 0L;
     for (int tag : validTags) {
-      tagsMask |= 1 << tag;
+      tagsMask |= 1L << tag;
     }
     this.tagsMask = tagsMask;
 
@@ -166,9 +166,9 @@ public class PoseEstimator {
         continue;
       }
 
-      var tagsMask = 0;
+      var tagsMask = 0L;
       for (var tag : timestampedVisionUpdate.tags) {
-        tagsMask |= 1 << tag;
+        tagsMask |= 1L << tag;
       }
 
       if ((this.tagsMask & tagsMask) != tagsMask) {
