@@ -7,7 +7,6 @@ import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
-import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -27,8 +26,6 @@ public class HopperIOReal implements HopperIO {
   private final StatusSignal<Temperature>     rollerDeviceTemp;
   private final StatusSignal<Voltage>         rollerAppliedVoltage;
   private final StatusSignal<AngularVelocity> rollerVelocity;
-
-  private final VoltageOut rollerOpenLoopControl = new VoltageOut(0.0).withEnableFOC(true);
 
   private final MotionMagicVelocityVoltage rollerClosedLoopControl = new MotionMagicVelocityVoltage(0)
       .withEnableFOC(true);
@@ -76,10 +73,6 @@ public class HopperIOReal implements HopperIO {
     inputs.rollerVelocityRPM  = rollerVelocity.getValue().in(Units.RPM);
   }
 
-  @Override
-  public void setRollerVoltage(double volts) {
-    rollerMotor.setControl(rollerOpenLoopControl.withOutput(volts));
-  }
 
   @Override
   public void setRollerVelocity(double revPerMin) {

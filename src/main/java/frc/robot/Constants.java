@@ -281,6 +281,7 @@ public final class Constants {
       public static final double STATOR_CURRENT_LIMIT = 100.0;
 
       public static final String ROOT_TABLE = "Rollers";
+      public static final int setRollerVelocity = 240;
     }
   }
 

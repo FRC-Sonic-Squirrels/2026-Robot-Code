@@ -19,9 +19,6 @@ public interface HopperIO {
   public default void updateInputs(Inputs inputs) {
   }
 
-  public default void setRollerVoltage(double volts) {
-  }
-
   public default void setRollerVelocity(double revPerMin) {
   }
 

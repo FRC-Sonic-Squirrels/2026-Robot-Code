@@ -87,8 +87,6 @@ public class Hopper extends SubsystemBase {
   public Hopper(HopperIO io) {
     this.io = io;
 
-    io.setRollerVoltage(0.0);
-
     setRollerConstants();
   }
 
@@ -118,7 +116,6 @@ public class Hopper extends SubsystemBase {
 
         case Idle:
           setRollerVelocity(0);
-          setRollerPercentOut(0);
           break;
 
         case Shooting:
@@ -135,11 +132,6 @@ public class Hopper extends SubsystemBase {
 
   private void setRollerConstants() {
     io.setRollerClosedLoopConstants(rKP.get(), rKV.get(), rKS.get(), rollerTargetAccelerationConfig.get());
-  }
-
-  public void setRollerPercentOut(double percent) {
-    io.setRollerVoltage(percent * Constants.MAX_VOLTAGE);
-    rollerControlMode = ControlMode.OPEN_LOOP;
   }
 
   public void setRollerVelocity(double revPerMin) {
