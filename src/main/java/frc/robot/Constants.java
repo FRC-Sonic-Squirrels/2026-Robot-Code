@@ -26,7 +26,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import frc.lib.team2930.AllianceFlipUtil;
 import frc.robot.Constants.RobotMode.RobotType;
 import frc.robot.configs.*;
-import frc.robot.configs.SimulatorRobotConfig;
+
 import java.util.function.Supplier;
 
 /**
@@ -281,7 +281,7 @@ public final class Constants {
       public static final double STATOR_CURRENT_LIMIT = 100.0;
 
       public static final String ROOT_TABLE = "Rollers";
-      public static final int setRollerVelocity = 240;
+      public static final int SET_ROLLER_VELOCITY = 240;
     }
   }
 

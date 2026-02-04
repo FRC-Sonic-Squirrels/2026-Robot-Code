@@ -5,7 +5,6 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.lib.team2930.ControlMode;
 import frc.lib.team2930.ExecutionTiming;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
@@ -35,10 +34,8 @@ public class Hopper extends SubsystemBase {
   private static final LoggerEntry.Decimal logInputs_rollerTempCelsius  = rollerLogGroup.buildDecimal("TempCelsius");
   private static final LoggerEntry.Decimal logInputs_rollerAppliedVolts = rollerLogGroup.buildDecimal("AppliedVolts");
 
-  private static final LoggerEntry.Decimal                logRollerTargetVelocityRPM = rollerLogGroup
+  private static final LoggerEntry.Decimal logRollerTargetVelocityRPM = rollerLogGroup
       .buildDecimal("TargetVelocityRPM");
-  private static final LoggerEntry.EnumValue<ControlMode> logRollerControlMode       = rollerLogGroup
-      .buildEnum("ControlMode");
 
   private static final LoggerEntry.EnumValue<HopperState> logHopperState = logGroup.buildEnum("HopperState");
 
@@ -79,8 +76,6 @@ public class Hopper extends SubsystemBase {
 
   private double rollerTargetRPM;
 
-  private ControlMode rollerControlMode = ControlMode.OPEN_LOOP;
-
   private Trigger stallDetected = new Trigger(() -> inputs.rollerVelocityRPM <= 50 && inputs.rollerAppliedVolts >= 0.5)
       .debounce(.1);
 
@@ -99,8 +94,6 @@ public class Hopper extends SubsystemBase {
       logInputs_rollerCurrentAmps.info(inputs.rollerCurrentAmps);
       logInputs_rollerTempCelsius.info(inputs.rollerTempCelsius);
       logInputs_rollerAppliedVolts.info(inputs.rollerAppliedVolts);
-
-      logRollerControlMode.info(rollerControlMode);
 
       logHopperState.info(hopperState);
 
@@ -135,7 +128,6 @@ public class Hopper extends SubsystemBase {
   }
 
   public void setRollerVelocity(double revPerMin) {
-    rollerControlMode = ControlMode.CLOSED_LOOP;
     io.setRollerVelocity(revPerMin);
     rollerTargetRPM = revPerMin;
     logRollerTargetVelocityRPM.info(rollerTargetRPM);
