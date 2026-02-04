@@ -24,7 +24,8 @@ public class AutoStateMachine extends StateMachine {
 
   private final DrivetrainWrapper wrapper;
   private final RobotStates       states;
-  private final Intake            intake;
+  private final Intake            leftIntake;
+  private final Intake            rightIntake;
 
   private final List<ChoreoTrajectoryWithName> scoringPaths      = new ArrayList<>();
   private final List<ChoreoTrajectoryWithName> coralStationPaths = new ArrayList<>();
@@ -45,7 +46,8 @@ public class AutoStateMachine extends StateMachine {
     super("Auto");
 
     led         = subsystems.led();
-    intake      = subsystems.intake();
+    leftIntake  = subsystems.leftIntake();
+    rightIntake = subsystems.rightIntake();
     wrapper     = subsystems.drivetrain();
     this.states = states;
 
