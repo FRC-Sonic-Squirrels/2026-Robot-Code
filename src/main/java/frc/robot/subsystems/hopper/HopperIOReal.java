@@ -73,7 +73,6 @@ public class HopperIOReal implements HopperIO {
     inputs.rollerVelocityRPM  = rollerVelocity.getValue().in(Units.RPM);
   }
 
-
   @Override
   public void setRollerVelocity(double revPerMin) {
     rollerMotor.setControl(rollerClosedLoopControl.withVelocity(Units.RPM.of(revPerMin).in(Units.RotationsPerSecond)));
