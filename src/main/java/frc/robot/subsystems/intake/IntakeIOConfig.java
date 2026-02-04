@@ -4,9 +4,4 @@ import com.ctre.phoenix6.signals.InvertedValue;
 
 public record IntakeIOConfig(int pivotMotorCANID, int rollerMotorCANID, InvertedValue pivotMotorInverted,
     InvertedValue rollerMotorInverted) {
-
-  public static IntakeIOConfig configureWithDefaultInverts(int pivotMotorCANID, int rollerMotorCANID,
-      InvertedValue pivotMotorInverted, InvertedValue rollerMotorInverted) {
-    return new IntakeIOConfig(pivotMotorCANID, rollerMotorCANID, pivotMotorInverted, rollerMotorInverted);
-  }
 }
