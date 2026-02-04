@@ -11,8 +11,8 @@ import frc.lib.team2930.LoggerGroup;
 import frc.lib.team2930.TunableNumberGroup;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
-import frc.robot.Constants.IntakeConstants;
-import frc.robot.Constants.IntakeConstants.RollerConstants;
+import frc.robot.Constants.HopperConstants;
+import frc.robot.Constants.HopperConstants.RollerConstants;
 import frc.robot.Constants.RobotMode.RobotType;
 
 public class Hopper extends SubsystemBase {
@@ -22,10 +22,10 @@ public class Hopper extends SubsystemBase {
   }
 
   // Execution timing
-  private static final ExecutionTiming timing = new ExecutionTiming(IntakeConstants.ROOT_TABLE);
+  private static final ExecutionTiming timing = new ExecutionTiming(HopperConstants.ROOT_TABLE);
 
   // Logging
-  private static final LoggerGroup logGroup = LoggerGroup.build(IntakeConstants.ROOT_TABLE);
+  private static final LoggerGroup logGroup = LoggerGroup.build(HopperConstants.ROOT_TABLE);
 
   // Rollers
   private static final LoggerGroup         rollerLogGroup               = logGroup.subgroup(RollerConstants.ROOT_TABLE);
@@ -39,7 +39,7 @@ public class Hopper extends SubsystemBase {
 
   private static final LoggerEntry.EnumValue<HopperState> logHopperState = logGroup.buildEnum("HopperState");
 
-  private static final TunableNumberGroup group = new TunableNumberGroup(IntakeConstants.ROOT_TABLE);
+  private static final TunableNumberGroup group = new TunableNumberGroup(HopperConstants.ROOT_TABLE);
   // Roller
   private static final TunableNumberGroup  rollerSubgroup                 = group.subgroup(RollerConstants.ROOT_TABLE);
   private static final LoggedTunableNumber rKS                            = rollerSubgroup.build("KS");
@@ -112,7 +112,7 @@ public class Hopper extends SubsystemBase {
           break;
 
         case Shooting:
-          setRollerVelocity(240);
+          setRollerVelocity(HopperConstants.RollerConstants.SHOOTING_ROLLER_VELOCITY);
           break;
 
         default:
