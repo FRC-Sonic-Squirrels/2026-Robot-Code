@@ -13,6 +13,7 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -53,6 +54,7 @@ import frc.robot.subsystems.climber.ClimberIOSim;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.IntakeState;
 import frc.robot.subsystems.intake.IntakeIO;
+import frc.robot.subsystems.intake.IntakeIOConfig;
 import frc.robot.subsystems.intake.IntakeIOReal;
 import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.swerve.Drivetrain;
@@ -88,7 +90,8 @@ public class RobotContainer {
   private final DrivetrainWrapper   drivetrainWrapper;
   private final AprilTagFieldLayout aprilTagLayout;
   private final Vision              vision;
-  private final Intake              intake;
+  private final Intake              rightIntake;
+  private final Intake              leftIntake;
   private final VisionGamepiece     visionGamepiece;
   private final LED                 led;
   private final Climber             climber;
@@ -169,10 +172,12 @@ public class RobotContainer {
       vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
           drivetrain::addVisionEstimate, config.getReplayVisionModules());
 
-      intake  = new Intake(new IntakeIO() {
-              }, robotStates);
-      climber = new Climber(new ClimberIO() {
-              });
+      leftIntake  = new Intake(new IntakeIO() {
+                  }, robotStates);
+      rightIntake = new Intake(new IntakeIO() {
+                  }, robotStates);
+      climber     = new Climber(new ClimberIO() {
+                  });
 
       if (Constants.unusedCode) {
         visionGamepiece = new VisionGamepiece(new VisionGamepieceIO() {
@@ -222,7 +227,8 @@ public class RobotContainer {
             }
           }
 
-          intake = new Intake(new IntakeIOSim(), robotStates);
+          rightIntake = new Intake(new IntakeIOSim(), robotStates);
+          leftIntake = new Intake(new IntakeIOSim(), robotStates);
           climber = new Climber(new ClimberIOSim());
           led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered, robotStates);
           break;
@@ -234,7 +240,9 @@ public class RobotContainer {
 
           vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
               drivetrain::addVisionEstimate, config.getReplayVisionModules());
-          intake = new Intake(new IntakeIO() {
+          leftIntake = new Intake(new IntakeIO() {
+          }, robotStates);
+          rightIntake = new Intake(new IntakeIO() {
           }, robotStates);
           climber = new Climber(new ClimberIO() {
           });
@@ -253,7 +261,10 @@ public class RobotContainer {
           drivetrain = new Drivetrain(config, new GyroIOPigeon2(config, config.getGyroCANID()),
               new GyroIOPigeon2(config, Constants.CanIDs.GYRO_2_CAN_ID), config.getSwerveModuleObjects(),
               () -> is_autonomous);
-          intake = new Intake(new IntakeIOReal(), robotStates);
+          leftIntake = new Intake(new IntakeIO() {
+          }, robotStates);
+          rightIntake = new Intake(new IntakeIO() {
+          }, robotStates);
           climber = new Climber(new ClimberIO() {
           });
           vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
@@ -275,7 +286,10 @@ public class RobotContainer {
           } catch (InterruptedException e) {
             System.out.println("sleep interrupted");
           }
-          intake = new Intake(new IntakeIOReal(), robotStates);
+          leftIntake = new Intake(new IntakeIO() {
+          }, robotStates);
+          rightIntake = new Intake(new IntakeIO() {
+          }, robotStates);
           climber = new Climber(new ClimberIOReal());
           drivetrain = new Drivetrain(config, new GyroIOPigeon2(config, config.getGyroCANID()), new GyroIO.Fake(),
               config.getSwerveModuleObjects(), () -> is_autonomous);
@@ -299,7 +313,14 @@ public class RobotContainer {
           } catch (InterruptedException e) {
             System.out.println("sleep interrupted");
           }
-          intake = new Intake(new IntakeIOReal(), robotStates);
+          IntakeIOConfig leftIntakeIOConfig = new IntakeIOConfig(Constants.CanIDs.INTAKE_LEFT_PIVOT_CAN_ID,
+              Constants.CanIDs.INTAKE_LEFT_ROLLER_CAN_ID, InvertedValue.Clockwise_Positive,
+              InvertedValue.Clockwise_Positive);
+          IntakeIOConfig rightIntakeIOConfig = new IntakeIOConfig(Constants.CanIDs.INTAKE_RIGHT_PIVOT_CAN_ID,
+              Constants.CanIDs.INTAKE_RIGHT_ROLLER_CAN_ID, InvertedValue.Clockwise_Positive,
+              InvertedValue.Clockwise_Positive);
+          leftIntake = new Intake(new IntakeIOReal(leftIntakeIOConfig), robotStates);
+          rightIntake = new Intake(new IntakeIOReal(rightIntakeIOConfig), robotStates);
           climber = new Climber(new ClimberIOReal());
           drivetrain = new Drivetrain(config, new GyroIOPigeon2(config, config.getGyroCANID()), new GyroIO.Fake(),
               config.getSwerveModuleObjects(), () -> is_autonomous);
@@ -321,7 +342,9 @@ public class RobotContainer {
               config.getReplaySwerveModuleObjects(), () -> is_autonomous);
           vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
               drivetrain::addVisionEstimate, config.getReplayVisionModules());
-          intake = new Intake(new IntakeIO() {
+          leftIntake = new Intake(new IntakeIO() {
+          }, robotStates);
+          rightIntake = new Intake(new IntakeIO() {
           }, robotStates);
           climber = new Climber(new ClimberIO() {
           });
@@ -352,9 +375,10 @@ public class RobotContainer {
       coralStationPosChooser.add(chooser);
     }
 
-    var subsystems = new AutosSubsystems(drivetrainWrapper, led, intake);
+    var subsystems = new AutosSubsystems(drivetrainWrapper, led, leftIntake, rightIntake);
 
-    robotStates.setSubsystems(intake, drivetrainWrapper, () -> driverController.getRightTrigger().getAsBoolean());
+    robotStates.setSubsystems(leftIntake, rightIntake, drivetrainWrapper,
+        () -> driverController.getRightTrigger().getAsBoolean());
 
     autoManager = new AutosManager(subsystems, config, autoChooser, stringToAutoSupplierMap, () -> {
       var result = flipAutoChooser.get();
@@ -393,20 +417,30 @@ public class RobotContainer {
     // ---------- OPERATOR CONTROLS -----------
 
     // Eject
-    operatorController.registerTrigger(XboxControllerWrapper.Button.leftBumper, "Intake Eject")
-        .onTrue(Commands.runOnce(() -> intake.setState(IntakeState.Eject)))
-        .onFalse(Commands.runOnce(() -> intake.setState(IntakeState.Stow)));
+    operatorController.registerTrigger(XboxControllerWrapper.Button.leftBumper, "Left Intake Eject")
+        .onTrue(Commands.runOnce(() -> leftIntake.setState(IntakeState.Eject)))
+        .onFalse(Commands.runOnce(() -> leftIntake.setState(IntakeState.Stow)));
+    operatorController.registerTrigger(XboxControllerWrapper.Button.rightBumper, "Right Intake Eject")
+        .onTrue(Commands.runOnce(() -> rightIntake.setState(IntakeState.Eject)))
+        .onFalse(Commands.runOnce(() -> rightIntake.setState(IntakeState.Stow)));
 
     // Intake
-    operatorController.registerTrigger(XboxControllerWrapper.Button.rightBumper, "Intake")
-        .onTrue(Commands.runOnce(() -> intake.setState(IntakeState.IntakeCoral)))
-        .onFalse(Commands.runOnce(() -> intake.setState(IntakeState.Stow)));
+    operatorController.registerTrigger(XboxControllerWrapper.Button.leftTrigger, "Left Intake")
+        .onTrue(Commands.runOnce(() -> leftIntake.setState(IntakeState.IntakeCoral)))
+        .onFalse(Commands.runOnce(() -> leftIntake.setState(IntakeState.Stow)));
+    operatorController.registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Right Intake")
+        .onTrue(Commands.runOnce(() -> leftIntake.setState(IntakeState.IntakeCoral)))
+        .onFalse(Commands.runOnce(() -> leftIntake.setState(IntakeState.Stow)));
 
     // Intake positions
-    operatorController.registerTrigger(XboxControllerWrapper.Button.a, "Intake Pivot In")
-        .onTrue(Commands.runOnce(() -> intake.setState(IntakeState.Stow)));
-    operatorController.registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Intake Pivot Out")
-        .onTrue(Commands.runOnce(() -> intake.setState(IntakeState.Down)));
+    operatorController.registerTrigger(XboxControllerWrapper.Button.a, "Left Intake Pivot In")
+        .onTrue(Commands.runOnce(() -> leftIntake.setState(IntakeState.Stow)));
+    operatorController.registerTrigger(XboxControllerWrapper.Button.leftStick, "Left Intake Pivot Out")
+        .onTrue(Commands.runOnce(() -> leftIntake.setState(IntakeState.Down)));
+    operatorController.registerTrigger(XboxControllerWrapper.Button.x, "Right Intake Pivot In")
+        .onTrue(Commands.runOnce(() -> rightIntake.setState(IntakeState.Stow)));
+    operatorController.registerTrigger(XboxControllerWrapper.Button.rightStick, "Right Intake Pivot Out")
+        .onTrue(Commands.runOnce(() -> rightIntake.setState(IntakeState.Down)));
 
     // Climber in
     operatorController.registerTrigger(XboxControllerWrapper.Button.b, "Climber In")
@@ -414,7 +448,7 @@ public class RobotContainer {
             .andThen(Commands.waitSeconds(0.15))
             .andThen(new ClimberSetAngle(climber, Constants.ClimberConstants.MIN_CLIMBER_ANGLE)));
 
-    operatorController.registerTrigger(XboxControllerWrapper.Button.b, "Climber Out")
+    operatorController.registerTrigger(XboxControllerWrapper.Button.y, "Climber Out")
         .onTrue(new ClimberSetAngle(climber, Rotation2d.fromRotations(5.4)));
 
     operatorController.registerTrigger(XboxControllerWrapper.Button.rightStick, "Climber in")
@@ -423,25 +457,28 @@ public class RobotContainer {
     // ---------- ON-ROBOT CONTROLS ------------
 
     zeroSensorsButtonTrigger.onTrue(new RunsWhenDisabledInstantCommand(() -> {
-      intake.resetPivotSensorToHomePosition();
+      leftIntake.resetPivotSensorToHomePosition();
+      rightIntake.resetPivotSensorToHomePosition();
       led.setRobotState(RobotState.ZERO_SUBSYSTEMS);
       climber.resetWinchSensorToHomePosition();
       zeroButtonTriggered = true;
     }));
 
     brakeModeButtonTrigger.onTrue(new ConditionalCommand(new RunsWhenDisabledInstantCommand(() -> {
-      boolean intakePivotSuccess  = intake.setPivotNeutralMode(NeutralModeValue.Coast);
-      boolean climberWinchSuccess = climber.setWinchNeutralMode(NeutralModeValue.Coast);
+      boolean intakeLeftPivotSuccess  = leftIntake.setPivotNeutralMode(NeutralModeValue.Coast);
+      boolean intakeRightPivotSuccess = rightIntake.setPivotNeutralMode(NeutralModeValue.Coast);
+      boolean climberWinchSuccess     = climber.setWinchNeutralMode(NeutralModeValue.Coast);
 
-      brakeModeFailure = !intakePivotSuccess || !climberWinchSuccess;
+      brakeModeFailure = !intakeLeftPivotSuccess || !intakeRightPivotSuccess || !climberWinchSuccess;
 
       brakeModeTriggered = false;
       led.setRobotState(brakeModeFailure ? RobotState.BRAKE_MODE_FAILED : RobotState.BRAKE_MODE_OFF);
     }), new RunsWhenDisabledInstantCommand(() -> {
-      boolean intakePivotSuccess  = intake.setPivotNeutralMode(NeutralModeValue.Brake);
-      boolean climberWinchSuccess = climber.setWinchNeutralMode(NeutralModeValue.Brake);
+      boolean intakeLeftPivotSuccess  = leftIntake.setPivotNeutralMode(NeutralModeValue.Brake);
+      boolean intakeRightPivotSuccess = rightIntake.setPivotNeutralMode(NeutralModeValue.Brake);
+      boolean climberWinchSuccess     = climber.setWinchNeutralMode(NeutralModeValue.Brake);
 
-      brakeModeFailure = !intakePivotSuccess || !climberWinchSuccess;
+      brakeModeFailure = !intakeLeftPivotSuccess || !intakeRightPivotSuccess || !climberWinchSuccess;
 
       brakeModeTriggered = true;
       led.setRobotState(brakeModeFailure ? RobotState.BRAKE_MODE_FAILED : RobotState.BRAKE_MODE_ON);
@@ -474,7 +511,8 @@ public class RobotContainer {
         new WheelRadiusCharacterization(drivetrainWrapper, Constants.RobotMode.getRobot().config.get()));
 
     SmartDashboard.putData("Zero Mech", new RunsWhenDisabledInstantCommand(() -> {
-      intake.resetPivotSensorToHomePosition();
+      leftIntake.resetPivotSensorToHomePosition();
+      leftIntake.resetPivotSensorToHomePosition();
       led.setRobotState(RobotState.ZERO_SUBSYSTEMS);
     }));
 
@@ -539,11 +577,14 @@ public class RobotContainer {
 
     if (!DriverStation.isFMSAttached()) {
       climber.setWinchVoltage(0);
-      intake.setPivotVoltage(0);
-      intake.setRollerPercentOut(0);
+      leftIntake.setPivotVoltage(0);
+      rightIntake.setPivotVoltage(0);
+      leftIntake.setRollerPercentOut(0);
+      rightIntake.setRollerPercentOut(0);
       robotStates.mechState = MechState.Idle;
 
-      intake.setState(IntakeState.Idle);
+      leftIntake.setState(IntakeState.Idle);
+      rightIntake.setState(IntakeState.Idle);
     }
 
     is_teleop     = false;

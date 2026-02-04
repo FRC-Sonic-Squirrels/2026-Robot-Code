@@ -13,7 +13,6 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
-import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.Units;
@@ -22,13 +21,12 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
-import frc.robot.Constants;
 import frc.robot.Constants.IntakeConstants.PivotConstants;
 import frc.robot.Constants.IntakeConstants.RollerConstants;
 import frc.robot.Constants.MotorConstants.KrakenConstants;
 
 public class IntakeIOReal implements IntakeIO {
-  private final TalonFX rollerMotor = new TalonFX(Constants.CanIDs.INTAKE_ROLLER_CAN_ID);
+  private final TalonFX rollerMotor;
 
   private final StatusSignal<Current>         rollerCurrent;
   private final StatusSignal<Temperature>     rollerDeviceTemp;
@@ -49,11 +47,13 @@ public class IntakeIOReal implements IntakeIO {
   private final MotionMagicVoltage pivotClosedLoopControl = new MotionMagicVoltage(0.0).withEnableFOC(true);
   private final VoltageOut         pivotOpenLoopControl   = new VoltageOut(0.0).withEnableFOC(true);
 
-  private final TalonFX pivotMotor = new TalonFX(Constants.CanIDs.INTAKE_PIVOT_CAN_ID);
+  private final TalonFX pivotMotor;
 
   private final BaseStatusSignal[] refreshSet;
 
-  public IntakeIOReal() {
+  public IntakeIOReal(IntakeIOConfig config) {
+    pivotMotor  = new TalonFX(config.pivotMotorCANID());
+    rollerMotor = new TalonFX(config.rollerMotorCANID());
     // Motor config
     TalonFXConfiguration rollerConfig             = new TalonFXConfiguration();
     CurrentLimitsConfigs rollerCurrentLimitConfig = new CurrentLimitsConfigs();
@@ -66,7 +66,7 @@ public class IntakeIOReal implements IntakeIO {
     rollerConfig.CurrentLimits = rollerCurrentLimitConfig;
 
     rollerConfig.Feedback.SensorToMechanismRatio = RollerConstants.ROLLER_GEARING;
-    rollerConfig.MotorOutput.Inverted            = InvertedValue.Clockwise_Positive;
+    rollerConfig.MotorOutput.Inverted            = config.rollerMotorInverted();
     rollerConfig.MotorOutput.NeutralMode         = NeutralModeValue.Coast;
 
     rollerConfig.Voltage.SupplyVoltageTimeConstant = KrakenConstants.SUPPLY_VOLTAGE_TIME;
@@ -95,7 +95,7 @@ public class IntakeIOReal implements IntakeIO {
     pivotConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     pivotConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    pivotConfig.MotorOutput.Inverted    = InvertedValue.Clockwise_Positive;
+    pivotConfig.MotorOutput.Inverted    = config.pivotMotorInverted();
 
     pivotConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
     pivotConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
