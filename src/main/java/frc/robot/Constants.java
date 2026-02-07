@@ -270,7 +270,7 @@ public final class Constants {
   }
 
   public static class HopperConstants {
-    public static final String ROOT_TABLE = "Hopper";
+    public static final String HOPPER = "Hopper";
 
     public static class RollerConstants {
 
@@ -280,7 +280,7 @@ public final class Constants {
       public static final double SUPPLY_CURRENT_LIMIT = 20.0;
       public static final double STATOR_CURRENT_LIMIT = 100.0;
 
-      public static final String ROOT_TABLE = "Rollers";
+      public static final String ROLLER = "Rollers";
       public static final int SHOOTING_ROLLER_VELOCITY = 240;
     }
   }
