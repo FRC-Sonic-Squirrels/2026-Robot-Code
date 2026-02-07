@@ -62,6 +62,7 @@ public class Shooter extends SubsystemBase {
   private static final LoggerEntry.Decimal logFlywheelRollersDifference = logGroup
       .buildDecimal("FlywheelRollersDifference");
   private static final LoggerEntry.Decimal logTargetDistance            = logGroup.buildDecimal("DistanceFromTarget");
+  private static final LoggerEntry.Bool logFacingTarget            = logGroup.buildBoolean("IsFacingTarget");
 
   public static final TunableNumberGroup group = new TunableNumberGroup(ROOT_TABLE);
 
@@ -178,6 +179,7 @@ public class Shooter extends SubsystemBase {
       logFlywheelRollersDifference.info(inputs.flywheelRPM[1] - inputs.flywheelRPM[0]);
       logState.info(state);
       logTargetDistance.info(distanceFromTarget.in(Meter));
+      logFacingTarget.info(isFacingTarget);
 
       switch (state) {
         case Idle:
