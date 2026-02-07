@@ -29,26 +29,21 @@ public class Hopper extends SubsystemBase {
   private static final LoggerGroup logGroup = LoggerGroup.build(ROOT_TABLE);
 
   // Rollers
-  private static final LoggerGroup         rollerLogGroup               = logGroup
-      .subgroup(HopperConstants.RollerConstants.ROLLER);
-  private static final LoggerEntry.Decimal logInputs_rollerVelocityRPM  = rollerLogGroup.buildDecimal("VelocityRPM");
-  private static final LoggerEntry.Decimal logInputs_rollerCurrentAmps  = rollerLogGroup.buildDecimal("CurrentAmps");
-  private static final LoggerEntry.Decimal logInputs_rollerTempCelsius  = rollerLogGroup.buildDecimal("TempCelsius");
-  private static final LoggerEntry.Decimal logInputs_rollerAppliedVolts = rollerLogGroup.buildDecimal("AppliedVolts");
+  private static final LoggerEntry.Decimal logInputs_rollerVelocityRPM  = logGroup.buildDecimal("VelocityRPM");
+  private static final LoggerEntry.Decimal logInputs_rollerCurrentAmps  = logGroup.buildDecimal("CurrentAmps");
+  private static final LoggerEntry.Decimal logInputs_rollerTempCelsius  = logGroup.buildDecimal("TempCelsius");
+  private static final LoggerEntry.Decimal logInputs_rollerAppliedVolts = logGroup.buildDecimal("AppliedVolts");
 
-  private static final LoggerEntry.Decimal logRollerTargetVelocityRPM = rollerLogGroup
-      .buildDecimal("TargetVelocityRPM");
+  private static final LoggerEntry.Decimal logRollerTargetVelocityRPM = logGroup.buildDecimal("TargetVelocityRPM");
 
   private static final LoggerEntry.EnumValue<HopperState> logHopperState = logGroup.buildEnum("HopperState");
 
   private static final TunableNumberGroup group = new TunableNumberGroup(HopperConstants.RollerConstants.ROLLER);
   // Roller
-  private static final TunableNumberGroup  tuningGroup                    = group.subgroup("Tuning");
-  private static final LoggedTunableNumber rKS                            = tuningGroup.build("KS");
-  private static final LoggedTunableNumber rKP                            = tuningGroup.build("KP");
-  private static final LoggedTunableNumber rKV                            = tuningGroup.build("KV");
-  private static final LoggedTunableNumber rollerTargetAccelerationConfig = tuningGroup
-      .build("MaxAccelerationConstraint");
+  private static final LoggedTunableNumber rKS                            = group.build("KS");
+  private static final LoggedTunableNumber rKP                            = group.build("KP");
+  private static final LoggedTunableNumber rKV                            = group.build("KV");
+  private static final LoggedTunableNumber rollerTargetAccelerationConfig = group.build("MaxAccelerationConstraint");
 
   static {
     if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_RETIRED_HOLO) {
