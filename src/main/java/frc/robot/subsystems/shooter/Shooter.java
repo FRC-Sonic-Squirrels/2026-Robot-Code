@@ -14,15 +14,12 @@ import frc.robot.Constants.RobotMode.RobotType;
 import frc.robot.Constants.ShooterConstants;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Supplier;
 
 public class Shooter extends SubsystemBase {
 
   public enum ShooterStates {
     Idle,
     Shooting,
-    FlywheelPrep,
-    FlywheelReady,
     Stop
   }
 
@@ -141,12 +138,14 @@ public class Shooter extends SubsystemBase {
   private Rotation2d targetHoodPosition = Constants.zeroRotation2d;
   private double targetFlywheelRPM = 0.0;
 
-  private final Supplier<Distance> distanceSupplier;
+  private Distance distanceFromTarget;
+
+  // private final Distance distance
 
   /** Creates a new ShooterSubsystem. */
-  public Shooter(ShooterIO io, Supplier<Distance> distanceSupplier) {
+  public Shooter(ShooterIO io, Distance distanceFromTarget) {
     this.io = io;
-    this.distanceSupplier = distanceSupplier;
+    this.distanceFromTarget = distanceFromTarget;
 
     io.setFlywheelClosedLoopConstants(
         flywheelkP.get(),
@@ -191,9 +190,8 @@ public class Shooter extends SubsystemBase {
           break;
 
         case Shooting:
-          double desiredFlywheelRPM = getFlywheelRPM(distanceSupplier.get());
-          setFlywheelRPM(desiredFlywheelRPM);
-          if (Math.abs(inputs.flywheelRPM[0] - desiredFlywheelRPM) < 50) {
+          setFlywheelRPM(getFlywheelRPM(distanceFromTarget));
+          if (isFlywheelReady()) {
             setKickerVelocity(ShooterConstants.Kicker.SHOOTING_KICKER_RPM);
           }
           break;
@@ -346,5 +344,18 @@ public class Shooter extends SubsystemBase {
 
   public void setKickerVelocity(double revPerMin) {
     io.setKickerVelocity(revPerMin);
+  }
+
+  public Distance getDistanceFromTarget() {
+    return distanceFromTarget;
+  }
+
+  public void setDistanceFromTarget(Distance updatedDistanceFromTarget) {
+    distanceFromTarget = updatedDistanceFromTarget;
+  }
+
+  public boolean isFlywheelReady() {
+    double desiredFlywheelRPM = getFlywheelRPM(distanceFromTarget);
+    return Math.abs(inputs.flywheelRPM[0] - desiredFlywheelRPM) < 50;
   }
 }
