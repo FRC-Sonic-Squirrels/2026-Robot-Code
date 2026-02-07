@@ -60,6 +60,7 @@ public class Shooter extends SubsystemBase {
       .buildDecimal("FlywheelRollersDifference");
   private static final LoggerEntry.Decimal logTargetDistance            = logGroup.buildDecimal("DistanceFromTarget");
   private static final LoggerEntry.Bool logFacingTarget            = logGroup.buildBoolean("IsFacingTarget");
+  private static final LoggerEntry.Bool logShooterReady            = logGroup.buildBoolean("IsShooterReady");
 
   public static final TunableNumberGroup group = new TunableNumberGroup(ROOT_TABLE);
 
@@ -177,6 +178,7 @@ public class Shooter extends SubsystemBase {
       logState.info(state);
       logTargetDistance.info(distanceFromTarget.in(Units.Meters));
       logFacingTarget.info(isFacingTarget);
+      logShooterReady.info(isShooterReady());
 
       switch (state) {
         case Idle:
@@ -188,7 +190,7 @@ public class Shooter extends SubsystemBase {
         case Shooting:
           setFlywheelRPM(getFlywheelRPM(distanceFromTarget));
           setHoodPosition(getHoodAngle(distanceFromTarget));
-          if (isFlywheelReady() && isHoodReady() && isFacingTarget) {
+          if (isShooterReady()) {
             setKickerVelocity(ShooterConstants.Kicker.SHOOTING_KICKER_RPM);
           } else {
             setKickerVelocity(0);
@@ -347,5 +349,9 @@ public class Shooter extends SubsystemBase {
   public boolean isHoodReady() {
     double desiredHoodAngle = getHoodAngle(distanceFromTarget).getDegrees();
     return Math.abs(inputs.hoodPosition.getDegrees() - desiredHoodAngle) < ShooterConstants.Hood.CORRECT_ANGLE_RANGE;
+  }
+
+  public boolean isShooterReady() {
+    return isFacingTarget && isFlywheelReady() && isHoodReady();
   }
 }
