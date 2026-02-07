@@ -351,7 +351,7 @@ public class RobotContainer {
           }
           drivetrain = new Drivetrain(config, new GyroIOPigeon2(config, config.getGyroCANID()), new GyroIO.Fake(),
               config.getSwerveModuleObjects(), () -> is_autonomous);
-          hopper = new Hopper(new HopperIO() {
+          hopper = new Hopper(new HopperIOReal() {
           });
           vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
               drivetrain::addVisionEstimate, config.getVisionModuleObjects());
@@ -377,7 +377,7 @@ public class RobotContainer {
           }, robotStates);
           climber = new Climber(new ClimberIO() {
           });
-          hopper = new Hopper(new HopperIOReal() {
+          hopper = new Hopper(new HopperIO() {
           });
 
           if (Constants.unusedCode) {
