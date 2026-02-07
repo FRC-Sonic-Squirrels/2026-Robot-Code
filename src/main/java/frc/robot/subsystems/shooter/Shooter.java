@@ -134,8 +134,6 @@ public class Shooter extends SubsystemBase {
 
   private Distance distanceFromTarget;
 
-  // private final Distance distance
-
   /** Creates a new ShooterSubsystem. */
   public Shooter(ShooterIO io) {
     this.io = io;
