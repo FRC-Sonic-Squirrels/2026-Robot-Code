@@ -137,9 +137,8 @@ public class Shooter extends SubsystemBase {
   // private final Distance distance
 
   /** Creates a new ShooterSubsystem. */
-  public Shooter(ShooterIO io, Distance distanceFromTarget) {
+  public Shooter(ShooterIO io) {
     this.io                 = io;
-    this.distanceFromTarget = distanceFromTarget;
 
     io.setFlywheelClosedLoopConstants(flywheelkP.get(), flywheelkV.get(), flywheelkS.get(),
         flywheelClosedLoopMaxAccelerationConstraint.get());
@@ -178,6 +177,7 @@ public class Shooter extends SubsystemBase {
 
         case Shooting:
           setFlywheelRPM(getFlywheelRPM(distanceFromTarget));
+          setHoodPosition(getHoodAngle(distanceFromTarget));
           if (isFlywheelReady()) {
             setKickerVelocity(ShooterConstants.Kicker.SHOOTING_KICKER_RPM);
           }
@@ -238,11 +238,11 @@ public class Shooter extends SubsystemBase {
     return inputs.hoodPosition;
   }
 
-  public static double getHoodAngle(Distance distance) {
+  public static Rotation2d getHoodAngle(Distance distance) {
     if (distance.lt(ShooterConstants.Hood.MIN_DISTANCE)) {
-      return 0.0;
+      return Rotation2d.fromDegrees(0.0);
     }
-    return ShooterConstants.Interpolation.HOOD_ANGLE_FOR_HUB_DISTANCE.get(distance.in(Units.Meters));
+    return Rotation2d.fromDegrees(ShooterConstants.Interpolation.HOOD_ANGLE_FOR_HUB_DISTANCE.get(distance.in(Units.Meters)));
   }
 
   public static double getFlywheelRPM(Distance distance) {

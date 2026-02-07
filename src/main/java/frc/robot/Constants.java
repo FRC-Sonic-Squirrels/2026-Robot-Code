@@ -414,6 +414,9 @@ public static class ShooterConstants {
 
       public static final double SIM_INITIAL_ANGLE = Math.toRadians(14.0);
       public static final Distance MIN_DISTANCE = Units.Inches.of(40.0);
+
+      public static final double SUPPLY_CURRENT_LIMIT = 40;
+      public static final double STATOR_CURRENT_LIMIT = 40;
     }
 
     public static class Flywheel {
