@@ -38,6 +38,7 @@ import frc.lib.team6328.PoseEstimator.TimestampedVisionUpdate;
 import frc.robot.Constants;
 import frc.robot.configs.RobotConfig;
 import frc.robot.subsystems.swerve.gyro.GyroIO;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -143,6 +144,7 @@ public class Drivetrain extends SubsystemBase {
   public static final TunableNumberGroup  group                      = new TunableNumberGroup("Drivetrain");
   public static final LoggedTunableNumber driveMotorAccelerationAuto = group.build("SwerveDRIVEAccelerationAuto", 1000);
   public static final LoggedTunableNumber driveMotorAccelerationTele = group.build("SwerveDRIVEAccelerationTele", 1000);
+  public static final LoggedTunableNumber visionWithLowestStdDev     = group.build("VisionWithLowestStdDev", 1.0);
 
   private boolean switchGyro;
   private Boolean useSecondGyro;
@@ -565,7 +567,7 @@ public class Drivetrain extends SubsystemBase {
     try (var ignored = odometryLock.lock()) // Prevents odometry updates while reading data
     {
       try (var ignored2 = timing_vision.start()) {
-        hubPoseEstimator.addVisionData(visionData);
+        hubPoseEstimator.addVisionData(visionData, visionWithLowestStdDev.get() > 0.0);
       }
     }
   }

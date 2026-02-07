@@ -7,12 +7,10 @@
 
 package frc.lib.team6328;
 
-import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Twist2d;
-import edu.wpi.first.math.numbers.N1;
-import edu.wpi.first.math.numbers.N3;
 import frc.robot.Constants;
+
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
@@ -29,10 +27,11 @@ public class PoseEstimator {
   private final PoseUpdate tailPoseUpdate = new PoseUpdate(Double.MAX_VALUE, null);
   private final double[]   q;
   private final long       tagsMask;
-  private double           visionCutoff;
-  public int               rejectionCutoff;
-  public int               rejectionInvalidTags;
-  public int               rejectionNoDriveData;
+
+  private double visionCutoff;
+  public int     rejectionCutoff;
+  public int     rejectionInvalidTags;
+  public int     rejectionNoDriveData;
 
   public PoseEstimator(double x, double y, double theta, int[] validTags) {
     q = new double[] { x * x, y * y, theta * theta };
@@ -61,8 +60,9 @@ public class PoseEstimator {
     var lastVisionUpdate = lastUpdate;
     while (lastVisionUpdate.visionUpdates.isEmpty()) {
       PoseUpdate previousUpdate = lastVisionUpdate.previousUpdate;
-      if (previousUpdate == null)
+      if (previousUpdate == null) {
         return 5;
+      }
 
       lastVisionUpdate = previousUpdate;
     }
@@ -128,8 +128,9 @@ public class PoseEstimator {
 
     while (true) {
       var previous = cursor.previousUpdate;
-      if (previous == headPoseUpdate)
+      if (previous == headPoseUpdate) {
         return; // Reached end of list, exit
+      }
 
       // At this point, we know that 'previous' is a valid entry.
 
@@ -149,8 +150,9 @@ public class PoseEstimator {
         cursor.finalPose = null;
 
         // Found the oldest entry to invalidate, clear the flag.
-        if (cursor == target)
+        if (cursor == target) {
           target = null;
+        }
       }
 
       cursor = previous;
@@ -158,7 +160,11 @@ public class PoseEstimator {
   }
 
   /** Records a new set of vision updates. */
-  public void addVisionData(List<TimestampedVisionUpdate> visionData) {
+  public void addVisionData(List<TimestampedVisionUpdate> visionData, boolean useLowestStdDev) {
+    double       lowestStdDev             = Double.MAX_VALUE;
+    double       lowestStdDevTimestamp    = 0;
+    VisionUpdate lowestStdDevVisionUpdate = null;
+
     for (var timestampedVisionUpdate : visionData) {
       var timestamp = timestampedVisionUpdate.timestamp;
       if (Double.isFinite(visionCutoff) && timestamp < visionCutoff) {
@@ -176,46 +182,64 @@ public class PoseEstimator {
         continue;
       }
 
-      var visionUpdate = new VisionUpdate(timestampedVisionUpdate.pose, timestampedVisionUpdate.stdDevs);
+      var visionUpdate = timestampedVisionUpdate.update;
 
-      var existingPoseUpdateAfter = tailPoseUpdate.findExactTimestampOrMoreRecent(timestamp);
-      if (existingPoseUpdateAfter.twist == null)
-      // This means that we have no drive data, ignore vision.
-      {
-        rejectionNoDriveData += 1;
-        continue;
-      }
+      if (useLowestStdDev) {
+        var stddev = visionUpdate.StdDev();
 
-      if (existingPoseUpdateAfter.timestamp == timestamp) {
-        // There was already an update at this timestamp, add to it
-        var oldVisionUpdates = existingPoseUpdateAfter.visionUpdates;
-        oldVisionUpdates.add(visionUpdate);
-        oldVisionUpdates.sort(VisionUpdate.compareDescStdDev);
+        if (lowestStdDev > stddev) {
+          lowestStdDev             = stddev;
+          lowestStdDevVisionUpdate = visionUpdate;
+          lowestStdDevTimestamp    = timestamp;
+        }
       } else {
-        // Insert a new update
-        var existingPoseUpdateBefore = existingPoseUpdateAfter.previousUpdate;
-
-        // Create partial twists (prev -> vision, vision -> next)
-        double timestampGap = existingPoseUpdateAfter.timestamp - existingPoseUpdateBefore.timestamp;
-        var    twist0       = GeomUtil.multiplyTwist(existingPoseUpdateAfter.twist,
-            (timestamp - existingPoseUpdateBefore.timestamp) / timestampGap);
-
-        var twist1 = GeomUtil.multiplyTwist(existingPoseUpdateAfter.twist,
-            (existingPoseUpdateAfter.timestamp - timestamp) / timestampGap);
-
-        // Add new pose updates
-        var poseUpdate = new PoseUpdate(timestamp, twist0);
-        poseUpdate.visionUpdates.add(visionUpdate);
-        poseUpdate.previousUpdate = existingPoseUpdateBefore;
-
-        // Update the post-timestamp twist.
-        existingPoseUpdateAfter.previousUpdate = poseUpdate;
-        existingPoseUpdateAfter.twist          = twist1;
+        acceptVisionUpdate(visionUpdate, timestamp);
       }
-
-      // Since we changed the history, invalidate the computation of the newer items.
-      invalidateFinalPoseUpTo(existingPoseUpdateAfter);
     }
+
+    if (lowestStdDevVisionUpdate != null) {
+      acceptVisionUpdate(lowestStdDevVisionUpdate, lowestStdDevTimestamp);
+    }
+  }
+
+  private void acceptVisionUpdate(VisionUpdate visionUpdate, double timestamp) {
+    var existingPoseUpdateAfter = tailPoseUpdate.findExactTimestampOrMoreRecent(timestamp);
+    if (existingPoseUpdateAfter.twist == null)
+    // This means that we have no drive data, ignore vision.
+    {
+      rejectionNoDriveData += 1;
+      return;
+    }
+
+    if (existingPoseUpdateAfter.timestamp == timestamp) {
+      // There was already an update at this timestamp, add to it
+      var oldVisionUpdates = existingPoseUpdateAfter.visionUpdates;
+      oldVisionUpdates.add(visionUpdate);
+      oldVisionUpdates.sort(VisionUpdate.compareDescStdDev);
+    } else {
+      // Insert a new update
+      var existingPoseUpdateBefore = existingPoseUpdateAfter.previousUpdate;
+
+      // Create partial twists (prev -> vision, vision -> next)
+      var timestampGap = existingPoseUpdateAfter.timestamp - existingPoseUpdateBefore.timestamp;
+      var twist0       = GeomUtil.multiplyTwist(existingPoseUpdateAfter.twist,
+          (timestamp - existingPoseUpdateBefore.timestamp) / timestampGap);
+
+      var twist1 = GeomUtil.multiplyTwist(existingPoseUpdateAfter.twist,
+          (existingPoseUpdateAfter.timestamp - timestamp) / timestampGap);
+
+      // Add new pose updates
+      var poseUpdate = new PoseUpdate(timestamp, twist0);
+      poseUpdate.visionUpdates.add(visionUpdate);
+      poseUpdate.previousUpdate = existingPoseUpdateBefore;
+
+      // Update the post-timestamp twist.
+      existingPoseUpdateAfter.previousUpdate = poseUpdate;
+      existingPoseUpdateAfter.twist          = twist1;
+    }
+
+    // Since we changed the history, invalidate the computation of the newer items.
+    invalidateFinalPoseUpTo(existingPoseUpdateAfter);
   }
 
   /**
@@ -224,10 +248,11 @@ public class PoseEstimator {
    */
   class PoseUpdate {
     final double             timestamp;
-    Twist2d                  twist;
     final List<VisionUpdate> visionUpdates = new ArrayList<>();
-    Pose2d                   finalPose;
-    PoseUpdate               previousUpdate;
+
+    Twist2d    twist;
+    Pose2d     finalPose;
+    PoseUpdate previousUpdate;
 
     PoseUpdate(double timestamp, Twist2d twist) {
       this.timestamp = timestamp;
@@ -247,15 +272,9 @@ public class PoseEstimator {
           // (https://github.com/wpilibsuite/allwpilib/blob/main/wpimath/src/main/java/edu/wpi/first/math/estimator/)
           double[] confidence = new double[3];
 
-          for (int row = 0; row < 3; ++row) {
-            double v = q[row];
-            if (v == 0.0) {
-              confidence[row] = 0;
-            } else {
-              var visionStdDev = visionUpdate.stdDevs().get(row, 0);
-              confidence[row] = v / (v + Math.sqrt(v * visionStdDev * visionStdDev));
-            }
-          }
+          confidence[0] = updateKalmanComponent(q[0], visionUpdate.xStandardDeviation);
+          confidence[1] = updateKalmanComponent(q[1], visionUpdate.yStandardDeviation);
+          confidence[2] = updateKalmanComponent(q[2], visionUpdate.thetaStandardDeviation);
 
           // Calculate twist between current and vision pose
           var visionTwist = pose.log(visionUpdate.pose());
@@ -272,6 +291,14 @@ public class PoseEstimator {
       return this.finalPose;
     }
 
+    static double updateKalmanComponent(double v, double stdDev) {
+      if (v == 0.0) {
+        return 0;
+      }
+
+      return v / (v + Math.sqrt(v * stdDev * stdDev));
+    }
+
     PoseUpdate findExactTimestampOrMoreRecent(double timestamp) {
       var cursor = this;
       while (true) {
@@ -286,16 +313,24 @@ public class PoseEstimator {
   }
 
   /** Represents a single vision pose with associated standard deviations. */
-  public record VisionUpdate(Pose2d pose, Matrix<N3, N1> stdDevs) {
+  public record VisionUpdate(Pose2d pose, double xStandardDeviation, double yStandardDeviation,
+      double thetaStandardDeviation) {
+
     public static final Comparator<VisionUpdate> compareDescStdDev = (VisionUpdate a, VisionUpdate b) -> {
-      return -Double.compare(a.stdDevs.get(0, 0) + a.stdDevs.get(1, 0), b.stdDevs.get(0, 0) + b.stdDevs.get(1, 0));
+      return -Double.compare(a.xStandardDeviation + a.yStandardDeviation + a.yStandardDeviation,
+          b.xStandardDeviation + b.yStandardDeviation + b.thetaStandardDeviation);
     };
+
+    public double StdDev() {
+      return xStandardDeviation * xStandardDeviation + yStandardDeviation * yStandardDeviation
+          + thetaStandardDeviation * thetaStandardDeviation;
+    }
   }
 
   /**
    * Represents a single vision pose with a timestamp and associated standard
    * deviations.
    */
-  public record TimestampedVisionUpdate(List<Short> tags, double timestamp, Pose2d pose, Matrix<N3, N1> stdDevs) {
+  public record TimestampedVisionUpdate(List<Short> tags, double timestamp, VisionUpdate update) {
   }
 }

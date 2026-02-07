@@ -3,7 +3,6 @@ package frc.robot.subsystems.vision;
 import com.ctre.phoenix6.Utils;
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -357,9 +356,10 @@ public class Vision extends SubsystemBase {
     var xyStandardDeviation            = xyStdDevCoefficient.get() * averageDistanceFromTagsSquared / numTargetsSeen;
     var thetaStandardDeviation         = thetaStdDevCoefficient.get() * averageDistanceFromTagsSquared / numTargetsSeen;
 
+    var visionUpdate            = new PoseEstimator.VisionUpdate(newCalculatedRobotPose2d, xyStandardDeviation,
+        xyStandardDeviation, thetaStandardDeviation);
     var timestampedVisionUpdate = new PoseEstimator.TimestampedVisionUpdate(cleanTargets,
-        currentResultTimeStampCTRETime, newCalculatedRobotPose2d,
-        VecBuilder.fill(xyStandardDeviation, xyStandardDeviation, thetaStandardDeviation));
+        currentResultTimeStampCTRETime, visionUpdate);
 
     allTimestampedVisionUpdates.add(timestampedVisionUpdate);
 

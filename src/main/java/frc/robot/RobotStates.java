@@ -53,6 +53,8 @@ public class RobotStates {
 
   private LoggerGroup logGroup = LoggerGroup.build("RobotState");
 
+  private LoggerEntry.Integer logPeriodicCounter = logGroup.buildInteger("Counter");
+
   private LoggerEntry.Bool logGamepieceInIntakeState = logGroup.buildBoolean("GamepieceInIntakeState");
 
   private LoggerEntry.EnumValue<EndEffectorDesiredAction> logEndEffectorDesiredAction = logGroup
@@ -105,6 +107,8 @@ public class RobotStates {
 
   public RobotStates() {
   }
+
+  private int periodicCounter;
 
   private Intake            leftIntake;
   private Intake            rightIntake;
@@ -176,6 +180,9 @@ public class RobotStates {
   }
 
   public void periodic() {
+    periodicCounter = (periodicCounter + 1) % 100;
+    logPeriodicCounter.info(periodicCounter);
+
     handleGoalTransition();
     handleIntakeGoalTransition();
     switch (goal) {
