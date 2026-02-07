@@ -25,7 +25,6 @@ import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.IntakeConstants.PivotConstants;
 import frc.robot.Constants.IntakeConstants.RollerConstants;
 import frc.robot.Constants.RobotMode.RobotType;
-import frc.robot.RobotStates;
 
 public class Intake extends SubsystemBase {
 
@@ -139,7 +138,6 @@ public class Intake extends SubsystemBase {
   }
 
   private final IntakeIO        io;
-  private final RobotStates     states;
   private final IntakeIO.Inputs inputs = new IntakeIO.Inputs(logGroup);
 
   // Intake states
@@ -158,9 +156,8 @@ public class Intake extends SubsystemBase {
       .debounce(.1);
 
   /** Creates a new Intake. */
-  public Intake(IntakeIO io, RobotStates states) {
-    this.io     = io;
-    this.states = states;
+  public Intake(IntakeIO io) {
+    this.io = io;
 
     io.setPivotVoltage(0.0);
 
@@ -214,11 +211,8 @@ public class Intake extends SubsystemBase {
             setRollerPercentOut(0);
             break;
           case Stow:
-            if (!states.coralExpectedInIntake) {
-
-            } else {
-              setRollerPercentOut(0);
-            }
+            setPivotAngle(PivotConstants.HOME_POSITION);
+            setRollerPercentOut(0);
           case Down:
             setPivotAngle(Rotation2d.fromDegrees(intakingFuelPivotAngle.get()));
             setRollerPercentOut(0);
@@ -233,7 +227,6 @@ public class Intake extends SubsystemBase {
           default:
             break;
         }
-        states.intakeInTargetState = isPivotAtTargetAngle();
       }
     }
   }

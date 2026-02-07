@@ -181,9 +181,9 @@ public class RobotContainer {
           drivetrain::addVisionEstimate, config.getReplayVisionModules());
 
       leftIntake  = new Intake(new IntakeIO() {
-                  }, robotStates);
+                  });
       rightIntake = new Intake(new IntakeIO() {
-                  }, robotStates);
+                  });
       climber     = new Climber(new ClimberIO() {
                   });
       hopper      = new Hopper(new HopperIO() {
@@ -237,8 +237,8 @@ public class RobotContainer {
             }
           }
 
-          rightIntake = new Intake(new IntakeIOSim(), robotStates);
-          leftIntake = new Intake(new IntakeIOSim(), robotStates);
+          rightIntake = new Intake(new IntakeIOSim());
+          leftIntake = new Intake(new IntakeIOSim());
           climber = new Climber(new ClimberIOSim());
           hopper = new Hopper(new HopperIOSim() {
           });
@@ -253,9 +253,9 @@ public class RobotContainer {
           vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
               drivetrain::addVisionEstimate, config.getReplayVisionModules());
           leftIntake = new Intake(new IntakeIO() {
-          }, robotStates);
+          });
           rightIntake = new Intake(new IntakeIO() {
-          }, robotStates);
+          });
           climber = new Climber(new ClimberIO() {
           });
           hopper = new Hopper(new HopperIO() {
@@ -276,9 +276,9 @@ public class RobotContainer {
               new GyroIOPigeon2(config, Constants.CanIDs.GYRO_2_CAN_ID), config.getSwerveModuleObjects(),
               () -> is_autonomous);
           leftIntake = new Intake(new IntakeIO() {
-          }, robotStates);
+          });
           rightIntake = new Intake(new IntakeIO() {
-          }, robotStates);
+          });
           climber = new Climber(new ClimberIO() {
           });
           hopper = new Hopper(new HopperIO() {
@@ -303,9 +303,9 @@ public class RobotContainer {
             System.out.println("sleep interrupted");
           }
           leftIntake = new Intake(new IntakeIO() {
-          }, robotStates);
+          });
           rightIntake = new Intake(new IntakeIO() {
-          }, robotStates);
+          });
           climber = new Climber(new ClimberIOReal());
           drivetrain = new Drivetrain(config, new GyroIOPigeon2(config, config.getGyroCANID()), new GyroIO.Fake(),
               config.getSwerveModuleObjects(), () -> is_autonomous);
@@ -338,14 +338,14 @@ public class RobotContainer {
             IntakeIOConfig rightIntakeIOConfig = new IntakeIOConfig(Constants.CanIDs.INTAKE_RIGHT_PIVOT_CAN_ID,
                 Constants.CanIDs.INTAKE_RIGHT_ROLLER_CAN_ID, InvertedValue.Clockwise_Positive,
                 InvertedValue.Clockwise_Positive);
-            leftIntake  = new Intake(new IntakeIOReal(leftIntakeIOConfig), robotStates);
-            rightIntake = new Intake(new IntakeIOReal(rightIntakeIOConfig), robotStates);
+            leftIntake  = new Intake(new IntakeIOReal(leftIntakeIOConfig));
+            rightIntake = new Intake(new IntakeIOReal(rightIntakeIOConfig));
             climber     = new Climber(new ClimberIOReal());
           } else {
             leftIntake  = new Intake(new IntakeIO() {
-                        }, robotStates);
+                        });
             rightIntake = new Intake(new IntakeIO() {
-                        }, robotStates);
+                        });
             climber     = new Climber(new ClimberIO() {
                         });
           }
@@ -372,9 +372,9 @@ public class RobotContainer {
           vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
               drivetrain::addVisionEstimate, config.getReplayVisionModules());
           leftIntake = new Intake(new IntakeIO() {
-          }, robotStates);
+          });
           rightIntake = new Intake(new IntakeIO() {
-          }, robotStates);
+          });
           climber = new Climber(new ClimberIO() {
           });
           hopper = new Hopper(new HopperIO() {
