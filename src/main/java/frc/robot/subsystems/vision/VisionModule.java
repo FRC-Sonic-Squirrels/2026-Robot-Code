@@ -49,6 +49,13 @@ public class VisionModule {
   public final LoggerEntry.Bool           log_successfulResult;
   public final LoggerEntry.DecimalArray   log_seenTargetsIDs;
 
+  public final LoggerEntry.Struct<Pose3d> log_distanceToTag;
+  public final LoggerEntry.Decimal        log_yawToTag;
+
+  private final int TAG_ID = 15;
+
+  private final AprilTagFieldLayout aprilTagLayout;
+
   public VisionModule(LoggerGroup logGroup, VisionModuleConfiguration config, AprilTagFieldLayout aprilTagFieldLayout,
       int id) {
     this.visionIO       = config.visionIO;
@@ -70,6 +77,8 @@ public class VisionModule {
     photonPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT);
 
     this.missingCameraAlert = new Alert("Missing Camera: " + this.name, Alert.AlertType.ERROR);
+
+    this.aprilTagLayout = aprilTagFieldLayout;
 
     // Logging
 
@@ -94,6 +103,9 @@ public class VisionModule {
     log_thetaStandardDeviation           = logGroup.buildDecimal("thetaStandardDeviation");
     log_successfulResult                 = logGroup.buildBoolean("SUCCESSFUL_RESULT?");
     log_seenTargetsIDs                   = logGroup.buildDecimalArray("seenTargetsIDs");
+
+    log_distanceToTag = logGroup.buildStruct(Pose3d.class, "distanceToTag");
+    log_yawToTag      = logGroup.buildDecimal("yawToTag");
   }
 
   public void log(Pose3d robotPose, double currentTime) {
@@ -141,6 +153,15 @@ public class VisionModule {
 
     for (int i = 0; i < fieldsToLog.seenTags().length; i++) {
       seenTagsArray[i] = fieldsToLog.seenTags()[i];
+    }
+
+    if (status.success) {
+      Pose3d tagPose = aprilTagLayout.getTagPose(TAG_ID).get();
+      if (tagPose != null) {
+        Pose3d relativePose = fieldsToLog.robotPose3d().relativeTo(tagPose);
+        log_distanceToTag.info(relativePose);
+        log_yawToTag.info(Math.toDegrees(relativePose.getRotation().getZ()));
+      }
     }
 
     log_calculatedRobotPose3d.info(fieldsToLog.robotPose3d());
