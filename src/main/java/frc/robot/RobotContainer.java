@@ -54,6 +54,10 @@ import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.ClimberIO;
 import frc.robot.subsystems.climber.ClimberIOReal;
 import frc.robot.subsystems.climber.ClimberIOSim;
+import frc.robot.subsystems.hopper.Hopper;
+import frc.robot.subsystems.hopper.HopperIO;
+import frc.robot.subsystems.hopper.HopperIOReal;
+import frc.robot.subsystems.hopper.HopperIOSim;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.IntakeState;
 import frc.robot.subsystems.intake.IntakeIO;
@@ -98,6 +102,7 @@ public class RobotContainer {
   private final VisionGamepiece     visionGamepiece;
   private final LED                 led;
   private final Climber             climber;
+  private final Hopper              hopper;
 
   // Controllers
   private final XboxControllerWrapper driverController   = new XboxControllerWrapper(0);
@@ -157,7 +162,7 @@ public class RobotContainer {
 
     robotStates = new RobotStates();
 
-    DriverStation.silenceJoystickConnectionWarning(true); // Silence annoying joystick warning
+    DriverStation.silenceJoystickConnectionWarning(true); // Silence joystick warning
 
     RobotType robotType = Constants.RobotMode.getRobot();
     Mode      mode      = Constants.RobotMode.getMode();
@@ -180,6 +185,8 @@ public class RobotContainer {
       rightIntake = new Intake(new IntakeIO() {
                   }, robotStates);
       climber     = new Climber(new ClimberIO() {
+                  });
+      hopper      = new Hopper(new HopperIO() {
                   });
 
       if (Constants.unusedCode) {
@@ -233,6 +240,8 @@ public class RobotContainer {
           rightIntake = new Intake(new IntakeIOSim(), robotStates);
           leftIntake = new Intake(new IntakeIOSim(), robotStates);
           climber = new Climber(new ClimberIOSim());
+          hopper = new Hopper(new HopperIOSim() {
+          });
           led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered, robotStates);
           break;
 
@@ -248,6 +257,8 @@ public class RobotContainer {
           rightIntake = new Intake(new IntakeIO() {
           }, robotStates);
           climber = new Climber(new ClimberIO() {
+          });
+          hopper = new Hopper(new HopperIO() {
           });
 
           if (Constants.unusedCode) {
@@ -269,6 +280,8 @@ public class RobotContainer {
           rightIntake = new Intake(new IntakeIO() {
           }, robotStates);
           climber = new Climber(new ClimberIO() {
+          });
+          hopper = new Hopper(new HopperIO() {
           });
           vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
               drivetrain::addVisionEstimate, config.getVisionModuleObjects());
@@ -296,6 +309,8 @@ public class RobotContainer {
           climber = new Climber(new ClimberIOReal());
           drivetrain = new Drivetrain(config, new GyroIOPigeon2(config, config.getGyroCANID()), new GyroIO.Fake(),
               config.getSwerveModuleObjects(), () -> is_autonomous);
+          hopper = new Hopper(new HopperIO() {
+          });
           vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
               drivetrain::addVisionEstimate, config.getVisionModuleObjects());
 
@@ -336,6 +351,8 @@ public class RobotContainer {
           }
           drivetrain = new Drivetrain(config, new GyroIOPigeon2(config, config.getGyroCANID()), new GyroIO.Fake(),
               config.getSwerveModuleObjects(), () -> is_autonomous);
+          hopper = new Hopper(new HopperIOReal() {
+          });
           vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
               drivetrain::addVisionEstimate, config.getVisionModuleObjects());
 
@@ -359,6 +376,8 @@ public class RobotContainer {
           rightIntake = new Intake(new IntakeIO() {
           }, robotStates);
           climber = new Climber(new ClimberIO() {
+          });
+          hopper = new Hopper(new HopperIO() {
           });
 
           if (Constants.unusedCode) {
