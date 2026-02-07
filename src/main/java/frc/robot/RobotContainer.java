@@ -316,15 +316,24 @@ public class RobotContainer {
           } catch (InterruptedException e) {
             System.out.println("sleep interrupted");
           }
-          IntakeIOConfig leftIntakeIOConfig = new IntakeIOConfig(Constants.CanIDs.INTAKE_LEFT_PIVOT_CAN_ID,
-              Constants.CanIDs.INTAKE_LEFT_ROLLER_CAN_ID, InvertedValue.Clockwise_Positive,
-              InvertedValue.Clockwise_Positive);
-          IntakeIOConfig rightIntakeIOConfig = new IntakeIOConfig(Constants.CanIDs.INTAKE_RIGHT_PIVOT_CAN_ID,
-              Constants.CanIDs.INTAKE_RIGHT_ROLLER_CAN_ID, InvertedValue.Clockwise_Positive,
-              InvertedValue.Clockwise_Positive);
-          leftIntake = new Intake(new IntakeIOReal(leftIntakeIOConfig), robotStates);
-          rightIntake = new Intake(new IntakeIOReal(rightIntakeIOConfig), robotStates);
-          climber = new Climber(new ClimberIOReal());
+          if (Constants.unusedCode) {
+            IntakeIOConfig leftIntakeIOConfig  = new IntakeIOConfig(Constants.CanIDs.INTAKE_LEFT_PIVOT_CAN_ID,
+                Constants.CanIDs.INTAKE_LEFT_ROLLER_CAN_ID, InvertedValue.Clockwise_Positive,
+                InvertedValue.Clockwise_Positive);
+            IntakeIOConfig rightIntakeIOConfig = new IntakeIOConfig(Constants.CanIDs.INTAKE_RIGHT_PIVOT_CAN_ID,
+                Constants.CanIDs.INTAKE_RIGHT_ROLLER_CAN_ID, InvertedValue.Clockwise_Positive,
+                InvertedValue.Clockwise_Positive);
+            leftIntake  = new Intake(new IntakeIOReal(leftIntakeIOConfig), robotStates);
+            rightIntake = new Intake(new IntakeIOReal(rightIntakeIOConfig), robotStates);
+            climber     = new Climber(new ClimberIOReal());
+          } else {
+            leftIntake  = new Intake(new IntakeIO() {
+                        }, robotStates);
+            rightIntake = new Intake(new IntakeIO() {
+                        }, robotStates);
+            climber     = new Climber(new ClimberIO() {
+                        });
+          }
           drivetrain = new Drivetrain(config, new GyroIOPigeon2(config, config.getGyroCANID()), new GyroIO.Fake(),
               config.getSwerveModuleObjects(), () -> is_autonomous);
           vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
