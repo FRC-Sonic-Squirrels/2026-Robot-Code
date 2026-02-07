@@ -135,12 +135,12 @@ public class RobotConfig2026 extends RobotConfig {
 
   // ---- VISION -------
   public static final Transform3d SHOOTER_SIDE_LEFT = new Transform3d(
-      new Translation3d(Units.Inches.of(-12.5).in(Units.Meters), Units.Inches.of(-4.3405).in(Units.Meters),
+      new Translation3d(Units.Inches.of(-12.5).in(Units.Meters), Units.Inches.of(-5.1405).in(Units.Meters),
           Units.Inches.of(10).in(Units.Meters)),
-      new Rotation3d(Math.toRadians(0.0), Math.toRadians(-25.0), Math.toRadians(-20.0 + 180 + 3.0)));
+      new Rotation3d(Math.toRadians(0.0), Math.toRadians(-25.0), Math.toRadians(-20.0 + 180 + .7)));
 
   public static final Transform3d SHOOTER_SIDE_RIGHT = new Transform3d(
-      new Translation3d(Units.Inches.of(-12.5).in(Units.Meters), Units.Inches.of(4.3405).in(Units.Meters),
+      new Translation3d(Units.Inches.of(-12.5).in(Units.Meters), Units.Inches.of(5.1405).in(Units.Meters),
           Units.Inches.of(10).in(Units.Meters)),
       new Rotation3d(Math.toRadians(0.0), Math.toRadians(-25.0), Math.toRadians(20.0 + 180)));
 
