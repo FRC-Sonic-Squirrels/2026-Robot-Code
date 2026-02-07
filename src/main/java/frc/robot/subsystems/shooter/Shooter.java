@@ -3,6 +3,8 @@ package frc.robot.subsystems.shooter;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.team2930.*;
@@ -139,10 +141,10 @@ public class Shooter extends SubsystemBase {
   private Rotation2d targetHoodPosition = Constants.zeroRotation2d;
   private double targetFlywheelRPM = 0.0;
 
-  private final Supplier<Double> distanceSupplier;
+  private final Supplier<Distance> distanceSupplier;
 
   /** Creates a new ShooterSubsystem. */
-  public Shooter(ShooterIO io, Supplier<Double> distanceSupplier) {
+  public Shooter(ShooterIO io, Supplier<Distance> distanceSupplier) {
     this.io = io;
     this.distanceSupplier = distanceSupplier;
 
@@ -187,13 +189,15 @@ public class Shooter extends SubsystemBase {
         case Idle:
           setFlywheelRPM(ShooterConstants.Flywheel.IDLE_FLYWHEEL_RPM);
           break;
+
         case Shooting:
-          setFlywheelRPM(ShooterConstants.Flywheel.SHOOTING_FLYWHEEL_RPM);
-          if (Math.abs(inputs.flywheelRPM[0] - ShooterConstants.Flywheel.SHOOTING_FLYWHEEL_RPM)
-              < 50) {
+          double desiredFlywheelRPM = getFlywheelRPM(distanceSupplier.get());
+          setFlywheelRPM(desiredFlywheelRPM);
+          if (Math.abs(inputs.flywheelRPM[0] - desiredFlywheelRPM) < 50) {
             setKickerVelocity(ShooterConstants.Kicker.SHOOTING_KICKER_RPM);
           }
           break;
+
         case Stop:
           setFlywheelRPM(ShooterConstants.Flywheel.STOP_FLYWHEEL_RPM);
           break;
@@ -262,6 +266,18 @@ public class Shooter extends SubsystemBase {
 
   public Rotation2d getPitch() {
     return inputs.hoodPosition;
+  }
+
+  public static double getHoodAngle(Distance distance) {
+    if (distance.lt(ShooterConstants.Hood.MIN_DISTANCE)) {
+      return 0.0;
+    }
+    return ShooterConstants.Interpolation.HOOD_ANGLE_FOR_HUB_DISTANCE.get(
+        distance.in(Units.Meters));
+  }
+
+  public static double getFlywheelRPM(Distance distance) {
+    return ShooterConstants.Interpolation.RPM_FOR_HUB_DISTANCE.get(distance.in(Units.Meters));
   }
 
   public void setHoodClosedLoopConstants(
