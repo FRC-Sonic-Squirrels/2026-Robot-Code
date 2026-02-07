@@ -12,9 +12,6 @@ import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.Constants.RobotMode.RobotType;
 import frc.robot.Constants.ShooterConstants;
-
-import static edu.wpi.first.units.Units.Meter;
-
 import java.util.ArrayList;
 import java.util.List;
 
@@ -178,7 +175,7 @@ public class Shooter extends SubsystemBase {
       logTargetPitchDegrees.info(targetHoodPosition.getDegrees());
       logFlywheelRollersDifference.info(inputs.flywheelRPM[1] - inputs.flywheelRPM[0]);
       logState.info(state);
-      logTargetDistance.info(distanceFromTarget.in(Meter));
+      logTargetDistance.info(distanceFromTarget.in(Units.Meters));
       logFacingTarget.info(isFacingTarget);
 
       switch (state) {
