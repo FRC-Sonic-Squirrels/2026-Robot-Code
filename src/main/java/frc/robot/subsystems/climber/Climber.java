@@ -171,8 +171,7 @@ public class Climber extends SubsystemBase {
   }
 
   public boolean isWinchAtTargetAngle(Rotation2d target, Rotation2d tolerance) {
-    var error = winchInputs.winchPosition - target.getDegrees();
-    return Math.abs(error) <= tolerance.getDegrees();
+    return GeometryUtil.isRotationAtTarget(Rotation2d.fromDegrees(winchInputs.winchPosition), target, tolerance);
   }
 
   public boolean isWinchAtTargetAngle(Rotation2d target) {

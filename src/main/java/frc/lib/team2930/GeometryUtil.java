@@ -1,20 +1,25 @@
 package frc.lib.team2930;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.geometry.Translation3d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
 import frc.robot.Constants;
 
 public class GeometryUtil {
   public static Rotation2d getHeading(Translation2d pose, Translation2d targetPose) {
-    if (pose.getNorm() == 0 && targetPose.getNorm() == 0)
+    if (pose.getNorm() == 0 && targetPose.getNorm() == 0) {
       return Rotation2d.kZero;
+    }
     return new Rotation2d(targetPose.getX() - pose.getX(), targetPose.getY() - pose.getY());
+  }
+
+  public static boolean isRotationAtTarget(Rotation2d angle, Rotation2d targetAngle, double toleranceInDegrees) {
+    var error = angle.minus(targetAngle).getDegrees();
+    return Math.abs(error) <= toleranceInDegrees;
+  }
+
+  public static boolean isRotationAtTarget(Rotation2d angle, Rotation2d targetAngle, Rotation2d tolerance) {
+    return isRotationAtTarget(angle, targetAngle, tolerance.getDegrees());
   }
 
   public static double getDist(Translation2d pose, Translation2d pose2) {
@@ -47,18 +52,22 @@ public class GeometryUtil {
   }
 
   public static double optimizeRotation(double theta) {
-    while (theta <= -Math.PI)
+    while (theta <= -Math.PI) {
       theta += Math.PI * 2;
-    while (theta >= Math.PI)
+    }
+    while (theta >= Math.PI) {
       theta -= Math.PI * 2;
+    }
     return theta;
   }
 
   public static double optimizeRotationInDegrees(double theta) {
-    while (theta < -180)
+    while (theta < -180) {
       theta += 360;
-    while (theta > 180)
+    }
+    while (theta > 180) {
       theta -= 360;
+    }
     return theta;
   }
 
