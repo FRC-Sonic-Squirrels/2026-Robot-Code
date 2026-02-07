@@ -18,7 +18,7 @@ public class Hopper extends SubsystemBase {
 
   public static final String ROOT_TABLE = "Hopper";
 
-  public enum HopperState {
+  public enum State {
     Idle, Override, Shooting
   }
 
@@ -36,7 +36,7 @@ public class Hopper extends SubsystemBase {
 
   private static final LoggerEntry.Decimal logRollerTargetVelocityRPM = logGroup.buildDecimal("TargetVelocityRPM");
 
-  private static final LoggerEntry.EnumValue<HopperState> logHopperState = logGroup.buildEnum("HopperState");
+  private static final LoggerEntry.EnumValue<State> logHopperState = logGroup.buildEnum("HopperState");
 
   private static final TunableNumberGroup group = new TunableNumberGroup(HopperConstants.RollerConstants.ROLLER);
   // Roller
@@ -69,7 +69,7 @@ public class Hopper extends SubsystemBase {
   private final HopperIO        io;
   private final HopperIO.Inputs inputs = new HopperIO.Inputs(logGroup);
 
-  private HopperState hopperState = HopperState.Idle;
+  private State hopperState = State.Idle;
 
   private double rollerTargetRPM;
 
@@ -130,7 +130,7 @@ public class Hopper extends SubsystemBase {
     logRollerTargetVelocityRPM.info(rollerTargetRPM);
   }
 
-  public void setState(HopperState state) {
+  public void setState(State state) {
     hopperState = state;
   }
 
