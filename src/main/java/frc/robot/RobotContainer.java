@@ -162,7 +162,7 @@ public class RobotContainer {
 
     robotStates = new RobotStates();
 
-    DriverStation.silenceJoystickConnectionWarning(true); // Silence annoying joystick warning
+    DriverStation.silenceJoystickConnectionWarning(true); // Silence joystick warning
 
     RobotType robotType = Constants.RobotMode.getRobot();
     Mode      mode      = Constants.RobotMode.getMode();
