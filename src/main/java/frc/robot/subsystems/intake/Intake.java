@@ -214,7 +214,7 @@ public class Intake extends SubsystemBase {
             setPivotAngle(PivotConstants.HOME_POSITION);
             setRollerPercentOut(0);
           case Down:
-            setPivotAngle(Rotation2d.fromDegrees(intakingFuelPivotAngle.get()));
+            setPivotAngle(computeDownAngle());
             setRollerPercentOut(0);
             break;
           case Eject:
@@ -222,13 +222,17 @@ public class Intake extends SubsystemBase {
             break;
           case Intake:
             setRollerVelocity(intakingVelocity.get());
-            setPivotAngle(Rotation2d.fromDegrees(intakingFuelPivotAngle.get()));
+            setPivotAngle(computeDownAngle());
             break;
           default:
             break;
         }
       }
     }
+  }
+
+  private Rotation2d computeDownAngle() {
+    return Rotation2d.fromDegrees(intakingFuelPivotAngle.get());
   }
 
   // Setters
