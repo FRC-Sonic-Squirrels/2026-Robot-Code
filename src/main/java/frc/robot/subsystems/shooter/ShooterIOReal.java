@@ -77,16 +77,16 @@ public class ShooterIOReal implements ShooterIO {
     flywheelConfig.Voltage.PeakReverseVoltage        = 0.0;
     flywheelConfig.Voltage.SupplyVoltageTimeConstant = 0.02;
 
+    flywheelConfig.CurrentLimits.SupplyCurrentLimit       = ShooterConstants.Flywheel.SUPPLY_CURRENT_LIMIT;
+    flywheelConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+    flywheelConfig.CurrentLimits.StatorCurrentLimit       = ShooterConstants.Flywheel.STATOR_CURRENT_LIMIT;
+    flywheelConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+
     flywheelLead.getConfigurator().apply(flywheelConfig);
     flywheelFollower.getConfigurator().apply(flywheelConfig);
 
     // --- hood config ---
     TalonFXConfiguration hoodConfig = new TalonFXConfiguration();
-
-    flywheelConfig.CurrentLimits.SupplyCurrentLimit       = ShooterConstants.Hood.SUPPLY_CURRENT_LIMIT;
-    flywheelConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-    flywheelConfig.CurrentLimits.StatorCurrentLimit       = ShooterConstants.Hood.STATOR_CURRENT_LIMIT;
-    flywheelConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
     hoodConfig.Feedback.SensorToMechanismRatio = Constants.ShooterConstants.Hood.GEARING;
     hoodConfig.MotorOutput.NeutralMode         = NeutralModeValue.Brake;
@@ -98,6 +98,11 @@ public class ShooterIOReal implements ShooterIO {
 
     hoodConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
     hoodConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
+
+    hoodConfig.CurrentLimits.SupplyCurrentLimit       = ShooterConstants.Hood.SUPPLY_CURRENT_LIMIT;
+    hoodConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+    hoodConfig.CurrentLimits.StatorCurrentLimit       = ShooterConstants.Hood.STATOR_CURRENT_LIMIT;
+    hoodConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
     hood.getConfigurator().apply(hoodConfig);
 

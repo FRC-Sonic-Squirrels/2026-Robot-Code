@@ -402,7 +402,8 @@ public final class Constants {
     public static final Distance DIST_TO_START_INTAKING = Units.Meters.of(1.0);
   }
 
-  public static class ShooterConstants {
+public static class ShooterConstants {
+
     public static final Distance SHOOTER_LENGTH = Units.Inches.of(12.0);
 
     public static class Hood {
@@ -410,11 +411,15 @@ public final class Constants {
 
       public static final Rotation2d MIN_ANGLE_RAD = Rotation2d.fromDegrees(12.0);
       public static final Rotation2d MAX_ANGLE_RAD = Rotation2d.fromDegrees(59);
+      public static final Rotation2d IDLE_ANGLE_RAD = Rotation2d.fromDegrees(30);
 
       public static final double SIM_INITIAL_ANGLE = Math.toRadians(14.0);
+      public static final Distance MIN_DISTANCE = Units.Inches.of(40.0);
 
       public static final double SUPPLY_CURRENT_LIMIT = 40;
       public static final double STATOR_CURRENT_LIMIT = 40;
+
+      public static final double CORRECT_ANGLE_RANGE = 2;
     }
 
     public static class Flywheel {
@@ -424,6 +429,8 @@ public final class Constants {
       public static final double STATOR_CURRENT_LIMIT = 40;
       public static final double PEAK_REVERSE_VOLTAGE = 0;
       public static final double SUPPLY_VOLTAGE_TIME = 0.02;
+      public static final double IDLE_FLYWHEEL_RPM = 2000;
+      public static final double CORRECT_RPM_RANGE = 50;
     }
 
     public static class Kicker {
@@ -432,6 +439,39 @@ public final class Constants {
       public static final double SUPPLY_CURRENT_LIMIT = 40;
       public static final double STATOR_CURRENT_LIMIT = 40;
       public static final double SENSOR_TO_MECHANISM_RATIO = 1.42;
+      public static final double SHOOTING_KICKER_RPM = 100;
+    }
+
+    public static class Interpolation {
+      public static final InterpolatingDoubleTreeMap HOOD_ANGLE_FOR_HUB_DISTANCE =
+          new InterpolatingDoubleTreeMap();
+      public static final InterpolatingDoubleTreeMap RPM_FOR_HUB_DISTANCE =
+          new InterpolatingDoubleTreeMap();
+
+      public Interpolation() {
+
+        HOOD_ANGLE_FOR_HUB_DISTANCE.put(1.0, 61.80);
+        HOOD_ANGLE_FOR_HUB_DISTANCE.put(1.5, 51.50);
+        HOOD_ANGLE_FOR_HUB_DISTANCE.put(2.0, 42.75);
+        HOOD_ANGLE_FOR_HUB_DISTANCE.put(2.5, 36.70);
+        HOOD_ANGLE_FOR_HUB_DISTANCE.put(3.0, 34.00);
+        HOOD_ANGLE_FOR_HUB_DISTANCE.put(3.5, 31.20);
+        HOOD_ANGLE_FOR_HUB_DISTANCE.put(4.0, 29.50);
+        HOOD_ANGLE_FOR_HUB_DISTANCE.put(4.5, 27.50);
+        HOOD_ANGLE_FOR_HUB_DISTANCE.put(5.0, 26.00);
+        HOOD_ANGLE_FOR_HUB_DISTANCE.put(5.5, 24.85);
+        HOOD_ANGLE_FOR_HUB_DISTANCE.put(6.0, 23.60);
+        HOOD_ANGLE_FOR_HUB_DISTANCE.put(6.5, 22.80);
+
+        RPM_FOR_HUB_DISTANCE.put(1.0, 2000.0);
+        RPM_FOR_HUB_DISTANCE.put(2.0, 3000.0);
+        RPM_FOR_HUB_DISTANCE.put(3.0, 4500.0);
+        RPM_FOR_HUB_DISTANCE.put(4.0, 5200.0);
+        RPM_FOR_HUB_DISTANCE.put(7.0, 6000.0);
+        RPM_FOR_HUB_DISTANCE.put(8.0, 6800.0);
+        RPM_FOR_HUB_DISTANCE.put(9.5, 7200.0);
+        RPM_FOR_HUB_DISTANCE.put(11.5, 8000.0);
+      }
     }
   }
 

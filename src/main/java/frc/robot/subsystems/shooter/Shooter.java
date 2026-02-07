@@ -3,16 +3,24 @@ package frc.robot.subsystems.shooter;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.Constants.RobotMode.RobotType;
+import frc.robot.Constants.ShooterConstants;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Shooter extends SubsystemBase {
+
+  public enum State {
+    Idle, Shooting, Stop
+  }
+
   private static final String ROOT_TABLE = "Shooter";
 
   private static final ExecutionTiming timing = new ExecutionTiming(ROOT_TABLE);
@@ -41,12 +49,18 @@ public class Shooter extends SubsystemBase {
   private static final LoggerEntry.DecimalArray logInputs_tempsCelcius           = logInputs
       .buildDecimalArray("TempsCelcius");
 
-  public static final LoggerGroup          logGroup                     = LoggerGroup.build(ROOT_TABLE);
+  public static final LoggerGroup logGroup = LoggerGroup.build(ROOT_TABLE);
+
+  private static final LoggerEntry.EnumValue<State> logState = logGroup.buildEnum("State");
+
   private static final LoggerEntry.Decimal logPitchDegrees              = logGroup.buildDecimal("PitchDegrees");
   private static final LoggerEntry.Decimal logTargetPitchDegrees        = logGroup.buildDecimal("TargetPitchDegrees");
   private static final LoggerEntry.Decimal logHoodPIDLatency            = logGroup.buildDecimal("HoodPIDLatency");
   private static final LoggerEntry.Decimal logFlywheelRollersDifference = logGroup
       .buildDecimal("FlywheelRollersDifference");
+  private static final LoggerEntry.Decimal logTargetDistance            = logGroup.buildDecimal("DistanceFromTarget");
+  private static final LoggerEntry.Bool    logFacingTarget              = logGroup.buildBoolean("IsFacingTarget");
+  private static final LoggerEntry.Bool    logShooterReady              = logGroup.buildBoolean("IsShooterReady");
 
   public static final TunableNumberGroup group = new TunableNumberGroup(ROOT_TABLE);
 
@@ -118,10 +132,15 @@ public class Shooter extends SubsystemBase {
 
   private final List<PIDTargetMeasurement> hoodTargetMeasurements = new ArrayList<>();
 
+  private State state = State.Idle;
+
   private double hoodPidLatency = 0.0;
 
   private Rotation2d targetHoodPosition = Constants.zeroRotation2d;
   private double     targetFlywheelRPM  = 0.0;
+
+  private Distance distanceFromTarget;
+  private boolean  isFacingTarget;
 
   /** Creates a new ShooterSubsystem. */
   public Shooter(ShooterIO io) {
@@ -156,6 +175,34 @@ public class Shooter extends SubsystemBase {
       logPitchDegrees.info(inputs.hoodPosition.getDegrees());
       logTargetPitchDegrees.info(targetHoodPosition.getDegrees());
       logFlywheelRollersDifference.info(inputs.flywheelRPM[1] - inputs.flywheelRPM[0]);
+      logState.info(state);
+      logTargetDistance.info(distanceFromTarget.in(Units.Meters));
+      logFacingTarget.info(isFacingTarget);
+      logShooterReady.info(isShooterReady());
+
+      switch (state) {
+        case Idle:
+          setFlywheelRPM(ShooterConstants.Flywheel.IDLE_FLYWHEEL_RPM);
+          setHoodPosition(ShooterConstants.Hood.IDLE_ANGLE_RAD);
+          setKickerVelocity(0);
+          break;
+
+        case Shooting:
+          setFlywheelRPM(getFlywheelRPM(distanceFromTarget));
+          setHoodPosition(getHoodAngle(distanceFromTarget));
+          if (isShooterReady()) {
+            setKickerVelocity(ShooterConstants.Kicker.SHOOTING_KICKER_RPM);
+          } else {
+            setKickerVelocity(0);
+          }
+          break;
+
+        case Stop:
+          setFlywheelRPM(0);
+          setHoodPosition(Rotation2d.kZero);
+          setKickerVelocity(0);
+          break;
+      }
 
       if (Constants.unusedCode) {
         var timestamp           = Timer.getFPGATimestamp();
@@ -205,6 +252,18 @@ public class Shooter extends SubsystemBase {
 
   public Rotation2d getPitch() {
     return inputs.hoodPosition;
+  }
+
+  public static Rotation2d getHoodAngle(Distance distance) {
+    if (distance.lt(ShooterConstants.Hood.MIN_DISTANCE)) {
+      return Rotation2d.fromDegrees(0.0);
+    }
+    return Rotation2d
+        .fromDegrees(ShooterConstants.Interpolation.HOOD_ANGLE_FOR_HUB_DISTANCE.get(distance.in(Units.Meters)));
+  }
+
+  public static double getFlywheelRPM(Distance distance) {
+    return ShooterConstants.Interpolation.RPM_FOR_HUB_DISTANCE.get(distance.in(Units.Meters));
   }
 
   public void setHoodClosedLoopConstants(double kP, double kD, double kG, double maxProfiledVelocity,
@@ -272,5 +331,27 @@ public class Shooter extends SubsystemBase {
 
   public void setKickerVelocity(double revPerMin) {
     io.setKickerVelocity(revPerMin);
+  }
+
+  public void setDistanceFromTarget(Distance updatedDistanceFromTarget) {
+    distanceFromTarget = updatedDistanceFromTarget;
+  }
+
+  public void setFacingTarget(boolean updatedIsFacingTarget) {
+    isFacingTarget = updatedIsFacingTarget;
+  }
+
+  public boolean isFlywheelReady() {
+    double desiredFlywheelRPM = getFlywheelRPM(distanceFromTarget);
+    return Math.abs(inputs.flywheelRPM[0] - desiredFlywheelRPM) < ShooterConstants.Flywheel.CORRECT_RPM_RANGE;
+  }
+
+  public boolean isHoodReady() {
+    double desiredHoodAngle = getHoodAngle(distanceFromTarget).getDegrees();
+    return Math.abs(inputs.hoodPosition.getDegrees() - desiredHoodAngle) < ShooterConstants.Hood.CORRECT_ANGLE_RANGE;
+  }
+
+  public boolean isShooterReady() {
+    return isFacingTarget && isFlywheelReady() && isHoodReady();
   }
 }
