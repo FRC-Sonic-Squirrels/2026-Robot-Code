@@ -30,8 +30,7 @@ import frc.robot.RobotStates;
 public class Intake extends SubsystemBase {
 
   public enum IntakeState {
-    Idle, Override, IntakeCoral, IntakeAlgae, PrepPassoff, PassoffEndEffector, PassoffIntake, Stow, ScoreAlgaePrep,
-    ScoreAlgae, ScoreCoralPrep, ScoreCoral, Climb, Down, Eject
+    Idle, Stow, Down, Eject, Intake
   }
 
   // Execution timing
@@ -72,8 +71,9 @@ public class Intake extends SubsystemBase {
       .buildDecimal("TargetAngleDegrees");
 
   // Tunable numbers
-
   private static final TunableNumberGroup group = new TunableNumberGroup(IntakeConstants.ROOT_TABLE);
+
+  private static final LoggedTunableNumber intakingFuelVel = group.build("Intaking/Fuel/Vel", 3000);
 
   private static final LoggedTunableNumber ejectingFuelVelocity   = group.build("Score/Fuel/Velocity", -500.0);
   private static final LoggedTunableNumber intakingFuelPivotAngle = group.build("Intaking/Fuel/AngleDeg", 20);
@@ -143,7 +143,9 @@ public class Intake extends SubsystemBase {
   private final IntakeIO.Inputs inputs = new IntakeIO.Inputs(logGroup);
 
   // Intake states
-  private IntakeState intakeState = IntakeState.Idle;
+  private IntakeState intakeState = IntakeState.Stow;
+
+  private boolean intakeOverride = false;
 
   private double rollerTargetRPM;
 
@@ -205,34 +207,34 @@ public class Intake extends SubsystemBase {
       }
 
       // Intake state machine
-
-      switch (intakeState) {
-        case Override:
-          break;
-        case Idle:
-          setPivotVoltage(0);
-          setRollerPercentOut(0);
-          break;
-        case Stow:
-          if (!states.coralExpectedInIntake) {
-
-          } else {
+      if (!intakeOverride) {
+        switch (intakeState) {
+          case Idle:
+            setPivotVoltage(0);
             setRollerPercentOut(0);
-          }
-        case Climb:
-          setRollerPercentOut(0);
-          break;
-        case Down:
-          setPivotAngle(Rotation2d.fromDegrees(intakingFuelPivotAngle.get()));
-          setRollerPercentOut(0);
-          break;
-        case Eject:
-          setRollerVelocity(ejectingFuelVelocity.get());
-          break;
-        default:
-          break;
+            break;
+          case Stow:
+            if (!states.coralExpectedInIntake) {
+
+            } else {
+              setRollerPercentOut(0);
+            }
+          case Down:
+            setPivotAngle(Rotation2d.fromDegrees(intakingFuelPivotAngle.get()));
+            setRollerPercentOut(0);
+            break;
+          case Eject:
+            setRollerVelocity(ejectingFuelVelocity.get());
+            break;
+          case Intake:
+            setRollerVelocity(intakingFuelVel.get());
+            setPivotAngle(Rotation2d.fromDegrees(intakingFuelPivotAngle.get()));
+            break;
+          default:
+            break;
+        }
+        states.intakeInTargetState = isPivotAtTargetAngle();
       }
-      states.intakeInTargetState = isPivotAtTargetAngle();
     }
   }
 
@@ -322,6 +324,14 @@ public class Intake extends SubsystemBase {
 
   public AngularVelocity getPivotVelocity() {
     return Units.DegreesPerSecond.of(inputs.pivotVelocityDegreesPerSecond);
+  }
+
+  public void setIntakeOverride(boolean intakeOverride) {
+    this.intakeOverride = intakeOverride;
+  }
+
+  public boolean getIntakeOverride() {
+    return intakeOverride;
   }
 
   public boolean rollerStallDetected() {

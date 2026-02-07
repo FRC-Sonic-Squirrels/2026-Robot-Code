@@ -9,6 +9,7 @@ import frc.lib.team2930.AllianceFlipUtil;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 import frc.robot.Constants.FieldConstants;
+import frc.robot.Constants.IntakeConstants;
 import frc.robot.commands.drive.DriveToPoseHelper;
 import frc.robot.commands.drive.RotateToFaceHelper;
 import frc.robot.subsystems.intake.Intake;
@@ -43,6 +44,10 @@ public class RobotStates {
 
   public enum RobotGoal {
     None, Auto, Score, Pass, Climb
+  }
+
+  public enum IntakeGoal {
+    Stow, leftIntake, rightIntake
   }
 
   // Logging
@@ -93,6 +98,9 @@ public class RobotStates {
 
   private RobotGoal goal       = RobotGoal.None;
   private RobotGoal wantedGoal = RobotGoal.None;
+
+  private IntakeGoal intakeGoal       = IntakeGoal.Stow;
+  private IntakeGoal wantedIntakeGoal = IntakeGoal.Stow;
 
   // Commands
 
@@ -148,15 +156,29 @@ public class RobotStates {
       case Climb:
         break;
     }
-    leftIntake.setState(IntakeState.Idle);
-    rightIntake.setState(IntakeState.Idle);
     dtpHelpter.initialize();
     rtfHelper.initialize();
     goal = wantedGoal;
   }
 
+  private void handleIntakeGoalTransition() {
+    switch (wantedIntakeGoal) {
+      case Stow:
+        break;
+      case leftIntake:
+      case rightIntake:
+        if (goal == RobotGoal.Climb) {
+          intakeGoal = intakeGoal.Stow;
+          return;
+        }
+        break;
+    }
+    intakeGoal = wantedIntakeGoal;
+  }
+
   public void periodic() {
     handleGoalTransition();
+    handleIntakeGoalTransition();
     switch (goal) {
       case None:
         drivetrain.resetVelocityOverride();
@@ -181,6 +203,21 @@ public class RobotStates {
         targetPose = new Pose2d(0, 0, Rotation2d.kZero);
         dtpHelpter.execute();
         break;
+    }
+    switch (intakeGoal) {
+      case Stow:
+        rightIntake.setState(intakeState.Stow);
+        leftIntake.setState(intakeState.Stow);
+      case leftIntake:
+        rightIntake.setState(intakeState.Stow);
+        if (rightIntake.isPivotAtTargetAngle(IntakeConstants.PivotConstants.HOME_POSITION)) {
+          leftIntake.setState(intakeState.Intake);
+        }
+      case rightIntake:
+        leftIntake.setState(intakeState.Stow);
+        if (leftIntake.isPivotAtTargetAngle(IntakeConstants.PivotConstants.HOME_POSITION)) {
+          rightIntake.setState(intakeState.Intake);
+        }
     }
 
     CommandScheduler.getInstance().setPeriod(endEffectorOverrideVelocity);
@@ -241,11 +278,5 @@ public class RobotStates {
       return true;
     }
     return false;
-  }
-
-  // TODO: this should probrably be removed
-  public void setIntakeState(Intake.IntakeState newState) {
-    leftIntake.setState(newState);
-    rightIntake.setState(newState);
   }
 }

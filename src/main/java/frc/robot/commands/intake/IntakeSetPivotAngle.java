@@ -6,9 +6,7 @@ package frc.robot.commands.intake;
 
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.robot.RobotStates;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.Intake.IntakeState;
 import java.util.function.Supplier;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
@@ -16,17 +14,14 @@ public class IntakeSetPivotAngle extends Command {
   /** Creates a new PivotIntake. */
   private final Intake intake;
 
-  private final RobotStates states;
-
   private Supplier<Rotation2d> angleSupplier;
 
-  public IntakeSetPivotAngle(Intake intake, Rotation2d angle, RobotStates states) {
-    this(intake, () -> angle, states);
+  public IntakeSetPivotAngle(Intake intake, Rotation2d angle) {
+    this(intake, () -> angle);
   }
 
-  public IntakeSetPivotAngle(Intake intake, Supplier<Rotation2d> angleSupplier, RobotStates states) {
+  public IntakeSetPivotAngle(Intake intake, Supplier<Rotation2d> angleSupplier) {
     this.intake        = intake;
-    this.states        = states;
     this.angleSupplier = angleSupplier;
 
     addRequirements(intake);
@@ -34,7 +29,12 @@ public class IntakeSetPivotAngle extends Command {
 
   @Override
   public void initialize() {
-    states.setIntakeState(IntakeState.Override);
+    intake.setIntakeOverride(true);
+  }
+
+  @Override
+  public void end(boolean interrupted) {
+    intake.setIntakeOverride(false);
   }
 
   // Called every time the scheduler runs while the command is scheduled.

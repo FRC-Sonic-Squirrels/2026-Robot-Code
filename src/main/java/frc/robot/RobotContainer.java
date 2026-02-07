@@ -477,10 +477,10 @@ public class RobotContainer {
 
     // Intake
     operatorController.registerTrigger(XboxControllerWrapper.Button.leftTrigger, "Left Intake")
-        .onTrue(Commands.runOnce(() -> leftIntake.setState(IntakeState.IntakeCoral)))
+        .onTrue(Commands.runOnce(() -> leftIntake.setState(IntakeState.Intake)))
         .onFalse(Commands.runOnce(() -> leftIntake.setState(IntakeState.Stow)));
     operatorController.registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Right Intake")
-        .onTrue(Commands.runOnce(() -> leftIntake.setState(IntakeState.IntakeCoral)))
+        .onTrue(Commands.runOnce(() -> leftIntake.setState(IntakeState.Intake)))
         .onFalse(Commands.runOnce(() -> leftIntake.setState(IntakeState.Stow)));
 
     // Intake positions
