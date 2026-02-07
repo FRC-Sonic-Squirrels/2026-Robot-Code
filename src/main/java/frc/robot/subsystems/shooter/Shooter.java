@@ -12,12 +12,15 @@ import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.Constants.RobotMode.RobotType;
 import frc.robot.Constants.ShooterConstants;
+
+import static edu.wpi.first.units.Units.Meter;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class Shooter extends SubsystemBase {
 
-  public enum ShooterStates {
+  public enum State {
     Idle, Shooting, Stop
   }
 
@@ -49,12 +52,16 @@ public class Shooter extends SubsystemBase {
   private static final LoggerEntry.DecimalArray logInputs_tempsCelcius           = logInputs
       .buildDecimalArray("TempsCelcius");
 
-  public static final LoggerGroup          logGroup                     = LoggerGroup.build(ROOT_TABLE);
+  public static final LoggerGroup logGroup = LoggerGroup.build(ROOT_TABLE);
+
+  private static final LoggerEntry.EnumValue<State> logState = logGroup.buildEnum("State");
+
   private static final LoggerEntry.Decimal logPitchDegrees              = logGroup.buildDecimal("PitchDegrees");
   private static final LoggerEntry.Decimal logTargetPitchDegrees        = logGroup.buildDecimal("TargetPitchDegrees");
   private static final LoggerEntry.Decimal logHoodPIDLatency            = logGroup.buildDecimal("HoodPIDLatency");
   private static final LoggerEntry.Decimal logFlywheelRollersDifference = logGroup
       .buildDecimal("FlywheelRollersDifference");
+  private static final LoggerEntry.Decimal logTargetDistance            = logGroup.buildDecimal("DistanceFromTarget");
 
   public static final TunableNumberGroup group = new TunableNumberGroup(ROOT_TABLE);
 
@@ -118,8 +125,7 @@ public class Shooter extends SubsystemBase {
   }
 
   private final ShooterIO        io;
-  private final ShooterStates    shooterState = ShooterStates.Idle;
-  private final ShooterIO.Inputs inputs       = new ShooterIO.Inputs(logGroup);
+  private final ShooterIO.Inputs inputs = new ShooterIO.Inputs(logGroup);
 
   // Creates a new flat moving average filter
   // Average will be taken over the last 20 samples
@@ -127,12 +133,15 @@ public class Shooter extends SubsystemBase {
 
   private final List<PIDTargetMeasurement> hoodTargetMeasurements = new ArrayList<>();
 
+  private State state = State.Idle;
+
   private double hoodPidLatency = 0.0;
 
   private Rotation2d targetHoodPosition = Constants.zeroRotation2d;
   private double     targetFlywheelRPM  = 0.0;
 
   private Distance distanceFromTarget;
+  private boolean  isFacingTarget;
 
   /** Creates a new ShooterSubsystem. */
   public Shooter(ShooterIO io) {
@@ -167,22 +176,30 @@ public class Shooter extends SubsystemBase {
       logPitchDegrees.info(inputs.hoodPosition.getDegrees());
       logTargetPitchDegrees.info(targetHoodPosition.getDegrees());
       logFlywheelRollersDifference.info(inputs.flywheelRPM[1] - inputs.flywheelRPM[0]);
+      logState.info(state);
+      logTargetDistance.info(distanceFromTarget.in(Meter));
 
-      switch (shooterState) {
+      switch (state) {
         case Idle:
           setFlywheelRPM(ShooterConstants.Flywheel.IDLE_FLYWHEEL_RPM);
+          setHoodPosition(ShooterConstants.Hood.IDLE_ANGLE_RAD);
+          setKickerVelocity(0);
           break;
 
         case Shooting:
           setFlywheelRPM(getFlywheelRPM(distanceFromTarget));
           setHoodPosition(getHoodAngle(distanceFromTarget));
-          if (isFlywheelReady()) {
+          if (isFlywheelReady() && isHoodReady() && isFacingTarget) {
             setKickerVelocity(ShooterConstants.Kicker.SHOOTING_KICKER_RPM);
+          } else {
+            setKickerVelocity(0);
           }
           break;
 
         case Stop:
-          setFlywheelRPM(ShooterConstants.Flywheel.STOP_FLYWHEEL_RPM);
+          setFlywheelRPM(0);
+          setHoodPosition(Rotation2d.kZero);
+          setKickerVelocity(0);
           break;
       }
 
@@ -315,16 +332,21 @@ public class Shooter extends SubsystemBase {
     io.setKickerVelocity(revPerMin);
   }
 
-  public Distance getDistanceFromTarget() {
-    return distanceFromTarget;
-  }
-
   public void setDistanceFromTarget(Distance updatedDistanceFromTarget) {
     distanceFromTarget = updatedDistanceFromTarget;
   }
 
+  public void setFacingTarget(boolean updatedIsFacingTarget) {
+    isFacingTarget = updatedIsFacingTarget;
+  }
+
   public boolean isFlywheelReady() {
     double desiredFlywheelRPM = getFlywheelRPM(distanceFromTarget);
-    return Math.abs(inputs.flywheelRPM[0] - desiredFlywheelRPM) < 50;
+    return Math.abs(inputs.flywheelRPM[0] - desiredFlywheelRPM) < ShooterConstants.Flywheel.CORRECT_RPM_RANGE;
+  }
+
+  public boolean isHoodReady() {
+    double desiredHoodAngle = getHoodAngle(distanceFromTarget).getDegrees();
+    return Math.abs(inputs.hoodPosition.getDegrees() - desiredHoodAngle) < ShooterConstants.Hood.CORRECT_ANGLE_RANGE;
   }
 }
