@@ -377,7 +377,7 @@ public class RobotContainer {
           }, robotStates);
           climber = new Climber(new ClimberIO() {
           });
-          hopper = new Hopper(new HopperIO() {
+          hopper = new Hopper(new HopperIOReal() {
           });
 
           if (Constants.unusedCode) {
