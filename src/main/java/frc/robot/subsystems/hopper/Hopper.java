@@ -16,15 +16,17 @@ import frc.robot.Constants.RobotMode.RobotType;
 
 public class Hopper extends SubsystemBase {
 
+  public static final String ROOT_TABLE = "Hopper";
+
   public enum HopperState {
     Idle, Override, Shooting
   }
 
   // Execution timing
-  private static final ExecutionTiming timing = new ExecutionTiming(HopperConstants.ROOT_TABLE);
+  private static final ExecutionTiming timing = new ExecutionTiming(ROOT_TABLE);
 
   // Logging
-  private static final LoggerGroup logGroup = LoggerGroup.build(HopperConstants.ROOT_TABLE);
+  private static final LoggerGroup logGroup = LoggerGroup.build(ROOT_TABLE);
 
   // Rollers
   private static final LoggerGroup         rollerLogGroup               = logGroup

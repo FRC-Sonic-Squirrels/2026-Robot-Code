@@ -270,8 +270,6 @@ public final class Constants {
   }
 
   public static class HopperConstants {
-    public static final String ROOT_TABLE = "Hopper";
-
     public static class RollerConstants {
 
       public static final double ROLLER_GEARING = 10.4167;
