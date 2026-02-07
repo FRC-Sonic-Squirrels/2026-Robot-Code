@@ -28,7 +28,7 @@ import frc.robot.Constants.RobotMode.RobotType;
 
 public class Intake extends SubsystemBase {
 
-  public enum IntakeState {
+  public enum State {
     Idle, Stow, Down, Eject, Intake
   }
 
@@ -49,7 +49,7 @@ public class Intake extends SubsystemBase {
   private static final LoggerEntry.EnumValue<ControlMode> logRollerControlMode       = rollerLogGroup
       .buildEnum("ControlMode");
 
-  private static final LoggerEntry.EnumValue<IntakeState> logIntakeState = logGroup.buildEnum("IntakeState");
+  private static final LoggerEntry.EnumValue<State> logIntakeState = logGroup.buildEnum("IntakeState");
 
   // Pivot
   private static final LoggerGroup                        pivotLogGroup                           = logGroup
@@ -72,9 +72,9 @@ public class Intake extends SubsystemBase {
   // Tunable numbers
   private static final TunableNumberGroup group = new TunableNumberGroup(IntakeConstants.ROOT_TABLE);
 
-  private static final LoggedTunableNumber intakingFuelVel = group.build("Intaking/Fuel/Vel", 3000);
+  private static final LoggedTunableNumber intakingVelocity = group.build("Intaking/Fuel/Velocity", 3000);
 
-  private static final LoggedTunableNumber ejectingFuelVelocity   = group.build("Score/Fuel/Velocity", -500.0);
+  private static final LoggedTunableNumber ejectingFuelVelocity   = group.build("Score/Fuel/Velocity", 500.0);
   private static final LoggedTunableNumber intakingFuelPivotAngle = group.build("Intaking/Fuel/AngleDeg", 20);
 
   // Roller
@@ -141,7 +141,7 @@ public class Intake extends SubsystemBase {
   private final IntakeIO.Inputs inputs = new IntakeIO.Inputs(logGroup);
 
   // Intake states
-  private IntakeState intakeState = IntakeState.Stow;
+  private State intakeState = State.Stow;
 
   private boolean intakeOverride = false;
 
@@ -218,10 +218,10 @@ public class Intake extends SubsystemBase {
             setRollerPercentOut(0);
             break;
           case Eject:
-            setRollerVelocity(ejectingFuelVelocity.get());
+            setRollerVelocity(ejectingFuelVelocity.get() * -1);
             break;
           case Intake:
-            setRollerVelocity(intakingFuelVel.get());
+            setRollerVelocity(intakingVelocity.get());
             setPivotAngle(Rotation2d.fromDegrees(intakingFuelPivotAngle.get()));
             break;
           default:
@@ -298,17 +298,9 @@ public class Intake extends SubsystemBase {
     return inputs.pivotPosition;
   }
 
-  public boolean isPivotAtTargetAngle() {
-    return isPivotAtTargetAngle(pivotTargetAngle);
-  }
-
-  public boolean isPivotAtTargetAngle(Rotation2d target, Rotation2d tolerance) {
-    var error = inputs.pivotPosition.minus(target).getRadians();
-    return Math.abs(error) <= tolerance.getRadians();
-  }
-
-  public boolean isPivotAtTargetAngle(Rotation2d target) {
-    return isPivotAtTargetAngle(target, Rotation2d.fromDegrees(pivotToleranceDegrees.get()));
+  public boolean isStowed() {
+    var error = inputs.pivotPosition.minus(PivotConstants.HOME_POSITION).getRadians();
+    return Math.abs(error) <= Rotation2d.fromDegrees(pivotToleranceDegrees.get()).getRadians();
   }
 
   public Voltage getPivotVoltage() {
@@ -339,7 +331,7 @@ public class Intake extends SubsystemBase {
     return null;
   }
 
-  public void setState(IntakeState state) {
+  public void setState(State state) {
     intakeState = state;
   }
 }

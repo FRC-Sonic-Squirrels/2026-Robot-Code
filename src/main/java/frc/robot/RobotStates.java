@@ -9,11 +9,10 @@ import frc.lib.team2930.AllianceFlipUtil;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 import frc.robot.Constants.FieldConstants;
-import frc.robot.Constants.IntakeConstants;
 import frc.robot.commands.drive.DriveToPoseHelper;
 import frc.robot.commands.drive.RotateToFaceHelper;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.Intake.IntakeState;
+import frc.robot.subsystems.intake.Intake.State;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
 import java.util.function.Supplier;
 
@@ -47,7 +46,7 @@ public class RobotStates {
   }
 
   public enum IntakeGoal {
-    Stow, leftIntake, rightIntake
+    Stow, LeftIntake, RightIntake
   }
 
   // Logging
@@ -78,7 +77,7 @@ public class RobotStates {
 
   public MechState mechState = MechState.Idle;
 
-  public IntakeState intakeState = IntakeState.Idle;
+  public State intakeState = State.Idle;
 
   public boolean fuelInIntake;
 
@@ -165,8 +164,8 @@ public class RobotStates {
     switch (wantedIntakeGoal) {
       case Stow:
         break;
-      case leftIntake:
-      case rightIntake:
+      case LeftIntake:
+      case RightIntake:
         if (goal == RobotGoal.Climb) {
           intakeGoal = intakeGoal.Stow;
           return;
@@ -208,14 +207,14 @@ public class RobotStates {
       case Stow:
         rightIntake.setState(intakeState.Stow);
         leftIntake.setState(intakeState.Stow);
-      case leftIntake:
+      case LeftIntake:
         rightIntake.setState(intakeState.Stow);
-        if (rightIntake.isPivotAtTargetAngle(IntakeConstants.PivotConstants.HOME_POSITION)) {
+        if (rightIntake.isStowed()) {
           leftIntake.setState(intakeState.Intake);
         }
-      case rightIntake:
+      case RightIntake:
         leftIntake.setState(intakeState.Stow);
-        if (leftIntake.isPivotAtTargetAngle(IntakeConstants.PivotConstants.HOME_POSITION)) {
+        if (leftIntake.isStowed()) {
           rightIntake.setState(intakeState.Intake);
         }
     }
