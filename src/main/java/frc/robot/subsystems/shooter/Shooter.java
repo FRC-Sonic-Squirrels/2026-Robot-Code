@@ -3,16 +3,24 @@ package frc.robot.subsystems.shooter;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.Constants.RobotMode.RobotType;
+import frc.robot.Constants.ShooterConstants;
 import java.util.ArrayList;
 import java.util.List;
 
 public class Shooter extends SubsystemBase {
+
+  public enum ShooterStates {
+    Idle, Shooting, Stop
+  }
+
   private static final String ROOT_TABLE = "Shooter";
 
   private static final ExecutionTiming timing = new ExecutionTiming(ROOT_TABLE);
@@ -110,7 +118,8 @@ public class Shooter extends SubsystemBase {
   }
 
   private final ShooterIO        io;
-  private final ShooterIO.Inputs inputs = new ShooterIO.Inputs(logGroup);
+  private final ShooterStates    shooterState = ShooterStates.Idle;
+  private final ShooterIO.Inputs inputs       = new ShooterIO.Inputs(logGroup);
 
   // Creates a new flat moving average filter
   // Average will be taken over the last 20 samples
@@ -123,9 +132,14 @@ public class Shooter extends SubsystemBase {
   private Rotation2d targetHoodPosition = Constants.zeroRotation2d;
   private double     targetFlywheelRPM  = 0.0;
 
+  private Distance distanceFromTarget;
+
+  // private final Distance distance
+
   /** Creates a new ShooterSubsystem. */
-  public Shooter(ShooterIO io) {
-    this.io = io;
+  public Shooter(ShooterIO io, Distance distanceFromTarget) {
+    this.io                 = io;
+    this.distanceFromTarget = distanceFromTarget;
 
     io.setFlywheelClosedLoopConstants(flywheelkP.get(), flywheelkV.get(), flywheelkS.get(),
         flywheelClosedLoopMaxAccelerationConstraint.get());
@@ -156,6 +170,23 @@ public class Shooter extends SubsystemBase {
       logPitchDegrees.info(inputs.hoodPosition.getDegrees());
       logTargetPitchDegrees.info(targetHoodPosition.getDegrees());
       logFlywheelRollersDifference.info(inputs.flywheelRPM[1] - inputs.flywheelRPM[0]);
+
+      switch (shooterState) {
+        case Idle:
+          setFlywheelRPM(ShooterConstants.Flywheel.IDLE_FLYWHEEL_RPM);
+          break;
+
+        case Shooting:
+          setFlywheelRPM(getFlywheelRPM(distanceFromTarget));
+          if (isFlywheelReady()) {
+            setKickerVelocity(ShooterConstants.Kicker.SHOOTING_KICKER_RPM);
+          }
+          break;
+
+        case Stop:
+          setFlywheelRPM(ShooterConstants.Flywheel.STOP_FLYWHEEL_RPM);
+          break;
+      }
 
       if (Constants.unusedCode) {
         var timestamp           = Timer.getFPGATimestamp();
@@ -205,6 +236,17 @@ public class Shooter extends SubsystemBase {
 
   public Rotation2d getPitch() {
     return inputs.hoodPosition;
+  }
+
+  public static double getHoodAngle(Distance distance) {
+    if (distance.lt(ShooterConstants.Hood.MIN_DISTANCE)) {
+      return 0.0;
+    }
+    return ShooterConstants.Interpolation.HOOD_ANGLE_FOR_HUB_DISTANCE.get(distance.in(Units.Meters));
+  }
+
+  public static double getFlywheelRPM(Distance distance) {
+    return ShooterConstants.Interpolation.RPM_FOR_HUB_DISTANCE.get(distance.in(Units.Meters));
   }
 
   public void setHoodClosedLoopConstants(double kP, double kD, double kG, double maxProfiledVelocity,
@@ -272,5 +314,18 @@ public class Shooter extends SubsystemBase {
 
   public void setKickerVelocity(double revPerMin) {
     io.setKickerVelocity(revPerMin);
+  }
+
+  public Distance getDistanceFromTarget() {
+    return distanceFromTarget;
+  }
+
+  public void setDistanceFromTarget(Distance updatedDistanceFromTarget) {
+    distanceFromTarget = updatedDistanceFromTarget;
+  }
+
+  public boolean isFlywheelReady() {
+    double desiredFlywheelRPM = getFlywheelRPM(distanceFromTarget);
+    return Math.abs(inputs.flywheelRPM[0] - desiredFlywheelRPM) < 50;
   }
 }
