@@ -8,13 +8,14 @@ import edu.wpi.first.networktables.DoubleArraySubscriber;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import frc.robot.configs.RobotConfig;
-import java.util.EnumSet;
-import java.util.function.Supplier;
 import org.photonvision.PhotonCamera;
 import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonPipelineResult;
+
+import java.util.EnumSet;
+import java.util.function.Supplier;
 
 public class VisionIOSim implements VisionIO {
   private double               lastTimestamp = 0;
@@ -77,9 +78,8 @@ public class VisionIOSim implements VisionIO {
   public synchronized void updateInputs(Inputs inputs) {
     visionSim.update(poseSupplier.get());
 
-    inputs.lastTimestampCTRETime = this.lastTimestamp;
-    inputs.lastResult            = this.lastResult;
-    inputs.connected             = camera.isConnected();
+    inputs.lastResult = new VisionIO.ResultWithTimestamp(this.lastResult, this.lastTimestamp);
+    inputs.connected  = camera.isConnected();
   }
 
   @Override

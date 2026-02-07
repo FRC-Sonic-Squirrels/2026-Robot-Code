@@ -9,17 +9,20 @@ import frc.lib.team2930.LoggerGroup;
 import frc.lib.team6328.Alert;
 import frc.robot.Constants;
 import frc.robot.subsystems.vision.VisionIO.Inputs;
+import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonPoseEstimator;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
 import org.photonvision.common.dataflow.structures.Packet;
+import org.photonvision.targeting.PhotonPipelineResult;
+
+import java.util.Optional;
 
 public class VisionModule {
-  final VisionIO            visionIO;
-  final Inputs              visionIOInputs;
-  final PhotonPoseEstimator photonPoseEstimator;
-  final Transform3d         RobotToCamera;
-  final String              name;
-  final int                 id;
+  private final VisionIO            visionIO;
+  private final Inputs              visionIOInputs;
+  private final PhotonPoseEstimator photonPoseEstimator;
+  final Transform3d                 RobotToCamera;
+  final String                      name;
+  final int                         id;
 
   public VisionResultLoggedFields loggedFields;
   public double                   lastSuccessfullyProcessedResultTimeStampCTRETime;
@@ -68,13 +71,7 @@ public class VisionModule {
 
     this.lastSuccessfullyProcessedResultTimeStampCTRETime = -1.0;
 
-    this.photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-        RobotToCamera);
-    // might as well do lowest ambiguity since we this will likely only happen when
-    // only 1 target is
-    // seen
-    // no point filtering for the best target when there is only 1.
-    photonPoseEstimator.setMultiTagFallbackStrategy(PoseStrategy.CLOSEST_TO_CAMERA_HEIGHT);
+    this.photonPoseEstimator = new PhotonPoseEstimator(aprilTagFieldLayout, RobotToCamera);
 
     this.missingCameraAlert = new Alert("Missing Camera: " + this.name, Alert.AlertType.ERROR);
 
@@ -110,11 +107,12 @@ public class VisionModule {
 
   public void log(Pose3d robotPose, double currentTime) {
     if (Constants.unusedCode) {
-      byte[] photonPacketBytes = new byte[visionIOInputs.lastResult.getPacketSize()];
-      visionIOInputs.lastResult.getSerde().pack(new Packet(photonPacketBytes), visionIOInputs.lastResult);
+      var    pipelineResult    = visionIOInputs.lastResult.result();
+      byte[] photonPacketBytes = new byte[pipelineResult.getPacketSize()];
+      pipelineResult.getSerde().pack(new Packet(photonPacketBytes), pipelineResult);
       log_photonPacketBytes.info(photonPacketBytes);
     }
-    log_lastTimestampCTRETime.info(visionIOInputs.lastTimestampCTRETime);
+    log_lastTimestampCTRETime.info(visionIOInputs.lastResult.timestamp());
     log_connected.info(visionIOInputs.connected);
     log_medianLatency.info(visionIOInputs.medianLatency);
     log_medianUpdateTime.info(visionIOInputs.medianUpdateTime);
@@ -173,5 +171,28 @@ public class VisionModule {
     log_xyStandardDeviation.info(fieldsToLog.xyStandardDeviation());
     log_thetaStandardDeviation.info(fieldsToLog.thetaStandardDeviation());
     log_seenTargetsIDs.info(seenTagsArray);
+  }
+
+  public Optional<EstimatedRobotPose> estimateRobotPose(PhotonPipelineResult cameraResult) {
+    var result = photonPoseEstimator.estimateCoprocMultiTagPose(cameraResult);
+    if (result.isEmpty()) {
+      result = photonPoseEstimator.estimateClosestToCameraHeightPose(cameraResult);
+    }
+
+    return result;
+  }
+
+  public void updateInputs() {
+    visionIO.updateInputs(visionIOInputs);
+  }
+
+  public boolean isCameraConnected() {
+    return visionIOInputs.connected;
+  }
+
+  public VisionIO.ResultWithTimestamp getLastResult() {
+    synchronized (visionIOInputs) {
+      return visionIOInputs.lastResult;
+    }
   }
 }

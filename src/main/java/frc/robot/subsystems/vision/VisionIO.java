@@ -4,24 +4,26 @@ import org.photonvision.PhotonCamera;
 import org.photonvision.targeting.PhotonPipelineResult;
 
 public interface VisionIO {
+  record ResultWithTimestamp(PhotonPipelineResult result, double timestamp) {
+  }
+
   class Inputs {
-    PhotonPipelineResult lastResult            = new PhotonPipelineResult();
-    double               lastTimestampCTRETime = -1.0;
-    boolean              connected;
-    double               medianLatency;
-    double               medianUpdateTime;
+    ResultWithTimestamp lastResult = new ResultWithTimestamp(null, -1.0);
+    boolean             connected;
+    double              medianLatency;
+    double              medianUpdateTime;
   }
 
   /** Updates the set of loggable inputs. */
-  public default void updateInputs(Inputs inputs) {
+  default void updateInputs(Inputs inputs) {
   }
 
-  public default PhotonCamera getCamera() {
+  default PhotonCamera getCamera() {
     System.out.println("------default getCamera() == null  ------------");
     return null;
   }
 
-  public default void updateTimeMedian(double latency, double timeSinceLastUpdate) {
+  default void updateTimeMedian(double latency, double timeSinceLastUpdate) {
     // medianLatency = latencyMedianFilter.calculate(latency);
     // medianUpdateTime = updateTimeMedianFilter.calculate(timeSinceLastUpdate);
   }

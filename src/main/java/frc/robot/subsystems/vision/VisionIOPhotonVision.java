@@ -64,10 +64,9 @@ public class VisionIOPhotonVision implements VisionIO {
 
   @Override
   public synchronized void updateInputs(Inputs inputs) {
-    inputs.lastTimestampCTRETime = this.lastTimestampCTRETime;
-    inputs.lastResult            = this.lastResult;
-    inputs.connected             = camera.isConnected();
-    inputs.medianUpdateTime      = medianUpdateTime;
+    inputs.lastResult       = new VisionIO.ResultWithTimestamp(this.lastResult, this.lastTimestampCTRETime);
+    inputs.connected        = camera.isConnected();
+    inputs.medianUpdateTime = medianUpdateTime;
   }
 
   @Override

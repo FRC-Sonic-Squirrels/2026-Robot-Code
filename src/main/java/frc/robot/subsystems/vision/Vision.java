@@ -14,6 +14,10 @@ import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.lib.team6328.PoseEstimator;
 import frc.lib.team6328.PoseEstimator.TimestampedVisionUpdate;
+import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonPoseEstimator.PoseStrategy;
+import org.photonvision.targeting.PhotonPipelineResult;
+import org.photonvision.targeting.PhotonTrackedTarget;
 
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -22,10 +26,6 @@ import java.net.http.HttpResponse;
 import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
-import org.photonvision.EstimatedRobotPose;
-import org.photonvision.PhotonPoseEstimator.PoseStrategy;
-import org.photonvision.targeting.PhotonPipelineResult;
-import org.photonvision.targeting.PhotonTrackedTarget;
 
 public class Vision extends SubsystemBase {
   public static final String ROOT_TABLE = "Vision";
@@ -141,7 +141,7 @@ public class Vision extends SubsystemBase {
     try (var ignored = timing.start()) {
       // update all inputs
       for (VisionModule module : visionModules) {
-        module.visionIO.updateInputs(module.visionIOInputs);
+        module.updateInputs();
       }
 
       boolean processVision = true;
@@ -173,7 +173,7 @@ public class Vision extends SubsystemBase {
 
       // activate alerts if camera is not connected
       for (VisionModule module : visionModules) {
-        module.missingCameraAlert.set(module.visionIOInputs.connected);
+        module.missingCameraAlert.set(module.isCameraConnected());
       }
 
       // logging all visible tags
@@ -224,13 +224,9 @@ public class Vision extends SubsystemBase {
   public VisionResultLoggedFields processVision(VisionModule visionModule, double currentTime) {
     Pose2d prevEstimatedRobotPose = poseEstimatorPoseSupplier.get();
 
-    PhotonPipelineResult cameraResult;
-    double               currentResultTimeStampCTRETime;
-
-    synchronized (visionModule.visionIOInputs) {
-      cameraResult                   = visionModule.visionIOInputs.lastResult;
-      currentResultTimeStampCTRETime = visionModule.visionIOInputs.lastTimestampCTRETime;
-    }
+    var                  lastCameraResult               = visionModule.getLastResult();
+    var                  currentResultTimeStampCTRETime = lastCameraResult.timestamp();
+    PhotonPipelineResult pipelineResult                 = lastCameraResult.result();
 
     if (visionModule.lastSuccessfullyProcessedResultTimeStampCTRETime >= currentResultTimeStampCTRETime) {
       return VisionResultLoggedFields.unsuccessfulResult(VisionResultStatus.NOT_A_NEW_RESULT);
@@ -243,14 +239,15 @@ public class Vision extends SubsystemBase {
     visionModule.lastSuccessfullyProcessedResultTimeStampCTRETime = currentResultTimeStampCTRETime;
 
     // remove any tags that are not part of the field layout
-    var         timeStampCameraResult = cameraResult.getTimestampSeconds();
+    var         timeStampCameraResult = pipelineResult.getTimestampSeconds();
     List<Short> cleanTargets          = new ArrayList<>();
 
-    for (PhotonTrackedTarget target : cameraResult.getTargets()) {
+    for (PhotonTrackedTarget target : pipelineResult.getTargets()) {
       int              fiducialId = target.getFiducialId();
       Optional<Pose3d> optTagPose = aprilTagLayout.getTagPose(fiducialId);
-      if (optTagPose.isEmpty())
+      if (optTagPose.isEmpty()) {
         continue;
+      }
 
       cleanTargets.add((short) target.getFiducialId());
       lastTagDetectionTimes.put(fiducialId, timeStampCameraResult);
@@ -262,7 +259,7 @@ public class Vision extends SubsystemBase {
     }
 
     if (numTargetsSeen == 1) {
-      PhotonTrackedTarget singularTag = cameraResult.getTargets().get(0);
+      PhotonTrackedTarget singularTag = pipelineResult.getTargets().get(0);
 
       if (!isValidTarget(singularTag)) {
         return (singularTag.getPoseAmbiguity() > maxSingleTargetAmbiguity.get())
@@ -271,13 +268,14 @@ public class Vision extends SubsystemBase {
       }
     } else {
       PhotonTrackedTarget bestTarget = new PhotonTrackedTarget();
-      for (PhotonTrackedTarget result : cameraResult.getTargets()) {
-        if (result.area > bestTarget.area)
+      for (PhotonTrackedTarget result : pipelineResult.getTargets()) {
+        if (result.area > bestTarget.area) {
           bestTarget = result;
+        }
       }
     }
 
-    var photonPoseEstimatorOptionalResult = visionModule.photonPoseEstimator.update(cameraResult);
+    var photonPoseEstimatorOptionalResult = visionModule.estimateRobotPose(pipelineResult);
     if (photonPoseEstimatorOptionalResult.isEmpty()) {
       return VisionResultLoggedFields
           .unsuccessfulResult(VisionResultStatus.PHOTON_POSE_ESTIMATOR_OPTIONAL_RESULT_EMPTY);
@@ -288,7 +286,7 @@ public class Vision extends SubsystemBase {
     var                multiTagSuccess           = photonPoseEstimatorResult.strategy == PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR;
     if (multiTagSuccess) {
       // only include tags used by PNP
-      cleanTargets = cameraResult.getMultiTagResult().get().fiducialIDsUsed;
+      cleanTargets = pipelineResult.getMultiTagResult().get().fiducialIDsUsed;
     }
 
     var    newCalculatedRobotPose   = photonPoseEstimatorResult.estimatedPose;
@@ -339,7 +337,7 @@ public class Vision extends SubsystemBase {
       averageDistanceFromTags = totalDistance / (double) cleanTargets.size();
     } else {
       // Use single tag distance for all other methods
-      totalDistance = aprilTagLayout.getTagPose(cameraResult.getBestTarget().getFiducialId()).get().getTranslation()
+      totalDistance = aprilTagLayout.getTagPose(pipelineResult.getBestTarget().getFiducialId()).get().getTranslation()
           .getDistance(newCalculatedRobotPose.getTranslation());
 
       averageDistanceFromTags = totalDistance;
