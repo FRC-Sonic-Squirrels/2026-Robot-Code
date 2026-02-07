@@ -21,10 +21,10 @@ public class Hopper extends SubsystemBase {
   }
 
   // Execution timing
-  private static final ExecutionTiming timing = new ExecutionTiming(HopperConstants.HOPPER);
+  private static final ExecutionTiming timing = new ExecutionTiming(HopperConstants.ROOT_TABLE);
 
   // Logging
-  private static final LoggerGroup logGroup = LoggerGroup.build(HopperConstants.HOPPER);
+  private static final LoggerGroup logGroup = LoggerGroup.build(HopperConstants.ROOT_TABLE);
 
   // Rollers
   private static final LoggerGroup         rollerLogGroup               = logGroup
@@ -39,7 +39,7 @@ public class Hopper extends SubsystemBase {
 
   private static final LoggerEntry.EnumValue<HopperState> logHopperState = logGroup.buildEnum("HopperState");
 
-  private static final TunableNumberGroup group = new TunableNumberGroup(HopperConstants.HOPPER);
+  private static final TunableNumberGroup group = new TunableNumberGroup(HopperConstants.RollerConstants.ROLLER);
   // Roller
   private static final TunableNumberGroup  tuningGroup                    = group.subgroup("Tuning");
   private static final LoggedTunableNumber rKS                            = tuningGroup.build("KS");
