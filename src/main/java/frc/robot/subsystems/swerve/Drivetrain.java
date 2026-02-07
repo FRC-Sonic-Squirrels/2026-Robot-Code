@@ -165,8 +165,7 @@ public class Drivetrain extends SubsystemBase {
 
   private final PoseEstimator hubPoseEstimator;
 
-  private final Field2d hubField2d = new Field2d();
-
+  private final Field2d hubField2d         = new Field2d();
   private final Field2d rawOdometryField2d = new Field2d();
 
   private Pose2d prevVel = Constants.zeroPose2d;

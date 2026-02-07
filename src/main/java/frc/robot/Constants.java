@@ -26,7 +26,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import frc.lib.team2930.AllianceFlipUtil;
 import frc.robot.Constants.RobotMode.RobotType;
 import frc.robot.configs.*;
-import frc.robot.configs.SimulatorRobotConfig;
+
 import java.util.function.Supplier;
 
 /**
@@ -269,6 +269,20 @@ public final class Constants {
     }
   }
 
+  public static class HopperConstants {
+    public static class RollerConstants {
+
+      public static final double ROLLER_GEARING = 10.4167;
+      public static final double MOI = 0.05;
+
+      public static final double SUPPLY_CURRENT_LIMIT = 20.0;
+      public static final double STATOR_CURRENT_LIMIT = 100.0;
+
+      public static final String ROLLER = "Rollers";
+      public static final int SHOOTING_ROLLER_VELOCITY = 240;
+    }
+  }
+
   public static class LEDConstants {
     public static final int PWM_PORT = 9;
     public static final int MAX_LED_LENGTH = 60;
@@ -285,13 +299,6 @@ public final class Constants {
 
     public static final int ARM_CAN_ID = 17;
 
-    public static final int ELEVATOR_LEAD_CAN_ID = 15;
-    public static final int ELEVATOR_FOLLOW_CAN_ID = 16;
-
-    public static final int END_EFFECTOR_CAN_ID = 18;
-    public static final int END_EFFECTOR_SCORING_SIDE_TOF_CAN_ID = 39;
-    public static final int END_EFFECTOR_NON_SCORING_SIDE_TOF_CAN_ID = 40;
-
     public static final int GYRO_2_CAN_ID = 41;
 
     public static final int CLIMBER_WINCH_CAN_ID = 40;
@@ -305,6 +312,8 @@ public final class Constants {
     public static final int SHOOTER_FOLLOW_CAN_ID = 36;
     public static final int SHOOTER_HOOD_CAN_ID = 37;
     public static final int SHOOTER_KICKER_CAN_ID = 38;
+
+    public static final int HOPPER_ROLLER_CAN_ID = 26;
   }
 
   public static class DIOPorts {}
