@@ -56,6 +56,8 @@ import frc.robot.subsystems.climber.ClimberIOReal;
 import frc.robot.subsystems.climber.ClimberIOSim;
 import frc.robot.subsystems.hopper.Hopper;
 import frc.robot.subsystems.hopper.HopperIO;
+import frc.robot.subsystems.hopper.HopperIOReal;
+import frc.robot.subsystems.hopper.HopperIOSim;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.IntakeState;
 import frc.robot.subsystems.intake.IntakeIO;
@@ -238,7 +240,7 @@ public class RobotContainer {
           rightIntake = new Intake(new IntakeIOSim(), robotStates);
           leftIntake = new Intake(new IntakeIOSim(), robotStates);
           climber = new Climber(new ClimberIOSim());
-          hopper = new Hopper(new HopperIO() {
+          hopper = new Hopper(new HopperIOSim() {
           });
           led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered, robotStates);
           break;
@@ -375,7 +377,7 @@ public class RobotContainer {
           }, robotStates);
           climber = new Climber(new ClimberIO() {
           });
-          hopper = new Hopper(new HopperIO() {
+          hopper = new Hopper(new HopperIOReal() {
           });
 
           if (Constants.unusedCode) {
