@@ -36,6 +36,7 @@ import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.RobotMode.Mode;
 import frc.robot.Constants.RobotMode.RobotType;
+import frc.robot.RobotStates.IntakeGoal;
 import frc.robot.RobotStates.MechState;
 import frc.robot.RobotStates.RobotGoal;
 import frc.robot.autonomous.AutosManager;
@@ -477,11 +478,11 @@ public class RobotContainer {
 
     // Intake
     operatorController.registerTrigger(XboxControllerWrapper.Button.leftTrigger, "Left Intake")
-        .onTrue(Commands.runOnce(() -> leftIntake.setState(IntakeState.Intake)))
-        .onFalse(Commands.runOnce(() -> leftIntake.setState(IntakeState.Stow)));
+        .onTrue(Commands.runOnce(() -> robotStates.setIntakeGoal(IntakeGoal.leftIntake)))
+        .onFalse(Commands.runOnce(() -> robotStates.setIntakeGoal(IntakeGoal.Stow)));
     operatorController.registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Right Intake")
-        .onTrue(Commands.runOnce(() -> leftIntake.setState(IntakeState.Intake)))
-        .onFalse(Commands.runOnce(() -> leftIntake.setState(IntakeState.Stow)));
+        .onTrue(Commands.runOnce(() -> robotStates.setIntakeGoal(IntakeGoal.rightIntake)))
+        .onFalse(Commands.runOnce(() -> robotStates.setIntakeGoal(IntakeGoal.Stow)));
 
     // Intake positions
     operatorController.registerTrigger(XboxControllerWrapper.Button.a, "Left Intake Pivot In")

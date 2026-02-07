@@ -272,6 +272,10 @@ public class RobotStates {
     wantedGoal = newGoal;
   }
 
+  public void setIntakeGoal(IntakeGoal newGoal) {
+    wantedIntakeGoal = newGoal;
+  }
+
   public boolean setRobotGoalIf(RobotGoal expetedGoal, RobotGoal newGoal) {
     if (getRobotGoal() == expetedGoal) {
       setRobotGoal(newGoal);
