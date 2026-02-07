@@ -59,8 +59,8 @@ public class Shooter extends SubsystemBase {
   private static final LoggerEntry.Decimal logFlywheelRollersDifference = logGroup
       .buildDecimal("FlywheelRollersDifference");
   private static final LoggerEntry.Decimal logTargetDistance            = logGroup.buildDecimal("DistanceFromTarget");
-  private static final LoggerEntry.Bool logFacingTarget            = logGroup.buildBoolean("IsFacingTarget");
-  private static final LoggerEntry.Bool logShooterReady            = logGroup.buildBoolean("IsShooterReady");
+  private static final LoggerEntry.Bool    logFacingTarget              = logGroup.buildBoolean("IsFacingTarget");
+  private static final LoggerEntry.Bool    logShooterReady              = logGroup.buildBoolean("IsShooterReady");
 
   public static final TunableNumberGroup group = new TunableNumberGroup(ROOT_TABLE);
 
