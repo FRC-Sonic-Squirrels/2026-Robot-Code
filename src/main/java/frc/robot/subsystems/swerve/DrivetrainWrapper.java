@@ -11,13 +11,15 @@ import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
+import frc.lib.team2930.TunableNumberGroup;
+import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 
 public class DrivetrainWrapper {
+  private static final String ROOT_TABLE = "DrivetrainWrapper";
 
   // Logging
-  private static final LoggerGroup                       logGroup                 = LoggerGroup
-      .build("DrivetrainWrapper");
+  private static final LoggerGroup                       logGroup                 = LoggerGroup.build(ROOT_TABLE);
   private static final LoggerEntry.Struct<ChassisSpeeds> logChassisSpeedsBase     = logGroup
       .buildStruct(ChassisSpeeds.class, "chassisSpeedsBase");
   private static final LoggerEntry.Struct<ChassisSpeeds> logChassisSpeedsOverride = logGroup
@@ -25,6 +27,10 @@ public class DrivetrainWrapper {
   private static final LoggerEntry.Decimal               logOmegaOverride         = logGroup
       .buildDecimal("omegaOverride");
   private static final LoggerEntry.Decimal               logGyroDrift             = logGroup.buildDecimal("gyroDrift");
+
+  private static final TunableNumberGroup  tunableGroup       = new TunableNumberGroup(ROOT_TABLE);
+  private static final LoggedTunableNumber driveSpeedPercent  = tunableGroup.build("driveSpeedPercent", 100.0);
+  private static final LoggedTunableNumber rotateSpeedPercent = tunableGroup.build("rotateSpeedPercent", 100.0);
 
   private final Drivetrain drivetrain;
 
@@ -65,6 +71,10 @@ public class DrivetrainWrapper {
     if (chassisSpeedsOverride != null) {
       chassisSpeeds = chassisSpeedsOverride;
     }
+
+    chassisSpeeds.vxMetersPerSecond     *= driveSpeedPercent.get() / 100.0;
+    chassisSpeeds.vyMetersPerSecond     *= driveSpeedPercent.get() / 100.0;
+    chassisSpeeds.omegaRadiansPerSecond *= rotateSpeedPercent.get() / 100.0;
 
     // Run drivetrain
 
@@ -126,15 +136,8 @@ public class DrivetrainWrapper {
   }
 
   public SysIdRoutine.Mechanism getSysIdMechanism() {
-    return new SysIdRoutine.Mechanism((voltage) -> drivetrain.runCharacterizationVolts(voltage.in(Units.Volts)), null, // No
-                                                                                                                       // log
-                                                                                                                       // consumer,
-                                                                                                                       // since
-                                                                                                                       // data
-                                                                                                                       // is
-                                                                                                                       // recorded
-                                                                                                                       // by
-                                                                                                                       // AdvantageKit
+    // No log consumer, since data is recorded by AdvantageKit
+    return new SysIdRoutine.Mechanism((voltage) -> drivetrain.runCharacterizationVolts(voltage.in(Units.Volts)), null,
         drivetrain);
   }
 

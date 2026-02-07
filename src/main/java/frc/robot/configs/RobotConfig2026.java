@@ -135,14 +135,14 @@ public class RobotConfig2026 extends RobotConfig {
 
   // ---- VISION -------
   public static final Transform3d SHOOTER_SIDE_LEFT = new Transform3d(
-      new Translation3d(Units.Inches.of(-11.5).in(Units.Meters), Units.Inches.of(-9.065).in(Units.Meters),
+      new Translation3d(Units.Inches.of(-12.5).in(Units.Meters), Units.Inches.of(-4.3405).in(Units.Meters),
           Units.Inches.of(10).in(Units.Meters)),
-      new Rotation3d(Math.toRadians(0.0), Math.toRadians(-25.0), Math.toRadians(20.0 + 180)));
+      new Rotation3d(Math.toRadians(0.0), Math.toRadians(-25.0), Math.toRadians(-20.0 + 180 + 3.0)));
 
   public static final Transform3d SHOOTER_SIDE_RIGHT = new Transform3d(
-      new Translation3d(Units.Inches.of(-11.5).in(Units.Meters), Units.Inches.of(9.065).in(Units.Meters),
+      new Translation3d(Units.Inches.of(-12.5).in(Units.Meters), Units.Inches.of(4.3405).in(Units.Meters),
           Units.Inches.of(10).in(Units.Meters)),
-      new Rotation3d(Math.toRadians(0.0), Math.toRadians(-25.0), Math.toRadians(-20.0 + 180)));
+      new Rotation3d(Math.toRadians(0.0), Math.toRadians(-25.0), Math.toRadians(20.0 + 180)));
 
   public static final String SHOOTER_SIDE_LEFT_CAMERA_NAME  = "1_Shooter_Left_See3Cam";
   public static final String SHOOTER_SIDE_RIGHT_CAMERA_NAME = "2_Shooter_Right_See3Cam";

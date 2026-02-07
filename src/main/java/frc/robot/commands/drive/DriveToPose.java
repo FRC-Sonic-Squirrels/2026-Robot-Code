@@ -68,7 +68,7 @@ public class DriveToPose extends Command {
 
   static {
     driveKp.initDefault(3.0);
-    driveKd.initDefault(0.01);
+    driveKd.initDefault(0.1);
     thetaKp.initDefault(5.0);
     thetaKd.initDefault(0.0);
     driveMaxVelocity.initDefault(5);
@@ -77,9 +77,9 @@ public class DriveToPose extends Command {
     thetaMaxVelocity.initDefault(Math.toRadians(360.0));
     thetaMaxVelocitySlow.initDefault(Math.toRadians(90.0));
     thetaMaxAcceleration.initDefault(Math.toRadians(720.0));
-    driveTolerance.initDefault(0.02);
+    driveTolerance.initDefault(0.05);
     driveToleranceSlow.initDefault(0.05);
-    thetaTolerance.initDefault(0.01);
+    thetaTolerance.initDefault(0.02);
     thetaToleranceSlow.initDefault(Math.toRadians(3.0));
     ffMinRadius.initDefault(0.0);
     ffMaxRadius.initDefault(1);

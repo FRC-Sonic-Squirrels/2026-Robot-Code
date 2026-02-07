@@ -18,6 +18,8 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Transform2d;
+import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.DigitalInput;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
@@ -41,6 +43,7 @@ import frc.robot.autonomous.AutosManager.Auto;
 import frc.robot.autonomous.AutosSubsystems;
 import frc.robot.autonomous.records.PickupLocation;
 import frc.robot.commands.climber.ClimberSetAngle;
+import frc.robot.commands.drive.DriveToPose;
 import frc.robot.commands.drive.DrivetrainDefaultTeleopDrive;
 import frc.robot.commands.drive.WheelRadiusCharacterization;
 import frc.robot.configs.SimulatorRobotConfig;
@@ -413,6 +416,26 @@ public class RobotContainer {
       }, drivetrain));
     driverController.registerTrigger(XboxControllerWrapper.Button.start, "X Stance")
         .onTrue(Commands.runOnce(drivetrain::stopWithX));
+    driverController.registerTrigger(XboxControllerWrapper.Button.a, "DriveToTag")
+        .whileTrue(new DriveToPose(drivetrainWrapper, false, aprilTagLayout.getTagPose(15).get().toPose2d()
+            .transformBy(new Transform2d(Units.Inches.of(60).in(Units.Meters), Units.Inches.of(-15).in(Units.Meters),
+                Rotation2d.kZero)),
+            () -> drivetrainWrapper.getHubPoseEstimatorPose(true))
+            .andThen(new DriveToPose(drivetrainWrapper, false,
+                aprilTagLayout.getTagPose(15).get().toPose2d()
+                    .transformBy(new Transform2d(Units.Inches.of(60).in(Units.Meters),
+                        Units.Inches.of(15).in(Units.Meters), Rotation2d.kZero)),
+                () -> drivetrainWrapper.getHubPoseEstimatorPose(true)))
+            .andThen(new DriveToPose(drivetrainWrapper, false,
+                aprilTagLayout.getTagPose(15).get().toPose2d()
+                    .transformBy(new Transform2d(Units.Inches.of(60).in(Units.Meters),
+                        Units.Inches.of(-15).in(Units.Meters), Rotation2d.kZero)),
+                () -> drivetrainWrapper.getHubPoseEstimatorPose(true))));
+    driverController.registerTrigger(XboxControllerWrapper.Button.b, "DriveToTag2")
+        .onTrue(new DriveToPose(drivetrainWrapper, false,
+            aprilTagLayout.getTagPose(15).get().toPose2d().transformBy(new Transform2d(
+                Units.Inches.of(60).in(Units.Meters), Units.Inches.of(15).in(Units.Meters), Rotation2d.kZero)),
+            () -> drivetrainWrapper.getHubPoseEstimatorPose(true)));
 
     // ---------- OPERATOR CONTROLS -----------
 
