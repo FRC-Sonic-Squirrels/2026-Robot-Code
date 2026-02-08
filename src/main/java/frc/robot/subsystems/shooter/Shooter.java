@@ -12,6 +12,7 @@ import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.Constants.RobotMode.RobotType;
 import frc.robot.Constants.ShooterConstants;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,7 +26,9 @@ public class Shooter extends SubsystemBase {
 
   private static final ExecutionTiming timing = new ExecutionTiming(ROOT_TABLE);
 
-  private static final LoggerGroup              logInputs                        = LoggerGroup.build(ROOT_TABLE);
+  static final LoggerGroup         logGroup  = LoggerGroup.build(ROOT_TABLE);
+  private static final LoggerGroup logInputs = logGroup.subgroup("Inputs");
+
   private static final LoggerEntry.Decimal      logInputs_hoodPosition           = logInputs
       .buildDecimal("HoodPosition");
   private static final LoggerEntry.Decimal      logInputs_hoodVelocityRadsPerSec = logInputs
@@ -48,8 +51,6 @@ public class Shooter extends SubsystemBase {
       .buildDecimal("KickerVelocityRPM");
   private static final LoggerEntry.DecimalArray logInputs_tempsCelcius           = logInputs
       .buildDecimalArray("TempsCelcius");
-
-  public static final LoggerGroup logGroup = LoggerGroup.build(ROOT_TABLE);
 
   private static final LoggerEntry.EnumValue<State> logState = logGroup.buildEnum("State");
 
