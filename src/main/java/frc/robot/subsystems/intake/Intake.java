@@ -25,6 +25,7 @@ import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.IntakeConstants.PivotConstants;
 import frc.robot.Constants.IntakeConstants.RollerConstants;
 import frc.robot.Constants.RobotMode.RobotType;
+import frc.lib.team2930.GeometryUtil;
 
 public class Intake extends SubsystemBase {
 
@@ -303,8 +304,8 @@ public class Intake extends SubsystemBase {
   }
 
   public boolean isStowed() {
-    var error = inputs.pivotPosition.minus(PivotConstants.HOME_POSITION).getRadians();
-    return Math.abs(error) <= Rotation2d.fromDegrees(pivotToleranceDegrees.get()).getRadians();
+    return GeometryUtil.isRotationAtTarget(inputs.pivotPosition, PivotConstants.HOME_POSITION,
+        pivotToleranceDegrees.get());
   }
 
   public Voltage getPivotVoltage() {
