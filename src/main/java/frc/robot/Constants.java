@@ -217,50 +217,6 @@ public final class Constants {
     }
   }
 
-  public static class EndEffectorConstants {
-    public static final double INTAKING_PERCENT_OUT = 1.0;
-
-    public static final double GEARING = 14.0741;
-    public static final double MOI = 0.05;
-
-    public static final double SUPPLY_CURRENT_LIMIT = 40.0;
-    public static final double STATOR_CURRENT_LIMIT = 80.0;
-    public static final String ROOT_TABLE = "EndEffector";
-  }
-
-  public static class ElevatorConstants {
-    public static final double GEAR_RATIO =
-        RobotMode.ROBOT == RobotType.ROBOT_2026 ? 23.05 : 6.4935;
-    public static final Distance PULLEY_DIAMETER = Units.Inches.of(2.35);
-    public static final double CARRIAGE_MASS = 2.0; // arbitrary
-
-    public static final double INCHES_TO_MOTOR_ROT =
-        Constants.ElevatorConstants.GEAR_RATIO
-            / (Math.PI * Constants.ElevatorConstants.PULLEY_DIAMETER.in(Units.Inches));
-
-    public static final Distance MAX_HEIGHT =
-        RobotMode.ROBOT == RobotType.ROBOT_2026
-            ? Units.Inches.of(26.2)
-            : Units.Inches.of(60);
-
-    public static final Distance SAFE_HEIGHT = Units.Inches.of(15.491);
-    public static final double SUPPLY_CURRENT_LIMIT = 40.0;
-    public static final double STATOR_CURRENT_LIMIT = 100.0;
-
-    public static final Distance HOME_POSITION = Units.Inches.of(26.96);
-
-    public static final Distance ELEVATOR_SAFETY_MARGIN = Units.Inches.of(1.5);
-    public static final String ROOT_TABLE = "Elevator";
-
-    public static final InterpolatingDoubleTreeMap SPEED_SCALAR_MAP =
-        new InterpolatingDoubleTreeMap();
-
-    static {
-      SPEED_SCALAR_MAP.put(HOME_POSITION.in(Units.Inch), 1.0);
-      SPEED_SCALAR_MAP.put(MAX_HEIGHT.in(Units.Inch), 0.8);
-    }
-  }
-
   public static class HopperConstants {
     public static class RollerConstants {
 
@@ -289,11 +245,10 @@ public final class Constants {
     // 4, 14, 24, 34
     // all these CAN ID's are reserved for the Drivetrain
 
-    public static final int ARM_CAN_ID = 17;
-
     public static final int GYRO_2_CAN_ID = 41;
 
-    public static final int CLIMBER_WINCH_CAN_ID = 40;
+    public static final int CLIMBER_INNER_CAN_ID = 40;
+    public static final int CLIMBER_OUTER_CAN_ID = 42;
 
     public static final int INTAKE_LEFT_PIVOT_CAN_ID = 19;
     public static final int INTAKE_RIGHT_ROLLER_CAN_ID = 20;
@@ -317,43 +272,27 @@ public final class Constants {
   }
 
   public static class ArmConstants {
-    public static final double SUPPLY_CURRENT_LIMIT = 40.0;
-    public static final double STATOR_CURRENT_LIMIT = 80.0;
-
-    public static final double GEAR_RATIO =
-        RobotMode.ROBOT == RobotType.ROBOT_2026
-            ? (50.0 / 12.0) * (50.0 / 20.0) * (42.0 / 18.0)
-            : 50.07;
-
-    public static final double MOI = 0.00001;
-
-    public static final Rotation2d MAX_ARM_ANGLE = Rotation2d.fromDegrees(165);
-    public static final Rotation2d MIN_ARM_ANGLE = Rotation2d.fromDegrees(-90);
-    public static final Rotation2d HOME_POSITION = Rotation2d.fromDegrees(153.808);
-
-    public static final Rotation2d ARM_SAFE_ANGLE = Rotation2d.fromDegrees(-87);
-
     public static final Distance ARM_LENGTH =
         RobotMode.ROBOT == RobotType.ROBOT_2026
             ? Units.Inches.of(14)
             : Units.Inches.of(22.080109);
-
-    public static final String ROOT_TABLE = "Arm";
   }
 
   public static class ClimberConstants {
     public static final double SUPPLY_CURRENT_LIMIT = 60.0;
     public static final double STATOR_CURRENT_LIMIT = 90.0;
 
-    public static final double WINCH_GEAR_RATIO = (50.0 / 12.0) * (50.0 / 20.0) * (42.0 / 18.0);
+    public static final double INNER_CLIMBER_GEAR_RATIO = (50.0 / 12.0) * (50.0 / 20.0) * (42.0 / 18.0);
+    public static final double OUTER_CLIMBER_GEAR_RATIO = (50.0 / 12.0) * (50.0 / 20.0) * (42.0 / 18.0);
 
-    public static final double WINCH_MOI = 0.15;
+    public static final double CLIMBER_MOI = 0.15;
 
-    public static final Rotation2d MAX_CLIMBER_ANGLE = Rotation2d.fromRotations(12.0);
-    public static final Rotation2d MIN_CLIMBER_ANGLE = Rotation2d.fromRotations(0);
-    public static final Rotation2d HOME_POSITION = MAX_CLIMBER_ANGLE;
-
-    public static final Rotation2d CLIMBER_SAFE_ANGLE = Rotation2d.fromDegrees(-87);
+    public static final double MAX_INNER_CLIMBER_HEIGHT = 27;
+    public static final double MAX_OUTER_CLIMBER_HEIGHT = 27;
+    public static final double MIN_INNER_CLIMBER_HEIGHT = 0;
+    public static final double MIN_OUTER_CLIMBER_HEIGHT = 0;
+    public static final double INNER_HOME_POSITION = MAX_INNER_CLIMBER_HEIGHT;
+    public static final double OUTER_HOME_POSITION = MAX_OUTER_CLIMBER_HEIGHT;
 
     public static final Distance CLIMBER_LENGTH = Units.Inches.of(14);
 
@@ -361,11 +300,13 @@ public final class Constants {
 
     public static final Rotation2d SERVO_UNLOCK_ANGLE = Rotation2d.fromDegrees(170);
 
-    public static final Rotation2d OUT_WINCH_ROTATIONS = Rotation2d.fromRotations(6);
+    // in inches
+    public static final double L1_CLIMB_HEIGHT = 25;
+    public static final double L2_CLIMB_HEIGHT = 24;
+    public static final double L3_CLIMB_HEIGHT = 23;
 
-    public static final Rotation2d IN_WINCH_ROTATIONS = Rotation2d.fromRotations(0);
-
-    public static final Rotation2d CLIMB_WINCH_ROTATIONS = Rotation2d.fromRotations(3);
+    public static final double INNER_RETRACTION_HEIGHT = 0;
+    public static final double OUTER_RETRACTION_HEIGHT = 0;
   }
 
 public static class ShooterConstants {

@@ -7,11 +7,16 @@ import frc.robot.subsystems.BaseInputs;
 
 public interface ClimberIO {
   class Inputs extends BaseInputs {
-    public double winchPosition;
-    public double winchAppliedVolts;
-    public double winchCurrentAmps;
-    public double winchTempCelsius;
-    public double winchVelocityDegreesPerSecond;
+    public double innerClimberPosition;
+    public double innerClimberAppliedVolts;
+    public double innerClimberCurrentAmps;
+    public double innerClimberTempCelsius;
+    public double innerClimberVelocityDegreesPerSecond;
+    public double outerClimberPosition;
+    public double outerClimberAppliedVolts;
+    public double outerClimberCurrentAmps;
+    public double outerClimberTempCelsius;
+    public double outerClimberVelocityDegreesPerSecond;
 
     public Inputs(LoggerGroup logInputs) {
       super(logInputs);
@@ -19,25 +24,28 @@ public interface ClimberIO {
   }
 
   /** Updates the set of loggable inputs. */
-  public default void updateWinchInputs(Inputs inputs) {
+  public default void updateClimberInputs(Inputs inputs) {
   }
 
-  public default void setWinchVoltage(double volts) {
+  public default void resetClimberSensorPosition(Rotation2d angle) {
   }
 
-  public default void resetWinchSensorPosition(Rotation2d angle) {
+  public default void setInnerClimberClosedLoopPosition(double inches) {
   }
 
-  public default void setWinchClosedLoopPosition(Rotation2d angle) {
+  public default void setOuterClimberClosedLoopPosition(double inches) {
   }
 
   public default void setClimberServoAngle(Rotation2d angle) {
   }
 
-  public default void setWinchClosedLoopConstants(double kP, double kD, double kG) {
+  public default void setInnerClimberClosedLoopConstants(double kP, double kD, double kG) {
   }
 
-  public default boolean setWinchNeutralMode(NeutralModeValue value) {
+  public default void setOuterClimberClosedLoopConstants(double kP, double kD, double kG) {
+  }
+
+  public default boolean setClimberNeutralMode(NeutralModeValue value) {
     return false;
   }
 }

@@ -7,7 +7,6 @@ import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.PositionVoltage;
-import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
@@ -25,120 +24,173 @@ import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.MotorConstants.KrakenConstants;
 
 public class ClimberIOReal implements ClimberIO {
-  private final StatusSignal<Voltage>         winchAppliedVoltage;
-  private final StatusSignal<Angle>           winchPosition;
-  private final StatusSignal<Current>         winchCurrent;
-  private final StatusSignal<Temperature>     winchTemp;
-  private final StatusSignal<AngularVelocity> winchVelocity;
+  private final StatusSignal<Voltage>         innerClimberAppliedVoltage;
+  private final StatusSignal<Angle>           innerClimberPosition;
+  private final StatusSignal<Current>         innerClimberCurrent;
+  private final StatusSignal<Temperature>     innerClimberTemp;
+  private final StatusSignal<AngularVelocity> innerClimberVelocity;
+  private final StatusSignal<Voltage>         outerClimberAppliedVoltage;
+  private final StatusSignal<Angle>           outerClimberPosition;
+  private final StatusSignal<Current>         outerClimberCurrent;
+  private final StatusSignal<Temperature>     outerClimberTemp;
+  private final StatusSignal<AngularVelocity> outerClimberVelocity;
 
-  private final PositionVoltage winchClosedLoopControl = new PositionVoltage(0.0).withEnableFOC(true);
-  private final VoltageOut      winchOpenLoopControl   = new VoltageOut(0.0).withEnableFOC(true);
+  private final PositionVoltage innerClimberClosedLoopControl = new PositionVoltage(0.0).withEnableFOC(true);
+  private final PositionVoltage outerClimberClosedLoopControl = new PositionVoltage(0.0).withEnableFOC(true);
 
-  private final TalonFX winchMotor = new TalonFX(Constants.CanIDs.CLIMBER_WINCH_CAN_ID);
+  private final TalonFX innerClimberMotor = new TalonFX(Constants.CanIDs.CLIMBER_INNER_CAN_ID);
+  private final TalonFX outerClimberMotor = new TalonFX(Constants.CanIDs.CLIMBER_OUTER_CAN_ID);
 
-  private final BaseStatusSignal[] winchRefreshSet;
+  private final BaseStatusSignal[] climberRefreshSet;
 
   private Servo climberServo = new Servo(8);
 
   public ClimberIOReal() {
-    // Winch motor config
-    TalonFXConfiguration winchConfig = new TalonFXConfiguration();
+    // Climber motor config
+    TalonFXConfiguration innerClimberConfig = new TalonFXConfiguration();
+    TalonFXConfiguration outerClimberConfig = new TalonFXConfiguration();
 
-    winchConfig.CurrentLimits.SupplyCurrentLimit       = ClimberConstants.SUPPLY_CURRENT_LIMIT;
-    winchConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+    innerClimberConfig.CurrentLimits.SupplyCurrentLimit       = ClimberConstants.SUPPLY_CURRENT_LIMIT;
+    outerClimberConfig.CurrentLimits.SupplyCurrentLimit       = ClimberConstants.SUPPLY_CURRENT_LIMIT;
+    innerClimberConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+    outerClimberConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+    innerClimberConfig.CurrentLimits.StatorCurrentLimit       = ClimberConstants.STATOR_CURRENT_LIMIT;
+    outerClimberConfig.CurrentLimits.StatorCurrentLimit       = ClimberConstants.STATOR_CURRENT_LIMIT;
+    innerClimberConfig.CurrentLimits.StatorCurrentLimitEnable = true;
+    outerClimberConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
-    winchConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    winchConfig.MotorOutput.Inverted    = InvertedValue.Clockwise_Positive;
+    innerClimberConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    outerClimberConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    innerClimberConfig.MotorOutput.Inverted    = InvertedValue.Clockwise_Positive;
+    outerClimberConfig.MotorOutput.Inverted    = InvertedValue.Clockwise_Positive;
 
-    winchConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
-    winchConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
+    innerClimberConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
+    outerClimberConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
+    innerClimberConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
+    outerClimberConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
 
-    winchConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Constants.ClimberConstants.MAX_CLIMBER_ANGLE
-        .getRotations();
-    winchConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = Constants.ClimberConstants.MIN_CLIMBER_ANGLE
-        .minus(Rotation2d.fromDegrees(2.0)).getRotations();
+    innerClimberConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Constants.ClimberConstants.MAX_INNER_CLIMBER_HEIGHT
+        * ClimberConstants.INNER_CLIMBER_GEAR_RATIO;
+    outerClimberConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Constants.ClimberConstants.MAX_OUTER_CLIMBER_HEIGHT
+        * ClimberConstants.OUTER_CLIMBER_GEAR_RATIO;
+    innerClimberConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = Constants.ClimberConstants.MIN_INNER_CLIMBER_HEIGHT
+        * ClimberConstants.INNER_CLIMBER_GEAR_RATIO;
+    outerClimberConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = Constants.ClimberConstants.MIN_OUTER_CLIMBER_HEIGHT
+        * ClimberConstants.OUTER_CLIMBER_GEAR_RATIO;
 
-    winchConfig.Feedback.SensorToMechanismRatio = ClimberConstants.WINCH_GEAR_RATIO;
-    winchConfig.Slot0.GravityType               = GravityTypeValue.Arm_Cosine;
+    innerClimberConfig.Feedback.SensorToMechanismRatio = ClimberConstants.INNER_CLIMBER_GEAR_RATIO;
+    outerClimberConfig.Feedback.SensorToMechanismRatio = ClimberConstants.OUTER_CLIMBER_GEAR_RATIO;
+    innerClimberConfig.Slot0.GravityType               = GravityTypeValue.Arm_Cosine;
+    outerClimberConfig.Slot0.GravityType               = GravityTypeValue.Arm_Cosine;
 
-    winchConfig.Voltage.SupplyVoltageTimeConstant = KrakenConstants.SUPPLY_VOLTAGE_TIME;
+    innerClimberConfig.Voltage.SupplyVoltageTimeConstant = KrakenConstants.SUPPLY_VOLTAGE_TIME;
+    outerClimberConfig.Voltage.SupplyVoltageTimeConstant = KrakenConstants.SUPPLY_VOLTAGE_TIME;
 
-    winchMotor.getConfigurator().apply(winchConfig);
-
+    innerClimberMotor.getConfigurator().apply(innerClimberConfig);
+    outerClimberMotor.getConfigurator().apply(outerClimberConfig);
     // Status signals
 
-    winchAppliedVoltage = winchMotor.getMotorVoltage();
-    winchPosition       = winchMotor.getPosition();
-    winchCurrent        = winchMotor.getStatorCurrent();
-    winchTemp           = winchMotor.getDeviceTemp();
-    winchVelocity       = winchMotor.getVelocity();
+    innerClimberAppliedVoltage = innerClimberMotor.getMotorVoltage();
+    innerClimberPosition       = innerClimberMotor.getPosition();
+    innerClimberCurrent        = innerClimberMotor.getStatorCurrent();
+    innerClimberTemp           = innerClimberMotor.getDeviceTemp();
+    innerClimberVelocity       = innerClimberMotor.getVelocity();
 
+    outerClimberAppliedVoltage = outerClimberMotor.getMotorVoltage();
+    outerClimberPosition       = outerClimberMotor.getPosition();
+    outerClimberCurrent        = outerClimberMotor.getStatorCurrent();
+    outerClimberTemp           = outerClimberMotor.getDeviceTemp();
+    outerClimberVelocity       = outerClimberMotor.getVelocity();
     // Update status signals
 
-    BaseStatusSignal.setUpdateFrequencyForAll(100, winchAppliedVoltage, winchPosition, winchVelocity);
-    BaseStatusSignal.setUpdateFrequencyForAll(50, winchCurrent);
-    BaseStatusSignal.setUpdateFrequencyForAll(1, winchTemp);
+    BaseStatusSignal.setUpdateFrequencyForAll(100, innerClimberAppliedVoltage, innerClimberPosition,
+        innerClimberVelocity);
+    BaseStatusSignal.setUpdateFrequencyForAll(50, innerClimberCurrent);
+    BaseStatusSignal.setUpdateFrequencyForAll(1, innerClimberTemp);
 
-    winchMotor.optimizeBusUtilization();
+    innerClimberMotor.optimizeBusUtilization();
+    outerClimberMotor.optimizeBusUtilization();
 
-    winchRefreshSet = new BaseStatusSignal[] { winchAppliedVoltage, winchPosition, winchCurrent, winchTemp,
-        winchVelocity };
+    climberRefreshSet = new BaseStatusSignal[] { innerClimberAppliedVoltage, innerClimberPosition, innerClimberCurrent,
+        innerClimberTemp, innerClimberVelocity, outerClimberAppliedVoltage, outerClimberPosition, outerClimberCurrent,
+        outerClimberTemp, outerClimberVelocity };
   }
 
   @Override
-  public void updateWinchInputs(Inputs inputs) {
-    inputs.refreshAll(winchRefreshSet);
+  public void updateClimberInputs(Inputs inputs) {
+    inputs.refreshAll(climberRefreshSet);
 
-    inputs.winchPosition                 = winchPosition.getValue().in(Units.Degrees);
-    inputs.winchAppliedVolts             = winchAppliedVoltage.getValue().in(Units.Volts);
-    inputs.winchCurrentAmps              = winchCurrent.getValue().in(Units.Amps);
-    inputs.winchTempCelsius              = winchTemp.getValue().in(Units.Celsius);
-    inputs.winchVelocityDegreesPerSecond = winchVelocity.getValue().in(Units.DegreesPerSecond);
+    inputs.innerClimberPosition                 = innerClimberPosition.getValue().in(Units.Degrees);
+    inputs.innerClimberAppliedVolts             = innerClimberAppliedVoltage.getValue().in(Units.Volts);
+    inputs.innerClimberCurrentAmps              = innerClimberCurrent.getValue().in(Units.Amps);
+    inputs.innerClimberTempCelsius              = innerClimberTemp.getValue().in(Units.Celsius);
+    inputs.innerClimberVelocityDegreesPerSecond = innerClimberVelocity.getValue().in(Units.DegreesPerSecond);
+    inputs.outerClimberPosition                 = outerClimberPosition.getValue().in(Units.Degrees);
+    inputs.outerClimberAppliedVolts             = outerClimberAppliedVoltage.getValue().in(Units.Volts);
+    inputs.outerClimberCurrentAmps              = outerClimberCurrent.getValue().in(Units.Amps);
+    inputs.outerClimberTempCelsius              = outerClimberTemp.getValue().in(Units.Celsius);
+    inputs.outerClimberVelocityDegreesPerSecond = outerClimberVelocity.getValue().in(Units.DegreesPerSecond);
   }
 
-  // Winch
+  // Climber
 
   @Override
-  public void setWinchClosedLoopPosition(Rotation2d angle) {
-    winchClosedLoopControl.withPosition(angle.getRotations());
-    winchMotor.setControl(winchClosedLoopControl);
+  public void setInnerClimberClosedLoopPosition(double inches) {
+    innerClimberClosedLoopControl.withPosition(inches);
+    innerClimberMotor.setControl(innerClimberClosedLoopControl);
   }
 
   @Override
-  public void setWinchClosedLoopConstants(double kP, double kD, double kG) {
+  public void setOuterClimberClosedLoopPosition(double inches) {
+    outerClimberClosedLoopControl.withPosition(inches);
+    outerClimberMotor.setControl(outerClimberClosedLoopControl);
+  }
+
+  @Override
+  public void setInnerClimberClosedLoopConstants(double kP, double kD, double kG) {
     var slot0Configs = new Slot0Configs();
 
-    winchMotor.getConfigurator().refresh(slot0Configs);
+    innerClimberMotor.getConfigurator().refresh(slot0Configs);
 
     slot0Configs.kP = kP;
     slot0Configs.kD = kD;
     slot0Configs.kG = kG;
 
-    winchMotor.getConfigurator().apply(slot0Configs);
+    innerClimberMotor.getConfigurator().apply(slot0Configs);
   }
 
   @Override
-  public void setWinchVoltage(double volts) {
-    winchMotor.setControl(winchOpenLoopControl.withOutput(volts));
+  public void setOuterClimberClosedLoopConstants(double kP, double kD, double kG) {
+    var slot0Configs = new Slot0Configs();
+
+    outerClimberMotor.getConfigurator().refresh(slot0Configs);
+
+    slot0Configs.kP = kP;
+    slot0Configs.kD = kD;
+    slot0Configs.kG = kG;
+
+    outerClimberMotor.getConfigurator().apply(slot0Configs);
   }
 
   @Override
-  public void resetWinchSensorPosition(Rotation2d angle) {
-    winchMotor.setPosition(angle.getRotations());
+  public void resetClimberSensorPosition(Rotation2d angle) {
+    innerClimberMotor.setPosition(angle.getRotations());
+    outerClimberMotor.setPosition(angle.getRotations());
   }
 
   @Override
-  public boolean setWinchNeutralMode(NeutralModeValue value) {
+  public boolean setClimberNeutralMode(NeutralModeValue value) {
     var config = new MotorOutputConfigs();
 
-    var status = winchMotor.getConfigurator().refresh(config);
+    var status = innerClimberMotor.getConfigurator().refresh(config);
 
     if (status != StatusCode.OK)
       return false;
 
     config.NeutralMode = value;
 
-    winchMotor.getConfigurator().apply(config);
+    innerClimberMotor.getConfigurator().apply(config);
+    outerClimberMotor.getConfigurator().apply(config);
     return true;
   }
 
