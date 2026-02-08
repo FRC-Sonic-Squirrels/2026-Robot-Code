@@ -12,7 +12,7 @@ import frc.robot.Constants.FieldConstants;
 import frc.robot.commands.drive.DriveToPoseHelper;
 import frc.robot.commands.drive.RotateToFaceHelper;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.Intake.IntakeState;
+import frc.robot.subsystems.intake.Intake.State;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
 import java.util.function.Supplier;
 
@@ -45,6 +45,10 @@ public class RobotStates {
     None, Auto, Score, Pass, Climb
   }
 
+  public enum IntakeGoal {
+    Stow, LeftIntake, RightIntake
+  }
+
   // Logging
 
   private LoggerGroup logGroup = LoggerGroup.build("RobotState");
@@ -73,7 +77,7 @@ public class RobotStates {
 
   public MechState mechState = MechState.Idle;
 
-  public IntakeState intakeState = IntakeState.Idle;
+  public State intakeState = State.Idle;
 
   public boolean fuelInIntake;
 
@@ -93,6 +97,9 @@ public class RobotStates {
 
   private RobotGoal goal       = RobotGoal.None;
   private RobotGoal wantedGoal = RobotGoal.None;
+
+  private IntakeGoal intakeGoal       = IntakeGoal.Stow;
+  private IntakeGoal wantedIntakeGoal = IntakeGoal.Stow;
 
   // Commands
 
@@ -148,15 +155,29 @@ public class RobotStates {
       case Climb:
         break;
     }
-    leftIntake.setState(IntakeState.Idle);
-    rightIntake.setState(IntakeState.Idle);
     dtpHelpter.initialize();
     rtfHelper.initialize();
     goal = wantedGoal;
   }
 
+  private void handleIntakeGoalTransition() {
+    switch (wantedIntakeGoal) {
+      case Stow:
+        break;
+      case LeftIntake:
+      case RightIntake:
+        if (goal == RobotGoal.Climb) {
+          intakeGoal = intakeGoal.Stow;
+          return;
+        }
+        break;
+    }
+    intakeGoal = wantedIntakeGoal;
+  }
+
   public void periodic() {
     handleGoalTransition();
+    handleIntakeGoalTransition();
     switch (goal) {
       case None:
         drivetrain.resetVelocityOverride();
@@ -181,6 +202,21 @@ public class RobotStates {
         targetPose = new Pose2d(0, 0, Rotation2d.kZero);
         dtpHelpter.execute();
         break;
+    }
+    switch (intakeGoal) {
+      case Stow:
+        rightIntake.setState(intakeState.Stow);
+        leftIntake.setState(intakeState.Stow);
+      case LeftIntake:
+        rightIntake.setState(intakeState.Stow);
+        if (rightIntake.isStowed()) {
+          leftIntake.setState(intakeState.Intake);
+        }
+      case RightIntake:
+        leftIntake.setState(intakeState.Stow);
+        if (leftIntake.isStowed()) {
+          rightIntake.setState(intakeState.Intake);
+        }
     }
 
     CommandScheduler.getInstance().setPeriod(endEffectorOverrideVelocity);
@@ -235,17 +271,15 @@ public class RobotStates {
     wantedGoal = newGoal;
   }
 
+  public void setIntakeGoal(IntakeGoal newGoal) {
+    wantedIntakeGoal = newGoal;
+  }
+
   public boolean setRobotGoalIf(RobotGoal expetedGoal, RobotGoal newGoal) {
     if (getRobotGoal() == expetedGoal) {
       setRobotGoal(newGoal);
       return true;
     }
     return false;
-  }
-
-  // TODO: this should probrably be removed
-  public void setIntakeState(Intake.IntakeState newState) {
-    leftIntake.setState(newState);
-    rightIntake.setState(newState);
   }
 }

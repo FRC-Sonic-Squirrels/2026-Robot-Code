@@ -36,6 +36,7 @@ import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.RobotMode.Mode;
 import frc.robot.Constants.RobotMode.RobotType;
+import frc.robot.RobotStates.IntakeGoal;
 import frc.robot.RobotStates.MechState;
 import frc.robot.RobotStates.RobotGoal;
 import frc.robot.autonomous.AutosManager;
@@ -59,7 +60,7 @@ import frc.robot.subsystems.hopper.HopperIO;
 import frc.robot.subsystems.hopper.HopperIOReal;
 import frc.robot.subsystems.hopper.HopperIOSim;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.Intake.IntakeState;
+import frc.robot.subsystems.intake.Intake.State;
 import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOConfig;
 import frc.robot.subsystems.intake.IntakeIOReal;
@@ -181,9 +182,9 @@ public class RobotContainer {
           drivetrain::addVisionEstimate, config.getReplayVisionModules());
 
       leftIntake  = new Intake(new IntakeIO() {
-                  }, robotStates);
+                  });
       rightIntake = new Intake(new IntakeIO() {
-                  }, robotStates);
+                  });
       climber     = new Climber(new ClimberIO() {
                   });
       hopper      = new Hopper(new HopperIO() {
@@ -237,8 +238,8 @@ public class RobotContainer {
             }
           }
 
-          rightIntake = new Intake(new IntakeIOSim(), robotStates);
-          leftIntake = new Intake(new IntakeIOSim(), robotStates);
+          rightIntake = new Intake(new IntakeIOSim());
+          leftIntake = new Intake(new IntakeIOSim());
           climber = new Climber(new ClimberIOSim());
           hopper = new Hopper(new HopperIOSim() {
           });
@@ -253,9 +254,9 @@ public class RobotContainer {
           vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
               drivetrain::addVisionEstimate, config.getReplayVisionModules());
           leftIntake = new Intake(new IntakeIO() {
-          }, robotStates);
+          });
           rightIntake = new Intake(new IntakeIO() {
-          }, robotStates);
+          });
           climber = new Climber(new ClimberIO() {
           });
           hopper = new Hopper(new HopperIO() {
@@ -276,9 +277,9 @@ public class RobotContainer {
               new GyroIOPigeon2(config, Constants.CanIDs.GYRO_2_CAN_ID), config.getSwerveModuleObjects(),
               () -> is_autonomous);
           leftIntake = new Intake(new IntakeIO() {
-          }, robotStates);
+          });
           rightIntake = new Intake(new IntakeIO() {
-          }, robotStates);
+          });
           climber = new Climber(new ClimberIO() {
           });
           hopper = new Hopper(new HopperIO() {
@@ -303,9 +304,9 @@ public class RobotContainer {
             System.out.println("sleep interrupted");
           }
           leftIntake = new Intake(new IntakeIO() {
-          }, robotStates);
+          });
           rightIntake = new Intake(new IntakeIO() {
-          }, robotStates);
+          });
           climber = new Climber(new ClimberIOReal());
           drivetrain = new Drivetrain(config, new GyroIOPigeon2(config, config.getGyroCANID()), new GyroIO.Fake(),
               config.getSwerveModuleObjects(), () -> is_autonomous);
@@ -338,14 +339,14 @@ public class RobotContainer {
             IntakeIOConfig rightIntakeIOConfig = new IntakeIOConfig(Constants.CanIDs.INTAKE_RIGHT_PIVOT_CAN_ID,
                 Constants.CanIDs.INTAKE_RIGHT_ROLLER_CAN_ID, InvertedValue.Clockwise_Positive,
                 InvertedValue.Clockwise_Positive);
-            leftIntake  = new Intake(new IntakeIOReal(leftIntakeIOConfig), robotStates);
-            rightIntake = new Intake(new IntakeIOReal(rightIntakeIOConfig), robotStates);
+            leftIntake  = new Intake(new IntakeIOReal(leftIntakeIOConfig));
+            rightIntake = new Intake(new IntakeIOReal(rightIntakeIOConfig));
             climber     = new Climber(new ClimberIOReal());
           } else {
             leftIntake  = new Intake(new IntakeIO() {
-                        }, robotStates);
+                        });
             rightIntake = new Intake(new IntakeIO() {
-                        }, robotStates);
+                        });
             climber     = new Climber(new ClimberIO() {
                         });
           }
@@ -372,9 +373,9 @@ public class RobotContainer {
           vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
               drivetrain::addVisionEstimate, config.getReplayVisionModules());
           leftIntake = new Intake(new IntakeIO() {
-          }, robotStates);
+          });
           rightIntake = new Intake(new IntakeIO() {
-          }, robotStates);
+          });
           climber = new Climber(new ClimberIO() {
           });
           hopper = new Hopper(new HopperIO() {
@@ -469,29 +470,29 @@ public class RobotContainer {
 
     // Eject
     operatorController.registerTrigger(XboxControllerWrapper.Button.leftBumper, "Left Intake Eject")
-        .onTrue(Commands.runOnce(() -> leftIntake.setState(IntakeState.Eject)))
-        .onFalse(Commands.runOnce(() -> leftIntake.setState(IntakeState.Stow)));
+        .onTrue(Commands.runOnce(() -> leftIntake.setState(State.Eject)))
+        .onFalse(Commands.runOnce(() -> leftIntake.setState(State.Stow)));
     operatorController.registerTrigger(XboxControllerWrapper.Button.rightBumper, "Right Intake Eject")
-        .onTrue(Commands.runOnce(() -> rightIntake.setState(IntakeState.Eject)))
-        .onFalse(Commands.runOnce(() -> rightIntake.setState(IntakeState.Stow)));
+        .onTrue(Commands.runOnce(() -> rightIntake.setState(State.Eject)))
+        .onFalse(Commands.runOnce(() -> rightIntake.setState(State.Stow)));
 
     // Intake
     operatorController.registerTrigger(XboxControllerWrapper.Button.leftTrigger, "Left Intake")
-        .onTrue(Commands.runOnce(() -> leftIntake.setState(IntakeState.IntakeCoral)))
-        .onFalse(Commands.runOnce(() -> leftIntake.setState(IntakeState.Stow)));
+        .onTrue(Commands.runOnce(() -> robotStates.setIntakeGoal(IntakeGoal.LeftIntake)))
+        .onFalse(Commands.runOnce(() -> robotStates.setIntakeGoal(IntakeGoal.Stow)));
     operatorController.registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Right Intake")
-        .onTrue(Commands.runOnce(() -> leftIntake.setState(IntakeState.IntakeCoral)))
-        .onFalse(Commands.runOnce(() -> leftIntake.setState(IntakeState.Stow)));
+        .onTrue(Commands.runOnce(() -> robotStates.setIntakeGoal(IntakeGoal.RightIntake)))
+        .onFalse(Commands.runOnce(() -> robotStates.setIntakeGoal(IntakeGoal.Stow)));
 
     // Intake positions
     operatorController.registerTrigger(XboxControllerWrapper.Button.a, "Left Intake Pivot In")
-        .onTrue(Commands.runOnce(() -> leftIntake.setState(IntakeState.Stow)));
+        .onTrue(Commands.runOnce(() -> leftIntake.setState(State.Stow)));
     operatorController.registerTrigger(XboxControllerWrapper.Button.leftStick, "Left Intake Pivot Out")
-        .onTrue(Commands.runOnce(() -> leftIntake.setState(IntakeState.Down)));
+        .onTrue(Commands.runOnce(() -> leftIntake.setState(State.Down)));
     operatorController.registerTrigger(XboxControllerWrapper.Button.x, "Right Intake Pivot In")
-        .onTrue(Commands.runOnce(() -> rightIntake.setState(IntakeState.Stow)));
+        .onTrue(Commands.runOnce(() -> rightIntake.setState(State.Stow)));
     operatorController.registerTrigger(XboxControllerWrapper.Button.rightStick, "Right Intake Pivot Out")
-        .onTrue(Commands.runOnce(() -> rightIntake.setState(IntakeState.Down)));
+        .onTrue(Commands.runOnce(() -> rightIntake.setState(State.Down)));
 
     // Climber in
     operatorController.registerTrigger(XboxControllerWrapper.Button.b, "Climber In")
@@ -634,8 +635,8 @@ public class RobotContainer {
       rightIntake.setRollerPercentOut(0);
       robotStates.mechState = MechState.Idle;
 
-      leftIntake.setState(IntakeState.Idle);
-      rightIntake.setState(IntakeState.Idle);
+      leftIntake.setState(State.Idle);
+      rightIntake.setState(State.Idle);
     }
 
     is_teleop     = false;
