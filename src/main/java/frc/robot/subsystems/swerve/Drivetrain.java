@@ -64,25 +64,29 @@ public class Drivetrain extends SubsystemBase {
 
   private static final LoggerGroup logGyro = logGroupDrive.subgroup("Gyro");
 
-  private static final LoggerEntry.Text    logGyro_selectedGyro         = logGyro.buildString("selectedGyro");
-  private static final LoggerEntry.Bool    logGyro_usingSecondGyro      = logGyro.buildBoolean("usingSecondGyro");
-  private static final LoggerEntry.Decimal logGyro_yawPosition          = logGyro.buildDecimal("YawPosition");
-  private static final LoggerEntry.Decimal logGyro_yawVelocityRadPerSec = logGyro.buildDecimal("YawVelocityRadPerSec");
-  private static final LoggerEntry.Decimal logGyro_xAcceleration        = logGyro.buildDecimal("XAcceleration");
-  private static final LoggerEntry.Decimal logGyro_yAcceleration        = logGyro.buildDecimal("YAcceleration");
-  private static final LoggerEntry.Decimal logGyro_zAcceleration        = logGyro.buildDecimal("ZAcceleration");
-  private static final LoggerEntry.Decimal logGyro_Acceleration         = logGyro.buildDecimal("linearAcceleration");
+  public static class GyroLogs extends AutoRegisterLoggers {
+    public LoggerEntry.Text    selectedGyro;
+    public LoggerEntry.Bool    usingSecondGyro;
+    public LoggerEntry.Decimal yawPosition;
+    public LoggerEntry.Decimal yawVelocityRadPerSec;
+    public LoggerEntry.Decimal xAcceleration;
+    public LoggerEntry.Decimal yAcceleration;
+    public LoggerEntry.Decimal zAcceleration;
+    public LoggerEntry.Decimal linearAcceleration;
+  }
 
-  // Swerve logging
+  private static final GyroLogs gyroLogs = logGroupDrive.newAutoLogger(GyroLogs.class, "Gyro");
 
-  private static final LoggerGroup                                logGroupSwerveStates              = LoggerGroup
-      .build("SwerveStates");
-  private static final LoggerEntry.StructArray<SwerveModuleState> logSwerveStatesSetpoints          = logGroupSwerveStates
-      .buildStructArray(SwerveModuleState.class, "Setpoints");
-  private static final LoggerEntry.StructArray<SwerveModuleState> logSwerveStatesSetpointsOptimized = logGroupSwerveStates
-      .buildStructArray(SwerveModuleState.class, "SetpointsOptimized");
-  private static final LoggerEntry.StructArray<SwerveModuleState> logSwerveStatesMeasured           = logGroupSwerveStates
-      .buildStructArray(SwerveModuleState.class, "Measured");
+  // Swerve loggingq
+
+  public static class SwerveStatesLogs extends AutoRegisterLoggers {
+    public LoggerEntry.StructArray<SwerveModuleState> setpoints;
+    public LoggerEntry.StructArray<SwerveModuleState> setpointsOptimized;
+    public LoggerEntry.StructArray<SwerveModuleState> measured;
+  }
+
+  private static final SwerveStatesLogs swerveStatesLogs = LoggerGroup.root.newAutoLogger(SwerveStatesLogs.class,
+      "SwerveStates");
 
   // Odometry logging
 
@@ -213,12 +217,12 @@ public class Drivetrain extends SubsystemBase {
       GyroIO.Inputs inputs = selectedGyroInputs;
       if (gyroIO != null && inputs != null) { // Only log if real gyro
         gyroIO.updateInputs(inputs);
-        logGyro_yawPosition.info(inputs.yawPosition);
-        logGyro_yawVelocityRadPerSec.info(inputs.yawVelocityRadPerSec);
-        logGyro_xAcceleration.info(inputs.xAcceleration);
-        logGyro_yAcceleration.info(inputs.yAcceleration);
-        logGyro_zAcceleration.info(inputs.zAcceleration);
-        logGyro_Acceleration.info(Math.hypot(inputs.xAcceleration, inputs.yAcceleration));
+        gyroLogs.yawPosition.info(inputs.yawPosition);
+        gyroLogs.yawVelocityRadPerSec.info(inputs.yawVelocityRadPerSec);
+        gyroLogs.xAcceleration.info(inputs.xAcceleration);
+        gyroLogs.yAcceleration.info(inputs.yAcceleration);
+        gyroLogs.zAcceleration.info(inputs.zAcceleration);
+        gyroLogs.linearAcceleration.info(Math.hypot(inputs.xAcceleration, inputs.yAcceleration));
       }
 
       // Swerve modules
@@ -232,11 +236,11 @@ public class Drivetrain extends SubsystemBase {
       }
       // Log empty setpoint states when disabled
       if (DriverStation.isDisabled()) {
-        logSwerveStatesSetpoints.info(new SwerveModuleState[] {});
-        logSwerveStatesSetpointsOptimized.info(new SwerveModuleState[] {});
+        swerveStatesLogs.setpoints.info(new SwerveModuleState[] {});
+        swerveStatesLogs.setpointsOptimized.info(new SwerveModuleState[] {});
       }
 
-      logSwerveStatesMeasured.info(getModuleStates());
+      swerveStatesLogs.measured.info(getModuleStates());
 
       log_FieldRelativeVel.info(getFieldRelativeVelocities());
       linearVel.calculate(getFieldRelativeVelocities().getTranslation().getNorm()); // Update linear vel approximation
@@ -267,7 +271,7 @@ public class Drivetrain extends SubsystemBase {
       // Log which gyro in use
 
       if (useSecondGyro != null) {
-        logGyro_usingSecondGyro.info(useSecondGyro);
+        gyroLogs.usingSecondGyro.info(useSecondGyro);
       }
 
       // Log can bus util
@@ -298,15 +302,15 @@ public class Drivetrain extends SubsystemBase {
       if (gyro1Healthy) {
         selectedGyroIO     = gyroIO;
         selectedGyroInputs = gyroInputs;
-        logGyro_selectedGyro.info("Primary");
+        gyroLogs.selectedGyro.info("Primary");
       } else if (gyro2Healthy) {
         selectedGyroIO     = gyroIO2;
         selectedGyroInputs = gyroInputs2;
-        logGyro_selectedGyro.info("Secondary");
+        gyroLogs.selectedGyro.info("Secondary");
       } else {
         selectedGyroIO     = null;
         selectedGyroInputs = null;
-        logGyro_selectedGyro.info("Disabled");
+        gyroLogs.selectedGyro.info("Disabled");
       }
 
       switchGyro = false;
@@ -494,8 +498,8 @@ public class Drivetrain extends SubsystemBase {
     var optimizedSetpointStates = modules.runSetpoints(setpointStates, driveMotorAcceleration, motionMagicDrive);
 
     // Log setpoint states
-    logSwerveStatesSetpoints.info(setpointStates);
-    logSwerveStatesSetpointsOptimized.info(optimizedSetpointStates);
+    swerveStatesLogs.setpoints.info(setpointStates);
+    swerveStatesLogs.setpointsOptimized.info(optimizedSetpointStates);
   }
 
   /** Stops the drive. */

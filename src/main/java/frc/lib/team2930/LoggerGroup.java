@@ -10,6 +10,9 @@ import edu.wpi.first.util.struct.StructSerializable;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.RobotController;
+import org.littletonrobotics.junction.LogDataReceiver;
+import org.littletonrobotics.junction.LogTable;
+
 import java.io.File;
 import java.lang.reflect.Field;
 import java.nio.charset.StandardCharsets;
@@ -17,8 +20,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
 import java.util.function.Consumer;
-import org.littletonrobotics.junction.LogDataReceiver;
-import org.littletonrobotics.junction.LogTable;
 
 public class LoggerGroup {
   private static final String logWriter_extraHeader   = "AdvantageKit";
@@ -688,6 +689,64 @@ public class LoggerGroup {
     groups                    = Arrays.copyOf(groups, groups.length + 1);
     groups[groups.length - 1] = newGroup;
     return newGroup;
+  }
+
+  public <T extends AutoRegisterLoggers> T newAutoLogger(Class<T> clz, String name) {
+    var group = subgroup(name);
+
+    var instance = Reflection.newInstance(clz);
+    var fields   = Reflection.collectFields(clz);
+    fields.forEach((f, v) -> {
+      var accessor = new Reflection.FieldAccessor(v);
+
+      var frequency = 50;
+      var logName   = f;
+      var anno      = v.getAnnotation(LogEntry.class);
+      if (anno != null) {
+        frequency = anno.updatePerSecond();
+        if (!anno.name().isEmpty()) {
+          logName = anno.name();
+        }
+      }
+
+      var t = accessor.getNativeType();
+      if (AutoRegisterLoggers.class.isAssignableFrom(t)) {
+        // noinspection unchecked
+        accessor.set(instance, group.newAutoLogger((Class<T>) t, logName));
+      } else if (t == LoggerEntry.Text.class) {
+        accessor.set(instance, group.buildString(logName, frequency));
+      } else if (t == LoggerEntry.TextArray.class) {
+        accessor.set(instance, group.buildStringArray(logName, frequency));
+      } else if (t == LoggerEntry.Bool.class) {
+        accessor.set(instance, group.buildBoolean(logName, frequency));
+      } else if (t == LoggerEntry.BoolArray.class) {
+        accessor.set(instance, group.buildBooleanArray(logName, frequency));
+      } else if (t == LoggerEntry.Integer.class) {
+        accessor.set(instance, group.buildInteger(logName, frequency));
+      } else if (t == LoggerEntry.IntegerArray.class) {
+        accessor.set(instance, group.buildIntegerArray(logName, frequency));
+      } else if (t == LoggerEntry.DecimalFloat.class) {
+        accessor.set(instance, group.buildDecimalFloat(logName, frequency));
+      } else if (t == LoggerEntry.DecimalFloatArray.class) {
+        accessor.set(instance, group.buildDecimalFloatArray(logName, frequency));
+      } else if (t == LoggerEntry.Decimal.class) {
+        accessor.set(instance, group.buildDecimal(logName, frequency));
+      } else if (t == LoggerEntry.DecimalArray.class) {
+        accessor.set(instance, group.buildDecimalArray(logName, frequency));
+      } else if (t == LoggerEntry.ByteArray.class) {
+        accessor.set(instance, group.buildBytes(logName, frequency));
+      } else if (t == LoggerEntry.Mechanism.class) {
+        accessor.set(instance, group.buildMechanism2d(logName, frequency));
+      } else if (t == LoggerEntry.Struct.class) {
+        var structClz = accessor.getTypeParameter(0);
+        accessor.set(instance, group.buildStruct(Reflection.getRawType(structClz), logName, frequency));
+      } else if (t == LoggerEntry.StructArray.class) {
+        var structClz = accessor.getTypeParameter(0);
+        accessor.set(instance, group.buildStructArray(Reflection.getRawType(structClz), logName, frequency));
+      }
+    });
+
+    return instance;
   }
 
   public static class Redirector implements LogDataReceiver {

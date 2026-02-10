@@ -13,6 +13,7 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.wpilibj.RobotBase;
 
 /**
@@ -31,6 +32,8 @@ public final class Main {
    * If you change your main robot class, change the parameter type.
    */
   public static void main(String... args) {
+    SignalLogger.enableAutoLogging(false);
+    SignalLogger.stop();
     RobotBase.startRobot(Robot::new);
   }
 }
