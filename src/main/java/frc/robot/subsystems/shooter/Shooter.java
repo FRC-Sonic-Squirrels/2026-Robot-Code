@@ -18,7 +18,7 @@ import java.util.List;
 
 public class Shooter extends SubsystemBase {
 
-  public enum State {
+  public enum Goal {
     Idle, Shooting, Passing, Stop
   }
 
@@ -52,7 +52,7 @@ public class Shooter extends SubsystemBase {
   private static final LoggerEntry.DecimalArray logInputs_tempsCelcius           = logInputs
       .buildDecimalArray("TempsCelcius");
 
-  private static final LoggerEntry.EnumValue<State> logState = logGroup.buildEnum("State");
+  private static final LoggerEntry.EnumValue<Goal> logState = logGroup.buildEnum("State");
 
   private static final LoggerEntry.Decimal logPitchDegrees              = logGroup.buildDecimal("PitchDegrees");
   private static final LoggerEntry.Decimal logTargetPitchDegrees        = logGroup.buildDecimal("TargetPitchDegrees");
@@ -133,7 +133,7 @@ public class Shooter extends SubsystemBase {
 
   private final List<PIDTargetMeasurement> hoodTargetMeasurements = new ArrayList<>();
 
-  private State goal = State.Idle;
+  private Goal goal = Goal.Idle;
 
   private double hoodPidLatency = 0.0;
 
@@ -359,7 +359,7 @@ public class Shooter extends SubsystemBase {
     return isFacingTarget && isFlywheelReady() && isHoodReady();
   }
 
-  public void setGoal(State goal) {
+  public void setGoal(Goal goal) {
     this.goal = goal;
   }
 }

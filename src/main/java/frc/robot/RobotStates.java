@@ -192,7 +192,7 @@ public class RobotStates {
       case None:
         drivetrain.resetVelocityOverride();
         drivetrain.resetRotationOverride();
-        shooter.setGoal(Shooter.State.Idle);
+        shooter.setGoal(Shooter.Goal.Idle);
         break;
       case Auto:
         // TODO: run the auto state machene
@@ -260,7 +260,7 @@ public class RobotStates {
     rtfHelper.execute();
     // tell the shooter how far away we are from the target <- landon did this
     shooter.setFacingTarget(rtfHelper.withinTolerance());
-    shooter.setGoal(Shooter.State.Shooting);
+    shooter.setGoal(Shooter.Goal.Shooting);
   }
 
   public void setMechState(MechState state) {
