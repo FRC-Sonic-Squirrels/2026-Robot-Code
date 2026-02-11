@@ -5,7 +5,6 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
-import com.ctre.phoenix6.controls.VoltageOut;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.Units;
@@ -27,10 +26,8 @@ public class IntakeIOSim implements IntakeIO {
           PivotConstants.MAX_PIVOT_ANGLE.getRadians(), false,
           Constants.IntakeConstants.PivotConstants.INITIAL_PIVOT_ANGLE.getRadians()));
 
-  private VoltageOut      rollerOpenLoopControl   = new VoltageOut(0);
   private VelocityVoltage rollerClosedLoopControl = new VelocityVoltage(0);
 
-  private VoltageOut         pivotOpenLoopControl   = new VoltageOut(0);
   private MotionMagicVoltage pivotClosedLoopControl = new MotionMagicVoltage(0);
 
   public IntakeIOSim() {
@@ -50,11 +47,6 @@ public class IntakeIOSim implements IntakeIO {
   }
 
   @Override
-  public void setRollerVoltage(double volts) {
-    rollerMotor.setControl(rollerOpenLoopControl.withOutput(volts));
-  }
-
-  @Override
   public void setRollerVelocity(double revPerMin) {
     rollerMotor.setControl(rollerClosedLoopControl.withVelocity(revPerMin));
   }
@@ -71,11 +63,6 @@ public class IntakeIOSim implements IntakeIO {
     config.Slot0 = slot0Configs;
 
     rollerMotor.setConfig(config);
-  }
-
-  @Override
-  public void setPivotVoltage(double volts) {
-    pivotSim.setControl(pivotOpenLoopControl.withOutput(volts));
   }
 
   @Override
