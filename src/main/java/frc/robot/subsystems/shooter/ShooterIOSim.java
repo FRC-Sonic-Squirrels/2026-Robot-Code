@@ -4,8 +4,9 @@ package frc.robot.subsystems.shooter;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.signals.NeutralModeValue;
 
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -60,6 +61,10 @@ public class ShooterIOSim implements ShooterIO {
 
   private MotionMagicVoltage pivotClosedLoopControl = new MotionMagicVoltage(0);
 
+  private VelocityVoltage flywheelClosedLoopControl = new VelocityVoltage(0);
+
+  private VelocityVoltage kickerClosedLoopControl = new VelocityVoltage(0);
+
   public ShooterIOSim() {
   }
 
@@ -75,29 +80,10 @@ public class ShooterIOSim implements ShooterIO {
     inputs.hoodPosition       = new Rotation2d(hoodArmSim.getPosition());
     inputs.flywheelRPM[0]     = targetRPM;
     inputs.kickerAppliedVolts = kickerVolts;
-
-    double ff = 0.0;
-
-    if (pivotControlMode.equals(ControlMode.POSITION)) {
-
-      pivotControlEffort = pivotFeedback.calculate(inputs.hoodPosition.getRadians(),
-          pivotClosedLoopTargetAngle.getRadians()) + ff;
-
-    }
-
-    logs.feedForward.info(ff);
-
-    logs.outputVoltage.info(MathUtil.clamp(pivotControlEffort, -12.0, 12.0));
-    logs.targetVelRadPerSec.info(pivotTargetVelRadPerSec);
-    logs.currentVelRadPerSec.info(hoodArmSim.getVelocity().in(Units.RPM));
-    logs.pitchController
-        .info(pivotVelController.calculate(hoodArmSim.getVelocity().in(Units.RPM), pivotTargetVelRadPerSec));
-    logs.pivotControlMode.info(pivotControlMode);
-    logs.targetPositionDegrees.info(pivotClosedLoopTargetAngle.getDegrees());
   }
 
   @Override
-  public void setFlywheelClosedLoopConstants(double kP, double kV, double kS, double maxProfiledVelocity) {
+  public void setKickerClosedLoopConstants(double kP, double kV, double kS, double maxProfiledVelocity) {
     TalonFXConfiguration config       = new TalonFXConfiguration();
     Slot0Configs         slot0Configs = new Slot0Configs();
 
@@ -108,6 +94,11 @@ public class ShooterIOSim implements ShooterIO {
     config.Slot0 = slot0Configs;
 
     hoodArmSim.setConfig(config);
+  }
+
+  @Override
+  public void setKickerVelocity(double revPerMin) {
+    kickerMotorSim.setControl(kickerClosedLoopControl.withVelocity(revPerMin / 60));
   }
 
   @Override
@@ -128,10 +119,30 @@ public class ShooterIOSim implements ShooterIO {
     config.Slot0 = slot0Configs;
 
     hoodArmSim.setConfig(config);
+
+  }
+
+  @Override
+  public void setFlywheelClosedLoopConstants(double kP, double kV, double kS, double maxProfiledVelocity) {
+    TalonFXConfiguration config       = new TalonFXConfiguration();
+    Slot0Configs         slot0Configs = new Slot0Configs();
+
+    slot0Configs.kP = kP;
+    slot0Configs.kV = kV;
+    slot0Configs.kS = kS;
+
+    config.Slot0 = slot0Configs;
+
+    hoodArmSim.setConfig(config);
   }
 
   @Override
   public void setFlywheelRPM(double revPerMin) {
-    targetRPM = revPerMin;
+    flywheelMotorSim.setControl(flywheelClosedLoopControl.withVelocity(revPerMin / 60));
+  }
+
+  @Override
+  public boolean setNeutralMode(NeutralModeValue value) {
+    return false;
   }
 }

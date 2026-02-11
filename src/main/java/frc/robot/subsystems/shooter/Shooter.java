@@ -306,10 +306,6 @@ public class Shooter extends SubsystemBase {
     return Math.abs(inputs.hoodPosition.getRadians() - target.getRadians()) <= tolerance.getRadians();
   }
 
-  public void setKickerPercentOut(double percent) {
-    io.setKickerVoltage(percent * Constants.MAX_VOLTAGE);
-  }
-
   public double getKickerPercentOut() {
     return inputs.kickerAppliedVolts / Constants.MAX_VOLTAGE;
   }
