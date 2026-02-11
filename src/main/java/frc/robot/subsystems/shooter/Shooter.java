@@ -18,8 +18,8 @@ import java.util.List;
 
 public class Shooter extends SubsystemBase {
 
-  public enum State {
-    Idle, Shooting, Stop
+  public enum Goal {
+    Idle, Shooting, Passing, Stop
   }
 
   private static final String ROOT_TABLE = "Shooter";
@@ -52,7 +52,7 @@ public class Shooter extends SubsystemBase {
   private static final LoggerEntry.DecimalArray logInputs_tempsCelcius           = logInputs
       .buildDecimalArray("TempsCelcius");
 
-  private static final LoggerEntry.EnumValue<State> logState = logGroup.buildEnum("State");
+  private static final LoggerEntry.EnumValue<Goal> logState = logGroup.buildEnum("State");
 
   private static final LoggerEntry.Decimal logPitchDegrees              = logGroup.buildDecimal("PitchDegrees");
   private static final LoggerEntry.Decimal logTargetPitchDegrees        = logGroup.buildDecimal("TargetPitchDegrees");
@@ -133,7 +133,7 @@ public class Shooter extends SubsystemBase {
 
   private final List<PIDTargetMeasurement> hoodTargetMeasurements = new ArrayList<>();
 
-  private State state = State.Idle;
+  private Goal goal = Goal.Idle;
 
   private double hoodPidLatency = 0.0;
 
@@ -176,12 +176,12 @@ public class Shooter extends SubsystemBase {
       logPitchDegrees.info(inputs.hoodPosition.getDegrees());
       logTargetPitchDegrees.info(targetHoodPosition.getDegrees());
       logFlywheelRollersDifference.info(inputs.flywheelRPM[1] - inputs.flywheelRPM[0]);
-      logState.info(state);
+      logState.info(goal);
       logTargetDistance.info(distanceFromTarget.in(Units.Meters));
       logFacingTarget.info(isFacingTarget);
       logShooterReady.info(isShooterReady());
 
-      switch (state) {
+      switch (goal) {
         case Idle:
           setFlywheelRPM(ShooterConstants.Flywheel.IDLE_FLYWHEEL_RPM);
           setHoodPosition(ShooterConstants.Hood.IDLE_ANGLE_RAD);
@@ -196,6 +196,9 @@ public class Shooter extends SubsystemBase {
           } else {
             setKickerVelocity(0);
           }
+          break;
+
+        case Passing:
           break;
 
         case Stop:
@@ -354,5 +357,9 @@ public class Shooter extends SubsystemBase {
 
   public boolean isShooterReady() {
     return isFacingTarget && isFlywheelReady() && isHoodReady();
+  }
+
+  public void setGoal(Goal goal) {
+    this.goal = goal;
   }
 }

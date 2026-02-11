@@ -65,6 +65,10 @@ import frc.robot.subsystems.intake.IntakeIO;
 import frc.robot.subsystems.intake.IntakeIOConfig;
 import frc.robot.subsystems.intake.IntakeIOReal;
 import frc.robot.subsystems.intake.IntakeIOSim;
+import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShooterIO;
+import frc.robot.subsystems.shooter.ShooterIOReal;
+import frc.robot.subsystems.shooter.ShooterIOSim;
 import frc.robot.subsystems.swerve.Drivetrain;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
 import frc.robot.subsystems.swerve.gyro.GyroIO;
@@ -104,6 +108,7 @@ public class RobotContainer {
   private final LED                 led;
   private final Climber             climber;
   private final Hopper              hopper;
+  private final Shooter             shooter;
 
   // Controllers
   private final XboxControllerWrapper driverController   = new XboxControllerWrapper(0);
@@ -189,6 +194,8 @@ public class RobotContainer {
                   });
       hopper      = new Hopper(new HopperIO() {
                   });
+      shooter     = new Shooter(new ShooterIO() {
+                  });
 
       if (Constants.unusedCode) {
         visionGamepiece = new VisionGamepiece(new VisionGamepieceIO() {
@@ -241,8 +248,8 @@ public class RobotContainer {
           rightIntake = new Intake(new IntakeIOSim());
           leftIntake = new Intake(new IntakeIOSim());
           climber = new Climber(new ClimberIOSim());
-          hopper = new Hopper(new HopperIOSim() {
-          });
+          hopper = new Hopper(new HopperIOSim());
+          shooter = new Shooter(new ShooterIOSim());
           led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered, robotStates);
           break;
 
@@ -260,6 +267,8 @@ public class RobotContainer {
           climber = new Climber(new ClimberIO() {
           });
           hopper = new Hopper(new HopperIO() {
+          });
+          shooter = new Shooter(new ShooterIO() {
           });
 
           if (Constants.unusedCode) {
@@ -283,6 +292,8 @@ public class RobotContainer {
           climber = new Climber(new ClimberIO() {
           });
           hopper = new Hopper(new HopperIO() {
+          });
+          shooter = new Shooter(new ShooterIO() {
           });
           vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
               drivetrain::addVisionEstimate, config.getVisionModuleObjects());
@@ -311,6 +322,8 @@ public class RobotContainer {
           drivetrain = new Drivetrain(config, new GyroIOPigeon2(config, config.getGyroCANID()), new GyroIO.Fake(),
               config.getSwerveModuleObjects(), () -> is_autonomous);
           hopper = new Hopper(new HopperIO() {
+          });
+          shooter = new Shooter(new ShooterIO() {
           });
           vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
               drivetrain::addVisionEstimate, config.getVisionModuleObjects());
@@ -342,12 +355,15 @@ public class RobotContainer {
             leftIntake  = new Intake(new IntakeIOReal(leftIntakeIOConfig));
             rightIntake = new Intake(new IntakeIOReal(rightIntakeIOConfig));
             climber     = new Climber(new ClimberIOReal());
+            shooter     = new Shooter(new ShooterIOReal());
           } else {
             leftIntake  = new Intake(new IntakeIO() {
                         });
             rightIntake = new Intake(new IntakeIO() {
                         });
             climber     = new Climber(new ClimberIO() {
+                        });
+            shooter     = new Shooter(new ShooterIO() {
                         });
           }
           drivetrain = new Drivetrain(config, new GyroIOPigeon2(config, config.getGyroCANID()), new GyroIO.Fake(),
@@ -380,6 +396,8 @@ public class RobotContainer {
           });
           hopper = new Hopper(new HopperIO() {
           });
+          shooter = new Shooter(new ShooterIO() {
+          });
 
           if (Constants.unusedCode) {
             visionGamepiece = new VisionGamepiece(new VisionGamepieceIO() {
@@ -409,7 +427,7 @@ public class RobotContainer {
 
     var subsystems = new AutosSubsystems(drivetrainWrapper, led, leftIntake, rightIntake);
 
-    robotStates.setSubsystems(leftIntake, rightIntake, drivetrainWrapper,
+    robotStates.setSubsystems(leftIntake, rightIntake, shooter, drivetrainWrapper,
         () -> driverController.getRightTrigger().getAsBoolean());
 
     autoManager = new AutosManager(subsystems, config, autoChooser, stringToAutoSupplierMap, () -> {

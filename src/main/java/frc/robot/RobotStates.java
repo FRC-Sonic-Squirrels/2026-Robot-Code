@@ -13,6 +13,7 @@ import frc.robot.commands.drive.DriveToPoseHelper;
 import frc.robot.commands.drive.RotateToFaceHelper;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.State;
+import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
 import java.util.function.Supplier;
 
@@ -113,6 +114,7 @@ public class RobotStates {
   private Intake            leftIntake;
   private Intake            rightIntake;
   private DrivetrainWrapper drivetrain;
+  private Shooter           shooter;
 
   private RotateToFaceHelper rtfHelper;
   private DriveToPoseHelper  dtpHelpter;
@@ -120,12 +122,13 @@ public class RobotStates {
   private Pose2d             targetPose = null;
   private Supplier<Boolean>  intaking   = null;
 
-  public void setSubsystems(Intake leftIntake, Intake rightIntake, DrivetrainWrapper drivetrain,
+  public void setSubsystems(Intake leftIntake, Intake rightIntake, Shooter shooter, DrivetrainWrapper drivetrain,
       Supplier<Boolean> intaking) {
     this.leftIntake  = leftIntake;
     this.rightIntake = rightIntake;
     this.drivetrain  = drivetrain;
     this.intaking    = intaking;
+    this.shooter     = shooter;
     dtpHelpter       = new DriveToPoseHelper(this.drivetrain, () -> targetPose, () -> drivetrain.getRawOdometryPose(),
         () -> driveSlow);
     rtfHelper        = new RotateToFaceHelper(this.drivetrain, () -> targetPose.getTranslation(),
@@ -189,6 +192,7 @@ public class RobotStates {
       case None:
         drivetrain.resetVelocityOverride();
         drivetrain.resetRotationOverride();
+        shooter.setGoal(Shooter.Goal.Idle);
         break;
       case Auto:
         // TODO: run the auto state machene
@@ -254,10 +258,9 @@ public class RobotStates {
 
   private void shoot() {
     rtfHelper.execute();
-    // shooter.setAngle()hjmhjmh <- landon did this
-    if (rtfHelper.withinTolerance() /* && shooter.withinTolerance() */) {
-      // pew pew
-    }
+    // tell the shooter how far away we are from the target <- landon did this
+    shooter.setFacingTarget(rtfHelper.withinTolerance());
+    shooter.setGoal(Shooter.Goal.Shooting);
   }
 
   public void setMechState(MechState state) {
