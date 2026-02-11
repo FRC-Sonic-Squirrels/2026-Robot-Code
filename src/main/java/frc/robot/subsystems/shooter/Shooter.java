@@ -355,4 +355,8 @@ public class Shooter extends SubsystemBase {
   public boolean isShooterReady() {
     return isFacingTarget && isFlywheelReady() && isHoodReady();
   }
+
+  public void setState(State state) {
+    this.state = state;
+  }
 }
