@@ -64,6 +64,8 @@ public class Shooter extends SubsystemBase {
   private static final LoggedTunableNumber hoodkG                                  = groupHood.build("kG");
   private static final LoggedTunableNumber hoodClosedLoopMaxVelocityConstraint     = groupHood
       .build("ClosedLoopMaxVelocityConstraint");
+  private static final LoggedTunableNumber hoodMotionMagicConfigs                  = groupHood
+      .build("HoodMotionMagicConfigs");
   private static final LoggedTunableNumber hoodClosedLoopMaxAccelerationConstraint = groupHood
       .build("ClosedLoopMaxAccelerationConstraint");
 

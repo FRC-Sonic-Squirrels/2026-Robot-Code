@@ -19,7 +19,6 @@ import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.TalonFXArmSim;
 import frc.lib.team2930.TalonFXSim;
 import frc.robot.Constants;
-import frc.robot.Constants.ControlMode;
 
 public class ShooterIOSim implements ShooterIO {
   public static class Logs extends AutoRegisterLoggers {
@@ -50,16 +49,15 @@ public class ShooterIOSim implements ShooterIO {
 
   private final ProfiledPIDController pivotFeedback = new ProfiledPIDController(50.0, 0, 0.0, new Constraints(5, 10.0));
 
-  private final PIDController pivotVelController         = new PIDController(60, 0, 0);
-  private final double        pivotTargetVelRadPerSec    = 0.0;
-  private ControlMode         pivotControlMode           = ControlMode.VELOCITY;
-  private Rotation2d          pivotClosedLoopTargetAngle = Constants.zeroRotation2d;
-  private double              pivotControlEffort         = 0.0;
-  private double              kickerVolts                = 0.0;
+  private final PIDController hoodVelController         = new PIDController(60, 0, 0);
+  private final double        hoodTargetVelRadPerSec    = 0.0;
+  private Rotation2d          hoodClosedLoopTargetAngle = Constants.zeroRotation2d;
+  private double              hoodControlEffort         = 0.0;
+  private double              kickerVolts               = 0.0;
 
   private double targetRPM = 0.0;
 
-  private MotionMagicVoltage pivotClosedLoopControl = new MotionMagicVoltage(0);
+  private MotionMagicVoltage hoodClosedLoopControl = new MotionMagicVoltage(0);
 
   private VelocityVoltage flywheelClosedLoopControl = new VelocityVoltage(0);
 
@@ -70,7 +68,6 @@ public class ShooterIOSim implements ShooterIO {
 
   @Override
   public void updateInputs(Inputs inputs) {
-
     hoodArmSim.update(Constants.kDefaultPeriod);
     flywheelMotorSim.update(Constants.kDefaultPeriod);
     kickerMotorSim.update(Constants.kDefaultPeriod);
@@ -103,7 +100,7 @@ public class ShooterIOSim implements ShooterIO {
 
   @Override
   public void setHoodPosition(Rotation2d angle) {
-    hoodArmSim.setControl(pivotClosedLoopControl.withPosition(angle.getRotations()));
+    hoodArmSim.setControl(hoodClosedLoopControl.withPosition(angle.getRotations()));
   }
 
   @Override
