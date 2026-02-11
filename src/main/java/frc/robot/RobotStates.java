@@ -118,10 +118,9 @@ public class RobotStates {
 
   private RotateToFaceHelper rtfHelper;
   private DriveToPoseHelper  dtpHelpter;
-  private boolean            driveSlow      = false;
-  private Pose2d             targetPose     = null;
-  private Supplier<Boolean>  intaking       = null;
-  private boolean            isShooterReady = false;
+  private boolean            driveSlow  = false;
+  private Pose2d             targetPose = null;
+  private Supplier<Boolean>  intaking   = null;
 
   public void setSubsystems(Intake leftIntake, Intake rightIntake, Shooter shooter, DrivetrainWrapper drivetrain,
       Supplier<Boolean> intaking) {
@@ -186,7 +185,6 @@ public class RobotStates {
   public void periodic() {
     periodicCounter = (periodicCounter + 1) % 100;
     logPeriodicCounter.info(periodicCounter);
-    isShooterReady = shooter.isShooterReady();
 
     handleGoalTransition();
     handleIntakeGoalTransition();
@@ -194,7 +192,7 @@ public class RobotStates {
       case None:
         drivetrain.resetVelocityOverride();
         drivetrain.resetRotationOverride();
-        shooter.setState(Shooter.State.Idle);
+        shooter.setGoal(Shooter.State.Idle);
         break;
       case Auto:
         // TODO: run the auto state machene
@@ -262,7 +260,7 @@ public class RobotStates {
     rtfHelper.execute();
     // tell the shooter how far away we are from the target <- landon did this
     shooter.setFacingTarget(rtfHelper.withinTolerance());
-    shooter.setState(Shooter.State.Shooting);
+    shooter.setGoal(Shooter.State.Shooting);
   }
 
   public void setMechState(MechState state) {

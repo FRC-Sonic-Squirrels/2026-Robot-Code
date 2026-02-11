@@ -19,7 +19,7 @@ import java.util.List;
 public class Shooter extends SubsystemBase {
 
   public enum State {
-    Idle, Shooting, Stop
+    Idle, Shooting, Passing, Stop
   }
 
   private static final String ROOT_TABLE = "Shooter";
@@ -133,7 +133,7 @@ public class Shooter extends SubsystemBase {
 
   private final List<PIDTargetMeasurement> hoodTargetMeasurements = new ArrayList<>();
 
-  private State state = State.Idle;
+  private State goal = State.Idle;
 
   private double hoodPidLatency = 0.0;
 
@@ -176,12 +176,12 @@ public class Shooter extends SubsystemBase {
       logPitchDegrees.info(inputs.hoodPosition.getDegrees());
       logTargetPitchDegrees.info(targetHoodPosition.getDegrees());
       logFlywheelRollersDifference.info(inputs.flywheelRPM[1] - inputs.flywheelRPM[0]);
-      logState.info(state);
+      logState.info(goal);
       logTargetDistance.info(distanceFromTarget.in(Units.Meters));
       logFacingTarget.info(isFacingTarget);
       logShooterReady.info(isShooterReady());
 
-      switch (state) {
+      switch (goal) {
         case Idle:
           setFlywheelRPM(ShooterConstants.Flywheel.IDLE_FLYWHEEL_RPM);
           setHoodPosition(ShooterConstants.Hood.IDLE_ANGLE_RAD);
@@ -196,6 +196,9 @@ public class Shooter extends SubsystemBase {
           } else {
             setKickerVelocity(0);
           }
+          break;
+
+        case Passing:
           break;
 
         case Stop:
@@ -356,7 +359,7 @@ public class Shooter extends SubsystemBase {
     return isFacingTarget && isFlywheelReady() && isHoodReady();
   }
 
-  public void setState(State state) {
-    this.state = state;
+  public void setGoal(State goal) {
+    this.goal = goal;
   }
 }
