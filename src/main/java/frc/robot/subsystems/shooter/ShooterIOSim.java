@@ -9,28 +9,26 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import frc.lib.team2930.AutoRegisterLoggers;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.TalonFXSim;
 import frc.robot.Constants;
 import frc.robot.Constants.ControlMode;
 
 public class ShooterIOSim implements ShooterIO {
-  public static final LoggerEntry.Decimal                log_error                 = Shooter.logGroup
-      .buildDecimal("SIM_error");
-  public static final LoggerEntry.Decimal                log_feedForward           = Shooter.logGroup
-      .buildDecimal("SIM_feedForward");
-  public static final LoggerEntry.Decimal                log_outputVoltage         = Shooter.logGroup
-      .buildDecimal("SIM_outputVoltage");
-  public static final LoggerEntry.Decimal                log_targetVelRadPerSec    = Shooter.logGroup
-      .buildDecimal("SIM_targetVelRadPerSec");
-  public static final LoggerEntry.Decimal                log_currentVelRadPerSec   = Shooter.logGroup
-      .buildDecimal("SIM_currentVelRadPerSec");
-  public static final LoggerEntry.Decimal                log_pitchController       = Shooter.logGroup
-      .buildDecimal("SIM_pitchController");
-  public static final LoggerEntry.EnumValue<ControlMode> log_pivotControlMode      = Shooter.logGroup
-      .buildEnum("SIM_pivotControlMode");
-  public static final LoggerEntry.Decimal                log_targetPositionDegrees = Shooter.logGroup
-      .buildDecimal("SIM_targetPositionDegrees");
+
+  public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.Decimal                error;
+    public LoggerEntry.Decimal                feedForward;
+    public LoggerEntry.Decimal                outputVoltage;
+    public LoggerEntry.Decimal                targetVelRadPerSec;
+    public LoggerEntry.Decimal                currentVelRadPerSec;
+    public LoggerEntry.Decimal                pitchController;
+    public LoggerEntry.EnumValue<ControlMode> pivotControlMode;
+    public LoggerEntry.Decimal                targetPositionDegrees;
+  }
+
+  private static final Logs logs = Shooter.logs.group.newAutoLogger(Logs.class, "SIM");
 
   private final SingleJointedArmSim pivot = new SingleJointedArmSim(DCMotor.getFalcon500Foc(1),
       Constants.ShooterConstants.Hood.GEARING,
@@ -83,7 +81,7 @@ public class ShooterIOSim implements ShooterIO {
       pivotControlEffort = pivotFeedback.calculate(inputs.hoodPosition.getRadians(),
           pivotClosedLoopTargetAngle.getRadians()) + ff;
 
-      log_error.info(pivotFeedback.getPositionError());
+      logs.error.info(pivotFeedback.getPositionError());
     } else if (pivotControlMode.equals(ControlMode.VELOCITY)) {
 
       pivotControlEffort = pivotVelController.calculate(pivot.getVelocityRadPerSec(), pivotTargetVelRadPerSec) + ff;
@@ -93,15 +91,15 @@ public class ShooterIOSim implements ShooterIO {
       pivotControlEffort = pivotOpenLoopVolts;
     }
 
-    log_feedForward.info(ff);
+    logs.feedForward.info(ff);
 
     pivot.setInputVoltage(MathUtil.clamp(pivotControlEffort, -12.0, 12.0));
-    log_outputVoltage.info(MathUtil.clamp(pivotControlEffort, -12.0, 12.0));
-    log_targetVelRadPerSec.info(pivotTargetVelRadPerSec);
-    log_currentVelRadPerSec.info(pivot.getVelocityRadPerSec());
-    log_pitchController.info(pivotVelController.calculate(pivot.getVelocityRadPerSec(), pivotTargetVelRadPerSec));
-    log_pivotControlMode.info(pivotControlMode);
-    log_targetPositionDegrees.info(pivotClosedLoopTargetAngle.getDegrees());
+    logs.outputVoltage.info(MathUtil.clamp(pivotControlEffort, -12.0, 12.0));
+    logs.targetVelRadPerSec.info(pivotTargetVelRadPerSec);
+    logs.currentVelRadPerSec.info(pivot.getVelocityRadPerSec());
+    logs.pitchController.info(pivotVelController.calculate(pivot.getVelocityRadPerSec(), pivotTargetVelRadPerSec));
+    logs.pivotControlMode.info(pivotControlMode);
+    logs.targetPositionDegrees.info(pivotClosedLoopTargetAngle.getDegrees());
   }
 
   @Override

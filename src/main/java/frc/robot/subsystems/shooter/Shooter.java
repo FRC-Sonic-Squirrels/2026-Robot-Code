@@ -26,42 +26,35 @@ public class Shooter extends SubsystemBase {
 
   private static final ExecutionTiming timing = new ExecutionTiming(ROOT_TABLE);
 
-  static final LoggerGroup         logGroup  = LoggerGroup.build(ROOT_TABLE);
-  private static final LoggerGroup logInputs = logGroup.subgroup("Inputs");
+  public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.EnumValue<Goal> state;
 
-  private static final LoggerEntry.Decimal      logInputs_hoodPosition           = logInputs
-      .buildDecimal("HoodPosition");
-  private static final LoggerEntry.Decimal      logInputs_hoodVelocityRadsPerSec = logInputs
-      .buildDecimal("HoodVelocityRadsPerSec");
-  private static final LoggerEntry.Decimal      logInputs_hoodAppliedVolts       = logInputs
-      .buildDecimal("HoodAppliedVolts");
-  private static final LoggerEntry.Decimal      logInputs_hoodCurrentAmps        = logInputs
-      .buildDecimal("HoodCurrentAmps");
-  private static final LoggerEntry.DecimalArray logInputs_flywheelRPM            = logInputs
-      .buildDecimalArray("FlywheelRPM");
-  private static final LoggerEntry.DecimalArray logInputs_flywheelAppliedVolts   = logInputs
-      .buildDecimalArray("FlywheelAppliedVolts");
-  private static final LoggerEntry.DecimalArray logInputs_flywheelCurrentAmps    = logInputs
-      .buildDecimalArray("FlywheelCurrentAmps");
-  private static final LoggerEntry.Decimal      logInputs_kickerAppliedVolts     = logInputs
-      .buildDecimal("KickerAppliedVolts");
-  private static final LoggerEntry.Decimal      logInputs_kickerCurrentAmps      = logInputs
-      .buildDecimal("KickerCurrentAmps");
-  private static final LoggerEntry.Decimal      logInputs_kickerVelocityRPM      = logInputs
-      .buildDecimal("KickerVelocityRPM");
-  private static final LoggerEntry.DecimalArray logInputs_tempsCelcius           = logInputs
-      .buildDecimalArray("TempsCelcius");
+    public LoggerEntry.Decimal pitchDegrees;
+    public LoggerEntry.Decimal targetPitchDegrees;
+    public LoggerEntry.Decimal hoodPIDLatency;
+    public LoggerEntry.Decimal flywheelRollersDifference;
+    public LoggerEntry.Decimal targetDistance;
+    public LoggerEntry.Bool    facingTarget;
+    public LoggerEntry.Bool    shooterReady;
 
-  private static final LoggerEntry.EnumValue<Goal> logState = logGroup.buildEnum("State");
+    public InputsLogs inputs;
+  }
 
-  private static final LoggerEntry.Decimal logPitchDegrees              = logGroup.buildDecimal("PitchDegrees");
-  private static final LoggerEntry.Decimal logTargetPitchDegrees        = logGroup.buildDecimal("TargetPitchDegrees");
-  private static final LoggerEntry.Decimal logHoodPIDLatency            = logGroup.buildDecimal("HoodPIDLatency");
-  private static final LoggerEntry.Decimal logFlywheelRollersDifference = logGroup
-      .buildDecimal("FlywheelRollersDifference");
-  private static final LoggerEntry.Decimal logTargetDistance            = logGroup.buildDecimal("DistanceFromTarget");
-  private static final LoggerEntry.Bool    logFacingTarget              = logGroup.buildBoolean("IsFacingTarget");
-  private static final LoggerEntry.Bool    logShooterReady              = logGroup.buildBoolean("IsShooterReady");
+  public static class InputsLogs extends AutoRegisterLoggers {
+    public LoggerEntry.Decimal      hoodPosition;
+    public LoggerEntry.Decimal      hoodVelocityRadsPerSec;
+    public LoggerEntry.Decimal      hoodAppliedVolts;
+    public LoggerEntry.Decimal      hoodCurrentAmps;
+    public LoggerEntry.DecimalArray flywheelRPM;
+    public LoggerEntry.DecimalArray flywheelAppliedVolts;
+    public LoggerEntry.DecimalArray flywheelCurrentAmps;
+    public LoggerEntry.Decimal      kickerAppliedVolts;
+    public LoggerEntry.Decimal      kickerCurrentAmps;
+    public LoggerEntry.Decimal      kickerVelocityRPM;
+    public LoggerEntry.DecimalArray tempsCelcius;
+  }
+
+  public static final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
   public static final TunableNumberGroup group = new TunableNumberGroup(ROOT_TABLE);
 
@@ -125,7 +118,7 @@ public class Shooter extends SubsystemBase {
   }
 
   private final ShooterIO        io;
-  private final ShooterIO.Inputs inputs = new ShooterIO.Inputs(logGroup);
+  private final ShooterIO.Inputs inputs = new ShooterIO.Inputs(logs.group);
 
   // Creates a new flat moving average filter
   // Average will be taken over the last 20 samples
@@ -161,25 +154,25 @@ public class Shooter extends SubsystemBase {
   public void periodic() {
     try (var ignored = timing.start()) {
       io.updateInputs(inputs);
-      logInputs_hoodPosition.info(inputs.hoodPosition);
-      logInputs_hoodVelocityRadsPerSec.info(inputs.hoodVelocityRadsPerSec);
-      logInputs_hoodAppliedVolts.info(inputs.hoodAppliedVolts);
-      logInputs_hoodCurrentAmps.info(inputs.hoodCurrentAmps);
-      logInputs_flywheelRPM.info(inputs.flywheelRPM);
-      logInputs_flywheelAppliedVolts.info(inputs.flywheelAppliedVolts);
-      logInputs_flywheelCurrentAmps.info(inputs.flywheelCurrentAmps);
-      logInputs_kickerAppliedVolts.info(inputs.kickerAppliedVolts);
-      logInputs_kickerCurrentAmps.info(inputs.kickerCurrentAmps);
-      logInputs_kickerVelocityRPM.info(inputs.kickerVelocityRPM);
-      logInputs_tempsCelcius.info(inputs.tempsCelcius);
+      logs.inputs.hoodPosition.info(inputs.hoodPosition);
+      logs.inputs.hoodVelocityRadsPerSec.info(inputs.hoodVelocityRadsPerSec);
+      logs.inputs.hoodAppliedVolts.info(inputs.hoodAppliedVolts);
+      logs.inputs.hoodCurrentAmps.info(inputs.hoodCurrentAmps);
+      logs.inputs.flywheelRPM.info(inputs.flywheelRPM);
+      logs.inputs.flywheelAppliedVolts.info(inputs.flywheelAppliedVolts);
+      logs.inputs.flywheelCurrentAmps.info(inputs.flywheelCurrentAmps);
+      logs.inputs.kickerAppliedVolts.info(inputs.kickerAppliedVolts);
+      logs.inputs.kickerCurrentAmps.info(inputs.kickerCurrentAmps);
+      logs.inputs.kickerVelocityRPM.info(inputs.kickerVelocityRPM);
+      logs.inputs.tempsCelcius.info(inputs.tempsCelcius);
 
-      logPitchDegrees.info(inputs.hoodPosition.getDegrees());
-      logTargetPitchDegrees.info(targetHoodPosition.getDegrees());
-      logFlywheelRollersDifference.info(inputs.flywheelRPM[1] - inputs.flywheelRPM[0]);
-      logState.info(goal);
-      logTargetDistance.info(distanceFromTarget.in(Units.Meters));
-      logFacingTarget.info(isFacingTarget);
-      logShooterReady.info(isShooterReady());
+      logs.pitchDegrees.info(inputs.hoodPosition.getDegrees());
+      logs.targetPitchDegrees.info(targetHoodPosition.getDegrees());
+      logs.flywheelRollersDifference.info(inputs.flywheelRPM[1] - inputs.flywheelRPM[0]);
+      logs.state.info(goal);
+      logs.targetDistance.info(distanceFromTarget.in(Units.Meters));
+      logs.facingTarget.info(isFacingTarget);
+      logs.shooterReady.info(isShooterReady());
 
       switch (goal) {
         case Idle:
@@ -228,7 +221,7 @@ public class Shooter extends SubsystemBase {
             it.remove();
           }
         }
-        logHoodPIDLatency.info(hoodPidLatency);
+        logs.hoodPIDLatency.info(hoodPidLatency);
       }
 
       var hc = hashCode();
