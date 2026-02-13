@@ -695,7 +695,9 @@ public class LoggerGroup {
     var group = subgroup(name);
 
     var instance = Reflection.newInstance(clz);
-    var fields   = Reflection.collectFields(clz);
+    instance.group = group;
+
+    var fields = Reflection.collectFields(clz);
     fields.forEach((f, v) -> {
       var accessor = new Reflection.FieldAccessor(v);
 
@@ -737,6 +739,8 @@ public class LoggerGroup {
         accessor.set(instance, group.buildBytes(logName, frequency));
       } else if (t == LoggerEntry.Mechanism.class) {
         accessor.set(instance, group.buildMechanism2d(logName, frequency));
+      } else if (t == LoggerEntry.EnumValue.class) {
+        accessor.set(instance, group.buildEnum(logName, frequency));
       } else if (t == LoggerEntry.Struct.class) {
         var structClz = accessor.getTypeParameter(0);
         accessor.set(instance, group.buildStruct(Reflection.getRawType(structClz), logName, frequency));

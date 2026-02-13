@@ -140,7 +140,7 @@ public class Shooter extends SubsystemBase {
   private Rotation2d targetHoodPosition = Constants.zeroRotation2d;
   private double     targetFlywheelRPM  = 0.0;
 
-  private Distance distanceFromTarget;
+  private Distance distanceFromTarget = Distance.ofRelativeUnits(100, Units.Meters);
   private boolean  isFacingTarget;
 
   /** Creates a new ShooterSubsystem. */
