@@ -10,7 +10,6 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -33,8 +32,6 @@ public class IntakeIOReal implements IntakeIO {
   private final StatusSignal<Voltage>         rollerAppliedVoltage;
   private final StatusSignal<AngularVelocity> rollerVelocity;
 
-  private final VoltageOut rollerOpenLoopControl = new VoltageOut(0.0).withEnableFOC(true);
-
   private final MotionMagicVelocityVoltage rollerClosedLoopControl = new MotionMagicVelocityVoltage(0)
       .withEnableFOC(true);
 
@@ -45,7 +42,6 @@ public class IntakeIOReal implements IntakeIO {
   private final StatusSignal<AngularVelocity> pivotVelocity;
 
   private final MotionMagicVoltage pivotClosedLoopControl = new MotionMagicVoltage(0.0).withEnableFOC(true);
-  private final VoltageOut         pivotOpenLoopControl   = new VoltageOut(0.0).withEnableFOC(true);
 
   private final TalonFX pivotMotor;
 
@@ -148,11 +144,6 @@ public class IntakeIOReal implements IntakeIO {
   }
 
   @Override
-  public void setRollerVoltage(double volts) {
-    rollerMotor.setControl(rollerOpenLoopControl.withOutput(volts));
-  }
-
-  @Override
   public void setRollerVelocity(double revPerMin) {
     rollerMotor.setControl(rollerClosedLoopControl.withVelocity(Units.RPM.of(revPerMin).in(Units.RotationsPerSecond)));
   }
@@ -195,11 +186,6 @@ public class IntakeIOReal implements IntakeIO {
 
     pivotMotor.getConfigurator().apply(slot0Configs);
     pivotMotor.getConfigurator().apply(mmConfigs);
-  }
-
-  @Override
-  public void setPivotVoltage(double volts) {
-    pivotMotor.setControl(pivotOpenLoopControl.withOutput(volts));
   }
 
   @Override

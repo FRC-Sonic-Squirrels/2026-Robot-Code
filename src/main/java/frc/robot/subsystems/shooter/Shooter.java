@@ -64,6 +64,8 @@ public class Shooter extends SubsystemBase {
   private static final LoggedTunableNumber hoodkG                                  = groupHood.build("kG");
   private static final LoggedTunableNumber hoodClosedLoopMaxVelocityConstraint     = groupHood
       .build("ClosedLoopMaxVelocityConstraint");
+  private static final LoggedTunableNumber hoodMotionMagicConfigs                  = groupHood
+      .build("HoodMotionMagicConfigs");
   private static final LoggedTunableNumber hoodClosedLoopMaxAccelerationConstraint = groupHood
       .build("ClosedLoopMaxAccelerationConstraint");
 
@@ -304,10 +306,6 @@ public class Shooter extends SubsystemBase {
 
   public boolean isHoodIsAtTarget(Rotation2d target, Rotation2d tolerance) {
     return Math.abs(inputs.hoodPosition.getRadians() - target.getRadians()) <= tolerance.getRadians();
-  }
-
-  public void setKickerPercentOut(double percent) {
-    io.setKickerVoltage(percent * Constants.MAX_VOLTAGE);
   }
 
   public double getKickerPercentOut() {

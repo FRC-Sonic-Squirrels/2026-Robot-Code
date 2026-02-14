@@ -405,6 +405,9 @@ public static class ShooterConstants {
     public static final Distance SHOOTER_LENGTH = Units.Inches.of(12.0);
 
     public static class Hood {
+
+      public static final double MOI = 5.0;
+
       public static final double GEARING = 125.0;
 
       public static final Rotation2d MIN_ANGLE_RAD = Rotation2d.fromDegrees(12.0);
