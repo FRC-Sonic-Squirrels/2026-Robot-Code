@@ -4,7 +4,7 @@ import choreo.Choreo;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
 import edu.wpi.first.math.geometry.Pose2d;
-import frc.lib.team2930.AllianceFlipUtil;
+import frc.lib.team2930.GeometryUtil;
 import frc.robot.Constants;
 import frc.robot.autonomous.helpers.ChoreoHelper;
 import java.util.ArrayList;
@@ -47,7 +47,7 @@ public record ChoreoTrajectoryWithName(String name, Trajectory<SwerveSample> sta
 
   public SwerveSample flipSample(SwerveSample sample) {
     Pose2d   oldPoint         = sample.getPose();
-    Pose2d   newPoint         = AllianceFlipUtil.rotatePose2DAroundCenterPoint(oldPoint);
+    Pose2d   newPoint         = GeometryUtil.rotatePose2DAroundCenterPoint(oldPoint);
     double[] newModuleForcesX = new double[sample.moduleForcesX().length];
     double[] newModuleForcesY = new double[sample.moduleForcesY().length];
     for (int i = 0; i < 4; i++) {

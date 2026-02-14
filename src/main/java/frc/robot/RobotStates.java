@@ -2,13 +2,11 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.lib.team2930.AllianceFlipUtil;
-import frc.lib.team2930.GeometryUtil;
+import frc.lib.team2930.AllianceAwareTranslation2d;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 import frc.robot.Constants.FieldConstants;
@@ -201,14 +199,13 @@ public class RobotStates {
         // TODO: run the auto state machene
         break;
       case Score:
-        targetPose = AllianceFlipUtil
-            .flipPoseForAlliance(new Pose2d(FieldConstants.BLUE_HUB_CENTER_POSE, Rotation2d.kZero));
+        targetPose = FieldConstants.HUB_CENTER_POSE.getPose2d();
         shoot();
         break;
       case Pass:
-        targetPose = new Pose2d(AllianceFlipUtil.getClosestTranslation(
-            new Translation2d[] { FieldConstants.RIGHT_PASS_AIM_POINT, FieldConstants.LEFT_PASS_AIM_POINT },
-            drivetrain.getRawOdometryPose()), Rotation2d.kZero);
+        targetPose = new Pose2d(frc.lib.team2930.GeometryUtil.getClosestTranslation(new AllianceAwareTranslation2d[] {
+            FieldConstants.RIGHT_PASS_AIM_POINT, FieldConstants.LEFT_PASS_AIM_POINT }, drivetrain.getRawOdometryPose()),
+            Rotation2d.kZero);
         shoot();
         break;
       case Climb:
@@ -219,17 +216,17 @@ public class RobotStates {
     }
     switch (intakeGoal) {
       case Stow:
-        rightIntake.setState(intakeState.Stow);
-        leftIntake.setState(intakeState.Stow);
+        rightIntake.setState(Intake.State.Stow);
+        leftIntake.setState(Intake.State.Stow);
       case LeftIntake:
-        rightIntake.setState(intakeState.Stow);
+        rightIntake.setState(Intake.State.Stow);
         if (rightIntake.isStowed()) {
-          leftIntake.setState(intakeState.Intake);
+          leftIntake.setState(Intake.State.Intake);
         }
       case RightIntake:
-        leftIntake.setState(intakeState.Stow);
+        leftIntake.setState(Intake.State.Stow);
         if (leftIntake.isStowed()) {
-          rightIntake.setState(intakeState.Intake);
+          rightIntake.setState(Intake.State.Intake);
         }
     }
 
