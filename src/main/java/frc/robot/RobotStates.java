@@ -48,8 +48,6 @@ public class RobotStates {
   // Logging
 
   public static class SubsystemsInTargetStatesLogs extends AutoRegisterLoggers {
-    public LoggerEntry.Bool intakeInTargetState;
-    public LoggerEntry.Bool mechInTargetState;
     public LoggerEntry.Text goal;
     public LoggerEntry.Text wantedGoal;
 
@@ -82,8 +80,6 @@ public class RobotStates {
   public boolean endEffectorInUse;
   public boolean mechanismInUse;
   public boolean intakeInUse;
-
-  public boolean coralExpectedInIntake = true;
 
   private RobotGoal goal       = RobotGoal.None;
   private RobotGoal wantedGoal = RobotGoal.None;
