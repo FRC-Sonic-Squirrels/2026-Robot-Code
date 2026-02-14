@@ -483,6 +483,12 @@ public class RobotContainer {
             aprilTagLayout.getTagPose(15).get().toPose2d().transformBy(new Transform2d(
                 Units.Inches.of(60).in(Units.Meters), Units.Inches.of(15).in(Units.Meters), Rotation2d.kZero)),
             () -> drivetrainWrapper.getHubPoseEstimatorPose(true)));
+    driverController.registerTrigger(XboxControllerWrapper.Button.leftTrigger, "Shoot")
+        .onTrue(Commands.runOnce(() -> robotStates.setRobotGoal(RobotGoal.Score)))
+        .onFalse(Commands.runOnce(() -> robotStates.setRobotGoal(RobotGoal.None)));
+    driverController.registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Pass")
+        .onTrue(Commands.runOnce(() -> robotStates.setRobotGoal(RobotGoal.Pass)))
+        .onFalse(Commands.runOnce(() -> robotStates.setRobotGoal(RobotGoal.None)));
 
     // ---------- OPERATOR CONTROLS -----------
 
