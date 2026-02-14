@@ -443,13 +443,12 @@ public static class ShooterConstants {
     }
 
     public static class Interpolation {
-      public static final InterpolatingDoubleTreeMap HOOD_ANGLE_FOR_HUB_DISTANCE =
-          new InterpolatingDoubleTreeMap();
-      public static final InterpolatingDoubleTreeMap RPM_FOR_HUB_DISTANCE =
-          new InterpolatingDoubleTreeMap();
+      public static final InterpolatingDoubleTreeMap HOOD_ANGLE_FOR_HUB_DISTANCE;
+      public static final InterpolatingDoubleTreeMap RPM_FOR_HUB_DISTANCE;
 
-      public Interpolation() {
+      static {
 
+        HOOD_ANGLE_FOR_HUB_DISTANCE = new InterpolatingDoubleTreeMap();
         HOOD_ANGLE_FOR_HUB_DISTANCE.put(1.0, 61.80);
         HOOD_ANGLE_FOR_HUB_DISTANCE.put(1.5, 51.50);
         HOOD_ANGLE_FOR_HUB_DISTANCE.put(2.0, 42.75);
@@ -463,6 +462,7 @@ public static class ShooterConstants {
         HOOD_ANGLE_FOR_HUB_DISTANCE.put(6.0, 23.60);
         HOOD_ANGLE_FOR_HUB_DISTANCE.put(6.5, 22.80);
 
+        RPM_FOR_HUB_DISTANCE = new InterpolatingDoubleTreeMap();
         RPM_FOR_HUB_DISTANCE.put(1.0, 2000.0);
         RPM_FOR_HUB_DISTANCE.put(2.0, 3000.0);
         RPM_FOR_HUB_DISTANCE.put(3.0, 4500.0);
