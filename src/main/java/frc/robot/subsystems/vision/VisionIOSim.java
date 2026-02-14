@@ -7,6 +7,7 @@ import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.networktables.DoubleArraySubscriber;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.networktables.StructSubscriber;
 import frc.robot.configs.RobotConfig;
 import org.photonvision.PhotonCamera;
 import org.photonvision.simulation.PhotonCameraSim;
@@ -58,8 +59,8 @@ public class VisionIOSim implements VisionIO {
      * https://github.com/Mechanical-Advantage/RobotCode2022/blob/main/src/main/java
      * /frc/robot/subsystems/vision /VisionIOPhotonVision.java
      */
-    DoubleArraySubscriber targetPoseSub = inst.getTable("/photonvision/" + networkName)
-        .getDoubleArrayTopic("targetPose").subscribe(new double[0]);
+    var targetPoseSub = inst.getTable("/photonvision/" + networkName)
+        .getStructTopic("targetPose", Transform3d.struct).subscribe(null);
 
     inst.addListener(targetPoseSub, EnumSet.of(NetworkTableEvent.Kind.kValueAll), event -> {
       for (PhotonPipelineResult result : camera.getAllUnreadResults()) {
