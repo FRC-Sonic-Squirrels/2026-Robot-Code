@@ -6,6 +6,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.networktables.NetworkTableEvent;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import frc.robot.Constants;
 import frc.robot.configs.RobotConfig;
 import org.photonvision.PhotonCamera;
 import org.photonvision.simulation.PhotonCameraSim;
@@ -46,7 +47,9 @@ public class VisionIOSim implements VisionIO {
 
     visionSim.addCamera(cameraSim, robotToCamera);
 
-    cameraSim.enableDrawWireframe(true);
+    if (Constants.unusedCode) {
+      cameraSim.enableDrawWireframe(true);
+    }
     cameraSim.enableProcessedStream(true);
 
     NetworkTableInstance inst = NetworkTableInstance.getDefault();
