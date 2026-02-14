@@ -9,16 +9,14 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.lib.team2930.AutoRegisterLoggers;
-import frc.lib.team2930.LoggerEntry;
-import frc.lib.team2930.LoggerGroup;
-import frc.lib.team2930.TunableNumberGroup;
+import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
+
 import java.util.function.Supplier;
 
 public class RotateToAngle extends Command {
-  private static final String ROOT_TABLE = "RotateToAngle";
+  private final String ROOT_TABLE = "RotateToAngle";
 
   public static class Logs extends AutoRegisterLoggers {
     public LoggerEntry.Decimal rotVel;
@@ -27,13 +25,23 @@ public class RotateToAngle extends Command {
     public LoggerEntry.Decimal positionErrorDeg;
   }
 
-  public static final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
+  public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
-  private static final TunableNumberGroup  groupTunable     = new TunableNumberGroup(ROOT_TABLE);
-  private static final LoggedTunableNumber tunableKP        = groupTunable.build("kP", 4.9);
-  private static final LoggedTunableNumber cruiseVelocity   = groupTunable.build("cruiseVelocity", 2 * Math.PI);
-  private static final LoggedTunableNumber maxAcceleration  = groupTunable.build("maxAcceleration", 4 * Math.PI);
-  private static final LoggedTunableNumber toleranceDegrees = groupTunable.build("toleranceDegrees", 1);
+  public static class Tunables extends AutoRegisterTunables {
+    @TunableEntry(defaultValue = 4.9)
+    public LoggedTunableNumber KP;
+
+    @TunableEntry(defaultValue = 2 * Math.PI)
+    public LoggedTunableNumber cruiseVelocity;
+
+    @TunableEntry(defaultValue = 4 * Math.PI)
+    public LoggedTunableNumber maxAcceleration;
+
+    @TunableEntry(defaultValue = 1)
+    public LoggedTunableNumber toleranceDegrees;
+  }
+
+  private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
 
   private final DrivetrainWrapper     wrapper;
   private final Supplier<Rotation2d>  angle;
@@ -53,8 +61,8 @@ public class RotateToAngle extends Command {
   public void initialize() {
     rotationalPID.reset(currentPose.get().getRotation().getRadians(),
         wrapper.getFieldRelativeVelocities().getRotation().getRadians());
-    rotationalPID.setP(tunableKP.get());
-    rotationalPID.setConstraints(new Constraints(cruiseVelocity.get(), maxAcceleration.get()));
+    rotationalPID.setP(tunables.KP.get());
+    rotationalPID.setConstraints(new Constraints(tunables.cruiseVelocity.get(), tunables.maxAcceleration.get()));
     rotationalPID.enableContinuousInput(-Math.PI, Math.PI);
   }
 
@@ -85,7 +93,7 @@ public class RotateToAngle extends Command {
   }
 
   public boolean withinTolerance() {
-    return Math.abs(Math.toDegrees(rotationalPID.getPositionError())) <= toleranceDegrees.get();
+    return Math.abs(Math.toDegrees(rotationalPID.getPositionError())) <= tunables.toleranceDegrees.get();
   }
 
   public double getError() {

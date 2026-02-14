@@ -17,10 +17,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.lib.team2930.AutoRegisterLoggers;
-import frc.lib.team2930.LoggerEntry;
-import frc.lib.team2930.LoggerGroup;
-import frc.lib.team2930.TunableNumberGroup;
+import frc.lib.team2930.*;
 import frc.lib.team6328.GeomUtil;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
@@ -28,7 +25,7 @@ import frc.robot.subsystems.swerve.DrivetrainWrapper;
 import java.util.function.Supplier;
 
 public class DriveToPose extends Command {
-  private static final String ROOT_TABLE = "DriveToPose";
+  private final String ROOT_TABLE = "DriveToPose";
 
   public static class Logs extends AutoRegisterLoggers {
     public LoggerEntry.Decimal        distanceMeasured;
@@ -43,45 +40,36 @@ public class DriveToPose extends Command {
     public LoggerEntry.Struct<Pose2d> goal;
   }
 
-  public static final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
+  public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
-  private static final TunableNumberGroup group = new TunableNumberGroup(ROOT_TABLE);
+  public static class Tunables extends AutoRegisterTunables {
+    @TunableEntry(defaultValue = 3.0)
+    public LoggedTunableNumber driveKP;
+    @TunableEntry(defaultValue = 0.01)
+    public LoggedTunableNumber driveKD;
 
-  private static final LoggedTunableNumber driveKp              = group.build("DriveKp");
-  private static final LoggedTunableNumber driveKd              = group.build("DriveKd");
-  private static final LoggedTunableNumber thetaKp              = group.build("ThetaKp");
-  private static final LoggedTunableNumber thetaKd              = group.build("ThetaKd");
-  private static final LoggedTunableNumber driveMaxVelocity     = group.build("DriveMaxVelocity");
-  private static final LoggedTunableNumber driveMaxVelocitySlow = group.build("DriveMaxVelocitySlow");
-  private static final LoggedTunableNumber driveMaxAcceleration = group.build("DriveMaxAcceleration");
-  private static final LoggedTunableNumber thetaMaxVelocity     = group.build("ThetaMaxVelocity");
-  private static final LoggedTunableNumber thetaMaxVelocitySlow = group.build("ThetaMaxVelocitySlow");
-  private static final LoggedTunableNumber thetaMaxAcceleration = group.build("ThetaMaxAcceleration");
-  private static final LoggedTunableNumber driveTolerance       = group.build("DriveTolerance");
-  private static final LoggedTunableNumber driveToleranceSlow   = group.build("DriveToleranceSlow");
-  private static final LoggedTunableNumber thetaTolerance       = group.build("ThetaTolerance");
-  private static final LoggedTunableNumber thetaToleranceSlow   = group.build("ThetaToleranceSlow");
-  private static final LoggedTunableNumber ffMinRadius          = group.build("FFMinRadius");
-  private static final LoggedTunableNumber ffMaxRadius          = group.build("FFMaxRadius");
+    @TunableEntry(defaultValue = 5.0)
+    public LoggedTunableNumber thetaKP;
 
-  static {
-    driveKp.initDefault(3.0);
-    driveKd.initDefault(0.1);
-    thetaKp.initDefault(5.0);
-    thetaKd.initDefault(0.0);
-    driveMaxVelocity.initDefault(5);
-    driveMaxVelocitySlow.initDefault(Units.Inches.of(50.0).in(Units.Meters));
-    driveMaxAcceleration.initDefault(Units.Inches.of(118.0).in(Units.Meters));
-    thetaMaxVelocity.initDefault(Math.toRadians(360.0));
-    thetaMaxVelocitySlow.initDefault(Math.toRadians(90.0));
-    thetaMaxAcceleration.initDefault(Math.toRadians(720.0));
-    driveTolerance.initDefault(0.05);
-    driveToleranceSlow.initDefault(0.05);
-    thetaTolerance.initDefault(0.02);
-    thetaToleranceSlow.initDefault(Math.toRadians(3.0));
-    ffMinRadius.initDefault(0.0);
-    ffMaxRadius.initDefault(1);
+    @TunableEntry(defaultValue = 0.0)
+    public LoggedTunableNumber thetaKD;
+
+    @TunableEntry(defaultValue = 5.0)
+    public LoggedTunableNumber driveMaxVelocity;
+    public LoggedTunableNumber driveMaxVelocitySlow;
+    public LoggedTunableNumber driveMaxAcceleration;
+    public LoggedTunableNumber thetaMaxVelocity;
+    public LoggedTunableNumber thetaMaxVelocitySlow;
+    public LoggedTunableNumber thetaMaxAcceleration;
+    public LoggedTunableNumber driveTolerance;
+    public LoggedTunableNumber driveToleranceSlow;
+    public LoggedTunableNumber thetaTolerance;
+    public LoggedTunableNumber thetaToleranceSlow;
+    public LoggedTunableNumber ffMinRadius;
+    public LoggedTunableNumber ffMaxRadius;
   }
+
+  private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
 
   private final DrivetrainWrapper drive;
   private final boolean           slowMode;
@@ -102,54 +90,33 @@ public class DriveToPose extends Command {
 
   /** Drives to the specified pose under full software control. */
   public DriveToPose(DrivetrainWrapper drive, boolean slowMode, Pose2d pose, Supplier<Pose2d> currentPose) {
-    this(drive, slowMode, () -> pose, currentPose, true, () -> true, driveTolerance.get());
-  }
-
-  /** Drives to the specified pose under full software control. */
-  public DriveToPose(DrivetrainWrapper drive, Supplier<Pose2d> poseSupplier, Supplier<Pose2d> currentRobotPose,
-      Supplier<Boolean> move, double driveTolerance) {
-    this(drive, false, poseSupplier, currentRobotPose, true, move, driveTolerance);
-  }
-
-  /** Drives to the specified pose under full software control. */
-  public DriveToPose(DrivetrainWrapper drive, Supplier<Pose2d> poseSupplier, Supplier<Pose2d> currentRobotPose,
-      Supplier<Boolean> move) {
-    this(drive, false, poseSupplier, currentRobotPose, true, move, driveTolerance.get());
-  }
-
-  /** Drives to the specified pose under full software control. */
-  public DriveToPose(DrivetrainWrapper drive, Supplier<Pose2d> poseSupplier, Supplier<Pose2d> currentRobotPose,
-      double driveTolerance) {
-    this(drive, false, poseSupplier, currentRobotPose, true, () -> true, driveTolerance);
-  }
-
-  /** Drives to the specified pose under full software control. */
-  public DriveToPose(DrivetrainWrapper drive, Supplier<Pose2d> poseSupplier, Supplier<Pose2d> currentRobotPose) {
-    this(drive, false, poseSupplier, currentRobotPose, true, () -> true, driveTolerance.get());
-  }
-
-  /** Drives to the specified pose under full software control. */
-  public DriveToPose(DrivetrainWrapper drive, Supplier<Pose2d> poseSupplier, Supplier<Pose2d> currentRobotPose,
-      boolean finish, double driveTolerance) {
-    this(drive, false, poseSupplier, currentRobotPose, finish, () -> true, driveTolerance);
-  }
-
-  /** Drives to the specified pose under full software control. */
-  public DriveToPose(DrivetrainWrapper drive, Supplier<Pose2d> poseSupplier, Supplier<Pose2d> currentRobotPose,
-      boolean finish) {
-    this(drive, false, poseSupplier, currentRobotPose, finish, () -> true, driveTolerance.get());
+    this(drive, slowMode, () -> pose, currentPose, true, () -> true);
   }
 
   /** Drives to the specified pose under full software control. */
   public DriveToPose(DrivetrainWrapper drive, boolean slowMode, Supplier<Pose2d> poseSupplier,
-      Supplier<Pose2d> currentRobotPose, boolean finish, Supplier<Boolean> move, double driveTolerance) {
+      Supplier<Pose2d> currentRobotPose, boolean finish, Supplier<Boolean> move) {
     this.drive               = drive;
     this.slowMode            = slowMode;
     this.poseSupplier        = poseSupplier;
     this.currentRobotPose    = currentRobotPose;
     this.finish              = finish;
     this.move                = move;
-    this.driveToleranceValue = driveTolerance;
+    this.driveToleranceValue = tunables.driveTolerance.get();
+
+    tunables.driveMaxVelocity.initDefault(5);
+    tunables.driveMaxVelocitySlow.initDefault(Units.Inches.of(50.0).in(Units.Meters));
+    tunables.driveMaxAcceleration.initDefault(Units.Inches.of(118.0).in(Units.Meters));
+    tunables.thetaMaxVelocity.initDefault(Math.toRadians(360.0));
+    tunables.thetaMaxVelocitySlow.initDefault(Math.toRadians(90.0));
+    tunables.thetaMaxAcceleration.initDefault(Math.toRadians(720.0));
+    tunables.driveTolerance.initDefault(0.02);
+    tunables.driveToleranceSlow.initDefault(0.05);
+    tunables.thetaTolerance.initDefault(0.01);
+    tunables.thetaToleranceSlow.initDefault(Math.toRadians(3.0));
+    tunables.ffMinRadius.initDefault(0.0);
+    tunables.ffMaxRadius.initDefault(1);
+
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
     withinTolerance = new Trigger(() -> driveController.atGoal() && thetaController.atGoal()).debounce(0.3);
   }
@@ -169,18 +136,20 @@ public class DriveToPose extends Command {
     lastSetpointTranslation = currentPose.getTranslation();
 
     // Update from tunable numbers
-    driveController.setP(driveKp.get());
-    driveController.setD(driveKd.get());
+    driveController.setP(tunables.driveKP.get());
+    driveController.setD(tunables.driveKD.get());
     driveController.setConstraints(new TrapezoidProfile.Constraints(
-        slowMode ? driveMaxVelocitySlow.get() : driveMaxVelocity.get(), driveMaxAcceleration.get()));
+        slowMode ? tunables.driveMaxVelocitySlow.get() : tunables.driveMaxVelocity.get(),
+        tunables.driveMaxAcceleration.get()));
     driveController.setTolerance(
         // slowMode ? driveToleranceSlow.get() : driveTolerance.get()
         driveToleranceValue);
-    thetaController.setP(thetaKp.get());
-    thetaController.setD(thetaKd.get());
+    thetaController.setP(tunables.thetaKP.get());
+    thetaController.setD(tunables.thetaKD.get());
     thetaController.setConstraints(new TrapezoidProfile.Constraints(
-        slowMode ? thetaMaxVelocitySlow.get() : thetaMaxVelocity.get(), thetaMaxAcceleration.get()));
-    thetaController.setTolerance(slowMode ? thetaToleranceSlow.get() : thetaTolerance.get());
+        slowMode ? tunables.thetaMaxVelocitySlow.get() : tunables.thetaMaxVelocity.get(),
+        tunables.thetaMaxAcceleration.get()));
+    thetaController.setTolerance(slowMode ? tunables.thetaToleranceSlow.get() : tunables.thetaTolerance.get());
   }
 
   @Override
@@ -191,8 +160,9 @@ public class DriveToPose extends Command {
 
     // Calculate drive speed
     double currentDistance = currentPose.getTranslation().getDistance(targetPose.getTranslation());
-    double ffScaler        = MathUtil
-        .clamp((currentDistance - ffMinRadius.get()) / (ffMaxRadius.get() - ffMinRadius.get()), 0.0, 1.0);
+    double ffScaler        = MathUtil.clamp(
+        (currentDistance - tunables.ffMinRadius.get()) / (tunables.ffMaxRadius.get() - tunables.ffMinRadius.get()), 0.0,
+        1.0);
     driveErrorAbs = currentDistance;
     driveController.reset(lastSetpointTranslation.getDistance(targetPose.getTranslation()),
         driveController.getSetpoint().velocity);

@@ -53,84 +53,58 @@ public class Intake extends SubsystemBase {
     public PivotLogs  pivot;
   }
 
-  public static final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
+  public static class PivotTunables extends AutoRegisterTunables {
+    public LoggedTunableNumber KP;
+    public LoggedTunableNumber KD;
+    public LoggedTunableNumber KG;
 
-  // Execution timing
-  private static final ExecutionTiming timing = new ExecutionTiming(ROOT_TABLE);
+    public LoggedTunableNumber maxVelocityConfig;
+    public LoggedTunableNumber targetAccelerationConfig;
 
-  // Logging
-  private static final LoggerGroup logGroup = LoggerGroup.build(ROOT_TABLE);
+    @TunableEntry(defaultValue = 3.0)
+    public LoggedTunableNumber toleranceDegrees;
 
-  // Tunable numbers
-  private static final TunableNumberGroup group = new TunableNumberGroup(ROOT_TABLE);
-
-  private static final LoggedTunableNumber intakingVelocity = group.build("Intaking/Fuel/Velocity", 3000);
-
-  private static final LoggedTunableNumber ejectingFuelVelocity   = group.build("Score/Fuel/Velocity", 500.0);
-  private static final LoggedTunableNumber intakingFuelPivotAngle = group.build("Intaking/Fuel/AngleDeg", 20);
-
-  // Roller
-  private static final TunableNumberGroup  rollerSubgroup                 = group.subgroup("Roller");
-  private static final LoggedTunableNumber rKS                            = rollerSubgroup.build("KS");
-  private static final LoggedTunableNumber rKP                            = rollerSubgroup.build("KP");
-  private static final LoggedTunableNumber rKV                            = rollerSubgroup.build("KV");
-  private static final LoggedTunableNumber rollerTargetAccelerationConfig = rollerSubgroup
-      .build("MaxAccelerationConstraint");
-
-  // Pivot
-  private static final TunableNumberGroup  pivotSubgroup = group.subgroup("Pivot");
-  private static final LoggedTunableNumber pKP           = pivotSubgroup.build("KP");
-  private static final LoggedTunableNumber pKD           = pivotSubgroup.build("KD");
-  private static final LoggedTunableNumber pKG           = pivotSubgroup.build("KG");
-
-  private static final LoggedTunableNumber pivotMaxVelocityConfig        = pivotSubgroup.build("MaxVelocityConfig");
-  private static final LoggedTunableNumber pivotTargetAccelerationConfig = pivotSubgroup
-      .build("TargetAccelerationConfig");
-  private static final LoggedTunableNumber pivotToleranceDegrees         = pivotSubgroup.build("ToleranceDegrees", 3);
-
-  // Motion constants
-  static {
-    if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_RETIRED_HOLO) {
-      rKS.initDefault(0);
-      rKP.initDefault(0.4);
-      rKV.initDefault(0.13);
-      rollerTargetAccelerationConfig.initDefault(200);
-
-      pKP.initDefault(60);
-      pKD.initDefault(0.3);
-      pKG.initDefault(0.4);
-
-      pivotMaxVelocityConfig.initDefault(200);
-      pivotTargetAccelerationConfig.initDefault(1500);
-    } else if (Constants.RobotMode.isSimBot()) {
-      rKS.initDefault(0);
-      rKP.initDefault(0.00006);
-      rKV.initDefault(0.0002);
-      rollerTargetAccelerationConfig.initDefault(0.0);
-
-      pKP.initDefault(120);
-      pKD.initDefault(0);
-      pKG.initDefault(0.0);
-
-      pivotMaxVelocityConfig.initDefault(40);
-      pivotTargetAccelerationConfig.initDefault(80);
-    } else {
-      rKS.initDefault(0);
-      rKP.initDefault(0.4);
-      rKV.initDefault(0.13);
-      rollerTargetAccelerationConfig.initDefault(200);
-
-      pKP.initDefault(60);
-      pKD.initDefault(0.3);
-      pKG.initDefault(0.4);
-
-      pivotMaxVelocityConfig.initDefault(200);
-      pivotTargetAccelerationConfig.initDefault(1500);
+    private boolean hasChanged() {
+      return KP.hasChanged() || KD.hasChanged() || KG.hasChanged() || maxVelocityConfig.hasChanged()
+          || targetAccelerationConfig.hasChanged();
     }
   }
 
+  public static class RollerTunables extends AutoRegisterTunables {
+    public LoggedTunableNumber KS;
+    public LoggedTunableNumber KP;
+    public LoggedTunableNumber KV;
+    public LoggedTunableNumber targetAccelerationConfig;
+
+    public boolean hasChanged() {
+      return KS.hasChanged() || KP.hasChanged() || KV.hasChanged() || targetAccelerationConfig.hasChanged();
+    }
+  }
+
+  public static class Tunables extends AutoRegisterTunables {
+    public PivotTunables  pivot;
+    public RollerTunables roller;
+
+    @TunableEntry(defaultValue = 3000.0)
+    public LoggedTunableNumber intakingFuelVelocity;
+
+    @TunableEntry(defaultValue = 500.0)
+    public LoggedTunableNumber ejectingFuelVelocity;
+
+    @TunableEntry(defaultValue = 20.0)
+    public LoggedTunableNumber intakingFuelPivotAngle;
+  }
+
+  public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
+
+  // Execution timing
+  private final ExecutionTiming timing = new ExecutionTiming(ROOT_TABLE);
+
+  // Tunable numbers
+  private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
+
   private final IntakeIO        io;
-  private final IntakeIO.Inputs inputs = new IntakeIO.Inputs(logGroup);
+  private final IntakeIO.Inputs inputs = new IntakeIO.Inputs(logs.group);
 
   // Intake states
   private State state = State.Stow;
@@ -150,6 +124,45 @@ public class Intake extends SubsystemBase {
   /** Creates a new Intake. */
   public Intake(IntakeIO io) {
     this.io = io;
+
+    // Motion constants
+    if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_RETIRED_HOLO) {
+      tunables.roller.KS.initDefault(0);
+      tunables.roller.KP.initDefault(0.4);
+      tunables.roller.KV.initDefault(0.13);
+      tunables.roller.targetAccelerationConfig.initDefault(200);
+
+      tunables.pivot.KP.initDefault(60);
+      tunables.pivot.KD.initDefault(0.3);
+      tunables.pivot.KG.initDefault(0.4);
+
+      tunables.pivot.maxVelocityConfig.initDefault(200);
+      tunables.pivot.targetAccelerationConfig.initDefault(1500);
+    } else if (Constants.RobotMode.isSimBot()) {
+      tunables.roller.KS.initDefault(0);
+      tunables.roller.KP.initDefault(0.00006);
+      tunables.roller.KV.initDefault(0.0002);
+      tunables.roller.targetAccelerationConfig.initDefault(0.0);
+
+      tunables.pivot.KP.initDefault(120);
+      tunables.pivot.KD.initDefault(0);
+      tunables.pivot.KG.initDefault(0.0);
+
+      tunables.pivot.maxVelocityConfig.initDefault(40);
+      tunables.pivot.targetAccelerationConfig.initDefault(80);
+    } else {
+      tunables.roller.KS.initDefault(0);
+      tunables.roller.KP.initDefault(0.4);
+      tunables.roller.KV.initDefault(0.13);
+      tunables.roller.targetAccelerationConfig.initDefault(200);
+
+      tunables.pivot.KP.initDefault(60);
+      tunables.pivot.KD.initDefault(0.3);
+      tunables.pivot.KG.initDefault(0.4);
+
+      tunables.pivot.maxVelocityConfig.initDefault(200);
+      tunables.pivot.targetAccelerationConfig.initDefault(1500);
+    }
 
     io.setPivotVoltage(0.0);
 
@@ -183,14 +196,10 @@ public class Intake extends SubsystemBase {
 
       // Update tunable numbers
 
-      var rhc = hashCode();
-      if (rKS.hasChanged(rhc) || rKP.hasChanged(rhc) || rKV.hasChanged(rhc)
-          || rollerTargetAccelerationConfig.hasChanged(rhc)) {
+      if (tunables.roller.hasChanged()) {
         setRollerConstants();
       }
-      var phc = hashCode();
-      if (pKP.hasChanged(phc) || pKD.hasChanged(phc) || pKG.hasChanged(phc) || pivotMaxVelocityConfig.hasChanged(phc)
-          || pivotTargetAccelerationConfig.hasChanged(phc)) {
+      if (tunables.pivot.hasChanged()) {
         setPivotConstants();
       }
 
@@ -209,10 +218,10 @@ public class Intake extends SubsystemBase {
             setRollerPercentOut(0);
             break;
           case Eject:
-            setRollerVelocity(ejectingFuelVelocity.get() * -1);
+            setRollerVelocity(tunables.ejectingFuelVelocity.get() * -1);
             break;
           case Intake:
-            setRollerVelocity(intakingVelocity.get());
+            setRollerVelocity(tunables.intakingFuelVelocity.get());
             setPivotAngle(computeDownAngle());
             break;
           default:
@@ -223,13 +232,15 @@ public class Intake extends SubsystemBase {
   }
 
   private Rotation2d computeDownAngle() {
-    return Rotation2d.fromDegrees(intakingFuelPivotAngle.get());
+    return Rotation2d.fromDegrees(tunables.intakingFuelPivotAngle.get());
   }
 
   // Setters
 
   private void setRollerConstants() {
-    io.setRollerClosedLoopConstants(rKP.get(), rKV.get(), rKS.get(), rollerTargetAccelerationConfig.get());
+    var roller = tunables.roller;
+    io.setRollerClosedLoopConstants(roller.KP.get(), roller.KV.get(), roller.KS.get(),
+        roller.targetAccelerationConfig.get());
   }
 
   public void setRollerPercentOut(double percent) {
@@ -245,10 +256,13 @@ public class Intake extends SubsystemBase {
   }
 
   private void setPivotConstants() {
-    MotionMagicConfigs configs = new MotionMagicConfigs();
-    configs.MotionMagicCruiseVelocity = pivotMaxVelocityConfig.get();
-    configs.MotionMagicAcceleration   = pivotTargetAccelerationConfig.get();
-    io.setPivotClosedLoopConstants(pKP.get(), pKD.get(), pKG.get(), configs);
+    var pivot = tunables.pivot;
+
+    var configs = new MotionMagicConfigs();
+    configs.MotionMagicCruiseVelocity = pivot.maxVelocityConfig.get();
+    configs.MotionMagicAcceleration   = pivot.targetAccelerationConfig.get();
+
+    io.setPivotClosedLoopConstants(pivot.KP.get(), pivot.KD.get(), pivot.KG.get(), configs);
   }
 
   public void setPivotAngle(Rotation2d angle) {
@@ -295,7 +309,7 @@ public class Intake extends SubsystemBase {
 
   public boolean isStowed() {
     return GeometryUtil.isRotationAtTarget(inputs.pivotPosition, PivotConstants.HOME_POSITION,
-        pivotToleranceDegrees.get());
+        tunables.pivot.toleranceDegrees.get());
   }
 
   public Voltage getPivotVoltage() {

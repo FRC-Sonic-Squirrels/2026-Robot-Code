@@ -4,31 +4,40 @@
 
 package frc.robot.subsystems;
 
-import static edu.wpi.first.units.Units.Centimeters;
-import static edu.wpi.first.units.Units.Meters;
-import static edu.wpi.first.units.Units.MetersPerSecond;
-import static edu.wpi.first.units.Units.Second;
-import static edu.wpi.first.units.Units.Seconds;
-
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.util.Color;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
-import frc.lib.team2930.LoggerEntry;
-import frc.lib.team2930.LoggerGroup;
-import frc.lib.team2930.TunableNumberGroup;
+import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
-import frc.robot.RobotStates;
+
 import java.util.function.Supplier;
 
-public class LED extends SubsystemBase {
-  private static final String ROOT_TABLE = "LED";
+import static edu.wpi.first.units.Units.*;
 
-  private static final LoggerGroup                           logGroup           = LoggerGroup.build(ROOT_TABLE);
-  private static final LoggerEntry.EnumValue<RobotState>     log_robotState     = logGroup.buildEnum("robotState");
-  private static final LoggerEntry.EnumValue<BaseRobotState> log_baseRobotState = logGroup.buildEnum("baseRobotState");
-  private static final LoggerEntry.Bool                      log_isTeleop       = logGroup.buildBoolean("isTeleop");
+public class LED extends SubsystemBase {
+  public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.EnumValue<RobotState>     robotState;
+    public LoggerEntry.EnumValue<BaseRobotState> baseRobotState;
+    public LoggerEntry.Bool                      isTeleop;
+  }
+
+  public static class Tunables extends AutoRegisterTunables {
+    public LoggedTunableNumber useTunableLEDs;
+    public LoggedTunableNumber tunableR;
+    public LoggedTunableNumber tunableG;
+    public LoggedTunableNumber tunableB;
+
+    @TunableEntry(defaultValue = 5)
+    public LoggedTunableNumber zoomingDotSpeed;
+  }
+
+  private final Logs              logs;
+  private final int               robotLoopsTillReady = 30;
+  private final Supplier<Boolean> brakeMode;
+  private final Supplier<Boolean> gyroConnected;
+  private final Supplier<Boolean> motorsZeroed;
 
   /** Creates a new LED. */
   private AddressableLED led = new AddressableLED(Constants.LEDConstants.PWM_PORT);
@@ -39,28 +48,22 @@ public class LED extends SubsystemBase {
 
   private final Distance ledSpacing = Meters.of(1 / 120.0);
 
-  private int                     levelMeterCount        = 0;
-  private RobotState              robotState             = RobotState.BASE;
-  private BaseRobotState          baseRobotState         = BaseRobotState.GAMEPIECE_STATUS;
-  private Color                   squirrelOrange         = new Color(0.1, 1, 0);
-  private TunableNumberGroup      group                  = new TunableNumberGroup("LED");
-  private LoggedTunableNumber     useTunableLEDs         = group.build("useTunableLEDs", 0);
-  private LoggedTunableNumber     tunableR               = group.build("tunableColor/r", 0);
-  private LoggedTunableNumber     tunableG               = group.build("tunableColor/g", 0);
-  private LoggedTunableNumber     tunableB               = group.build("tunableColor/b", 0);
-  private LoggedTunableNumber     zoomingDotSpeed        = group.build("zoomingDotSpeed", 5);
-  private int                     robotLoops             = 0;
-  private final int               robotLoopsTillReady    = 30;
-  private final Supplier<Boolean> brakeMode;
-  private final Supplier<Boolean> gyroConnected;
-  private final Supplier<Boolean> motorsZeroed;
-  private double                  timeToResetToBaseState = 0;
-  private Timer                   resetToBaseStateTimer  = new Timer();
-  private boolean                 autoConfirmed          = false;
-  private Supplier<Boolean>       preloadComplete;
+  private int               levelMeterCount        = 0;
+  private RobotState        robotState             = RobotState.BASE;
+  private BaseRobotState    baseRobotState         = BaseRobotState.GAMEPIECE_STATUS;
+  private final Color       squirrelOrange         = new Color(0.1, 1, 0);
+  private final Tunables    tunable                = TunableNumberGroup.newAutoTunable(Tunables.class, "LED");
+  private int               robotLoops             = 0;
+  private double            timeToResetToBaseState = 0;
+  private final Timer       resetToBaseStateTimer  = new Timer();
+  private boolean           autoConfirmed          = false;
+  private Supplier<Boolean> preloadComplete;
 
-  public LED(Supplier<Boolean> brakeMode, Supplier<Boolean> gyroConnected, Supplier<Boolean> motorsZeroed,
-      RobotStates states) {
+  public LED(Supplier<Boolean> brakeMode, Supplier<Boolean> gyroConnected, Supplier<Boolean> motorsZeroed) {
+    String ROOT_TABLE = "LED";
+
+    logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
+
     led.setLength(ledBuffer.getLength());
     led.setData(ledBuffer);
     led.start();
@@ -77,10 +80,11 @@ public class LED extends SubsystemBase {
   public void periodic() {
     robotLoops++;
 
-    if (resetToBaseStateTimer.get() > timeToResetToBaseState)
+    if (resetToBaseStateTimer.get() > timeToResetToBaseState) {
       robotState = RobotState.BASE;
+    }
 
-    if (useTunableLEDs.get() == 0) {
+    if (tunable.useTunableLEDs.get() == 0) {
       // This method will be called once per scheduler run
 
       switch (robotState) {
@@ -98,8 +102,8 @@ public class LED extends SubsystemBase {
               } else if (!gyroConnected.get() && !Constants.RobotMode.isSimBot()) { // gyro disconnected indication
                 setBlinking(Color.kAquamarine);
               } else if (!autoConfirmed && DriverStation.isFMSAttached() && DriverStation.isDisabled()) { // auto not
-                                                                                                          // confirmed
-                                                                                                          // indication
+                // confirmed
+                // indication
                 setBlinking(Color.kDarkViolet);
               } else {
                 if (DriverStation.isTeleop() && DriverStation.isEnabled()) { // Teleop pattern
@@ -151,15 +155,16 @@ public class LED extends SubsystemBase {
           break;
       }
     } else {
-      setSolidColor(new Color(tunableR.get(), tunableG.get(), tunableB.get()));
+      setSolidColor(new Color(tunable.tunableR.get(), tunable.tunableG.get(), tunable.tunableB.get()));
     }
 
-    log_robotState.info(robotState);
-    log_baseRobotState.info(baseRobotState);
-    log_isTeleop.info(DriverStation.isTeleop());
+    logs.robotState.info(robotState);
+    logs.baseRobotState.info(baseRobotState);
+    logs.isTeleop.info(DriverStation.isTeleop());
 
-    if (!sameAsPrevBuffer())
+    if (!sameAsPrevBuffer()) {
       led.setData(ledBuffer);
+    }
 
     ledBuffer.forEach((i, r, g, b) -> {
       previousBuffer.setRGB(i, r, g, b);
@@ -267,7 +272,7 @@ public class LED extends SubsystemBase {
 
   /** zooming dot animation */
   private void setZoomingDot() {
-    double percent = Math.sin(zoomingDotSpeed.get() * Timer.getFPGATimestamp()) * 0.5 + 0.5;
+    double percent = Math.sin(tunable.zoomingDotSpeed.get() * Timer.getFPGATimestamp()) * 0.5 + 0.5;
     int    center  = (int) (percent * ledBuffer.getLength());
     for (var i = 0; i < ledBuffer.getLength(); i++) {
       // Sets the specified LED to the RGB values for red
@@ -285,8 +290,9 @@ public class LED extends SubsystemBase {
 
   public boolean sameAsPrevBuffer() {
     for (int i = 0; i < ledBuffer.getLength(); i++) {
-      if (!ledBuffer.getLED(i).equals(previousBuffer.getLED(i)))
+      if (!ledBuffer.getLED(i).equals(previousBuffer.getLED(i))) {
         return false;
+      }
     }
 
     return true;

@@ -26,9 +26,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.lib.team2930.LoggerEntry;
-import frc.lib.team2930.LoggerGroup;
-import frc.lib.team2930.TunableNumberGroup;
+import frc.lib.team2930.*;
 import frc.lib.team2930.commands.RunsWhenDisabledInstantCommand;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants.ClimberConstants;
@@ -132,16 +130,19 @@ public class RobotContainer {
 
   // Tunable numbers
 
-  private final TunableNumberGroup tunableNumberGroup = new TunableNumberGroup("RobotContainer");
+  public static class Tunables extends AutoRegisterTunables {
+    @TunableEntry(defaultValue = 13.75)
+    public LoggedTunableNumber tunableX;
 
-  @SuppressWarnings("unused")
-  private final LoggedTunableNumber tunableX = tunableNumberGroup.build("TunableX", 13.75);
+    @TunableEntry(defaultValue = 5.15)
+    public LoggedTunableNumber tunableY;
 
-  @SuppressWarnings("unused")
-  private final LoggedTunableNumber tunableY = tunableNumberGroup.build("TunableY", 5.15);
+    @TunableEntry(defaultValue = 0.0)
+    public LoggedTunableNumber tunableAngle;
 
-  @SuppressWarnings("unused")
-  private final LoggedTunableNumber tunableAngle = tunableNumberGroup.build("TunableAngle", 0);
+  }
+
+  private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, "RobotContainer");
 
   private final RobotStates robotStates;
 
@@ -181,7 +182,7 @@ public class RobotContainer {
       shooter     = new Shooter(new ShooterIO() {
                   });
 
-      led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered, robotStates);
+      led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
     } else { // REAL and SIM robots HERE
       switch (robotType) {
         case ROBOT_SIMBOT_REAL_CAMERAS:
@@ -196,14 +197,17 @@ public class RobotContainer {
             vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
                 drivetrain::addVisionEstimate, config.getVisionModuleObjects());
           } else {
+            var                         config2       = (SimulatorRobotConfig) config;
             VisionModuleConfiguration[] visionModules = {
-                VisionModuleConfiguration.buildSim(SimulatorRobotConfig.SHOOTER_SIDE_LEFT_CAMERA_NAME,
-                    SimulatorRobotConfig.SHOOTER_SIDE_LEFT, config, drivetrain::getHubPoseEstimatorPose),
-                VisionModuleConfiguration.buildSim(SimulatorRobotConfig.SHOOTER_SIDE_RIGHT_CAMERA_NAME,
-                    SimulatorRobotConfig.SHOOTER_SIDE_RIGHT, config, drivetrain::getHubPoseEstimatorPose), };
+                VisionModuleConfiguration.buildSim(config2.SHOOTER_SIDE_LEFT_CAMERA_NAME, config2.SHOOTER_SIDE_LEFT,
+                    config, drivetrain::getHubPoseEstimatorPose),
+                VisionModuleConfiguration.buildSim(config2.SHOOTER_SIDE_RIGHT_CAMERA_NAME, config2.SHOOTER_SIDE_RIGHT,
+                    config, drivetrain::getHubPoseEstimatorPose), };
 
             vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
                 drivetrain::addVisionEstimate, visionModules);
+
+            vision.logs.configTagAmount.info(config.getAprilTagFieldLayout().getTags().size());
           }
 
           rightIntake = new Intake(new IntakeIOSim());
@@ -211,48 +215,7 @@ public class RobotContainer {
           climber = new Climber(new ClimberIOSim());
           hopper = new Hopper(new HopperIOSim());
           shooter = new Shooter(new ShooterIOSim());
-          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered, robotStates);
-          break;
-
-        case ROBOT_2023_RETIRED_ROBER:
-          drivetrain = new Drivetrain(config, new GyroIOPigeon2(config, config.getGyroCANID()),
-              new GyroIOPigeon2(config, Constants.CanIDs.GYRO_2_CAN_ID), config.getSwerveModuleObjects(),
-              () -> is_autonomous);
-
-          vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
-              drivetrain::addVisionEstimate, config.getReplayVisionModules());
-          leftIntake = new Intake(new IntakeIO() {
-          });
-          rightIntake = new Intake(new IntakeIO() {
-          });
-          climber = new Climber(new ClimberIO() {
-          });
-          hopper = new Hopper(new HopperIO() {
-          });
-          shooter = new Shooter(new ShooterIO() {
-          });
-
-          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered, robotStates);
-          break;
-
-        case ROBOT_2024_RETIRED_MAESTRO:
-          drivetrain = new Drivetrain(config, new GyroIOPigeon2(config, config.getGyroCANID()),
-              new GyroIOPigeon2(config, Constants.CanIDs.GYRO_2_CAN_ID), config.getSwerveModuleObjects(),
-              () -> is_autonomous);
-          leftIntake = new Intake(new IntakeIO() {
-          });
-          rightIntake = new Intake(new IntakeIO() {
-          });
-          climber = new Climber(new ClimberIO() {
-          });
-          hopper = new Hopper(new HopperIO() {
-          });
-          shooter = new Shooter(new ShooterIO() {
-          });
-          vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
-              drivetrain::addVisionEstimate, config.getVisionModuleObjects());
-
-          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered, robotStates);
+          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
           break;
 
         case ROBOT_2025_RETIRED_HOLO:
@@ -275,7 +238,7 @@ public class RobotContainer {
           vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
               drivetrain::addVisionEstimate, config.getVisionModuleObjects());
 
-          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered, robotStates);
+          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
 
           break;
 
@@ -313,7 +276,7 @@ public class RobotContainer {
           vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
               drivetrain::addVisionEstimate, config.getVisionModuleObjects());
 
-          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered, robotStates);
+          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
           break;
 
         default:
@@ -332,7 +295,7 @@ public class RobotContainer {
           shooter = new Shooter(new ShooterIO() {
           });
 
-          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered, robotStates);
+          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
           break;
       }
     }

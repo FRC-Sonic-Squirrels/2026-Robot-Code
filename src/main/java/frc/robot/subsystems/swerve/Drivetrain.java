@@ -44,17 +44,17 @@ import java.util.List;
 import java.util.function.Supplier;
 
 public class Drivetrain extends SubsystemBase {
-  public static final String ROOT_TABLE = "Drivetrain";
+  public final String ROOT_TABLE = "Drivetrain";
 
   // Execution timing
 
-  private static final ExecutionTiming timing         = new ExecutionTiming(ROOT_TABLE);
-  private static final ExecutionTiming timing_wait    = new ExecutionTiming(ROOT_TABLE + "/wait");
-  private static final ExecutionTiming timing_process = new ExecutionTiming(ROOT_TABLE + "/odometry");
-  private static final ExecutionTiming timing_vision  = new ExecutionTiming(ROOT_TABLE + "/vision");
-  private static final ExecutionTiming timing_pose    = new ExecutionTiming(ROOT_TABLE + "/pose");
+  private final ExecutionTiming timing         = new ExecutionTiming(ROOT_TABLE);
+  private final ExecutionTiming timing_wait    = new ExecutionTiming(ROOT_TABLE + "/wait");
+  private final ExecutionTiming timing_process = new ExecutionTiming(ROOT_TABLE + "/odometry");
+  private final ExecutionTiming timing_vision  = new ExecutionTiming(ROOT_TABLE + "/vision");
+  private final ExecutionTiming timing_pose    = new ExecutionTiming(ROOT_TABLE + "/pose");
 
-  private static final LoggerGroup logGroup = LoggerGroup.build(ROOT_TABLE);
+  private final LoggerGroup logGroup = LoggerGroup.build(ROOT_TABLE);
 
   public static class GyroLogs extends AutoRegisterLoggers {
     public LoggerEntry.Text    selectedGyro;
@@ -67,7 +67,7 @@ public class Drivetrain extends SubsystemBase {
     public LoggerEntry.Decimal linearAcceleration;
   }
 
-  private static final GyroLogs gyroLogs = logGroup.newAutoLogger(GyroLogs.class, "Gyro");
+  private final GyroLogs gyroLogs = logGroup.newAutoLogger(GyroLogs.class, "Gyro");
 
   public static class SwerveStatesLogs extends AutoRegisterLoggers {
     public LoggerEntry.Decimal canivoreBusUtilization;
@@ -77,7 +77,7 @@ public class Drivetrain extends SubsystemBase {
     public LoggerEntry.StructArray<SwerveModuleState> measured;
   }
 
-  private static final SwerveStatesLogs swerveStatesLogs = LoggerGroup.root.newAutoLogger(SwerveStatesLogs.class,
+  private final SwerveStatesLogs swerveStatesLogs = LoggerGroup.root.newAutoLogger(SwerveStatesLogs.class,
       "SwerveStates");
 
   public static class OdometryLogs extends AutoRegisterLoggers {
@@ -94,7 +94,7 @@ public class Drivetrain extends SubsystemBase {
     public LoggerEntry.Text crash;
   }
 
-  private static final OdometryLogs odometryLogs = logGroup.newAutoLogger(OdometryLogs.class, "OdometryThread");
+  private final OdometryLogs odometryLogs = logGroup.newAutoLogger(OdometryLogs.class, "OdometryThread");
 
   public static class DrivetrainLogs extends AutoRegisterLoggers {
     public LoggerEntry.Decimal leftoverVelocity;
@@ -105,7 +105,7 @@ public class Drivetrain extends SubsystemBase {
     public LoggerEntry.Decimal speedsRot;
   }
 
-  private static final DrivetrainLogs drivetrainLogs = logGroup.newAutoLogger(DrivetrainLogs.class, "Drivetrain");
+  private final DrivetrainLogs drivetrainLogs = logGroup.newAutoLogger(DrivetrainLogs.class, "Drivetrain");
 
   public static class LocalizationLogs extends AutoRegisterLoggers {
     public LoggerEntry.Struct<Pose2d> rawOdometry;
@@ -117,7 +117,7 @@ public class Drivetrain extends SubsystemBase {
     public LoggerEntry.Integer rejectionNoDriveData;
   }
 
-  private static final LocalizationLogs localizationLogs = LoggerGroup.root.newAutoLogger(LocalizationLogs.class,
+  private final LocalizationLogs localizationLogs = LoggerGroup.root.newAutoLogger(LocalizationLogs.class,
       "Localization");
 
   public static class RobotLogs extends AutoRegisterLoggers {
@@ -126,16 +126,24 @@ public class Drivetrain extends SubsystemBase {
     public LoggerEntry.Decimal        fieldRelativeAcceleration;
   }
 
-  private static final RobotLogs robotLogs = logGroup.newAutoLogger(RobotLogs.class, "Robot");
+  private final RobotLogs robotLogs = logGroup.newAutoLogger(RobotLogs.class, "Robot");
 
-  public static final AutoLock odometryLock = new AutoLock("Odometry", 100);
+  public final AutoLock odometryLock = new AutoLock("Odometry", 100);
 
   // Tunable numbers
 
-  public static final TunableNumberGroup  group                      = new TunableNumberGroup("Drivetrain");
-  public static final LoggedTunableNumber driveMotorAccelerationAuto = group.build("SwerveDRIVEAccelerationAuto", 1000);
-  public static final LoggedTunableNumber driveMotorAccelerationTele = group.build("SwerveDRIVEAccelerationTele", 1000);
-  public static final LoggedTunableNumber visionWithLowestStdDev     = group.build("VisionWithLowestStdDev", 1.0);
+  public static class Tunables extends AutoRegisterTunables {
+    @TunableEntry(defaultValue = 1000.0)
+    public LoggedTunableNumber driveMotorAccelerationAuto;
+
+    @TunableEntry(defaultValue = 1000.0)
+    public LoggedTunableNumber driveMotorAccelerationTele;
+
+    @TunableEntry(defaultValue = 1.0)
+    public LoggedTunableNumber visionWithLowestStdDev;
+  }
+
+  private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
 
   private boolean switchGyro;
   private Boolean useSecondGyro;
@@ -478,9 +486,9 @@ public class Drivetrain extends SubsystemBase {
 
     double driveMotorAcceleration;
     if (isAutonomous.get()) {
-      driveMotorAcceleration = driveMotorAccelerationAuto.get();
+      driveMotorAcceleration = tunables.driveMotorAccelerationAuto.get();
     } else {
-      driveMotorAcceleration = driveMotorAccelerationTele.get();
+      driveMotorAcceleration = tunables.driveMotorAccelerationTele.get();
     }
 
     var optimizedSetpointStates = modules.runSetpoints(setpointStates, driveMotorAcceleration, motionMagicDrive);
@@ -559,7 +567,7 @@ public class Drivetrain extends SubsystemBase {
     try (var ignored = odometryLock.lock()) // Prevents odometry updates while reading data
     {
       try (var ignored2 = timing_vision.start()) {
-        hubPoseEstimator.addVisionData(visionData, visionWithLowestStdDev.get() > 0.0);
+        hubPoseEstimator.addVisionData(visionData, tunables.visionWithLowestStdDev.get() > 0.0);
       }
     }
   }

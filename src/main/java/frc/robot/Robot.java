@@ -39,7 +39,7 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
  * project.
  */
 public class Robot extends LoggedRobot {
-  private static final ExecutionTiming timingCommandScheduler = new ExecutionTiming("CommandScheduler");
+  private final ExecutionTiming timingCommandScheduler = new ExecutionTiming("CommandScheduler");
 
   public static class ButtonsLogs extends AutoRegisterLoggers {
     public LoggerEntry.Bool breakModeButton;
@@ -72,8 +72,8 @@ public class Robot extends LoggedRobot {
     public PowerDistributionLogs simulatedRobotLogs;
   }
 
-  public static final Logs         logs                   = LoggerGroup.root.newAutoLogger(Logs.class, null);
-  private static final LoggerGroup logGroupActiveCommands = LoggerGroup.build("ActiveCommands");
+  public final Logs         logs                   = LoggerGroup.root.newAutoLogger(Logs.class, null);
+  private final LoggerGroup logGroupActiveCommands = LoggerGroup.build("ActiveCommands");
 
   private RobotContainer robotContainer;
 

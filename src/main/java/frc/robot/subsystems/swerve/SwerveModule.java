@@ -26,6 +26,7 @@ import edu.wpi.first.units.measure.Voltage;
 import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.configs.RobotConfig;
+
 import java.util.List;
 
 public class SwerveModule {
@@ -46,11 +47,16 @@ public class SwerveModule {
     public LoggerEntry.Decimal angle;
   }
 
-  public static final TunableNumberGroup  group              = new TunableNumberGroup("RobotConfig");
-  public static final LoggedTunableNumber turnCruiseVelocity = group.build("SwerveTurnCruiseVelocity", 200);
-  public static final LoggedTunableNumber turnAcceleration   = group.build("SwerveTurnAcceleration", 200);
+  public static class Tunables extends AutoRegisterTunables {
+    @TunableEntry(defaultValue = 200)
+    public LoggedTunableNumber SwerveTurnCruiseVelocity;
+
+    @TunableEntry(defaultValue = 200)
+    public LoggedTunableNumber SwerveTurnAcceleration;
+  }
 
   private final Logs            logs;
+  private final Tunables        tunables = TunableNumberGroup.newAutoTunable(Tunables.class, "RobotConfig");
   private final ExecutionTiming timing;
 
   private final SwerveModuleIO        io;
@@ -138,10 +144,9 @@ public class SwerveModule {
       logs.angle.info(inputs.angle);
 
       // update Tuneable PID and FF values
-      int hc = hashCode();
-      if (driveKS.hasChanged(hc) || driveKV.hasChanged(hc) || driveKA.hasChanged(hc) || driveKP.hasChanged(hc)
-          || driveKD.hasChanged(hc) || angleKP.hasChanged(hc) || angleKD.hasChanged(hc)
-          || turnCruiseVelocity.hasChanged(hc) || turnAcceleration.hasChanged(hc)) {
+      if (driveKS.hasChanged() || driveKV.hasChanged() || driveKA.hasChanged() || driveKP.hasChanged()
+          || driveKD.hasChanged() || angleKP.hasChanged() || angleKD.hasChanged()
+          || tunables.SwerveTurnCruiseVelocity.hasChanged() || tunables.SwerveTurnAcceleration.hasChanged()) {
         updateConstants();
       }
 
@@ -163,7 +168,11 @@ public class SwerveModule {
   private void updateConstants() {
     io.setDriveClosedLoopConstraints(driveKP.get(), driveKD.get(), driveKS.get(), driveKV.get(), driveKA.get());
 
-    io.setTurnClosedLoopConstraints(angleKP.get(), angleKD.get(), turnCruiseVelocity.get(), turnAcceleration.get());
+    double kP             = angleKP.get();
+    double kD             = angleKD.get();
+    double cruiseVelocity = tunables.SwerveTurnCruiseVelocity.get();
+    double acceleration   = tunables.SwerveTurnAcceleration.get();
+    io.setTurnClosedLoopConstraints(kP, kD, cruiseVelocity, acceleration);
   }
 
   public SwerveModulePosition updateOdometry() {

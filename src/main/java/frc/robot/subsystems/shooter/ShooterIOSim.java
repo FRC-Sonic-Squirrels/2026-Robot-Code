@@ -14,27 +14,11 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
-import frc.lib.team2930.AutoRegisterLoggers;
-import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.TalonFXArmSim;
 import frc.lib.team2930.TalonFXSim;
 import frc.robot.Constants;
-import frc.lib.team2930.ControlMode;
 
 public class ShooterIOSim implements ShooterIO {
-  public static class Logs extends AutoRegisterLoggers {
-    public LoggerEntry.Decimal                error;
-    public LoggerEntry.Decimal                feedForward;
-    public LoggerEntry.Decimal                outputVoltage;
-    public LoggerEntry.Decimal                targetVelRadPerSec;
-    public LoggerEntry.Decimal                currentVelRadPerSec;
-    public LoggerEntry.Decimal                pitchController;
-    public LoggerEntry.EnumValue<ControlMode> pivotControlMode;
-    public LoggerEntry.Decimal                targetPositionDegrees;
-  }
-
-  private static final Logs logs = Shooter.logs.group.newAutoLogger(Logs.class, "SIM");
-
   private TalonFXArmSim hoodArmSim = new TalonFXArmSim(
       new SingleJointedArmSim(DCMotor.getFalcon500Foc(1), Constants.ShooterConstants.Hood.GEARING,
           Constants.ShooterConstants.Hood.MOI, Constants.ShooterConstants.SHOOTER_LENGTH.in(Units.Meters),

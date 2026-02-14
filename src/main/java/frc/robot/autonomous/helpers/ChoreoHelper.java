@@ -16,7 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class ChoreoHelper {
-  private static final String ROOT_TABLE = "ChoreoHelper";
+  private final String ROOT_TABLE = "ChoreoHelper";
 
   public static class Logs extends AutoRegisterLoggers {
     public LoggerEntry.Decimal             stateLinearVel;
@@ -39,11 +39,17 @@ public class ChoreoHelper {
     public LoggerEntry.Bool                isPaused;
   }
 
-  public static final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
+  public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
-  private static final TunableNumberGroup  group         = new TunableNumberGroup(ROOT_TABLE);
-  private static final LoggedTunableNumber useCorrection = group.build("useCorrection", 1);
-  private static final LoggedTunableNumber minVelToPause = group.build("MinVelToPause_m/s", 2.0);
+  public static class Tunables extends AutoRegisterTunables {
+    @TunableEntry(defaultValue = 1.0)
+    public LoggedTunableNumber useCorrection;
+
+    @TunableEntry(defaultValue = 2_0)
+    public LoggedTunableNumber minVelToPause;
+  }
+
+  private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
 
   private final Trajectory<SwerveSample> traj;
   private final PIDController            xFeedback;
@@ -91,7 +97,7 @@ public class ChoreoHelper {
     double       closestDistance = Double.MAX_VALUE;
     double       lastDistance    = Double.MAX_VALUE;
 
-    if (useCorrection.get() != 0) {
+    if (tunables.useCorrection.get() != 0) {
       for (SwerveSample state : getStates(traj)) {
         SwerveSample stateComputed = traj.sampleAt(state.t, false).orElseThrow();
         double       stateDistance = GeometryUtil.getDist(initialPose, stateComputed.getPose());
@@ -181,13 +187,15 @@ public class ChoreoHelper {
       var lookaheadTime = Constants.kDefaultPeriod;
 
       var stateAhead = isFutureStateCloser(robotPose, state, lookaheadTime);
-      if (stateAhead == null)
+      if (stateAhead == null) {
         break;
+      }
 
       timeOffset += lookaheadTime;
       state       = stateAhead;
-      if (stateTooBehind != null)
+      if (stateTooBehind != null) {
         stateTooBehind = state;
+      }
     }
 
     logs.stateTimestamp.info(state.t);
@@ -210,7 +218,7 @@ public class ChoreoHelper {
     logs.targetError.info(targetError);
     logs.offsetError.info(offsetError);
 
-    boolean useCorrection = ChoreoHelper.useCorrection.get() != 0;
+    boolean useCorrection = tunables.useCorrection.get() != 0;
     if (useCorrection) {
       if (distanceError < lagThreshold) {
         if (stateTooBehind != null) {
@@ -220,7 +228,7 @@ public class ChoreoHelper {
       } else {
         if (stateTooBehind == null) {
           var velMagnitude = Math.hypot(state.vx, state.vy);
-          if (velMagnitude >= minVelToPause.get() && state.t > 0.25) {
+          if (velMagnitude >= tunables.minVelToPause.get() && state.t > 0.25) {
             stateTooBehind = state;
             pause(timestamp);
           }

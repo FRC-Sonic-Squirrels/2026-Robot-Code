@@ -18,11 +18,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.lib.team2930.GeometryUtil;
-import frc.lib.team2930.LoggerEntry;
-import frc.lib.team2930.LoggerGroup;
-import frc.lib.team2930.TrajectoryUtil;
-import frc.lib.team2930.TunableNumberGroup;
+import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.autonomous.helpers.ChoreoHelper;
@@ -35,6 +31,7 @@ import java.util.function.Supplier;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class DriveToPosePathing extends Command {
+  private final String ROOT_TABLE = "DriveToPosePathing";
 
   private final DrivetrainWrapper wrapper;
   private final RobotConfig       config;
@@ -44,17 +41,23 @@ public class DriveToPosePathing extends Command {
   private ChoreoHelper helper;
   private boolean      pathFinished = false;
 
-  private static TunableNumberGroup  tunableGroup                 = new TunableNumberGroup("DriveToPosePathing");
-  private static LoggedTunableNumber reefCirclingDistMeters       = tunableGroup
-      .build("ReefCirclingDistMeters",
-          Constants.FieldConstants.HUB_DIAGONAL_WIDTH
-              .plus(Constants.RobotDimensions.ROBOT_DIMENSIONS_WITH_BUMPERS.getMeasureY()).div(2).in(Units.Meters)
-              + 0.1);
-  private static LoggedTunableNumber headingToleranceNearElements = tunableGroup.build("HeadingToleranceNearElements",
-      40.0);
-  private static LoggedTunableNumber stallMaxVelocity             = tunableGroup.build("Stall/MaxVelocity", 0.4);
-  private static LoggedTunableNumber stallMinDistance             = tunableGroup.build("Stall/MinDistance", 0.05);
-  private static LoggedTunableNumber stallDebounce                = tunableGroup.build("Stall/Debounce", 0.15);
+  public static class Tunables extends AutoRegisterTunables {
+    public LoggedTunableNumber reefCirclingDistMeters;
+
+    @TunableEntry(defaultValue = 40.0)
+    public LoggedTunableNumber headingToleranceNearElements;
+
+    @TunableEntry(defaultValue = 0.4)
+    public LoggedTunableNumber stallMaxVelocity;
+
+    @TunableEntry(defaultValue = 0.05)
+    public LoggedTunableNumber stallMinDistance;
+
+    @TunableEntry(defaultValue = 0.15)
+    public LoggedTunableNumber stallDebounce;
+  }
+
+  private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
 
   private static LoggerGroup                     logGroup                = LoggerGroup.build("DriveToPosePathing");
   private static LoggerGroup                     pathGenLogGroup         = logGroup.subgroup("PathGeneration");
@@ -98,6 +101,9 @@ public class DriveToPosePathing extends Command {
     this.config      = config;
     this.currentPose = currentPose;
     this.targetPose  = targetPose;
+
+    tunables.reefCirclingDistMeters.initDefault(Constants.FieldConstants.HUB_DIAGONAL_WIDTH
+        .plus(Constants.RobotDimensions.ROBOT_DIMENSIONS_WITH_BUMPERS.getMeasureY()).div(2).in(Units.Meters) + 0.1);
   }
 
   public DriveToPosePathing setFinalOffsetError(double maxError) {
@@ -216,7 +222,7 @@ public class DriveToPosePathing extends Command {
     Rotation2d    reefCenterToEndHeading   = GeometryUtil.getHeading(reefCenter, end.getTranslation());
     Rotation2d    halfWayAngle             = midRotation(reefCenterToStartHeading, reefCenterToEndHeading);
     Translation2d midTranslation           = reefCenter
-        .plus(new Translation2d(reefCirclingDistMeters.get(), halfWayAngle));
+        .plus(new Translation2d(tunables.reefCirclingDistMeters.get(), halfWayAngle));
 
     double reefCenterToStartHeadingDeg = reefCenterToStartHeading.getDegrees();
     double reefCenterToEndHeadingDeg   = reefCenterToEndHeading.getDegrees();
@@ -463,16 +469,16 @@ public class DriveToPosePathing extends Command {
     if (currentPoseNextToReef) {
       double headingAwayFromReef = GeometryUtil
           .getHeading(Constants.FieldConstants.HUB_CENTER_POSE.get(), currentPose.get().getTranslation()).getDegrees();
-      startBottomRotationBound = headingAwayFromReef - headingToleranceNearElements.get();
-      startTopRotationBound    = headingAwayFromReef + headingToleranceNearElements.get();
+      startBottomRotationBound = headingAwayFromReef - tunables.headingToleranceNearElements.get();
+      startTopRotationBound    = headingAwayFromReef + tunables.headingToleranceNearElements.get();
     }
 
     if (targetPoseNextToReef) {
       double headingTowardReef = GeometryUtil
           .getHeading(targetPose.get().getTranslation(), Constants.FieldConstants.HUB_CENTER_POSE.get()).getDegrees();
 
-      endBottomRotationBound = headingTowardReef - headingToleranceNearElements.get();
-      endTopRotationBound    = headingTowardReef + headingToleranceNearElements.get();
+      endBottomRotationBound = headingTowardReef - tunables.headingToleranceNearElements.get();
+      endTopRotationBound    = headingTowardReef + tunables.headingToleranceNearElements.get();
     }
 
     Rotation2d headingToTarget = GeometryUtil.getHeading(currentPose.get().getTranslation(), target.getTranslation());

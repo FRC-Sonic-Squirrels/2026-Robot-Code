@@ -23,8 +23,9 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import frc.lib.constants.SwerveModuleConstants;
 import frc.robot.Constants;
-import frc.robot.configs.RobotConfig2024;
+
 import java.util.List;
 
 /**
@@ -36,13 +37,16 @@ import java.util.List;
  * accurate, but provide a decent approximation for the behavior of the module.
  */
 public class SwerveModuleIOSim implements SwerveModuleIO {
-  private static final double LOOP_PERIOD_SECS = Constants.kDefaultPeriod;
+  private final double LOOP_PERIOD_SECS = Constants.kDefaultPeriod;
+
+  public final double SWERVE_DRIVE_GEAR_RATIO = SwerveModuleConstants.MK5n.LEVEL_2_GEARING_DRIVE_GEAR_RATIO;
+  public final double SWERVE_STEER_GEAR_RATIO = SwerveModuleConstants.MK5n.GEARING_TURN_GEAR_RATIO;
 
   private final DCMotorSim driveSim = new DCMotorSim(
-      LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60(1), 0.025, RobotConfig2024.SWERVE_DRIVE_GEAR_RATIO),
+      LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60(1), 0.025, SWERVE_DRIVE_GEAR_RATIO),
       DCMotor.getKrakenX60(1));
   private final DCMotorSim turnSim  = new DCMotorSim(
-      LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60(1), 0.004, RobotConfig2024.SWERVE_STEER_GEAR_RATIO),
+      LinearSystemId.createDCMotorSystem(DCMotor.getKrakenX60(1), 0.004, SWERVE_STEER_GEAR_RATIO),
       DCMotor.getFalcon500(1));
 
   private final SimpleMotorFeedforward driveFeedforward;

@@ -27,9 +27,9 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class Vision extends SubsystemBase {
-  public static final String ROOT_TABLE = "Vision";
+  public final String ROOT_TABLE = "Vision";
 
-  private static final ExecutionTiming timing = new ExecutionTiming(ROOT_TABLE);
+  private final ExecutionTiming timing = new ExecutionTiming(ROOT_TABLE);
 
   public static class VisibleTagsLogs extends AutoRegisterLoggers {
     public LoggerEntry.StructArray<Pose3d> rawAllVisibleTags;
@@ -58,26 +58,34 @@ public class Vision extends SubsystemBase {
     public LoggerEntry.Decimal        poseEstimatorErrorRoll;
   }
 
-  public static final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
+  public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
   // Tunable numbers
 
-  protected static final TunableNumberGroup group = new TunableNumberGroup("Vision");
+  public static class Tunables extends AutoRegisterTunables {
+    @TunableEntry(defaultValue = 0.075)
+    public LoggedTunableNumber thetaStdDevCoefficient;
 
-  private static final LoggedTunableNumber thetaStdDevCoefficient = group.build("thetaStdDevCoefficient", 0.075);
-  private static final LoggedTunableNumber xyStdDevCoefficient    = group.build("xyStdDevCoefficient", 0.075);
+    @TunableEntry(defaultValue = 0.075)
+    public LoggedTunableNumber xyStdDevCoefficient;
 
-  private static final LoggedTunableNumber maxSingleTargetAmbiguity = group.build("MaxSingleTargetAmbiguity", 0.2);
+    @TunableEntry(defaultValue = 0.2)
+    public LoggedTunableNumber maxSingleTargetAmbiguity;
 
-  private static final LoggedTunableNumber maxValidDistanceAwayFromCurrentEstimateMeters = group
-      .build("MaxValidDistanceFromCurrentEstimateMeters", 30.0);
+    @TunableEntry(defaultValue = 30.0)
+    public LoggedTunableNumber maxValidDistanceAwayFromCurrentEstimateMeters;
 
-  private static final LoggedTunableNumber gyroFilteringToleranceDegrees = group.build("GyroFilteringToleranceDegrees",
-      20.0);
+    @TunableEntry(defaultValue = 20.0)
+    public LoggedTunableNumber gyroFilteringToleranceDegrees;
 
-  private static final LoggedTunableNumber zHeightToleranceMeters = group.build("zHeightToleranceMeters", 0.5);
+    @TunableEntry(defaultValue = 0.5)
+    public LoggedTunableNumber zHeightToleranceMeters;
 
-  private static final LoggedTunableNumber pitchAndRollToleranceDegrees = group.build("pitchToleranceDegrees", 10.0);
+    @TunableEntry(defaultValue = 10.0)
+    public LoggedTunableNumber pitchAndRollToleranceDegrees;
+  }
+
+  private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
 
   private final List<VisionModule> visionModules = new ArrayList<>();
 
@@ -251,7 +259,7 @@ public class Vision extends SubsystemBase {
       PhotonTrackedTarget singularTag = pipelineResult.getTargets().get(0);
 
       if (!isValidTarget(singularTag)) {
-        return (singularTag.getPoseAmbiguity() > maxSingleTargetAmbiguity.get())
+        return (singularTag.getPoseAmbiguity() > tunables.maxSingleTargetAmbiguity.get())
             ? VisionResultLoggedFields.unsuccessfulResult(VisionResultStatus.INVALID_TAG_AMBIGUITY_TOO_HIGH)
             : VisionResultLoggedFields.unsuccessfulResult(VisionResultStatus.INVALID_TAG);
       }
@@ -296,17 +304,17 @@ public class Vision extends SubsystemBase {
       var absError = Math.toDegrees(Math.abs(yawDelta));
       logs.rejectByGyroError.info(absError);
 
-      if (absError > gyroFilteringToleranceDegrees.get()) {
+      if (absError > tunables.gyroFilteringToleranceDegrees.get()) {
         logs.rejectByGyro.info(++useGyroBasedFilteringForVisionCount);
         return VisionResultLoggedFields.unsuccessfulResult(VisionResultStatus.NOT_CLOSE_ENOUGH_TO_GYRO_ROTATION);
       }
     }
 
-    if (Math.abs(newCalculatedRobotPose.getZ()) >= zHeightToleranceMeters.get()) {
+    if (Math.abs(newCalculatedRobotPose.getZ()) >= tunables.zHeightToleranceMeters.get()) {
       return VisionResultLoggedFields.unsuccessfulResult(VisionResultStatus.Z_HEIGHT_BAD);
     }
 
-    var pitchAndRollToleranceValue = pitchAndRollToleranceDegrees.get();
+    var pitchAndRollToleranceValue = tunables.pitchAndRollToleranceDegrees.get();
     if (Math.abs(poseRoll) >= pitchAndRollToleranceValue || Math.abs(posePitch) >= pitchAndRollToleranceValue) {
       return VisionResultLoggedFields.unsuccessfulResult(VisionResultStatus.PITCH_OR_ROLL_BAD);
     }
@@ -335,7 +343,7 @@ public class Vision extends SubsystemBase {
     var distanceFromExistingPoseEstimate = GeometryUtil.getDist(prevEstimatedRobotPose, newCalculatedRobotPose2d);
 
     if (useMaxDistanceAwayFromExistingEstimate
-        && (distanceFromExistingPoseEstimate > (maxValidDistanceAwayFromCurrentEstimateMeters.get()
+        && (distanceFromExistingPoseEstimate > (tunables.maxValidDistanceAwayFromCurrentEstimateMeters.get()
             * numTargetsSeen))) {
       logs.rejectByDistance.info(++useMaxDistanceAwayFromExistingEstimateCount);
       logs.rejectByDistanceError.info(distanceFromExistingPoseEstimate);
@@ -343,8 +351,10 @@ public class Vision extends SubsystemBase {
     }
 
     var averageDistanceFromTagsSquared = averageDistanceFromTags * averageDistanceFromTags;
-    var xyStandardDeviation            = xyStdDevCoefficient.get() * averageDistanceFromTagsSquared / numTargetsSeen;
-    var thetaStandardDeviation         = thetaStdDevCoefficient.get() * averageDistanceFromTagsSquared / numTargetsSeen;
+    var xyStandardDeviation            = tunables.xyStdDevCoefficient.get() * averageDistanceFromTagsSquared
+        / numTargetsSeen;
+    var thetaStandardDeviation         = tunables.thetaStdDevCoefficient.get() * averageDistanceFromTagsSquared
+        / numTargetsSeen;
 
     var visionUpdate            = new PoseEstimator.VisionUpdate(newCalculatedRobotPose2d, xyStandardDeviation,
         xyStandardDeviation, thetaStandardDeviation);
@@ -371,7 +381,7 @@ public class Vision extends SubsystemBase {
 
   public boolean isValidTarget(PhotonTrackedTarget target) {
     return target.getFiducialId() != -1 && target.getPoseAmbiguity() != -1
-        && target.getPoseAmbiguity() <= maxSingleTargetAmbiguity.get()
+        && target.getPoseAmbiguity() <= tunables.maxSingleTargetAmbiguity.get()
         && aprilTagLayout.getTagPose(target.getFiducialId()).isPresent();
   }
 

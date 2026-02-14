@@ -14,7 +14,7 @@ import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.RobotMode.RobotType;
 
 public class Climber extends SubsystemBase {
-  private static final String ROOT_TABLE = "ClimberWinch";
+  private final String ROOT_TABLE = "ClimberWinch";
 
   public static class Logs extends AutoRegisterLoggers {
     public LoggerEntry.Decimal                winchAngle;
@@ -28,47 +28,26 @@ public class Climber extends SubsystemBase {
 
   }
 
-  public static final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
+  public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
   // Execution timing
-  private static final ExecutionTiming winchTiming = new ExecutionTiming(ROOT_TABLE);
+  private final ExecutionTiming winchTiming = new ExecutionTiming(ROOT_TABLE);
 
   // Tunable Numbers
-  private static final TunableNumberGroup winchGroup = new TunableNumberGroup(ROOT_TABLE);
 
-  private static final LoggedTunableNumber winchkP = winchGroup.build("kP");
-  private static final LoggedTunableNumber winchkD = winchGroup.build("kD");
-  private static final LoggedTunableNumber winchkG = winchGroup.build("kG");
+  public static class Tunables extends AutoRegisterTunables {
+    public LoggedTunableNumber winchkP;
+    public LoggedTunableNumber winchkD;
+    public LoggedTunableNumber winchkG;
 
-  private static final LoggedTunableNumber maxVelocityConfig             = winchGroup.build("MaxVelocityConfig");
-  private static final LoggedTunableNumber winchTargetAccelerationConfig = winchGroup.build("TargetAccelerationConfig");
-  private static final LoggedTunableNumber toleranceDegrees              = winchGroup.build("ToleranceDegrees", 40);
+    public LoggedTunableNumber maxVelocityConfig;
+    public LoggedTunableNumber winchTargetAccelerationConfig;
 
-  // Tunable numbers
-
-  static {
-    if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_RETIRED_HOLO) {
-      winchkP.initDefault(4);
-      winchkD.initDefault(0);
-      winchkG.initDefault(0.0);
-
-      maxVelocityConfig.initDefault(10);
-      winchTargetAccelerationConfig.initDefault(10);
-
-    } else if (Constants.RobotMode.getRobot() == RobotType.ROBOT_SIMBOT) {
-
-      winchkP.initDefault(.02);
-      winchkD.initDefault(0);
-      winchkG.initDefault(0.0);
-
-      maxVelocityConfig.initDefault(40);
-      winchTargetAccelerationConfig.initDefault(80);
-    } else {
-      winchkP.initDefault(4);
-      winchkD.initDefault(0);
-      winchkG.initDefault(0.0);
-    }
+    @TunableEntry(defaultValue = 40.0)
+    public LoggedTunableNumber toleranceDegrees;
   }
+
+  private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
 
   private final ClimberIO        io;
   private final ClimberIO.Inputs winchInputs;
@@ -84,6 +63,27 @@ public class Climber extends SubsystemBase {
   public Climber(ClimberIO io) {
     this.io          = io;
     this.winchInputs = new ClimberIO.Inputs(logs.group);
+
+    if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_RETIRED_HOLO) {
+      tunables.winchkP.initDefault(4);
+      tunables.winchkD.initDefault(0);
+      tunables.winchkG.initDefault(0.0);
+
+      tunables.maxVelocityConfig.initDefault(10);
+      tunables.winchTargetAccelerationConfig.initDefault(10);
+
+    } else if (Constants.RobotMode.getRobot() == RobotType.ROBOT_SIMBOT) {
+      tunables.winchkP.initDefault(.02);
+      tunables.winchkD.initDefault(0);
+      tunables.winchkG.initDefault(0.0);
+
+      tunables.maxVelocityConfig.initDefault(40);
+      tunables.winchTargetAccelerationConfig.initDefault(80);
+    } else {
+      tunables.winchkP.initDefault(4);
+      tunables.winchkD.initDefault(0);
+      tunables.winchkG.initDefault(0.0);
+    }
 
     io.setWinchVoltage(0.0);
 
@@ -105,8 +105,7 @@ public class Climber extends SubsystemBase {
       logs.winchControlMode.info(winchControlMode);
 
       // Updating tunable numbers
-      var hc = hashCode();
-      if (winchkP.hasChanged(hc) || winchkD.hasChanged(hc) || winchkG.hasChanged(hc)) {
+      if (tunables.winchkP.hasChanged() || tunables.winchkD.hasChanged() || tunables.winchkG.hasChanged()) {
         setConstants();
       }
     }
@@ -116,7 +115,7 @@ public class Climber extends SubsystemBase {
   // setters
 
   private void setConstants() {
-    io.setWinchClosedLoopConstants(winchkP.get(), winchkD.get(), winchkG.get());
+    io.setWinchClosedLoopConstants(tunables.winchkP.get(), tunables.winchkD.get(), tunables.winchkG.get());
   }
 
   public void setWinchAngle(Rotation2d angle) {
@@ -172,7 +171,7 @@ public class Climber extends SubsystemBase {
   }
 
   public boolean isWinchAtTargetAngle(Rotation2d target) {
-    return isWinchAtTargetAngle(target, Rotation2d.fromDegrees(toleranceDegrees.get()));
+    return isWinchAtTargetAngle(target, Rotation2d.fromDegrees(tunables.toleranceDegrees.get()));
   }
 
   public Voltage getWinchVoltage() {

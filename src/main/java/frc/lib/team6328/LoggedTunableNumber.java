@@ -8,8 +8,6 @@
 package frc.lib.team6328;
 
 import edu.wpi.first.wpilibj.DriverStation;
-import java.util.HashMap;
-import java.util.Map;
 import org.littletonrobotics.junction.networktables.LoggedNetworkNumber;
 
 /*
@@ -30,8 +28,7 @@ public class LoggedTunableNumber {
   private boolean             hasDefault = false;
   private double              defaultValue;
   private LoggedNetworkNumber dashboardNumber;
-
-  private final Map<Integer, Double> lastHasChangedValues = new HashMap<>();
+  private Double              lastHasChangedValues;
 
   /**
    * Create a new LoggedTunableNumber
@@ -86,17 +83,14 @@ public class LoggedTunableNumber {
   /**
    * Checks whether the number has changed since our last check
    *
-   * @param id Unique identifier for the caller to avoid conflicts when shared
-   *           between multiple objects. Recommended approach is to pass the
-   *           result of "hashCode()"
    * @return True if the number has changed since the last time this method was
    *         called, false otherwise.
    */
-  public boolean hasChanged(int id) {
+  public boolean hasChanged() {
     double currentValue = get();
-    Double lastValue    = lastHasChangedValues.get(id);
+    Double lastValue    = lastHasChangedValues;
     if (lastValue == null || currentValue != lastValue) {
-      lastHasChangedValues.put(id, currentValue);
+      lastHasChangedValues = currentValue;
       return true;
     }
 

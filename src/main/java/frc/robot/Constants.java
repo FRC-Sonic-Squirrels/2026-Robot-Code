@@ -86,8 +86,6 @@ public final class Constants {
       // by only creating the specific config object corresponding to the robot type
       ROBOT_SIMBOT(SimulatorRobotConfig::new),
       ROBOT_SIMBOT_REAL_CAMERAS(SimulatorRobotConfig::new),
-      ROBOT_2023_RETIRED_ROBER(RobotConfig2023::new),
-      ROBOT_2024_RETIRED_MAESTRO(RobotConfig2024::new),
       ROBOT_2025_RETIRED_HOLO(RobotConfig2025::new),
       ROBOT_2026(RobotConfig2026::new); // Someone please name it...
 
@@ -116,7 +114,7 @@ public final class Constants {
      * <p>y = front to back
      */
     public static Translation2d ROBOT_DIMENSIONS_WITHOUT_BUMPERS() {
-      if (RobotMode.getRobot() == RobotType.ROBOT_2024_RETIRED_MAESTRO) {
+      if (RobotMode.getRobot() == RobotType.ROBOT_2026) {
         return new Translation2d(Units.Inches.of(27.0), Units.Inches.of(32.5));
       } else {
         return new Translation2d(Units.Inches.of(28.5), Units.Inches.of(30.5));
@@ -232,7 +230,7 @@ public final class Constants {
 
   public static class ElevatorConstants {
     public static final double GEAR_RATIO =
-        RobotMode.ROBOT == RobotType.ROBOT_2024_RETIRED_MAESTRO ? 23.05 : 6.4935;
+        RobotMode.ROBOT == RobotType.ROBOT_2026 ? 23.05 : 6.4935;
     public static final Distance PULLEY_DIAMETER = Units.Inches.of(2.35);
     public static final double CARRIAGE_MASS = 2.0; // arbitrary
 
@@ -241,7 +239,7 @@ public final class Constants {
             / (Math.PI * Constants.ElevatorConstants.PULLEY_DIAMETER.in(Units.Inches));
 
     public static final Distance MAX_HEIGHT =
-        RobotMode.ROBOT == RobotType.ROBOT_2024_RETIRED_MAESTRO
+        RobotMode.ROBOT == RobotType.ROBOT_2026
             ? Units.Inches.of(26.2)
             : Units.Inches.of(60);
 
@@ -323,7 +321,7 @@ public final class Constants {
     public static final double STATOR_CURRENT_LIMIT = 80.0;
 
     public static final double GEAR_RATIO =
-        RobotMode.ROBOT == RobotType.ROBOT_2024_RETIRED_MAESTRO
+        RobotMode.ROBOT == RobotType.ROBOT_2026
             ? (50.0 / 12.0) * (50.0 / 20.0) * (42.0 / 18.0)
             : 50.07;
 
@@ -336,7 +334,7 @@ public final class Constants {
     public static final Rotation2d ARM_SAFE_ANGLE = Rotation2d.fromDegrees(-87);
 
     public static final Distance ARM_LENGTH =
-        RobotMode.ROBOT == RobotType.ROBOT_2024_RETIRED_MAESTRO
+        RobotMode.ROBOT == RobotType.ROBOT_2026
             ? Units.Inches.of(14)
             : Units.Inches.of(22.080109);
 
@@ -368,28 +366,6 @@ public final class Constants {
     public static final Rotation2d IN_WINCH_ROTATIONS = Rotation2d.fromRotations(0);
 
     public static final Rotation2d CLIMB_WINCH_ROTATIONS = Rotation2d.fromRotations(3);
-  }
-
-  public static class VisionGamepieceConstants {
-    public static final Pose3d GAMEPIECE_CAMERA_POSE =
-        new Pose3d(
-            Units.Inches.of(5.3).in(Units.Meters),
-            0.0,
-            Units.Inches.of(18.725).in(Units.Meters),
-            new Rotation3d(0.0, Math.toRadians(-12), 0.0));
-    public static final String CAMERA_NAME = RobotConfig2024.OBJECT_DETECTION_CAMERA_NAME;
-    public static final int RESOLUTION_WIDTH_PIXELS = 960;
-    public static final int RESOLUTION_HEIGHT_PIXELS = 720;
-    public static final Rotation2d FOV_DIAGONAL = Rotation2d.fromDegrees(128.2);
-    public static final double AVERAGE_ERROR_PIXELS = 0.35;
-    public static final double AVERAGE_STANDARD_DEVIATION_PIXELS = 0.1;
-    public static final double FPS = 15;
-    public static final double AVERAGE_LATENCY_MS = 25;
-    public static final double AVERAGE_STANDARD_DEVIATION_MS = 10;
-  }
-
-  public static class AutoConstants {
-    public static final Distance DIST_TO_START_INTAKING = Units.Meters.of(1.0);
   }
 
 public static class ShooterConstants {
