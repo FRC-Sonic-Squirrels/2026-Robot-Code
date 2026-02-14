@@ -2,8 +2,6 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.units.Units;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.lib.team2930.AllianceAwareTranslation2d;
@@ -262,7 +260,7 @@ public class RobotStates {
     // tell the shooter how far away we are from the target <- landon did this
     shooter.setFacingTarget(rtfHelper.withinTolerance());
     shooter.setGoal(Shooter.Goal.Shooting);
-    shooter.setDistanceFromTarget(getDistanceFromTarget());
+    shooter.setDistanceFromTarget(rtfHelper.getDistance());
   }
 
   public void setMechState(MechState state) {
@@ -293,11 +291,5 @@ public class RobotStates {
       return true;
     }
     return false;
-  }
-
-  public Distance getDistanceFromTarget() {
-    var distanceFromTarget = GeometryUtil.getDist(drivetrain.getHubPoseEstimatorPose(true).getTranslation(),
-        Constants.FieldConstants.HUB_CENTER_POSE());
-    return Units.Meters.of(distanceFromTarget);
   }
 }
