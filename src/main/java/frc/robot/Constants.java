@@ -153,7 +153,7 @@ public final class Constants {
     public static Translation2d LEFT_PASS_AIM_POINT =
         new Translation2d(FIELD_LENGTH.div(4.0), FIELD_WIDTH.times(3.0 / 4.0));
 
-    public static Translation2d REEF_CENTER_POSE() {
+    public static Translation2d HUB_CENTER_POSE() {
       return AllianceFlipUtil.flipTranslationForAlliance(BLUE_HUB_CENTER_POSE);
     }
 
