@@ -35,7 +35,14 @@ public class ClimberIOReal implements ClimberIO {
     public StatusSignal<Current>         currentAmps;
     public StatusSignal<Temperature>     tempCelsius;
     public StatusSignal<AngularVelocity> velocityDegreesPerSecond;
+    /**
+     * @deprecated This field actually stores an angular position in degrees, not a height
+     *     in inches. Use {@link #angleDegrees} instead.
+     */
+    @Deprecated
     public StatusSignal<Angle>           targetHeightInches;
+    // Correctly named alias for the climber's angular position in degrees.
+    public StatusSignal<Angle>           angleDegrees;
   }
 
   public static class Logs extends AutoRegisterLoggers {
