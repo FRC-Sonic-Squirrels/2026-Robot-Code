@@ -9,6 +9,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.units.measure.Distance;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 import frc.lib.team2930.TunableNumberGroup;
@@ -36,6 +38,8 @@ public class RotateToFaceHelper {
   private final Supplier<Pose2d>        currentPose;
   private final ProfiledPIDController   rotationalPID = new ProfiledPIDController(0, 0, 0, new Constraints(0.0, 0.0));
 
+  private double currentErrorDist = -1.0;
+
   /** Creates a new RotateToFaceHelper . */
   public RotateToFaceHelper(DrivetrainWrapper wrapper, Supplier<Translation2d> target, Supplier<Pose2d> pose2d) {
     this.wrapper     = wrapper;
@@ -52,13 +56,13 @@ public class RotateToFaceHelper {
     rotationalPID.enableContinuousInput(-Math.PI, Math.PI);
   }
 
-  private Rotation2d faceTowardsCenter(Translation2d target) {
+  private static Rotation2d faceTowardsCenter(Translation2d current, Translation2d target) {
 
     double targetX = target.getX();
     double targetY = target.getY();
 
-    double robotX = currentPose.get().getTranslation().getX();
-    double robotY = currentPose.get().getTranslation().getY();
+    double robotX = current.getX();
+    double robotY = current.getY();
 
     double angleToCenter = Math.atan2(targetY - robotY, targetX - robotX);
 
@@ -73,11 +77,14 @@ public class RotateToFaceHelper {
       wrapper.resetRotationOverride();
       return;
     }
-    var targetangle         = faceTowardsCenter(target.get());
+    Translation2d currentTranslation = currentPose.get().getTranslation();
+
+    var targetangle         = RotateToFaceHelper.faceTowardsCenter(currentTranslation, target.get());
     var currentPoseRotation = currentPose.get().getRotation();
     var rotVel              = rotationalPID.calculate(currentPoseRotation.getRadians(), targetangle.getRadians());
     wrapper.setRotationOverride(rotVel);
 
+    currentErrorDist = target.get().getDistance(currentTranslation);
     log_rotVel.info(rotVel);
     log_targetRotation.info(targetangle);
     log_currentRotation.info(currentPoseRotation);
@@ -94,5 +101,9 @@ public class RotateToFaceHelper {
 
   public double getError() {
     return rotationalPID.getPositionError();
+  }
+
+  public Distance getDistance() {
+    return Units.Meters.of(currentErrorDist);
   }
 }
