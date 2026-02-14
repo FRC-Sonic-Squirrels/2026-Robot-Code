@@ -21,8 +21,6 @@ import frc.robot.Constants.IntakeConstants.PivotConstants;
 import frc.robot.Constants.RobotMode.RobotType;
 
 public class Intake extends SubsystemBase {
-  private static final String ROOT_TABLE = "Intake";
-
   public enum Goal {
     Idle, Stow, Down, Eject, Intake
   }
@@ -95,16 +93,16 @@ public class Intake extends SubsystemBase {
     public LoggedTunableNumber intakingFuelPivotAngle;
   }
 
-  public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
+  public final Logs logs;
 
   // Execution timing
-  private final ExecutionTiming timing = new ExecutionTiming(ROOT_TABLE);
+  private final ExecutionTiming timing;
 
   // Tunable numbers
-  private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
+  private final Tunables tunables;
 
   private final IntakeIO        io;
-  private final IntakeIO.Inputs inputs = new IntakeIO.Inputs(logs.group);
+  private final IntakeIO.Inputs inputs;
 
   // Intake states
   private Goal goal = Goal.Stow;
@@ -118,12 +116,21 @@ public class Intake extends SubsystemBase {
 
   private ControlMode rollerControlMode = ControlMode.OPEN_LOOP;
 
-  private Trigger stallDetected = new Trigger(() -> inputs.rollerVelocityRPM <= 50 && inputs.rollerAppliedVolts >= 0.5)
-      .debounce(.1);
+  private final Trigger stallDetected;
 
   /** Creates a new Intake. */
-  public Intake(IntakeIO io) {
-    this.io = io;
+  public Intake(String name, IntakeIO io) {
+    logs = LoggerGroup.root.newAutoLogger(Logs.class, name);
+
+    // Execution timing
+    timing = new ExecutionTiming(name);
+
+    // Tunable numbers
+    tunables = TunableNumberGroup.newAutoTunable(Tunables.class, name);
+
+    this.io       = io;
+    this.inputs   = new IntakeIO.Inputs(logs.group);
+    stallDetected = new Trigger(() -> inputs.rollerVelocityRPM <= 50 && inputs.rollerAppliedVolts >= 0.5).debounce(.1);
 
     // Motion constants
     if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_RETIRED_HOLO) {

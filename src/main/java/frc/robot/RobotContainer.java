@@ -165,6 +165,9 @@ public class RobotContainer {
     var config = robotType.config.get();
     aprilTagLayout = config.getAprilTagFieldLayout();
 
+    String leftIntakeRoot  = "LeftIntake";
+    String rightIntakeRoot = "RightIntake";
+
     if (mode == Mode.REPLAY) {
       drivetrain = new Drivetrain(config, new GyroIO.Fake(), new GyroIO.Fake(), config.getReplaySwerveModuleObjects(),
           () -> is_autonomous);
@@ -172,9 +175,9 @@ public class RobotContainer {
       vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
           drivetrain::addVisionEstimate, config.getReplayVisionModules());
 
-      leftIntake  = new Intake(new IntakeIO() {
+      leftIntake  = new Intake(leftIntakeRoot, new IntakeIO() {
                   });
-      rightIntake = new Intake(new IntakeIO() {
+      rightIntake = new Intake(rightIntakeRoot, new IntakeIO() {
                   });
       climber     = new Climber(new ClimberIO() {
                   });
@@ -212,8 +215,8 @@ public class RobotContainer {
             vision.logs.configTagAmount.info(config.getAprilTagFieldLayout().getTags().size());
           }
 
-          rightIntake = new Intake(new IntakeIOSim());
-          leftIntake = new Intake(new IntakeIOSim());
+          leftIntake = new Intake(leftIntakeRoot, new IntakeIOSim());
+          rightIntake = new Intake(rightIntakeRoot, new IntakeIOSim());
           climber = new Climber(new ClimberIOSim());
           hopper = new Hopper(new HopperIOSim());
           shooter = new Shooter(new ShooterIOSim());
@@ -226,9 +229,9 @@ public class RobotContainer {
           } catch (InterruptedException e) {
             System.out.println("sleep interrupted");
           }
-          leftIntake = new Intake(new IntakeIO() {
+          leftIntake = new Intake(leftIntakeRoot, new IntakeIO() {
           });
-          rightIntake = new Intake(new IntakeIO() {
+          rightIntake = new Intake(rightIntakeRoot, new IntakeIO() {
           });
           climber = new Climber(new ClimberIOReal());
           drivetrain = new Drivetrain(config, new GyroIOPigeon2(config, config.getGyroCANID()), new GyroIO.Fake(),
@@ -257,14 +260,14 @@ public class RobotContainer {
             IntakeIOConfig rightIntakeIOConfig = new IntakeIOConfig(Constants.CanIDs.INTAKE_RIGHT_PIVOT_CAN_ID,
                 Constants.CanIDs.INTAKE_RIGHT_ROLLER_CAN_ID, InvertedValue.Clockwise_Positive,
                 InvertedValue.Clockwise_Positive);
-            leftIntake  = new Intake(new IntakeIOReal(leftIntakeIOConfig));
-            rightIntake = new Intake(new IntakeIOReal(rightIntakeIOConfig));
+            leftIntake  = new Intake(leftIntakeRoot, new IntakeIOReal(leftIntakeIOConfig));
+            rightIntake = new Intake(rightIntakeRoot, new IntakeIOReal(rightIntakeIOConfig));
             climber     = new Climber(new ClimberIOReal());
             shooter     = new Shooter(new ShooterIOReal());
           } else {
-            leftIntake  = new Intake(new IntakeIO() {
+            leftIntake  = new Intake(leftIntakeRoot, new IntakeIO() {
                         });
-            rightIntake = new Intake(new IntakeIO() {
+            rightIntake = new Intake(rightIntakeRoot, new IntakeIO() {
                         });
             climber     = new Climber(new ClimberIO() {
                         });
@@ -286,9 +289,9 @@ public class RobotContainer {
               config.getReplaySwerveModuleObjects(), () -> is_autonomous);
           vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
               drivetrain::addVisionEstimate, config.getReplayVisionModules());
-          leftIntake = new Intake(new IntakeIO() {
+          leftIntake = new Intake(leftIntakeRoot, new IntakeIO() {
           });
-          rightIntake = new Intake(new IntakeIO() {
+          rightIntake = new Intake(rightIntakeRoot, new IntakeIO() {
           });
           climber = new Climber(new ClimberIO() {
           });
