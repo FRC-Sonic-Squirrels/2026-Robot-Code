@@ -78,7 +78,9 @@ public class LoggerGroup {
   private static final Object spoolerSignal = new Object();
   private static Thread       spoolerThread;
 
-  public static final LoggerGroup root;
+  public static final LoggerGroup  root;
+  private static final LoggerGroup startup;
+  private static int               startupSequence;
 
   private final String  path;
   private LoggerGroup[] groups  = new LoggerGroup[0];
@@ -86,6 +88,7 @@ public class LoggerGroup {
 
   static {
     root               = new LoggerGroup("");
+    startup            = root.subgroup("ExecutionTiming/_Startup");
     akitTable          = NetworkTableInstance.getDefault().getTable(rootKey);
     timestampPublisher = akitTable.getIntegerTopic(timestampKey.substring(1)).publish(PubSubOption.sendAll(true));
   }
@@ -692,7 +695,14 @@ public class LoggerGroup {
   }
 
   public <T extends AutoRegisterLoggers> T newAutoLogger(Class<T> clz, String name) {
-    var group = subgroup(name);
+    var startTime = RobotController.getFPGATime();
+
+    var group = name != null ? subgroup(name) : this;
+
+    synchronized (startup) {
+      startup.buildInteger(String.format("%03d_%s", startupSequence++, group.toString().replace('/', '_')))
+          .info(startTime / 1000);
+    }
 
     var instance = Reflection.newInstance(clz);
     instance.group = group;
@@ -702,7 +712,7 @@ public class LoggerGroup {
       var accessor = new Reflection.FieldAccessor(v);
 
       var frequency = 50;
-      var logName   = f;
+      var logName   = f.substring(0, 1).toUpperCase() + f.substring(1);
       var anno      = v.getAnnotation(LogEntry.class);
       if (anno != null) {
         frequency = anno.updatePerSecond();
@@ -739,6 +749,8 @@ public class LoggerGroup {
         accessor.set(instance, group.buildBytes(logName, frequency));
       } else if (t == LoggerEntry.Mechanism.class) {
         accessor.set(instance, group.buildMechanism2d(logName, frequency));
+      } else if (t == LoggerEntry.Condition.class) {
+        accessor.set(instance, group.buildCondition(logName));
       } else if (t == LoggerEntry.EnumValue.class) {
         accessor.set(instance, group.buildEnum(logName, frequency));
       } else if (t == LoggerEntry.Struct.class) {

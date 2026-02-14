@@ -12,6 +12,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.lib.team2930.AutoRegisterLoggers;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 import frc.robot.Constants;
@@ -21,14 +22,16 @@ import java.util.function.DoubleSupplier;
 public class DrivetrainDefaultTeleopDrive extends Command {
   private static final String ROOT_TABLE = "TeleopDrive";
 
-  private static final LoggerGroup                       logGroup            = LoggerGroup.build(ROOT_TABLE);
-  private static final LoggerEntry.Decimal               log_XSupplier       = logGroup.buildDecimal("XSupplier");
-  private static final LoggerEntry.Decimal               log_YSupplier       = logGroup.buildDecimal("YSupplier");
-  private static final LoggerEntry.Decimal               log_OmegaSupplier   = logGroup.buildDecimal("OmegaSupplier");
-  private static final LoggerEntry.Decimal               log_LinearMagnitude = logGroup.buildDecimal("LinearMagnitude");
-  private static final LoggerEntry.Decimal               log_LinearDirection = logGroup.buildDecimal("LinearDirection");
-  private static final LoggerEntry.Struct<Translation2d> log_LinearVelocity  = logGroup.buildStruct(Translation2d.class,
-      "LinearVelocity");
+  public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.Decimal               xSupplier;
+    public LoggerEntry.Decimal               ySupplier;
+    public LoggerEntry.Decimal               omegaSupplier;
+    public LoggerEntry.Decimal               linearMagnitude;
+    public LoggerEntry.Decimal               linearDirection;
+    public LoggerEntry.Struct<Translation2d> linearVelocity;
+  }
+
+  public static final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
   /** Creates a new DrivetrainDefaultTeleopDrive. */
   private final DrivetrainWrapper drivetrain;
@@ -76,13 +79,13 @@ public class DrivetrainDefaultTeleopDrive extends Command {
     Translation2d linearVelocity = new Pose2d(Constants.zeroTranslation2d, linearDirection)
         .transformBy(new Transform2d(linearMagnitude, 0.0, Constants.zeroRotation2d)).getTranslation();
 
-    log_XSupplier.info(xSupplier.getAsDouble());
-    log_YSupplier.info(ySupplier.getAsDouble());
-    log_OmegaSupplier.info(omegaSupplier.getAsDouble());
+    logs.xSupplier.info(xSupplier.getAsDouble());
+    logs.ySupplier.info(ySupplier.getAsDouble());
+    logs.omegaSupplier.info(omegaSupplier.getAsDouble());
 
-    log_LinearMagnitude.info(linearMagnitude);
-    log_LinearDirection.info(linearDirection);
-    log_LinearVelocity.info(linearVelocity);
+    logs.linearMagnitude.info(linearMagnitude);
+    logs.linearDirection.info(linearDirection);
+    logs.linearVelocity.info(linearVelocity);
 
     // Convert to field relative speeds & send command
     ChassisSpeeds chassisSpeeds = new ChassisSpeeds(

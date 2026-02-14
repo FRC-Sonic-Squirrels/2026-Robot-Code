@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
+import frc.lib.team2930.AutoRegisterLoggers;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 import frc.lib.team2930.TunableNumberGroup;
@@ -21,11 +22,14 @@ import java.util.function.Supplier;
 public class RotateToFaceHelper {
   private static final String ROOT_TABLE = "RotateToFaceHelper";
 
-  private static final LoggerGroup         logGroup             = LoggerGroup.build(ROOT_TABLE);
-  private static final LoggerEntry.Decimal log_rotVel           = logGroup.buildDecimal("rotVel");
-  private static final LoggerEntry.Decimal log_targetRotation   = logGroup.buildDecimal("targetRotation");
-  private static final LoggerEntry.Decimal log_currentRotation  = logGroup.buildDecimal("currentRotation");
-  private static final LoggerEntry.Decimal log_positionErrorDeg = logGroup.buildDecimal("positionErrorDeg");
+  public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.Decimal rotVel;
+    public LoggerEntry.Decimal targetRotation;
+    public LoggerEntry.Decimal currentRotation;
+    public LoggerEntry.Decimal positionErrorDeg;
+  }
+
+  public static final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
   private static final TunableNumberGroup  groupTunable     = new TunableNumberGroup(ROOT_TABLE);
   private static final LoggedTunableNumber tunableKP        = groupTunable.build("kP", 4.9);
@@ -85,12 +89,12 @@ public class RotateToFaceHelper {
     var currentPoseRotation = pose.getRotation();
     var rotVel              = rotationalPID.calculate(currentPoseRotation.getRadians(), targetangle.getRadians());
     wrapper.setRotationOverride(rotVel);
-
     currentDist = targetTranslation.getDistance(currentTranslation);
-    log_rotVel.info(rotVel);
-    log_targetRotation.info(targetangle);
-    log_currentRotation.info(currentPoseRotation);
-    log_positionErrorDeg.info(Math.toDegrees(getError()));
+
+    logs.rotVel.info(rotVel);
+    logs.targetRotation.info(targetangle);
+    logs.currentRotation.info(currentPoseRotation);
+    logs.positionErrorDeg.info(Math.toDegrees(getError()));
   }
 
   public void end() {

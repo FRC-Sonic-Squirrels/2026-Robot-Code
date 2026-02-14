@@ -7,28 +7,27 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
-import frc.lib.team2930.GeometryUtil;
-import frc.lib.team2930.LoggerEntry;
-import frc.lib.team2930.LoggerGroup;
-import frc.lib.team2930.TunableNumberGroup;
+import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 
 public class DriveToGamepieceHelper {
   private static final String ROOT_TABLE = "DriveToGamepiece";
 
-  private static final LoggerGroup         logGroup                   = LoggerGroup.build(ROOT_TABLE);
-  private static final LoggerEntry.Decimal log_rotationalErrorDegrees = logGroup.buildDecimal("rotationalError");
-  private static final LoggerEntry.Decimal log_xVel                   = logGroup.buildDecimal("xVel");
-  private static final LoggerEntry.Decimal log_yVel                   = logGroup.buildDecimal("yVel");
-  private static final LoggerEntry.Decimal log_rotVel                 = logGroup.buildDecimal("rotVel");
-  private static final LoggerEntry.Bool    log_isAtTarget             = logGroup.buildBoolean("isAtTarget");
+  public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.Decimal rotationalErrorDegrees;
+    public LoggerEntry.Decimal xVel;
+    public LoggerEntry.Decimal yVel;
+    public LoggerEntry.Decimal rotVel;
+    public LoggerEntry.Bool    isAtTarget;
+  }
 
-  private static final TunableNumberGroup group = new TunableNumberGroup(ROOT_TABLE);
+  public static final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
-  private static final LoggedTunableNumber kP = group.build("kP", 2.0);
-  private static final LoggedTunableNumber kI = group.build("kI", 0.0);
-  private static final LoggedTunableNumber kD = group.build("kD", 0.0);
+  private static final TunableNumberGroup  group = new TunableNumberGroup(ROOT_TABLE);
+  private static final LoggedTunableNumber kP    = group.build("kP", 2.0);
+  private static final LoggedTunableNumber kI    = group.build("kI", 0.0);
+  private static final LoggedTunableNumber kD    = group.build("kD", 0.0);
 
   private static final LoggedTunableNumber rotationKp = group.build("rotationKp", 4.8);
 
@@ -71,8 +70,9 @@ public class DriveToGamepieceHelper {
   }
 
   public ChassisSpeeds calculateChassisSpeeds(Translation2d targetGamepiece, Pose2d pose) {
-    if (targetGamepiece == null)
+    if (targetGamepiece == null) {
       return null;
+    }
     double rotationalErrorDegrees;
     double xVel;
     double yVel;
@@ -118,11 +118,11 @@ public class DriveToGamepieceHelper {
 
     rotVel = rotController.calculate(pose.getRotation().getRadians(), gamepieceDirection.getRadians());
 
-    log_rotationalErrorDegrees.info(rotationalErrorDegrees);
-    log_xVel.info(xVel);
-    log_yVel.info(yVel);
-    log_rotVel.info(rotVel);
-    log_isAtTarget.info(xController.atSetpoint() && yController.atSetpoint() && rotController.atSetpoint());
+    logs.rotationalErrorDegrees.info(rotationalErrorDegrees);
+    logs.xVel.info(xVel);
+    logs.yVel.info(yVel);
+    logs.rotVel.info(rotVel);
+    logs.isAtTarget.info(xController.atSetpoint() && yController.atSetpoint() && rotController.atSetpoint());
 
     return ChassisSpeeds.fromFieldRelativeSpeeds(xVel, yVel, rotVel, pose.getRotation());
   }

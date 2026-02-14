@@ -9,6 +9,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import frc.lib.team2930.AutoRegisterLoggers;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 import frc.lib.team2930.TunableNumberGroup;
@@ -18,15 +19,14 @@ import frc.robot.Constants;
 public class DrivetrainWrapper {
   private static final String ROOT_TABLE = "DrivetrainWrapper";
 
-  // Logging
-  private static final LoggerGroup                       logGroup                 = LoggerGroup.build(ROOT_TABLE);
-  private static final LoggerEntry.Struct<ChassisSpeeds> logChassisSpeedsBase     = logGroup
-      .buildStruct(ChassisSpeeds.class, "chassisSpeedsBase");
-  private static final LoggerEntry.Struct<ChassisSpeeds> logChassisSpeedsOverride = logGroup
-      .buildStruct(ChassisSpeeds.class, "chassisSpeedsOverride");
-  private static final LoggerEntry.Decimal               logOmegaOverride         = logGroup
-      .buildDecimal("omegaOverride");
-  private static final LoggerEntry.Decimal               logGyroDrift             = logGroup.buildDecimal("gyroDrift");
+  public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.Struct<ChassisSpeeds> chassisSpeedsBase;
+    public LoggerEntry.Struct<ChassisSpeeds> chassisSpeedsOverride;
+    public LoggerEntry.Decimal               omegaOverride;
+    public LoggerEntry.Decimal               gyroDrift;
+  }
+
+  public static final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
   private static final TunableNumberGroup  tunableGroup       = new TunableNumberGroup(ROOT_TABLE);
   private static final LoggedTunableNumber driveSpeedPercent  = tunableGroup.build("driveSpeedPercent", 100.0);
@@ -46,12 +46,12 @@ public class DrivetrainWrapper {
   public void apply() {
     // Log chassis speeds
     if (chassisSpeedsBase != null) {
-      logChassisSpeedsBase.info(chassisSpeedsBase);
+      logs.chassisSpeedsBase.info(chassisSpeedsBase);
     }
     if (chassisSpeedsOverride != null) {
-      logChassisSpeedsOverride.info(chassisSpeedsOverride);
+      logs.chassisSpeedsOverride.info(chassisSpeedsOverride);
     }
-    logOmegaOverride.info(omegaOverride);
+    logs.omegaOverride.info(omegaOverride);
 
     ChassisSpeeds chassisSpeeds = chassisSpeedsBase;
 
@@ -83,9 +83,8 @@ public class DrivetrainWrapper {
     var pose1 = getHubPoseEstimatorPose(false);
     var pose2 = getHubPoseEstimatorPose(true);
 
-    logGyroDrift.info(pose1.getRotation().minus(pose2.getRotation())); // Dif between strictly gyro estimate and vision
-                                                                       // assisted
-    // estimate
+    // Diff between strictly gyro estimate and vision assisted estimate
+    logs.gyroDrift.info(pose1.getRotation().minus(pose2.getRotation()));
   }
 
   // Setters

@@ -117,7 +117,7 @@ public class Drivetrain extends SubsystemBase {
     public LoggerEntry.Integer rejectionNoDriveData;
   }
 
-  private static final LocalizationLogs localizationLogs = logGroup.newAutoLogger(LocalizationLogs.class,
+  private static final LocalizationLogs localizationLogs = LoggerGroup.root.newAutoLogger(LocalizationLogs.class,
       "Localization");
 
   public static class RobotLogs extends AutoRegisterLoggers {

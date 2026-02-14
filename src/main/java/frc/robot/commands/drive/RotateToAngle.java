@@ -9,6 +9,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.lib.team2930.AutoRegisterLoggers;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 import frc.lib.team2930.TunableNumberGroup;
@@ -19,11 +20,14 @@ import java.util.function.Supplier;
 public class RotateToAngle extends Command {
   private static final String ROOT_TABLE = "RotateToAngle";
 
-  private static final LoggerGroup         logGroup             = LoggerGroup.build(ROOT_TABLE);
-  private static final LoggerEntry.Decimal log_rotVel           = logGroup.buildDecimal("rotVel");
-  private static final LoggerEntry.Decimal log_targetRotation   = logGroup.buildDecimal("targetRotation");
-  private static final LoggerEntry.Decimal log_currentRotation  = logGroup.buildDecimal("currentRotation");
-  private static final LoggerEntry.Decimal log_positionErrorDeg = logGroup.buildDecimal("positionErrorDeg");
+  public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.Decimal rotVel;
+    public LoggerEntry.Decimal targetRotation;
+    public LoggerEntry.Decimal currentRotation;
+    public LoggerEntry.Decimal positionErrorDeg;
+  }
+
+  public static final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
   private static final TunableNumberGroup  groupTunable     = new TunableNumberGroup(ROOT_TABLE);
   private static final LoggedTunableNumber tunableKP        = groupTunable.build("kP", 4.9);
@@ -62,10 +66,10 @@ public class RotateToAngle extends Command {
     var rotVel              = rotationalPID.calculate(currentPoseRotation.getRadians(), target.getRadians());
     wrapper.setRotationOverride(rotVel);
 
-    log_rotVel.info(rotVel);
-    log_targetRotation.info(target);
-    log_currentRotation.info(currentPoseRotation);
-    log_positionErrorDeg.info(Math.toDegrees(rotationalPID.getPositionError()));
+    logs.rotVel.info(rotVel);
+    logs.targetRotation.info(target);
+    logs.currentRotation.info(currentPoseRotation);
+    logs.positionErrorDeg.info(Math.toDegrees(rotationalPID.getPositionError()));
   }
 
   // Called once the command ends or is interrupted.

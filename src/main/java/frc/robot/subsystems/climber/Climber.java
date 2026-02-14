@@ -14,31 +14,27 @@ import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.RobotMode.RobotType;
 
 public class Climber extends SubsystemBase {
-  // Execution timing
-  private static final ExecutionTiming winchTiming = new ExecutionTiming(ClimberConstants.WINCH_ROOT_TABLE);
-  // Logging
-  private static final LoggerGroup                        winchLogGroup                           = LoggerGroup
-      .build(ClimberConstants.WINCH_ROOT_TABLE);
-  private static final LoggerEntry.Decimal                logInputs_winchAngle                    = winchLogGroup
-      .buildDecimal("AngleDegrees");
-  private static final LoggerEntry.Decimal                logInputs_winchAppliedVolts             = winchLogGroup
-      .buildDecimal("AppliedVolts");
-  private static final LoggerEntry.Decimal                logInputs_winchCurrentAmps              = winchLogGroup
-      .buildDecimal("CurrentAmps");
-  private static final LoggerEntry.Decimal                logInputs_winchTempCelsius              = winchLogGroup
-      .buildDecimal("TempCelsius");
-  private static final LoggerEntry.Decimal                logInputs_winchVelocityDegreesPerSecond = winchLogGroup
-      .buildDecimal("VelocityDegreesPerSecond");
-  private static final LoggerEntry.EnumValue<ControlMode> logWinchControlMode                     = winchLogGroup
-      .buildEnum("ControlMode");
-  private static final LoggerEntry.Decimal                logTargetAngleDegrees                   = winchLogGroup
-      .buildDecimal("targetAngleDegrees");
+  private static final String ROOT_TABLE = "ClimberWinch";
 
-  private static final LoggerGroup         servoLogGroup        = LoggerGroup.build(ClimberConstants.SERO_ROOT_TABLE);
-  private static final LoggerEntry.Decimal log_servoTargetAngle = servoLogGroup.buildDecimal("TargetAngle");
+  public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.Decimal                winchAngle;
+    public LoggerEntry.Decimal                winchAppliedVolts;
+    public LoggerEntry.Decimal                winchCurrentAmps;
+    public LoggerEntry.Decimal                winchTempCelsius;
+    public LoggerEntry.Decimal                winchVelocityDegreesPerSecond;
+    public LoggerEntry.EnumValue<ControlMode> winchControlMode;
+    public LoggerEntry.Decimal                winchTargetAngleDegrees;
+    public LoggerEntry.Decimal                servoTargetAngleDegrees;
+
+  }
+
+  public static final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
+
+  // Execution timing
+  private static final ExecutionTiming winchTiming = new ExecutionTiming(ROOT_TABLE);
 
   // Tunable Numbers
-  private static final TunableNumberGroup winchGroup = new TunableNumberGroup(ClimberConstants.WINCH_ROOT_TABLE);
+  private static final TunableNumberGroup winchGroup = new TunableNumberGroup(ROOT_TABLE);
 
   private static final LoggedTunableNumber winchkP = winchGroup.build("kP");
   private static final LoggedTunableNumber winchkD = winchGroup.build("kD");
@@ -75,7 +71,7 @@ public class Climber extends SubsystemBase {
   }
 
   private final ClimberIO        io;
-  private final ClimberIO.Inputs winchInputs = new ClimberIO.Inputs(winchLogGroup);
+  private final ClimberIO.Inputs winchInputs;
 
   private ControlMode winchControlMode        = ControlMode.OPEN_LOOP;
   private Rotation2d  winchTargetAngleDegrees = Constants.zeroRotation2d;
@@ -86,7 +82,8 @@ public class Climber extends SubsystemBase {
 
   /** Creates a new ClimberSubsystem. */
   public Climber(ClimberIO io) {
-    this.io = io;
+    this.io          = io;
+    this.winchInputs = new ClimberIO.Inputs(logs.group);
 
     io.setWinchVoltage(0.0);
 
@@ -99,13 +96,13 @@ public class Climber extends SubsystemBase {
     try (var ignored = winchTiming.start()) {
       // Winch logging
       io.updateWinchInputs(winchInputs);
-      logInputs_winchAngle.info(winchInputs.winchPosition);
-      logInputs_winchAppliedVolts.info(winchInputs.winchAppliedVolts);
-      logInputs_winchCurrentAmps.info(winchInputs.winchCurrentAmps);
-      logInputs_winchTempCelsius.info(winchInputs.winchTempCelsius);
-      logInputs_winchVelocityDegreesPerSecond.info(winchInputs.winchVelocityDegreesPerSecond);
 
-      logWinchControlMode.info(winchControlMode);
+      logs.winchAngle.info(winchInputs.winchPosition);
+      logs.winchAppliedVolts.info(winchInputs.winchAppliedVolts);
+      logs.winchCurrentAmps.info(winchInputs.winchCurrentAmps);
+      logs.winchTempCelsius.info(winchInputs.winchTempCelsius);
+      logs.winchVelocityDegreesPerSecond.info(winchInputs.winchVelocityDegreesPerSecond);
+      logs.winchControlMode.info(winchControlMode);
 
       // Updating tunable numbers
       var hc = hashCode();
@@ -113,7 +110,7 @@ public class Climber extends SubsystemBase {
         setConstants();
       }
     }
-    log_servoTargetAngle.info(servoTargetAngle);
+    logs.servoTargetAngleDegrees.info(servoTargetAngle);
   }
 
   // setters
@@ -130,7 +127,7 @@ public class Climber extends SubsystemBase {
     winchControlMode        = ControlMode.CLOSED_LOOP;
     winchTargetAngleDegrees = angle;
     io.setWinchClosedLoopPosition(angle);
-    logTargetAngleDegrees.info(winchTargetAngleDegrees);
+    logs.winchTargetAngleDegrees.info(winchTargetAngleDegrees);
   }
 
   public void resetWinchSubsystem() {

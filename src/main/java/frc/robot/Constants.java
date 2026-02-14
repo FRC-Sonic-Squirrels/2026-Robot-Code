@@ -181,8 +181,6 @@ public final class Constants {
   }
 
   public static class IntakeConstants {
-    public static final String ROOT_TABLE = "Intake";
-
     public static class RollerConstants {
 
       public static final double ROLLER_GEARING = 10.4167;
@@ -218,8 +216,6 @@ public final class Constants {
       public static final Rotation2d ALGAE_SCORE_ANGLE = Rotation2d.fromDegrees(45);
 
       public static final Distance PIVOT_LENGTH = Units.Inches.of(6.215);
-
-      public static final String ROOT_TABLE = "Pivot";
     }
   }
 
@@ -367,15 +363,11 @@ public final class Constants {
 
     public static final Rotation2d SERVO_UNLOCK_ANGLE = Rotation2d.fromDegrees(170);
 
-    public static final String SERO_ROOT_TABLE = "ClimberServo";
-
     public static final Rotation2d OUT_WINCH_ROTATIONS = Rotation2d.fromRotations(6);
 
     public static final Rotation2d IN_WINCH_ROTATIONS = Rotation2d.fromRotations(0);
 
     public static final Rotation2d CLIMB_WINCH_ROTATIONS = Rotation2d.fromRotations(3);
-
-    public static final String WINCH_ROOT_TABLE = "ClimberWinch";
   }
 
   public static class VisionGamepieceConstants {

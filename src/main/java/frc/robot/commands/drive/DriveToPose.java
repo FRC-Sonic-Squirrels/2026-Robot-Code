@@ -17,6 +17,7 @@ import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.lib.team2930.AutoRegisterLoggers;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 import frc.lib.team2930.TunableNumberGroup;
@@ -29,23 +30,20 @@ import java.util.function.Supplier;
 public class DriveToPose extends Command {
   private static final String ROOT_TABLE = "DriveToPose";
 
-  private static final LoggerGroup                logGroup                    = LoggerGroup.build(ROOT_TABLE);
-  private static final LoggerEntry.Decimal        log_DistanceMeasured        = logGroup
-      .buildDecimal("DistanceMeasured");
-  private static final LoggerEntry.Decimal        log_DistanceSetpoint        = logGroup
-      .buildDecimal("DistanceSetpoint");
-  private static final LoggerEntry.Decimal        log_ThetaMeasured           = logGroup.buildDecimal("ThetaMeasured");
-  private static final LoggerEntry.Decimal        log_ThetaSetpoint           = logGroup.buildDecimal("ThetaSetpoint");
-  private static final LoggerEntry.Bool           log_isScheduled             = logGroup.buildBoolean("isScheduled");
-  private static final LoggerEntry.Bool           log_DriveControllerIsAtGoal = logGroup
-      .buildBoolean("DriveControllerIsAtGoal");
-  private static final LoggerEntry.Bool           log_ThetaControllerIsAtGoal = logGroup
-      .buildBoolean("ThetaControllerIsAtGoal");
-  private static final LoggerEntry.Bool           log_IsAtGoal                = logGroup.buildBoolean("IsAtGoal");
-  private static final LoggerEntry.Struct<Pose2d> log_Setpoint                = logGroup.buildStruct(Pose2d.class,
-      "Setpoint");
-  private static final LoggerEntry.Struct<Pose2d> log_Goal                    = logGroup.buildStruct(Pose2d.class,
-      "Goal");
+  public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.Decimal        distanceMeasured;
+    public LoggerEntry.Decimal        distanceSetpoint;
+    public LoggerEntry.Decimal        thetaMeasured;
+    public LoggerEntry.Decimal        thetaSetpoint;
+    public LoggerEntry.Bool           isScheduled;
+    public LoggerEntry.Bool           driveControllerIsAtGoal;
+    public LoggerEntry.Bool           thetaControllerIsAtGoal;
+    public LoggerEntry.Bool           isAtGoal;
+    public LoggerEntry.Struct<Pose2d> setpoint;
+    public LoggerEntry.Struct<Pose2d> goal;
+  }
+
+  public static final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
   private static final TunableNumberGroup group = new TunableNumberGroup(ROOT_TABLE);
 
@@ -225,16 +223,16 @@ public class DriveToPose extends Command {
     }
 
     // Log data
-    log_DistanceMeasured.info(currentDistance);
-    log_DistanceSetpoint.info(driveController.getSetpoint().position);
-    log_ThetaMeasured.info(currentPose.getRotation().getRadians());
-    log_ThetaSetpoint.info(thetaController.getSetpoint().position);
-    log_Setpoint.info(new Pose2d(lastSetpointTranslation, new Rotation2d(thetaController.getSetpoint().position)));
-    log_Goal.info(targetPose);
-    log_isScheduled.info(isScheduled());
-    log_DriveControllerIsAtGoal.info(driveController.atGoal());
-    log_ThetaControllerIsAtGoal.info(thetaController.atGoal());
-    log_IsAtGoal.info(atGoal());
+    logs.distanceMeasured.info(currentDistance);
+    logs.distanceSetpoint.info(driveController.getSetpoint().position);
+    logs.thetaMeasured.info(currentPose.getRotation().getRadians());
+    logs.thetaSetpoint.info(thetaController.getSetpoint().position);
+    logs.setpoint.info(new Pose2d(lastSetpointTranslation, new Rotation2d(thetaController.getSetpoint().position)));
+    logs.goal.info(targetPose);
+    logs.isScheduled.info(isScheduled());
+    logs.driveControllerIsAtGoal.info(driveController.atGoal());
+    logs.thetaControllerIsAtGoal.info(thetaController.atGoal());
+    logs.isAtGoal.info(atGoal());
   }
 
   @Override
@@ -245,8 +243,8 @@ public class DriveToPose extends Command {
   @Override
   public void end(boolean interrupted) {
     drive.resetVelocityOverride();
-    log_Setpoint.info(Constants.zeroPose2d);
-    log_Goal.info(Constants.zeroPose2d);
+    logs.setpoint.info(Constants.zeroPose2d);
+    logs.goal.info(Constants.zeroPose2d);
   }
 
   /** Checks if the robot is stopped at the final pose. */

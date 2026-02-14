@@ -1,30 +1,30 @@
 package frc.lib.team2930;
 
 import edu.wpi.first.wpilibj.RobotController;
+
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
 public class AutoLock implements AutoCloseable {
-  private final Lock                state = new ReentrantLock();
-  private final int                 waitThreshold;
-  private final LoggerEntry.Decimal log_averageTime;
-  private final LoggerEntry.Integer log_timeViolation;
-  private final LoggerEntry.Integer log_count;
-  private final LoggerEntry.Integer log_countViolations;
-  private int                       counter;
-  private int                       counterViolations;
-  private long                      totalTime;
+
+  public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.Decimal averageTime;
+    public LoggerEntry.Integer timeViolation;
+    public LoggerEntry.Integer count;
+    public LoggerEntry.Integer countViolations;
+  }
+
+  public final Logs logs;
+
+  private final Lock state = new ReentrantLock();
+  private final int  waitThreshold;
+  private int        counter;
+  private int        counterViolations;
+  private long       totalTime;
 
   public AutoLock(String name, int waitThreshold) {
     this.waitThreshold = waitThreshold;
-
-    var group    = LoggerGroup.build("AutoLock");
-    var subgroup = group.subgroup(name);
-
-    log_averageTime     = subgroup.buildDecimal("averageTime");
-    log_timeViolation   = subgroup.buildInteger("timeViolation");
-    log_count           = subgroup.buildInteger("count");
-    log_countViolations = subgroup.buildInteger("countViolations");
+    this.logs          = LoggerGroup.build("AutoLock").newAutoLogger(Logs.class, name);
   }
 
   public AutoLock lock() {
@@ -37,16 +37,16 @@ public class AutoLock implements AutoCloseable {
     if (time > waitThreshold) {
       counterViolations++;
 
-      log_averageTime.info((double) totalTime / counter);
-      log_count.info(counter);
+      logs.averageTime.info((double) totalTime / counter);
+      logs.count.info(counter);
 
-      log_timeViolation.info(time);
-      log_countViolations.info(counterViolations);
+      logs.timeViolation.info(time);
+      logs.countViolations.info(counterViolations);
     }
 
     if (counter % 1024 == 0) {
-      log_count.info(counter);
-      log_averageTime.info((double) totalTime / counter);
+      logs.count.info(counter);
+      logs.averageTime.info((double) totalTime / counter);
     }
 
     return this;

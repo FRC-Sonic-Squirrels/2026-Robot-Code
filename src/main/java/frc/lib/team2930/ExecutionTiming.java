@@ -5,7 +5,7 @@ import edu.wpi.first.wpilibj.RobotController;
 public class ExecutionTiming implements AutoCloseable {
   private static final String ROOT_TABLE = "ExecutionTiming";
 
-  private static LoggerGroup group = LoggerGroup.build(ROOT_TABLE);
+  private static final LoggerGroup group = LoggerGroup.build(ROOT_TABLE);
 
   private final LoggerEntry.Decimal logger;
   private long                      startTime;

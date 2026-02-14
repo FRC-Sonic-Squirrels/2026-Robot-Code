@@ -14,64 +14,55 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.lib.team2930.ControlMode;
-import frc.lib.team2930.ExecutionTiming;
-import frc.lib.team2930.LoggerEntry;
-import frc.lib.team2930.LoggerGroup;
-import frc.lib.team2930.TunableNumberGroup;
+import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
-import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.IntakeConstants.PivotConstants;
-import frc.robot.Constants.IntakeConstants.RollerConstants;
 import frc.robot.Constants.RobotMode.RobotType;
-import frc.lib.team2930.GeometryUtil;
 
 public class Intake extends SubsystemBase {
+  private static final String ROOT_TABLE = "Intake";
 
   public enum State {
     Idle, Stow, Down, Eject, Intake
   }
 
+  public static class RollerLogs extends AutoRegisterLoggers {
+    public LoggerEntry.Decimal                velocityRPM;
+    public LoggerEntry.Decimal                currentAmps;
+    public LoggerEntry.Decimal                tempCelsius;
+    public LoggerEntry.Decimal                appliedVolts;
+    public LoggerEntry.Decimal                targetVelocityRPM;
+    public LoggerEntry.EnumValue<ControlMode> controlMode;
+  }
+
+  public static class PivotLogs extends AutoRegisterLoggers {
+    public LoggerEntry.Decimal                angle;
+    public LoggerEntry.Decimal                appliedVolts;
+    public LoggerEntry.Decimal                currentAmps;
+    public LoggerEntry.Decimal                tempCelsius;
+    public LoggerEntry.Decimal                velocityDegreesPerSecond;
+    public LoggerEntry.EnumValue<ControlMode> controlMode;
+    public LoggerEntry.Decimal                targetAngleDegrees;
+  }
+
+  public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.EnumValue<State> state;
+
+    public RollerLogs roller;
+    public PivotLogs  pivot;
+  }
+
+  public static final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
+
   // Execution timing
-  private static final ExecutionTiming timing = new ExecutionTiming(IntakeConstants.ROOT_TABLE);
+  private static final ExecutionTiming timing = new ExecutionTiming(ROOT_TABLE);
 
   // Logging
-  private static final LoggerGroup logGroup = LoggerGroup.build(IntakeConstants.ROOT_TABLE);
-  // Rollers
-  private static final LoggerGroup         rollerLogGroup               = logGroup.subgroup(RollerConstants.ROOT_TABLE);
-  private static final LoggerEntry.Decimal logInputs_rollerVelocityRPM  = rollerLogGroup.buildDecimal("VelocityRPM");
-  private static final LoggerEntry.Decimal logInputs_rollerCurrentAmps  = rollerLogGroup.buildDecimal("CurrentAmps");
-  private static final LoggerEntry.Decimal logInputs_rollerTempCelsius  = rollerLogGroup.buildDecimal("TempCelsius");
-  private static final LoggerEntry.Decimal logInputs_rollerAppliedVolts = rollerLogGroup.buildDecimal("AppliedVolts");
-
-  private static final LoggerEntry.Decimal                logRollerTargetVelocityRPM = rollerLogGroup
-      .buildDecimal("TargetVelocityRPM");
-  private static final LoggerEntry.EnumValue<ControlMode> logRollerControlMode       = rollerLogGroup
-      .buildEnum("ControlMode");
-
-  private static final LoggerEntry.EnumValue<State> logIntakeState = logGroup.buildEnum("IntakeState");
-
-  // Pivot
-  private static final LoggerGroup                        pivotLogGroup                           = logGroup
-      .subgroup(PivotConstants.ROOT_TABLE);
-  private static final LoggerEntry.Decimal                logInputs_pivotAngle                    = pivotLogGroup
-      .buildDecimal("Angle");
-  private static final LoggerEntry.Decimal                logInputs_pivotAppliedVolts             = pivotLogGroup
-      .buildDecimal("AppliedVolts");
-  private static final LoggerEntry.Decimal                logInputs_pivotCurrentAmps              = pivotLogGroup
-      .buildDecimal("CurrentAmps");
-  private static final LoggerEntry.Decimal                logInputs_pivotTempCelsius              = pivotLogGroup
-      .buildDecimal("TempCelsius");
-  private static final LoggerEntry.Decimal                logInputs_pivotVelocityDegreesPerSecond = pivotLogGroup
-      .buildDecimal("VelocityDegreesPerSecond");
-  private static final LoggerEntry.EnumValue<ControlMode> logPivotControlMode                     = pivotLogGroup
-      .buildEnum("ControlMode");
-  private static final LoggerEntry.Decimal                logPivotTargetAngleDegrees              = pivotLogGroup
-      .buildDecimal("TargetAngleDegrees");
+  private static final LoggerGroup logGroup = LoggerGroup.build(ROOT_TABLE);
 
   // Tunable numbers
-  private static final TunableNumberGroup group = new TunableNumberGroup(IntakeConstants.ROOT_TABLE);
+  private static final TunableNumberGroup group = new TunableNumberGroup(ROOT_TABLE);
 
   private static final LoggedTunableNumber intakingVelocity = group.build("Intaking/Fuel/Velocity", 3000);
 
@@ -79,7 +70,7 @@ public class Intake extends SubsystemBase {
   private static final LoggedTunableNumber intakingFuelPivotAngle = group.build("Intaking/Fuel/AngleDeg", 20);
 
   // Roller
-  private static final TunableNumberGroup  rollerSubgroup                 = group.subgroup(RollerConstants.ROOT_TABLE);
+  private static final TunableNumberGroup  rollerSubgroup                 = group.subgroup("Roller");
   private static final LoggedTunableNumber rKS                            = rollerSubgroup.build("KS");
   private static final LoggedTunableNumber rKP                            = rollerSubgroup.build("KP");
   private static final LoggedTunableNumber rKV                            = rollerSubgroup.build("KV");
@@ -87,7 +78,7 @@ public class Intake extends SubsystemBase {
       .build("MaxAccelerationConstraint");
 
   // Pivot
-  private static final TunableNumberGroup  pivotSubgroup = group.subgroup(PivotConstants.ROOT_TABLE);
+  private static final TunableNumberGroup  pivotSubgroup = group.subgroup("Pivot");
   private static final LoggedTunableNumber pKP           = pivotSubgroup.build("KP");
   private static final LoggedTunableNumber pKD           = pivotSubgroup.build("KD");
   private static final LoggedTunableNumber pKG           = pivotSubgroup.build("KG");
@@ -142,7 +133,7 @@ public class Intake extends SubsystemBase {
   private final IntakeIO.Inputs inputs = new IntakeIO.Inputs(logGroup);
 
   // Intake states
-  private State intakeState = State.Stow;
+  private State state = State.Stow;
 
   private boolean intakeOverride = false;
 
@@ -174,22 +165,21 @@ public class Intake extends SubsystemBase {
     try (var ignored = timing.start()) {
       // Logging
       io.updateInputs(inputs);
-      logInputs_rollerVelocityRPM.info(inputs.rollerVelocityRPM);
-      logInputs_rollerCurrentAmps.info(inputs.rollerCurrentAmps);
-      logInputs_rollerTempCelsius.info(inputs.rollerTempCelsius);
-      logInputs_rollerAppliedVolts.info(inputs.rollerAppliedVolts);
+      logs.roller.velocityRPM.info(inputs.rollerVelocityRPM);
+      logs.roller.currentAmps.info(inputs.rollerCurrentAmps);
+      logs.roller.tempCelsius.info(inputs.rollerTempCelsius);
+      logs.roller.appliedVolts.info(inputs.rollerAppliedVolts);
+      logs.roller.targetVelocityRPM.info(rollerTargetRPM);
+      logs.roller.controlMode.info(rollerControlMode);
 
-      logRollerControlMode.info(rollerControlMode);
+      logs.pivot.angle.info(inputs.pivotPosition);
+      logs.pivot.appliedVolts.info(inputs.pivotAppliedVolts);
+      logs.pivot.currentAmps.info(inputs.pivotCurrentAmps);
+      logs.pivot.tempCelsius.info(inputs.pivotTempCelsius);
+      logs.pivot.velocityDegreesPerSecond.info(inputs.pivotVelocityDegreesPerSecond);
+      logs.pivot.controlMode.info(pivotControlMode);
 
-      logInputs_pivotAngle.info(inputs.pivotPosition);
-      logInputs_pivotAppliedVolts.info(inputs.pivotAppliedVolts);
-      logInputs_pivotCurrentAmps.info(inputs.pivotCurrentAmps);
-      logInputs_pivotTempCelsius.info(inputs.pivotTempCelsius);
-      logInputs_pivotVelocityDegreesPerSecond.info(inputs.pivotVelocityDegreesPerSecond);
-
-      logPivotControlMode.info(pivotControlMode);
-
-      logIntakeState.info(intakeState);
+      logs.state.info(state);
 
       // Update tunable numbers
 
@@ -206,7 +196,7 @@ public class Intake extends SubsystemBase {
 
       // Intake state machine
       if (!intakeOverride) {
-        switch (intakeState) {
+        switch (state) {
           case Idle:
             setPivotVoltage(0);
             setRollerPercentOut(0);
@@ -251,7 +241,7 @@ public class Intake extends SubsystemBase {
     rollerControlMode = ControlMode.CLOSED_LOOP;
     io.setRollerVelocity(revPerMin);
     rollerTargetRPM = revPerMin;
-    logRollerTargetVelocityRPM.info(rollerTargetRPM);
+    logs.roller.targetVelocityRPM.info(rollerTargetRPM);
   }
 
   private void setPivotConstants() {
@@ -268,7 +258,7 @@ public class Intake extends SubsystemBase {
     pivotControlMode = ControlMode.CLOSED_LOOP;
     pivotTargetAngle = targetAngle;
     io.setPivotClosedLoopPosition(targetAngle);
-    logPivotTargetAngleDegrees.info(targetAngle.getDegrees());
+    logs.pivot.targetAngleDegrees.info(targetAngle.getDegrees());
   }
 
   public void resetPivotSubsystem() {
@@ -337,6 +327,6 @@ public class Intake extends SubsystemBase {
   }
 
   public void setState(State state) {
-    intakeState = state;
+    this.state = state;
   }
 }

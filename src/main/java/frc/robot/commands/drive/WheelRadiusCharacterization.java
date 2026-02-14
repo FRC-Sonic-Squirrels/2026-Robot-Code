@@ -8,6 +8,7 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
+import frc.lib.team2930.AutoRegisterLoggers;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 import frc.lib.team2930.TunableNumberGroup;
@@ -18,10 +19,11 @@ import frc.robot.subsystems.swerve.DrivetrainWrapper;
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class WheelRadiusCharacterization extends Command {
   /** Creates a new WheelRadiusCharacterization. */
-  private static final LoggerGroup loggerGroup = LoggerGroup.build("WheelRadiusCharacterization");
+  public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.Decimal currentEstimatedRadius;
+  }
 
-  private static final LoggerEntry.Decimal loggerCurrentEstimatedRadius = loggerGroup
-      .buildDecimal("CurrentEstimatedRadius");
+  public static final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, "WheelRadiusCharacterization");
 
   private static final TunableNumberGroup group = new TunableNumberGroup("WheelRadiusCharacterization");
   // radians per second
@@ -71,7 +73,7 @@ public class WheelRadiusCharacterization extends Command {
     averageWheelRotation /= 4;
     double currentEstimatedRadius = (totalYaw * driveBaseRadius) / averageWheelRotation;
 
-    loggerCurrentEstimatedRadius.info(currentEstimatedRadius);
+    logs.currentEstimatedRadius.info(currentEstimatedRadius);
   }
 
   // Called once the command ends or is interrupted.
