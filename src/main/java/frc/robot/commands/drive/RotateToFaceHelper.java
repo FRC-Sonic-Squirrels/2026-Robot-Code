@@ -38,7 +38,7 @@ public class RotateToFaceHelper {
   private final Supplier<Pose2d>        currentPose;
   private final ProfiledPIDController   rotationalPID = new ProfiledPIDController(0, 0, 0, new Constraints(0.0, 0.0));
 
-  private double currentErrorDist = -1.0;
+  private double currentDist = -1.0;
 
   /** Creates a new RotateToFaceHelper . */
   public RotateToFaceHelper(DrivetrainWrapper wrapper, Supplier<Translation2d> target, Supplier<Pose2d> pose2d) {
@@ -77,14 +77,16 @@ public class RotateToFaceHelper {
       wrapper.resetRotationOverride();
       return;
     }
-    Translation2d currentTranslation = currentPose.get().getTranslation();
+    Pose2d        pose               = currentPose.get();
+    Translation2d currentTranslation = pose.getTranslation();
+    Translation2d targetTranslation  = target.get();
 
-    var targetangle         = RotateToFaceHelper.faceTowardsCenter(currentTranslation, target.get());
-    var currentPoseRotation = currentPose.get().getRotation();
+    var targetangle         = RotateToFaceHelper.faceTowardsCenter(currentTranslation, targetTranslation);
+    var currentPoseRotation = pose.getRotation();
     var rotVel              = rotationalPID.calculate(currentPoseRotation.getRadians(), targetangle.getRadians());
     wrapper.setRotationOverride(rotVel);
 
-    currentErrorDist = target.get().getDistance(currentTranslation);
+    currentDist = targetTranslation.getDistance(currentTranslation);
     log_rotVel.info(rotVel);
     log_targetRotation.info(targetangle);
     log_currentRotation.info(currentPoseRotation);
@@ -104,6 +106,6 @@ public class RotateToFaceHelper {
   }
 
   public Distance getDistance() {
-    return Units.Meters.of(currentErrorDist);
+    return Units.Meters.of(currentDist);
   }
 }
