@@ -38,7 +38,6 @@ import frc.robot.RobotStates.RobotGoal;
 import frc.robot.autonomous.AutosManager;
 import frc.robot.autonomous.AutosManager.Auto;
 import frc.robot.autonomous.AutosSubsystems;
-import frc.robot.commands.climber.ClimberSetAngle;
 import frc.robot.commands.drive.DriveToPose;
 import frc.robot.commands.drive.DrivetrainDefaultTeleopDrive;
 import frc.robot.commands.drive.WheelRadiusCharacterization;
@@ -51,6 +50,7 @@ import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.ClimberIO;
 import frc.robot.subsystems.climber.ClimberIOReal;
 import frc.robot.subsystems.climber.ClimberIOSim;
+import frc.robot.subsystems.climber.Climber.ClimberGoal;
 import frc.robot.subsystems.hopper.Hopper;
 import frc.robot.subsystems.hopper.HopperIO;
 import frc.robot.subsystems.hopper.HopperIOReal;
@@ -407,43 +407,32 @@ public class RobotContainer {
     operatorController.registerTrigger(XboxControllerWrapper.Button.rightStick, "Right Intake Pivot Out")
         .onTrue(Commands.runOnce(() -> rightIntake.setState(State.Down)));
 
-    // Climber in
-    operatorController.registerTrigger(XboxControllerWrapper.Button.b, "Climber In")
-        .onTrue(Commands.runOnce(() -> climber.setServoAngle(Constants.ClimberConstants.SERVO_UNLOCK_ANGLE))
-            .andThen(Commands.waitSeconds(0.15))
-            .andThen(new ClimberSetAngle(climber, Constants.ClimberConstants.MIN_CLIMBER_ANGLE)));
-
-    operatorController.registerTrigger(XboxControllerWrapper.Button.y, "Climber Out")
-        .onTrue(new ClimberSetAngle(climber, Rotation2d.fromRotations(5.4)));
-
-    operatorController.registerTrigger(XboxControllerWrapper.Button.rightStick, "Climber in")
-        .onTrue(new ClimberSetAngle(climber, Rotation2d.fromRotations(0)));
-
     // ---------- ON-ROBOT CONTROLS ------------
 
     zeroSensorsButtonTrigger.onTrue(new RunsWhenDisabledInstantCommand(() -> {
       leftIntake.resetPivotSensorToHomePosition();
       rightIntake.resetPivotSensorToHomePosition();
+      climber.setClimberGoal(ClimberGoal.Idle);
       led.setRobotState(RobotState.ZERO_SUBSYSTEMS);
-      climber.resetWinchSensorToHomePosition();
+
       zeroButtonTriggered = true;
     }));
 
     brakeModeButtonTrigger.onTrue(new ConditionalCommand(new RunsWhenDisabledInstantCommand(() -> {
       boolean intakeLeftPivotSuccess  = leftIntake.setPivotNeutralMode(NeutralModeValue.Coast);
       boolean intakeRightPivotSuccess = rightIntake.setPivotNeutralMode(NeutralModeValue.Coast);
-      boolean climberWinchSuccess     = climber.setWinchNeutralMode(NeutralModeValue.Coast);
+      boolean climberSuccess          = climber.setClimberNeutralMode(NeutralModeValue.Coast);
 
-      brakeModeFailure = !intakeLeftPivotSuccess || !intakeRightPivotSuccess || !climberWinchSuccess;
+      brakeModeFailure = !intakeLeftPivotSuccess || !intakeRightPivotSuccess || !climberSuccess;
 
       brakeModeTriggered = false;
       led.setRobotState(brakeModeFailure ? RobotState.BRAKE_MODE_FAILED : RobotState.BRAKE_MODE_OFF);
     }), new RunsWhenDisabledInstantCommand(() -> {
       boolean intakeLeftPivotSuccess  = leftIntake.setPivotNeutralMode(NeutralModeValue.Brake);
       boolean intakeRightPivotSuccess = rightIntake.setPivotNeutralMode(NeutralModeValue.Brake);
-      boolean climberWinchSuccess     = climber.setWinchNeutralMode(NeutralModeValue.Brake);
+      boolean climberSuccess          = climber.setClimberNeutralMode(NeutralModeValue.Brake);
 
-      brakeModeFailure = !intakeLeftPivotSuccess || !intakeRightPivotSuccess || !climberWinchSuccess;
+      brakeModeFailure = !intakeLeftPivotSuccess || !intakeRightPivotSuccess || !climberSuccess;
 
       brakeModeTriggered = true;
       led.setRobotState(brakeModeFailure ? RobotState.BRAKE_MODE_FAILED : RobotState.BRAKE_MODE_ON);
@@ -541,7 +530,6 @@ public class RobotContainer {
     vision.useGyroBasedFilteringForVision(false);
 
     if (!DriverStation.isFMSAttached()) {
-      climber.setWinchVoltage(0);
       leftIntake.setPivotVoltage(0);
       rightIntake.setPivotVoltage(0);
       leftIntake.setRollerPercentOut(0);
