@@ -47,7 +47,6 @@ import frc.robot.subsystems.LED.BaseRobotState;
 import frc.robot.subsystems.LED.RobotState;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.ElevatorIO;
-import frc.robot.subsystems.climber.ElevatorIOReal;
 import frc.robot.subsystems.climber.ElevatorIOSim;
 import frc.robot.subsystems.climber.Climber.ClimberGoal;
 import frc.robot.subsystems.hopper.Hopper;
@@ -180,11 +179,13 @@ public class RobotContainer {
       rightIntake = new Intake(rightIntakeRoot, new IntakeIO() {
                   });
       climber     = new Climber(new ElevatorIO() {
+                  }, new ElevatorIO() {
                   });
-      hopper      = new Hopper(new HopperIO() {
-                  });
-      shooter     = new Shooter(new ShooterIO() {
-                  });
+
+      hopper  = new Hopper(new HopperIO() {
+              });
+      shooter = new Shooter(new ShooterIO() {
+              });
 
       led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
     } else { // REAL and SIM robots HERE
@@ -217,7 +218,7 @@ public class RobotContainer {
 
           leftIntake = new Intake(leftIntakeRoot, new IntakeIOSim());
           rightIntake = new Intake(rightIntakeRoot, new IntakeIOSim());
-          climber = new Climber(new ElevatorIOSim());
+          climber = new Climber(new ElevatorIOSim(), new ElevatorIOSim());
           hopper = new Hopper(new HopperIOSim());
           shooter = new Shooter(new ShooterIOSim());
           led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
@@ -233,7 +234,9 @@ public class RobotContainer {
           });
           rightIntake = new Intake(rightIntakeRoot, new IntakeIO() {
           });
-          climber = new Climber(new ElevatorIOReal());
+          climber = new Climber(new ElevatorIO() {
+          }, new ElevatorIO() {
+          });
           drivetrain = new Drivetrain(config, new GyroIOPigeon2(config, config.getGyroCANID()), new GyroIO.Fake(),
               config.getSwerveModuleObjects(), () -> is_autonomous);
           hopper = new Hopper(new HopperIO() {
@@ -262,7 +265,9 @@ public class RobotContainer {
                 InvertedValue.Clockwise_Positive);
             leftIntake  = new Intake(leftIntakeRoot, new IntakeIOReal(leftIntakeIOConfig));
             rightIntake = new Intake(rightIntakeRoot, new IntakeIOReal(rightIntakeIOConfig));
-            climber     = new Climber(new ElevatorIOReal());
+            climber     = new Climber(new ElevatorIO() {
+                        }, new ElevatorIO() {
+                        });
             shooter     = new Shooter(new ShooterIOReal());
           } else {
             leftIntake  = new Intake(leftIntakeRoot, new IntakeIO() {
@@ -270,6 +275,7 @@ public class RobotContainer {
             rightIntake = new Intake(rightIntakeRoot, new IntakeIO() {
                         });
             climber     = new Climber(new ElevatorIO() {
+                        }, new ElevatorIO() {
                         });
             shooter     = new Shooter(new ShooterIO() {
                         });
@@ -294,6 +300,7 @@ public class RobotContainer {
           rightIntake = new Intake(rightIntakeRoot, new IntakeIO() {
           });
           climber = new Climber(new ElevatorIO() {
+          }, new ElevatorIO() {
           });
           hopper = new Hopper(new HopperIO() {
           });

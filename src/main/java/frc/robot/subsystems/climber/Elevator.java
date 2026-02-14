@@ -53,12 +53,12 @@ public class Elevator extends SubsystemBase {
   private double elevatorHeight;
 
   /** Creates a new ElevatorSubsystem. */
-  public Elevator(String name, ElevatorIO io) {
+  public Elevator(LoggerGroup group, ElevatorIO io) {
     this.io       = io;
-    this.timing   = new ExecutionTiming(name);
-    this.logs     = LoggerGroup.root.newAutoLogger(Logs.class, name);
+    this.timing   = new ExecutionTiming(group.toString());
+    this.logs     = LoggerGroup.root.newAutoLogger(Logs.class, group.toString());
     this.inputs   = new ElevatorIO.Inputs(logs.group);
-    this.tunables = TunableNumberGroup.newAutoTunable(Tunables.class, name);
+    this.tunables = TunableNumberGroup.newAutoTunable(Tunables.class, group.toString());
 
     if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_RETIRED_HOLO) {
       tunables.elevatorKP.initDefault(4);
