@@ -16,7 +16,7 @@ public class AllianceAwarePose2d {
     var currentlyRed = Constants.isRedAlliance();
     if (target == null || currentlyRed != wasRed) {
       wasRed = currentlyRed;
-      target = currentlyRed ? AllianceFlipUtil.rotatePose2DAroundCenterPoint(source) : source;
+      target = currentlyRed ? GeometryUtil.rotatePose2DAroundCenterPoint(source) : source;
     }
 
     return target;

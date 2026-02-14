@@ -3,7 +3,6 @@ package frc.robot;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
-import frc.lib.team2930.AllianceFlipUtil;
 import frc.lib.team2930.GeometryUtil;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
@@ -39,9 +38,8 @@ public class FieldStates {
         Pose3d referencePose   = blueNearMidAlgae;
         Pose3d correctedHeight = new Pose3d(referencePose.getX(), referencePose.getY(),
             i % 2 == 1 ? upperAlgaeHeight : referencePose.getZ(), referencePose.getRotation());
-        algaePoseArray
-            .add(AllianceFlipUtil.flipPoseForAlliance(GeometryUtil.rotatePose3dAroundTranslation2d(correctedHeight,
-                Constants.FieldConstants.BLUE_HUB_CENTER_POSE, Rotation2d.fromDegrees(60 * (i - 1)))));
+        algaePoseArray.add(GeometryUtil.rotatePose3dAroundTranslation2d(correctedHeight,
+            Constants.FieldConstants.HUB_CENTER_POSE.get(), Rotation2d.fromDegrees(60 * (i - 1))));
       }
     }
 
