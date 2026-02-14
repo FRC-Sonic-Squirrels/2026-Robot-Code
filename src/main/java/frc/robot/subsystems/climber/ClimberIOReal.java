@@ -19,21 +19,34 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.Servo;
+import frc.lib.team2930.AutoRegisterLoggers;
+import frc.lib.team2930.LoggerEntry;
+import frc.lib.team2930.LoggerGroup;
 import frc.robot.Constants;
 import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.MotorConstants.KrakenConstants;
 
 public class ClimberIOReal implements ClimberIO {
-  private final StatusSignal<Voltage>         innerClimberAppliedVoltage;
-  private final StatusSignal<Angle>           innerClimberPosition;
-  private final StatusSignal<Current>         innerClimberCurrent;
-  private final StatusSignal<Temperature>     innerClimberTemp;
-  private final StatusSignal<AngularVelocity> innerClimberVelocity;
-  private final StatusSignal<Voltage>         outerClimberAppliedVoltage;
-  private final StatusSignal<Angle>           outerClimberPosition;
-  private final StatusSignal<Current>         outerClimberCurrent;
-  private final StatusSignal<Temperature>     outerClimberTemp;
-  private final StatusSignal<AngularVelocity> outerClimberVelocity;
+
+  private final String ROOT_TABLE = "Climber";
+
+  public static class ElevatorLogs extends AutoRegisterLoggers {
+    public StatusSignal<Voltage>         appliedVoltage;
+    public StatusSignal<Current>         currentAmps;
+    public StatusSignal<Temperature>     tempCelsius;
+    public StatusSignal<AngularVelocity> velocityDegreesPerSecond;
+    public StatusSignal<Angle>           targetHeightInches;
+  }
+
+  public static class Logs extends AutoRegisterLoggers {
+    public ElevatorLogs innerClimber;
+    public ElevatorLogs outerClimber;
+
+    public LoggerEntry.Decimal servoTargetAngle;
+
+  }
+
+  public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
   private final PositionVoltage innerClimberClosedLoopControl = new PositionVoltage(0.0).withEnableFOC(true);
   private final PositionVoltage outerClimberClosedLoopControl = new PositionVoltage(0.0).withEnableFOC(true);
@@ -89,39 +102,36 @@ public class ClimberIOReal implements ClimberIO {
     innerClimberMotor.getConfigurator().apply(innerClimberConfig);
     outerClimberMotor.getConfigurator().apply(outerClimberConfig);
     // Status signals
-
-    innerClimberAppliedVoltage = innerClimberMotor.getMotorVoltage();
-    innerClimberPosition       = innerClimberMotor.getPosition();
-    innerClimberCurrent        = innerClimberMotor.getStatorCurrent();
-    innerClimberTemp           = innerClimberMotor.getDeviceTemp();
-    innerClimberVelocity       = innerClimberMotor.getVelocity();
-
-    outerClimberAppliedVoltage = outerClimberMotor.getMotorVoltage();
-    outerClimberPosition       = outerClimberMotor.getPosition();
-    outerClimberCurrent        = outerClimberMotor.getStatorCurrent();
-    outerClimberTemp           = outerClimberMotor.getDeviceTemp();
-    outerClimberVelocity       = outerClimberMotor.getVelocity();
+    logs.innerClimber.appliedVoltage           = innerClimberMotor.getMotorVoltage();
+    logs.innerClimber.targetHeightInches       = innerClimberMotor.getPosition();
+    logs.innerClimber.currentAmps              = innerClimberMotor.getStatorCurrent();
+    logs.innerClimber.tempCelsius              = innerClimberMotor.getDeviceTemp();
+    logs.innerClimber.velocityDegreesPerSecond = innerClimberMotor.getVelocity();
+    logs.outerClimber.appliedVoltage           = outerClimberMotor.getMotorVoltage();
+    logs.outerClimber.targetHeightInches       = outerClimberMotor.getPosition();
+    logs.outerClimber.currentAmps              = outerClimberMotor.getStatorCurrent();
+    logs.outerClimber.tempCelsius              = outerClimberMotor.getDeviceTemp();
+    logs.outerClimber.velocityDegreesPerSecond = outerClimberMotor.getVelocity();
     // Update status signals
 
-    BaseStatusSignal.setUpdateFrequencyForAll(100, innerClimberAppliedVoltage, innerClimberPosition,
-        innerClimberVelocity);
-    BaseStatusSignal.setUpdateFrequencyForAll(50, innerClimberCurrent);
-    BaseStatusSignal.setUpdateFrequencyForAll(1, innerClimberTemp);
+    BaseStatusSignal.setUpdateFrequencyForAll(100, logs.innerClimber.appliedVoltage,
+        logs.innerClimber.targetHeightInches, logs.innerClimber.velocityDegreesPerSecond);
+    BaseStatusSignal.setUpdateFrequencyForAll(50, logs.innerClimber.currentAmps);
+    BaseStatusSignal.setUpdateFrequencyForAll(1, logs.innerClimber.tempCelsius);
+
+    BaseStatusSignal.setUpdateFrequencyForAll(100, logs.outerClimber.appliedVoltage,
+        logs.outerClimber.targetHeightInches, logs.outerClimber.velocityDegreesPerSecond);
+    BaseStatusSignal.setUpdateFrequencyForAll(50, logs.outerClimber.currentAmps);
+    BaseStatusSignal.setUpdateFrequencyForAll(1, logs.outerClimber.tempCelsius);
 
     innerClimberMotor.optimizeBusUtilization();
     outerClimberMotor.optimizeBusUtilization();
 
     climberRefreshSet = new BaseStatusSignal[] {
-        innerClimberAppliedVoltage,
-        innerClimberPosition,
-        innerClimberCurrent,
-        innerClimberTemp,
-        innerClimberVelocity,
-        outerClimberAppliedVoltage,
-        outerClimberPosition,
-        outerClimberCurrent,
-        outerClimberTemp,
-        outerClimberVelocity
+        logs.innerClimber.appliedVoltage, logs.innerClimber.targetHeightInches,
+        logs.innerClimber.currentAmps, logs.innerClimber.tempCelsius, logs.innerClimber.velocityDegreesPerSecond,
+        logs.outerClimber.appliedVoltage, logs.outerClimber.targetHeightInches, logs.outerClimber.currentAmps,
+        logs.outerClimber.tempCelsius, logs.outerClimber.velocityDegreesPerSecond
     };
   }
 
@@ -129,16 +139,18 @@ public class ClimberIOReal implements ClimberIO {
   public void updateClimberInputs(Inputs inputs) {
     inputs.refreshAll(climberRefreshSet);
 
-    inputs.innerClimberPosition                 = innerClimberPosition.getValue().in(Units.Degrees);
-    inputs.innerClimberAppliedVolts             = innerClimberAppliedVoltage.getValue().in(Units.Volts);
-    inputs.innerClimberCurrentAmps              = innerClimberCurrent.getValue().in(Units.Amps);
-    inputs.innerClimberTempCelsius              = innerClimberTemp.getValue().in(Units.Celsius);
-    inputs.innerClimberVelocityDegreesPerSecond = innerClimberVelocity.getValue().in(Units.DegreesPerSecond);
-    inputs.outerClimberPosition                 = outerClimberPosition.getValue().in(Units.Degrees);
-    inputs.outerClimberAppliedVolts             = outerClimberAppliedVoltage.getValue().in(Units.Volts);
-    inputs.outerClimberCurrentAmps              = outerClimberCurrent.getValue().in(Units.Amps);
-    inputs.outerClimberTempCelsius              = outerClimberTemp.getValue().in(Units.Celsius);
-    inputs.outerClimberVelocityDegreesPerSecond = outerClimberVelocity.getValue().in(Units.DegreesPerSecond);
+    inputs.innerClimberPosition                 = logs.innerClimber.targetHeightInches.getValue().in(Units.Degrees);
+    inputs.innerClimberAppliedVolts             = logs.innerClimber.appliedVoltage.getValue().in(Units.Volts);
+    inputs.innerClimberCurrentAmps              = logs.innerClimber.currentAmps.getValue().in(Units.Amps);
+    inputs.innerClimberTempCelsius              = logs.innerClimber.tempCelsius.getValue().in(Units.Celsius);
+    inputs.innerClimberVelocityDegreesPerSecond = logs.innerClimber.velocityDegreesPerSecond.getValue()
+        .in(Units.DegreesPerSecond);
+    inputs.outerClimberPosition                 = logs.outerClimber.targetHeightInches.getValue().in(Units.Degrees);
+    inputs.outerClimberAppliedVolts             = logs.outerClimber.appliedVoltage.getValue().in(Units.Volts);
+    inputs.outerClimberCurrentAmps              = logs.outerClimber.currentAmps.getValue().in(Units.Amps);
+    inputs.outerClimberTempCelsius              = logs.outerClimber.tempCelsius.getValue().in(Units.Celsius);
+    inputs.outerClimberVelocityDegreesPerSecond = logs.outerClimber.velocityDegreesPerSecond.getValue()
+        .in(Units.DegreesPerSecond);
   }
 
   // Climber
