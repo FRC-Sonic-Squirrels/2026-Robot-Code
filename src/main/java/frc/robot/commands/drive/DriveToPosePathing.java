@@ -218,14 +218,6 @@ public class DriveToPosePathing extends Command {
   }
 
   private boolean poseIntersectsWithReef(Pose2d pose) {
-    if (!isRobotNextToReef(pose))
-      return false;
-
-    for (Translation2d corner : getRobotCorners(pose)) {
-      // if (translationIntersectsWithReef(corner))
-      // return true;
-    }
-
     return false;
   }
 

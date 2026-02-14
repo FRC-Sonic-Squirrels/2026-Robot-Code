@@ -7,6 +7,7 @@ import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.lib.team2930.AllianceAwareTranslation2d;
+import frc.lib.team2930.GeometryUtil;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 import frc.robot.Constants.FieldConstants;
@@ -203,7 +204,7 @@ public class RobotStates {
         shoot();
         break;
       case Pass:
-        targetPose = new Pose2d(frc.lib.team2930.GeometryUtil.getClosestTranslation(new AllianceAwareTranslation2d[] {
+        targetPose = new Pose2d(GeometryUtil.getClosestTranslation(new AllianceAwareTranslation2d[] {
             FieldConstants.RIGHT_PASS_AIM_POINT, FieldConstants.LEFT_PASS_AIM_POINT }, drivetrain.getRawOdometryPose()),
             Rotation2d.kZero);
         shoot();

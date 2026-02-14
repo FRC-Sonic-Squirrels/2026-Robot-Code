@@ -61,8 +61,9 @@ public class DrivetrainDefaultTeleopDrive extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double     x               = xSupplier.getAsDouble() * (Constants.isRedAlliance() ? -1.0 : 1.0);
-    double     y               = ySupplier.getAsDouble() * (Constants.isRedAlliance() ? -1.0 : 1.0);
+    double     redFlip         = (Constants.isRedAlliance() ? -1.0 : 1.0);
+    double     x               = xSupplier.getAsDouble() * redFlip;
+    double     y               = ySupplier.getAsDouble() * redFlip;
     double     linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), DEADBAND);
     Rotation2d linearDirection = x != 0 || y != 0 ? new Rotation2d(x, y) : Rotation2d.kZero;
     double     omega           = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
