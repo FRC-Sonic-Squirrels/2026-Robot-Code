@@ -9,7 +9,6 @@ import frc.robot.Constants.FieldConstants;
 import frc.robot.commands.drive.DriveToPoseHelper;
 import frc.robot.commands.drive.RotateToFaceHelper;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.Intake.State;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
 
@@ -84,7 +83,7 @@ public class RobotStates {
 
   public MechState mechState = MechState.Idle;
 
-  public State intakeState = State.Idle;
+  public Intake.Goal intakeState = Intake.Goal.Idle;
 
   public boolean fuelInIntake;
 
@@ -220,17 +219,17 @@ public class RobotStates {
     }
     switch (intakeGoal) {
       case Stow:
-        rightIntake.setState(State.Stow);
-        leftIntake.setState(State.Stow);
+        rightIntake.setGoal(Intake.Goal.Stow);
+        leftIntake.setGoal(Intake.Goal.Stow);
       case LeftIntake:
-        rightIntake.setState(State.Stow);
+        rightIntake.setGoal(Intake.Goal.Stow);
         if (rightIntake.isStowed()) {
-          leftIntake.setState(State.Intake);
+          leftIntake.setGoal(Intake.Goal.Intake);
         }
       case RightIntake:
-        leftIntake.setState(State.Stow);
+        leftIntake.setGoal(Intake.Goal.Stow);
         if (leftIntake.isStowed()) {
-          rightIntake.setState(State.Intake);
+          rightIntake.setGoal(Intake.Goal.Intake);
         }
     }
 

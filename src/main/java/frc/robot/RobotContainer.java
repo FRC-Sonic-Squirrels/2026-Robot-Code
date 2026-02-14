@@ -56,7 +56,6 @@ import frc.robot.subsystems.hopper.HopperIO;
 import frc.robot.subsystems.hopper.HopperIOReal;
 import frc.robot.subsystems.hopper.HopperIOSim;
 import frc.robot.subsystems.intake.*;
-import frc.robot.subsystems.intake.Intake.State;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOReal;
@@ -383,11 +382,11 @@ public class RobotContainer {
 
     // Eject
     operatorController.registerTrigger(XboxControllerWrapper.Button.leftBumper, "Left Intake Eject")
-        .onTrue(Commands.runOnce(() -> leftIntake.setState(State.Eject)))
-        .onFalse(Commands.runOnce(() -> leftIntake.setState(State.Stow)));
+        .onTrue(Commands.runOnce(() -> leftIntake.setGoal(Intake.Goal.Eject)))
+        .onFalse(Commands.runOnce(() -> leftIntake.setGoal(Intake.Goal.Stow)));
     operatorController.registerTrigger(XboxControllerWrapper.Button.rightBumper, "Right Intake Eject")
-        .onTrue(Commands.runOnce(() -> rightIntake.setState(State.Eject)))
-        .onFalse(Commands.runOnce(() -> rightIntake.setState(State.Stow)));
+        .onTrue(Commands.runOnce(() -> rightIntake.setGoal(Intake.Goal.Eject)))
+        .onFalse(Commands.runOnce(() -> rightIntake.setGoal(Intake.Goal.Stow)));
 
     // Intake
     operatorController.registerTrigger(XboxControllerWrapper.Button.leftTrigger, "Left Intake")
@@ -399,13 +398,13 @@ public class RobotContainer {
 
     // Intake positions
     operatorController.registerTrigger(XboxControllerWrapper.Button.a, "Left Intake Pivot In")
-        .onTrue(Commands.runOnce(() -> leftIntake.setState(State.Stow)));
+        .onTrue(Commands.runOnce(() -> leftIntake.setGoal(Intake.Goal.Stow)));
     operatorController.registerTrigger(XboxControllerWrapper.Button.leftStick, "Left Intake Pivot Out")
-        .onTrue(Commands.runOnce(() -> leftIntake.setState(State.Down)));
+        .onTrue(Commands.runOnce(() -> leftIntake.setGoal(Intake.Goal.Down)));
     operatorController.registerTrigger(XboxControllerWrapper.Button.x, "Right Intake Pivot In")
-        .onTrue(Commands.runOnce(() -> rightIntake.setState(State.Stow)));
+        .onTrue(Commands.runOnce(() -> rightIntake.setGoal(Intake.Goal.Stow)));
     operatorController.registerTrigger(XboxControllerWrapper.Button.rightStick, "Right Intake Pivot Out")
-        .onTrue(Commands.runOnce(() -> rightIntake.setState(State.Down)));
+        .onTrue(Commands.runOnce(() -> rightIntake.setGoal(Intake.Goal.Down)));
 
     // ---------- ON-ROBOT CONTROLS ------------
 
@@ -536,8 +535,8 @@ public class RobotContainer {
       rightIntake.setRollerPercentOut(0);
       robotStates.mechState = MechState.Idle;
 
-      leftIntake.setState(State.Idle);
-      rightIntake.setState(State.Idle);
+      leftIntake.setGoal(Intake.Goal.Idle);
+      rightIntake.setGoal(Intake.Goal.Idle);
     }
 
     is_teleop     = false;

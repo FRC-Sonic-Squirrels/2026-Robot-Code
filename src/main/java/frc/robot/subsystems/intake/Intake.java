@@ -23,7 +23,7 @@ import frc.robot.Constants.RobotMode.RobotType;
 public class Intake extends SubsystemBase {
   private static final String ROOT_TABLE = "Intake";
 
-  public enum State {
+  public enum Goal {
     Idle, Stow, Down, Eject, Intake
   }
 
@@ -47,7 +47,7 @@ public class Intake extends SubsystemBase {
   }
 
   public static class Logs extends AutoRegisterLoggers {
-    public LoggerEntry.EnumValue<State> state;
+    public LoggerEntry.EnumValue<Goal> state;
 
     public RollerLogs roller;
     public PivotLogs  pivot;
@@ -107,7 +107,7 @@ public class Intake extends SubsystemBase {
   private final IntakeIO.Inputs inputs = new IntakeIO.Inputs(logs.group);
 
   // Intake states
-  private State state = State.Stow;
+  private Goal goal = Goal.Stow;
 
   private boolean intakeOverride = false;
 
@@ -192,7 +192,7 @@ public class Intake extends SubsystemBase {
       logs.pivot.velocityDegreesPerSecond.info(inputs.pivotVelocityDegreesPerSecond);
       logs.pivot.controlMode.info(pivotControlMode);
 
-      logs.state.info(state);
+      logs.state.info(goal);
 
       // Update tunable numbers
 
@@ -205,7 +205,7 @@ public class Intake extends SubsystemBase {
 
       // Intake state machine
       if (!intakeOverride) {
-        switch (state) {
+        switch (goal) {
           case Idle:
             setPivotVoltage(0);
             setRollerPercentOut(0);
@@ -340,7 +340,7 @@ public class Intake extends SubsystemBase {
     return null;
   }
 
-  public void setState(State state) {
-    this.state = state;
+  public void setGoal(Goal goal) {
+    this.goal = goal;
   }
 }
