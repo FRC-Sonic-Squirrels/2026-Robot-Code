@@ -47,7 +47,7 @@ public class Intake extends SubsystemBase {
   }
 
   public static class Logs extends AutoRegisterLoggers {
-    public LoggerEntry.EnumValue<Goal> state;
+    public LoggerEntry.EnumValue<Goal> goal;
 
     public RollerLogs roller;
     public PivotLogs  pivot;
@@ -192,7 +192,7 @@ public class Intake extends SubsystemBase {
       logs.pivot.velocityDegreesPerSecond.info(inputs.pivotVelocityDegreesPerSecond);
       logs.pivot.controlMode.info(pivotControlMode);
 
-      logs.state.info(goal);
+      logs.goal.info(goal);
 
       // Update tunable numbers
 

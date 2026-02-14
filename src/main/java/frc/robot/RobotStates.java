@@ -37,10 +37,6 @@ public class RobotStates {
 
   // Desired mech to hold coral
 
-  public enum TargetCoralPosition {
-    Intake, EndEffector
-  }
-
   public enum RobotGoal {
     None, Auto, Score, Pass, Climb
   }
@@ -83,23 +79,11 @@ public class RobotStates {
 
   public MechState mechState = MechState.Idle;
 
-  public Intake.Goal intakeState = Intake.Goal.Idle;
-
-  public boolean fuelInIntake;
-
-  public boolean highStowMode = true;
-
-  public TargetCoralPosition targetCoralPosition = TargetCoralPosition.EndEffector;
-
   public boolean endEffectorInUse;
   public boolean mechanismInUse;
   public boolean intakeInUse;
 
-  public boolean intakeInTargetState;
-  public boolean mechInTargetState;
-
-  public boolean coralExpectedInEndEffector = true;
-  public boolean coralExpectedInIntake      = true;
+  public boolean coralExpectedInIntake = true;
 
   private RobotGoal goal       = RobotGoal.None;
   private RobotGoal wantedGoal = RobotGoal.None;
@@ -238,9 +222,6 @@ public class RobotStates {
     logs.subsystemsInUse.mechInUse.info(mechanismInUse);
     logs.subsystemsInUse.endEffectorInUse.info(endEffectorInUse);
 
-    logs.subsystemsInTargetStates.intakeInTargetState.info(intakeInTargetState);
-    logs.subsystemsInTargetStates.mechInTargetState.info(mechInTargetState);
-
     if (mechState == MechState.Override) {
       mechanismInUse = true;
     }
@@ -251,8 +232,6 @@ public class RobotStates {
     logs.mechState.info(mechState);
     logs.subsystemsInTargetStates.goal.info(goal.name());
     logs.subsystemsInTargetStates.wantedGoal.info(wantedGoal.name());
-
-    logs.gamepieceInIntakeState.info(fuelInIntake);
 
     mechanismInUse   = false;
     intakeInUse      = false;
