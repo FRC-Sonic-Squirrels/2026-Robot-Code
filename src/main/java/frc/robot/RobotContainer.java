@@ -47,6 +47,7 @@ import frc.robot.commands.climber.ClimberSetAngle;
 import frc.robot.commands.drive.DriveToPose;
 import frc.robot.commands.drive.DrivetrainDefaultTeleopDrive;
 import frc.robot.commands.drive.WheelRadiusCharacterization;
+import frc.robot.commands.setGoal.SetRobotGoal;
 import frc.robot.configs.SimulatorRobotConfig;
 import frc.robot.subsystems.LED;
 import frc.robot.subsystems.LED.BaseRobotState;
@@ -489,6 +490,9 @@ public class RobotContainer {
     driverController.registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Pass")
         .onTrue(Commands.runOnce(() -> robotStates.setRobotGoal(RobotGoal.Pass)))
         .onFalse(Commands.runOnce(() -> robotStates.setRobotGoal(RobotGoal.None)));
+
+    driverController.registerTrigger(XboxControllerWrapper.Button.leftBumper, "Score")
+        .whileTrue(new SetRobotGoal(robotStates, RobotStates.RobotGoal.Score, true, false));
 
     // ---------- OPERATOR CONTROLS -----------
 

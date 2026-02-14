@@ -12,7 +12,6 @@ import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.lib.team2930.AllianceFlipUtil;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 import frc.robot.Constants;
@@ -62,8 +61,9 @@ public class DrivetrainDefaultTeleopDrive extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    double     x               = xSupplier.getAsDouble();
-    double     y               = ySupplier.getAsDouble();
+    double     redFlip         = (Constants.isRedAlliance() ? -1.0 : 1.0);
+    double     x               = xSupplier.getAsDouble() * redFlip;
+    double     y               = ySupplier.getAsDouble() * redFlip;
     double     linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), DEADBAND);
     Rotation2d linearDirection = x != 0 || y != 0 ? new Rotation2d(x, y) : Rotation2d.kZero;
     double     omega           = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
@@ -76,8 +76,6 @@ public class DrivetrainDefaultTeleopDrive extends Command {
     Translation2d linearVelocity = new Pose2d(Constants.zeroTranslation2d, linearDirection)
         .transformBy(new Transform2d(linearMagnitude, 0.0, Constants.zeroRotation2d)).getTranslation();
 
-    var correctedLinearVelocity = AllianceFlipUtil.flipVelocitiesForAlliance(linearVelocity);
-
     log_XSupplier.info(xSupplier.getAsDouble());
     log_YSupplier.info(ySupplier.getAsDouble());
     log_OmegaSupplier.info(omegaSupplier.getAsDouble());
@@ -88,8 +86,8 @@ public class DrivetrainDefaultTeleopDrive extends Command {
 
     // Convert to field relative speeds & send command
     ChassisSpeeds chassisSpeeds = new ChassisSpeeds(
-        correctedLinearVelocity.getX() * drivetrain.getMaxLinearSpeed().in(Units.MetersPerSecond),
-        correctedLinearVelocity.getY() * drivetrain.getMaxLinearSpeed().in(Units.MetersPerSecond),
+        linearVelocity.getX() * drivetrain.getMaxLinearSpeed().in(Units.MetersPerSecond),
+        linearVelocity.getY() * drivetrain.getMaxLinearSpeed().in(Units.MetersPerSecond),
         omega * drivetrain.getMaxAngularSpeed().in(Units.RadiansPerSecond));
 
     drivetrain.setVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, drivetrain.getRotationGyroOnly()));

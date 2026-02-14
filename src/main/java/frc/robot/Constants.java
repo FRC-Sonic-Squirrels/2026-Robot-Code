@@ -23,7 +23,7 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
-import frc.lib.team2930.AllianceFlipUtil;
+import frc.lib.team2930.AllianceAwareTranslation2d;
 import frc.robot.Constants.RobotMode.RobotType;
 import frc.robot.configs.*;
 
@@ -137,6 +137,8 @@ public final class Constants {
     // Official Field dimensions from field dimensions manual
     public static Distance FIELD_LENGTH = Units.Inches.of(650.12);
     public static Distance FIELD_WIDTH = Units.Inches.of(316.64);
+    public static double FIELD_LENGTH_METERS = FIELD_LENGTH.in(Units.Meters);
+    public static double FIELD_WIDTH_METERS = FIELD_WIDTH.in(Units.Meters);
 
     public static Distance HUB_DIST_FROM_WALL = Units.Inches.of(158.06);
 
@@ -145,17 +147,13 @@ public final class Constants {
 
     public static Distance HUB_DIAGONAL_WIDTH = HUB_WIDTH.times(2.0 / Math.sqrt(3));
 
-    public static Translation2d BLUE_HUB_CENTER_POSE =
-        new Translation2d(HUB_DIST_FROM_WALL.plus(HUB_WIDTH.div(2.0)), FIELD_WIDTH.div(2.0));
+    public static AllianceAwareTranslation2d HUB_CENTER_POSE =
+        new AllianceAwareTranslation2d(new Translation2d(HUB_DIST_FROM_WALL.plus(HUB_WIDTH.div(2.0)), FIELD_WIDTH.div(2.0)));
 
-    public static Translation2d RIGHT_PASS_AIM_POINT =
-        new Translation2d(FIELD_LENGTH.div(4.0), FIELD_WIDTH.times(1.0 / 4.0));
-    public static Translation2d LEFT_PASS_AIM_POINT =
-        new Translation2d(FIELD_LENGTH.div(4.0), FIELD_WIDTH.times(3.0 / 4.0));
-
-    public static Translation2d HUB_CENTER_POSE() {
-      return AllianceFlipUtil.flipTranslationForAlliance(BLUE_HUB_CENTER_POSE);
-    }
+    public static AllianceAwareTranslation2d RIGHT_PASS_AIM_POINT =
+        new AllianceAwareTranslation2d(new Translation2d(FIELD_LENGTH.div(4.0), FIELD_WIDTH.times(1.0 / 4.0)));
+    public static AllianceAwareTranslation2d LEFT_PASS_AIM_POINT =
+        new AllianceAwareTranslation2d(new Translation2d(FIELD_LENGTH.div(4.0), FIELD_WIDTH.times(3.0 / 4.0)));
 
     public static Distance REEF_BRANCH_OFFSET = Units.Inches.of(6.5);
 

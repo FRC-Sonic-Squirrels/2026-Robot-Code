@@ -203,72 +203,7 @@ public class DriveToPosePathing extends Command {
     // stalled.getAsBoolean();
   }
 
-  private boolean trajIntersectsWithReef(Trajectory<SwerveSample> traj) {
-    for (SwerveSample sample : traj.samples()) {
-      Pose2d pose        = sample.getPose();
-      double distToStart = GeometryUtil.getDist(pose, traj.getInitialPose(false).get());
-      double distToEnd   = GeometryUtil.getDist(pose, traj.getFinalPose(false).get());
-      if (poseIntersectsWithReef(pose) && distToStart > 0.3 && distToEnd > 0.3) {
-        log_intersectingPose.info(pose);
-        return true;
-      }
-    }
-    log_intersectingPose.info(Pose2d.kZero);
-    return false;
-  }
-
-  private boolean poseIntersectsWithReef(Pose2d pose) {
-    if (!isRobotNextToReef(pose))
-      return false;
-
-    for (Translation2d corner : getRobotCorners(pose)) {
-      if (translationIntersectsWithReef(corner))
-        return true;
-    }
-
-    return false;
-  }
-
-  private boolean translationIntersectsWithReef(Translation2d translation) {
-    double reefx        = Constants.FieldConstants.HUB_CENTER_POSE().getX();
-    double reefy        = Constants.FieldConstants.HUB_CENTER_POSE().getY();
-    double translationx = translation.getX();
-    double translationy = translation.getY();
-    double reefRad      = Constants.FieldConstants.HUB_DIAGONAL_WIDTH.div(2.0).in(Units.Meter);
-    double angledSlope  = Math.atan(Math.toRadians(30));
-    double xOffset      = translationx - reefx;
-    // All sides of hexagon
-    boolean check1 = translationx > reefx - reefRad;
-    boolean check2 = translationx < reefx + reefRad;
-    boolean check3 = translationy > reefy - reefRad + Math.abs(angledSlope * xOffset);
-    boolean check4 = translationy < reefy + reefRad - Math.abs(angledSlope * xOffset);
-    return check1 && check2 && check3 && check4;
-  }
-
-  private Translation2d[] getRobotCorners(Pose2d pose) {
-    Translation2d[] corners = new Translation2d[4];
-
-    double xRad = Constants.RobotDimensions.ROBOT_DIMENSIONS_WITH_BUMPERS.getX() / 2.0;
-    double yRad = Constants.RobotDimensions.ROBOT_DIMENSIONS_WITH_BUMPERS.getY() / 2.0;
-
-    Translation2d[] robotRelativeCorners = new Translation2d[] { new Translation2d(xRad, yRad),
-        new Translation2d(-xRad, yRad), new Translation2d(xRad, -yRad), new Translation2d(-xRad, -yRad) };
-
-    for (int i = 0; i < corners.length; i++) {
-      corners[i] = pose.getTranslation().plus(robotRelativeCorners[i].rotateBy(pose.getRotation())); // TODO: change to
-                                                                                                     // corners of
-                                                                                                     // bumpers
-    }
-    return corners;
-  }
-
   private Trajectory<SwerveSample> rerouteTrajectory(Trajectory<SwerveSample> traj, Pose2d start, Pose2d end) {
-
-    if (!trajIntersectsWithReef(traj)) {
-      log_intermediatePose.info(Pose2d.kZero);
-      log_unAttemptedPath.info(new Pose2d[0]);
-      return traj;
-    }
 
     if (debugRerouting) {
       System.out.println("START REROUTING DEBUG -------------------");
@@ -276,7 +211,7 @@ public class DriveToPosePathing extends Command {
 
     log_unAttemptedPath.info(traj.getPoses());
 
-    Translation2d reefCenter               = Constants.FieldConstants.HUB_CENTER_POSE();
+    Translation2d reefCenter               = Constants.FieldConstants.HUB_CENTER_POSE.get();
     Rotation2d    reefCenterToStartHeading = GeometryUtil.getHeading(reefCenter, start.getTranslation());
     Rotation2d    reefCenterToEndHeading   = GeometryUtil.getHeading(reefCenter, end.getTranslation());
     Rotation2d    halfWayAngle             = midRotation(reefCenterToStartHeading, reefCenterToEndHeading);
@@ -384,7 +319,7 @@ public class DriveToPosePathing extends Command {
   }
 
   private double getRobotDistToReef(Pose2d pose) {
-    return GeometryUtil.getDist(pose.getTranslation(), Constants.FieldConstants.HUB_CENTER_POSE());
+    return GeometryUtil.getDist(pose.getTranslation(), Constants.FieldConstants.HUB_CENTER_POSE.get());
   }
 
   private boolean isRobotNextToReef(Pose2d pose) {
@@ -527,14 +462,14 @@ public class DriveToPosePathing extends Command {
 
     if (currentPoseNextToReef) {
       double headingAwayFromReef = GeometryUtil
-          .getHeading(Constants.FieldConstants.HUB_CENTER_POSE(), currentPose.get().getTranslation()).getDegrees();
+          .getHeading(Constants.FieldConstants.HUB_CENTER_POSE.get(), currentPose.get().getTranslation()).getDegrees();
       startBottomRotationBound = headingAwayFromReef - headingToleranceNearElements.get();
       startTopRotationBound    = headingAwayFromReef + headingToleranceNearElements.get();
     }
 
     if (targetPoseNextToReef) {
       double headingTowardReef = GeometryUtil
-          .getHeading(targetPose.get().getTranslation(), Constants.FieldConstants.HUB_CENTER_POSE()).getDegrees();
+          .getHeading(targetPose.get().getTranslation(), Constants.FieldConstants.HUB_CENTER_POSE.get()).getDegrees();
 
       endBottomRotationBound = headingTowardReef - headingToleranceNearElements.get();
       endTopRotationBound    = headingTowardReef + headingToleranceNearElements.get();
