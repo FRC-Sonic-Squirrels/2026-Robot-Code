@@ -178,8 +178,8 @@ public class Shooter extends SubsystemBase {
       logs.inputs.kickerVelocityRPM.info(inputs.kickerVelocityRPM);
       logs.inputs.tempsCelcius.info(inputs.tempsCelcius);
 
-      logs.pitchDegrees.info(inputs.hoodPosition.getDegrees());
-      logs.targetPitchDegrees.info(targetHoodPosition.getDegrees());
+      logs.pitchDegrees.info(inputs.hoodPosition);
+      logs.targetPitchDegrees.info(targetHoodPosition);
       logs.flywheelRollersDifference.info(inputs.flywheelRPM[1] - inputs.flywheelRPM[0]);
       logs.state.info(goal);
       logs.targetDistance.info(distanceFromTarget.in(Units.Meters));

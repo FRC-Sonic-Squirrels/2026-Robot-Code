@@ -33,7 +33,6 @@ import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.RobotMode.Mode;
 import frc.robot.Constants.RobotMode.RobotType;
 import frc.robot.RobotStates.IntakeGoal;
-import frc.robot.RobotStates.MechState;
 import frc.robot.RobotStates.RobotGoal;
 import frc.robot.autonomous.AutosManager;
 import frc.robot.autonomous.AutosManager.Auto;
@@ -155,8 +154,6 @@ public class RobotContainer {
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
-    robotStates = new RobotStates();
-
     DriverStation.silenceJoystickConnectionWarning(true); // Silence joystick warning
 
     RobotType robotType = Constants.RobotMode.getRobot();
@@ -311,8 +308,7 @@ public class RobotContainer {
 
     var subsystems = new AutosSubsystems(drivetrainWrapper, led, leftIntake, rightIntake);
 
-    robotStates.setSubsystems(leftIntake, rightIntake, shooter, drivetrainWrapper,
-        () -> driverController.getRightTrigger().getAsBoolean());
+    robotStates = new RobotStates(leftIntake, rightIntake, shooter, drivetrainWrapper);
 
     autoManager = new AutosManager(subsystems, config, autoChooser, stringToAutoSupplierMap, () -> {
       var result = flipAutoChooser.get();
@@ -533,7 +529,6 @@ public class RobotContainer {
       rightIntake.setPivotVoltage(0);
       leftIntake.setRollerPercentOut(0);
       rightIntake.setRollerPercentOut(0);
-      robotStates.mechState = MechState.Idle;
 
       leftIntake.setGoal(Intake.Goal.Idle);
       rightIntake.setGoal(Intake.Goal.Idle);

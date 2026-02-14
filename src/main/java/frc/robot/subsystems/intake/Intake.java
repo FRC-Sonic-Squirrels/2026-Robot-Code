@@ -272,7 +272,7 @@ public class Intake extends SubsystemBase {
     pivotControlMode = ControlMode.CLOSED_LOOP;
     pivotTargetAngle = targetAngle;
     io.setPivotClosedLoopPosition(targetAngle);
-    logs.pivot.targetAngleDegrees.info(targetAngle.getDegrees());
+    logs.pivot.targetAngleDegrees.info(targetAngle);
   }
 
   public void resetPivotSubsystem() {

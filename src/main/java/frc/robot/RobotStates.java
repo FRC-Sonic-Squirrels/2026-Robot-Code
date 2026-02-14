@@ -3,7 +3,6 @@ package frc.robot;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.lib.team2930.*;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.commands.drive.DriveToPoseHelper;
@@ -11,8 +10,6 @@ import frc.robot.commands.drive.RotateToFaceHelper;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
-
-import java.util.function.Supplier;
 
 public class RobotStates {
   private String ROOT_TABLE = "RobotStates";
@@ -54,15 +51,12 @@ public class RobotStates {
   }
 
   public static class SubsystemsInUseLogs extends AutoRegisterLoggers {
-    public LoggerEntry.Bool mechInUse;
-    public LoggerEntry.Bool endEffectorInUse;
+    public LoggerEntry.Bool intakeInUse;
+    public LoggerEntry.Bool shooterInUse;
   }
 
   public static class Logs extends AutoRegisterLoggers {
-    public LoggerEntry.Integer                             counter;
-    public LoggerEntry.Bool                                gamepieceInIntakeState;
-    public LoggerEntry.EnumValue<EndEffectorDesiredAction> endEffectorDesiredAction;
-    public LoggerEntry.EnumValue<MechState>                mechState;
+    public LoggerEntry.Integer counter;
 
     public SubsystemsInUseLogs          subsystemsInUse;
     public SubsystemsInTargetStatesLogs subsystemsInTargetStates;
@@ -72,15 +66,6 @@ public class RobotStates {
 
   // States
 
-  public EndEffectorDesiredAction endEffectorDesiredAction    = EndEffectorDesiredAction.Idle;
-  public double                   endEffectorOverrideVelocity = Double.NaN;
-
-  public MechState mechState = MechState.Idle;
-
-  public boolean endEffectorInUse;
-  public boolean mechanismInUse;
-  public boolean intakeInUse;
-
   private RobotGoal goal       = RobotGoal.None;
   private RobotGoal wantedGoal = RobotGoal.None;
 
@@ -89,39 +74,26 @@ public class RobotStates {
 
   // Commands
 
-  public RobotStates() {
-  }
+  private final Intake             leftIntake;
+  private final Intake             rightIntake;
+  private final DrivetrainWrapper  drivetrain;
+  private final Shooter            shooter;
+  private final RotateToFaceHelper rtfHelper;
+  private final DriveToPoseHelper  dtpHelpter;
 
-  private int periodicCounter;
+  private int     periodicCounter;
+  private boolean driveSlow;
+  private Pose2d  targetPose;
 
-  private Intake            leftIntake;
-  private Intake            rightIntake;
-  private DrivetrainWrapper drivetrain;
-  private Shooter           shooter;
-
-  private RotateToFaceHelper rtfHelper;
-  private DriveToPoseHelper  dtpHelpter;
-  private boolean            driveSlow  = false;
-  private Pose2d             targetPose = null;
-  private Supplier<Boolean>  intaking   = null;
-
-  public void setSubsystems(Intake leftIntake, Intake rightIntake, Shooter shooter, DrivetrainWrapper drivetrain,
-      Supplier<Boolean> intaking) {
+  public RobotStates(Intake leftIntake, Intake rightIntake, Shooter shooter, DrivetrainWrapper drivetrain) {
     this.leftIntake  = leftIntake;
     this.rightIntake = rightIntake;
     this.drivetrain  = drivetrain;
-    this.intaking    = intaking;
     this.shooter     = shooter;
-    dtpHelpter       = new DriveToPoseHelper(this.drivetrain, () -> targetPose, () -> drivetrain.getRawOdometryPose(),
+    dtpHelpter       = new DriveToPoseHelper(this.drivetrain, () -> targetPose, drivetrain::getRawOdometryPose,
         () -> driveSlow);
     rtfHelper        = new RotateToFaceHelper(this.drivetrain, () -> targetPose.getTranslation(),
-        () -> drivetrain.getRawOdometryPose());
-  }
-
-  public void changeEndEffectorIfNotAligning(EndEffectorDesiredAction action) {
-    if (!endEffectorDesiredAction.alignmentActive) {
-      endEffectorDesiredAction = action;
-    }
+        drivetrain::getRawOdometryPose);
   }
 
   private void handleGoalTransition() {
@@ -213,25 +185,10 @@ public class RobotStates {
         }
     }
 
-    CommandScheduler.getInstance().setPeriod(endEffectorOverrideVelocity);
-
-    logs.subsystemsInUse.mechInUse.info(mechanismInUse);
-    logs.subsystemsInUse.endEffectorInUse.info(endEffectorInUse);
-
-    if (mechState == MechState.Override) {
-      mechanismInUse = true;
-    }
-
     // Log states
 
-    logs.endEffectorDesiredAction.info(endEffectorDesiredAction);
-    logs.mechState.info(mechState);
     logs.subsystemsInTargetStates.goal.info(goal.name());
     logs.subsystemsInTargetStates.wantedGoal.info(wantedGoal.name());
-
-    mechanismInUse   = false;
-    intakeInUse      = false;
-    endEffectorInUse = false;
   }
 
   private void shoot() {
@@ -240,16 +197,6 @@ public class RobotStates {
     shooter.setFacingTarget(rtfHelper.withinTolerance());
     shooter.setGoal(Shooter.Goal.Shooting);
     shooter.setDistanceFromTarget(rtfHelper.getDistance());
-  }
-
-  public void setMechState(MechState state) {
-    mechState      = state;
-    mechanismInUse = true;
-  }
-
-  public void setEndEffectorState(EndEffectorDesiredAction state) {
-    endEffectorDesiredAction = state;
-    endEffectorInUse         = true;
   }
 
   public RobotGoal getRobotGoal() {
