@@ -80,9 +80,15 @@ import java.util.function.Supplier;
  * commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
+  public String ROOT_TABLE = "RobotContainer";
+
+  public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.EnumValue<RobotType> robotType;
+    public LoggerEntry.EnumValue<Mode>      robotMode;
+  }
+
   // Robot logging
-  private static final LoggerEntry.EnumValue<RobotType> logRobotType = LoggerGroup.root.buildEnum("RobotType");
-  private static final LoggerEntry.EnumValue<Mode>      logRobotMode = LoggerGroup.root.buildEnum("RobotMode");
+  public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
   // Subsystems
   private final Drivetrain          drivetrain;
@@ -150,7 +156,6 @@ public class RobotContainer {
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
-
     robotStates = new RobotStates();
 
     DriverStation.silenceJoystickConnectionWarning(true); // Silence joystick warning
@@ -158,8 +163,8 @@ public class RobotContainer {
     RobotType robotType = Constants.RobotMode.getRobot();
     Mode      mode      = Constants.RobotMode.getMode();
 
-    logRobotType.info(robotType);
-    logRobotMode.info(mode);
+    logs.robotType.info(robotType);
+    logs.robotMode.info(mode);
 
     var config = robotType.config.get();
     aprilTagLayout = config.getAprilTagFieldLayout();

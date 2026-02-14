@@ -9,6 +9,7 @@ import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.lib.team2930.AutoRegisterLoggers;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 import frc.lib.team2930.RunStateMachineCommand;
@@ -27,10 +28,13 @@ import java.util.function.Supplier;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class AutosManager {
-  private static final LoggerGroup                                  logGroupSysid       = LoggerGroup.build("Sysid");
-  private static final LoggerEntry.EnumValue<SysIdRoutineLog.State> logSwerveSysidState = logGroupSysid
-      .buildEnum("swervesysidstate");
+  private String ROOT_TABLE = "Sysid";
 
+  public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.EnumValue<SysIdRoutineLog.State> swervesysidstate;
+  }
+
+  private final Logs            logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
   private final AutosSubsystems subsystems;
   private final RobotConfig     config;
   private final BooleanSupplier flipAuto;
@@ -129,7 +133,7 @@ public class AutosManager {
   public Auto swerveCharacterization() {
     var sysidConfig = new SysIdRoutine.Config(null, null, null, (state) -> {
       if (state != SysIdRoutineLog.State.kNone) {
-        logSwerveSysidState.info(state);
+        logs.swervesysidstate.info(state);
       }
     });
 
@@ -146,7 +150,7 @@ public class AutosManager {
         // .andThen(Commands.waitSeconds(1.0))
         .andThen(command3)
         // .andThen(Commands.waitSeconds(1.0))
-        .andThen(command4).andThen(Commands.runOnce(() -> logSwerveSysidState.info(SysIdRoutineLog.State.kNone)));
+        .andThen(command4).andThen(Commands.runOnce(() -> logs.swervesysidstate.info(SysIdRoutineLog.State.kNone)));
 
     return new Auto("swerveCharacterization", finalCommand, Constants.zeroPose2d);
   }

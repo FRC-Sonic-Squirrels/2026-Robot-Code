@@ -4,10 +4,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.lib.team2930.AllianceAwareTranslation2d;
-import frc.lib.team2930.GeometryUtil;
-import frc.lib.team2930.LoggerEntry;
-import frc.lib.team2930.LoggerGroup;
+import frc.lib.team2930.*;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.commands.drive.DriveToPoseHelper;
 import frc.robot.commands.drive.RotateToFaceHelper;
@@ -15,9 +12,12 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.State;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
+
 import java.util.function.Supplier;
 
 public class RobotStates {
+  private String ROOT_TABLE = "RobotStates";
+
   // End Effector states
   public enum EndEffectorDesiredAction {
     Idle(false), DepotIntake(false), GroundIntake(false), ShootFuel(true), PassCoralToEndEffector(false),
@@ -52,26 +52,30 @@ public class RobotStates {
 
   // Logging
 
-  private LoggerGroup logGroup = LoggerGroup.build("RobotState");
+  public static class SubsystemsInTargetStatesLogs extends AutoRegisterLoggers {
+    public LoggerEntry.Bool intakeInTargetState;
+    public LoggerEntry.Bool mechInTargetState;
+    public LoggerEntry.Text goal;
+    public LoggerEntry.Text wantedGoal;
 
-  private LoggerEntry.Integer logPeriodicCounter = logGroup.buildInteger("Counter");
+  }
 
-  private LoggerEntry.Bool logGamepieceInIntakeState = logGroup.buildBoolean("GamepieceInIntakeState");
+  public static class SubsystemsInUseLogs extends AutoRegisterLoggers {
+    public LoggerEntry.Bool mechInUse;
+    public LoggerEntry.Bool endEffectorInUse;
+  }
 
-  private LoggerEntry.EnumValue<EndEffectorDesiredAction> logEndEffectorDesiredAction = logGroup
-      .buildEnum("EndEffectorDesiredAction");
-  private LoggerEntry.EnumValue<MechState>                logMechState                = logGroup.buildEnum("MechState");
+  public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.Integer                             counter;
+    public LoggerEntry.Bool                                gamepieceInIntakeState;
+    public LoggerEntry.EnumValue<EndEffectorDesiredAction> endEffectorDesiredAction;
+    public LoggerEntry.EnumValue<MechState>                mechState;
 
-  private LoggerGroup      logSubsystemsInUse  = logGroup.subgroup("SubsystemsInUse");
-  private LoggerEntry.Bool logMechInUse        = logSubsystemsInUse.buildBoolean("MechInUse");
-  private LoggerEntry.Bool logEndEffectorInUse = logSubsystemsInUse.buildBoolean("EndEffectorInUse");
+    public SubsystemsInUseLogs          subsystemsInUse;
+    public SubsystemsInTargetStatesLogs subsystemsInTargetStates;
+  }
 
-  private LoggerGroup      logSubsystemsInTargetStates = logGroup.subgroup("SubsystemsInTargetStates");
-  private LoggerEntry.Bool logIntakeInTargetState      = logSubsystemsInTargetStates
-      .buildBoolean("IntakeInTargetState");
-  private LoggerEntry.Bool logMechInTargetState        = logSubsystemsInTargetStates.buildBoolean("MechInTargetState");
-  private LoggerEntry.Text logGoal                     = logSubsystemsInTargetStates.buildString("Goal");
-  private LoggerEntry.Text logWantedGoal               = logSubsystemsInTargetStates.buildString("WantedGoal");
+  private final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
   // States
 
@@ -142,8 +146,9 @@ public class RobotStates {
   }
 
   private void handleGoalTransition() {
-    if (wantedGoal == goal)
+    if (wantedGoal == goal) {
       return;
+    }
     if (DriverStation.isAutonomous() && wantedGoal != RobotGoal.Auto) {
       wantedGoal = RobotGoal.Auto;
       return;
@@ -184,7 +189,7 @@ public class RobotStates {
 
   public void periodic() {
     periodicCounter = (periodicCounter + 1) % 100;
-    logPeriodicCounter.info(periodicCounter);
+    logs.counter.info(periodicCounter);
 
     handleGoalTransition();
     handleIntakeGoalTransition();
@@ -231,11 +236,11 @@ public class RobotStates {
 
     CommandScheduler.getInstance().setPeriod(endEffectorOverrideVelocity);
 
-    logMechInUse.info(mechanismInUse);
-    logEndEffectorInUse.info(endEffectorInUse);
+    logs.subsystemsInUse.mechInUse.info(mechanismInUse);
+    logs.subsystemsInUse.endEffectorInUse.info(endEffectorInUse);
 
-    logIntakeInTargetState.info(intakeInTargetState);
-    logMechInTargetState.info(mechInTargetState);
+    logs.subsystemsInTargetStates.intakeInTargetState.info(intakeInTargetState);
+    logs.subsystemsInTargetStates.mechInTargetState.info(mechInTargetState);
 
     if (mechState == MechState.Override) {
       mechanismInUse = true;
@@ -243,12 +248,12 @@ public class RobotStates {
 
     // Log states
 
-    logEndEffectorDesiredAction.info(endEffectorDesiredAction);
-    logMechState.info(mechState);
-    logGoal.info(goal.name());
-    logWantedGoal.info(wantedGoal.name());
+    logs.endEffectorDesiredAction.info(endEffectorDesiredAction);
+    logs.mechState.info(mechState);
+    logs.subsystemsInTargetStates.goal.info(goal.name());
+    logs.subsystemsInTargetStates.wantedGoal.info(wantedGoal.name());
 
-    logGamepieceInIntakeState.info(fuelInIntake);
+    logs.gamepieceInIntakeState.info(fuelInIntake);
 
     mechanismInUse   = false;
     intakeInUse      = false;
