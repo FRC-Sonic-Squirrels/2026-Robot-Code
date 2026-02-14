@@ -20,17 +20,15 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.Threads;
-import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.lib.team2930.*;
+import frc.lib.team2930.LoggerEntry;
+import frc.lib.team2930.LoggerGroup;
+import frc.lib.team2930.TunableNumberGroup;
 import frc.lib.team2930.commands.RunsWhenDisabledInstantCommand;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants.ClimberConstants;
@@ -42,7 +40,6 @@ import frc.robot.RobotStates.RobotGoal;
 import frc.robot.autonomous.AutosManager;
 import frc.robot.autonomous.AutosManager.Auto;
 import frc.robot.autonomous.AutosSubsystems;
-import frc.robot.autonomous.records.PickupLocation;
 import frc.robot.commands.climber.ClimberSetAngle;
 import frc.robot.commands.drive.DriveToPose;
 import frc.robot.commands.drive.DrivetrainDefaultTeleopDrive;
@@ -60,12 +57,8 @@ import frc.robot.subsystems.hopper.Hopper;
 import frc.robot.subsystems.hopper.HopperIO;
 import frc.robot.subsystems.hopper.HopperIOReal;
 import frc.robot.subsystems.hopper.HopperIOSim;
-import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.*;
 import frc.robot.subsystems.intake.Intake.State;
-import frc.robot.subsystems.intake.IntakeIO;
-import frc.robot.subsystems.intake.IntakeIOConfig;
-import frc.robot.subsystems.intake.IntakeIOReal;
-import frc.robot.subsystems.intake.IntakeIOSim;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.shooter.ShooterIO;
 import frc.robot.subsystems.shooter.ShooterIOReal;
@@ -76,15 +69,10 @@ import frc.robot.subsystems.swerve.gyro.GyroIO;
 import frc.robot.subsystems.swerve.gyro.GyroIOPigeon2;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionModuleConfiguration;
-import frc.robot.subsystems.visionGamepiece.VisionGamepiece;
-import frc.robot.subsystems.visionGamepiece.VisionGamepieceIO;
-import frc.robot.subsystems.visionGamepiece.VisionGamepieceIOReal;
-import frc.robot.subsystems.visionGamepiece.VisionGamepieceIOSim;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.function.Supplier;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+
+import java.util.HashMap;
+import java.util.function.Supplier;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -105,7 +93,6 @@ public class RobotContainer {
   private final Vision              vision;
   private final Intake              rightIntake;
   private final Intake              leftIntake;
-  private final VisionGamepiece     visionGamepiece;
   private final LED                 led;
   private final Climber             climber;
   private final Hopper              hopper;
@@ -116,12 +103,8 @@ public class RobotContainer {
   private final XboxControllerWrapper operatorController = new XboxControllerWrapper(1);
 
   // Auto
-  private final LoggedDashboardChooser<String>               autoChooser            = new LoggedDashboardChooser<>(
-      "Auto Routine");
-  private final LoggedDashboardChooser<Boolean>              flipAutoChooser        = new LoggedDashboardChooser<>(
-      "Flip Auto?");
-  private final List<LoggedDashboardChooser<PickupLocation>> coralStationPosChooser = new ArrayList<>();
-  private final int                                          customGamepieceCount   = 5;
+  private final LoggedDashboardChooser<String>  autoChooser     = new LoggedDashboardChooser<>("Auto Routine");
+  private final LoggedDashboardChooser<Boolean> flipAutoChooser = new LoggedDashboardChooser<>("Flip Auto?");
 
   private final HashMap<String, Supplier<Auto>> stringToAutoSupplierMap = new HashMap<>();
   private final AutosManager                    autoManager;
@@ -198,13 +181,6 @@ public class RobotContainer {
       shooter     = new Shooter(new ShooterIO() {
                   });
 
-      if (Constants.unusedCode) {
-        visionGamepiece = new VisionGamepiece(new VisionGamepieceIO() {
-        }, drivetrain::getHubPoseEstimatorPoseAtTimestamp);
-      } else {
-        visionGamepiece = null;
-      }
-
       led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered, robotStates);
     } else { // REAL and SIM robots HERE
       switch (robotType) {
@@ -219,14 +195,6 @@ public class RobotContainer {
             // Sim Robot, Real Cameras
             vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
                 drivetrain::addVisionEstimate, config.getVisionModuleObjects());
-
-            if (Constants.unusedCode) {
-              visionGamepiece = new VisionGamepiece(new VisionGamepieceIOReal(),
-                  drivetrain::getHubPoseEstimatorPoseAtTimestamp);
-            } else {
-              visionGamepiece = null;
-            }
-
           } else {
             VisionModuleConfiguration[] visionModules = {
                 VisionModuleConfiguration.buildSim(SimulatorRobotConfig.SHOOTER_SIDE_LEFT_CAMERA_NAME,
@@ -236,14 +204,6 @@ public class RobotContainer {
 
             vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
                 drivetrain::addVisionEstimate, visionModules);
-
-            if (Constants.unusedCode) {
-              visionGamepiece = new VisionGamepiece(
-                  new VisionGamepieceIOSim(config, drivetrain::getHubPoseEstimatorPose),
-                  drivetrain::getHubPoseEstimatorPoseAtTimestamp);
-            } else {
-              visionGamepiece = null;
-            }
           }
 
           rightIntake = new Intake(new IntakeIOSim());
@@ -272,13 +232,6 @@ public class RobotContainer {
           shooter = new Shooter(new ShooterIO() {
           });
 
-          if (Constants.unusedCode) {
-            visionGamepiece = new VisionGamepiece(new VisionGamepieceIO() {
-            }, drivetrain::getHubPoseEstimatorPoseAtTimestamp);
-          } else {
-            visionGamepiece = null;
-          }
-
           led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered, robotStates);
           break;
 
@@ -298,13 +251,6 @@ public class RobotContainer {
           });
           vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
               drivetrain::addVisionEstimate, config.getVisionModuleObjects());
-
-          if (Constants.unusedCode) {
-            visionGamepiece = new VisionGamepiece(new VisionGamepieceIOReal(),
-                drivetrain::getHubPoseEstimatorPoseAtTimestamp);
-          } else {
-            visionGamepiece = null;
-          }
 
           led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered, robotStates);
           break;
@@ -328,13 +274,6 @@ public class RobotContainer {
           });
           vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
               drivetrain::addVisionEstimate, config.getVisionModuleObjects());
-
-          if (Constants.unusedCode) {
-            visionGamepiece = new VisionGamepiece(new VisionGamepieceIOReal(),
-                drivetrain::getHubPoseEstimatorPoseAtTimestamp);
-          } else {
-            visionGamepiece = null;
-          }
 
           led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered, robotStates);
 
@@ -374,13 +313,6 @@ public class RobotContainer {
           vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
               drivetrain::addVisionEstimate, config.getVisionModuleObjects());
 
-          if (Constants.unusedCode) {
-            visionGamepiece = new VisionGamepiece(new VisionGamepieceIOReal(),
-                drivetrain::getHubPoseEstimatorPoseAtTimestamp);
-          } else {
-            visionGamepiece = null;
-          }
-
           led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered, robotStates);
           break;
 
@@ -400,13 +332,6 @@ public class RobotContainer {
           shooter = new Shooter(new ShooterIO() {
           });
 
-          if (Constants.unusedCode) {
-            visionGamepiece = new VisionGamepiece(new VisionGamepieceIO() {
-            }, drivetrain::getHubPoseEstimatorPoseAtTimestamp);
-          } else {
-            visionGamepiece = null;
-          }
-
           led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered, robotStates);
           break;
       }
@@ -416,15 +341,6 @@ public class RobotContainer {
 
     flipAutoChooser.addDefaultOption("No", false);
     flipAutoChooser.addOption("Yes", true);
-
-    for (int i = 1; i < customGamepieceCount; i++) { // Add custom pickup choosers
-      LoggedDashboardChooser<PickupLocation> chooser = new LoggedDashboardChooser<>(i + " CustomPickup");
-      for (PickupLocation side : PickupLocation.values()) {
-        chooser.addOption(side.name(), side);
-      }
-      chooser.addDefaultOption(PickupLocation.IA.name(), PickupLocation.IA);
-      coralStationPosChooser.add(chooser);
-    }
 
     var subsystems = new AutosSubsystems(drivetrainWrapper, led, leftIntake, rightIntake);
 
@@ -437,7 +353,7 @@ public class RobotContainer {
         return result;
       }
       return false;
-    }, this::getCustomCoralStationLocations, robotStates);
+    }, robotStates);
 
     led.setPreloadSupplier(autoManager::preloadingComplete);
 
@@ -457,11 +373,12 @@ public class RobotContainer {
   private void configureButtonBindings() {
     // ----------- DRIVER CONTROLS ------------
 
-    if (Constants.unusedCode)
+    if (Constants.unusedCode) {
       driverController.registerTrigger(XboxControllerWrapper.Button.back, "Zero Robot").onTrue(Commands.runOnce(() -> {
         Pose2d pose = drivetrain.getHubPoseEstimatorPose();
         drivetrain.setPose(new Pose2d(pose.getX(), pose.getY(), Constants.zeroRotation2d));
       }, drivetrain));
+    }
     driverController.registerTrigger(XboxControllerWrapper.Button.start, "X Stance")
         .onTrue(Commands.runOnce(drivetrain::stopWithX));
     driverController.registerTrigger(XboxControllerWrapper.Button.a, "DriveToTag").whileTrue(Commands.repeatingSequence(
@@ -678,10 +595,6 @@ public class RobotContainer {
     vision.useMaxDistanceAwayFromExistingEstimate(true);
     vision.useGyroBasedFilteringForVision(true);
 
-    if (visionGamepiece != null) {
-      visionGamepiece.setPipelineIndex(0);
-    }
-
     is_teleop     = false;
     is_autonomous = true;
   }
@@ -695,10 +608,6 @@ public class RobotContainer {
     vision.useGyroBasedFilteringForVision(true);
 
     led.setBaseRobotState(BaseRobotState.LEVEL_MODE);
-
-    if (visionGamepiece != null) {
-      visionGamepiece.setPipelineIndex(1);
-    }
 
     is_teleop     = true;
     is_autonomous = false;
@@ -714,19 +623,6 @@ public class RobotContainer {
 
   public void updateRobotState() {
     robotStates.periodic();
-  }
-
-  public void getCustomScoringLocations() {
-  }
-
-  public List<PickupLocation> getCustomCoralStationLocations() {
-    List<PickupLocation> coralStationLocations = new ArrayList<>();
-
-    for (LoggedDashboardChooser<PickupLocation> location : coralStationPosChooser) {
-      coralStationLocations.add(location.get());
-    }
-
-    return coralStationLocations;
   }
 
   public Command threadCommand() { // Used to set thread priority to main thread after a timed delay

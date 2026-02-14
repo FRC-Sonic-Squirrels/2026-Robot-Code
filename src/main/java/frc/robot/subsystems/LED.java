@@ -25,13 +25,10 @@ import java.util.function.Supplier;
 public class LED extends SubsystemBase {
   private static final String ROOT_TABLE = "LED";
 
-  private static final LoggerGroup                           logGroup             = LoggerGroup.build(ROOT_TABLE);
-  private static final LoggerEntry.EnumValue<RobotState>     log_robotState       = logGroup.buildEnum("robotState");
-  private static final LoggerEntry.EnumValue<BaseRobotState> log_baseRobotState   = logGroup
-      .buildEnum("baseRobotState");
-  private static final LoggerEntry.Bool                      log_gamepieceInRobot = logGroup
-      .buildBoolean("gamepieceInRobot");
-  private static final LoggerEntry.Bool                      log_isTeleop         = logGroup.buildBoolean("isTeleop");
+  private static final LoggerGroup                           logGroup           = LoggerGroup.build(ROOT_TABLE);
+  private static final LoggerEntry.EnumValue<RobotState>     log_robotState     = logGroup.buildEnum("robotState");
+  private static final LoggerEntry.EnumValue<BaseRobotState> log_baseRobotState = logGroup.buildEnum("baseRobotState");
+  private static final LoggerEntry.Bool                      log_isTeleop       = logGroup.buildBoolean("isTeleop");
 
   /** Creates a new LED. */
   private AddressableLED led = new AddressableLED(Constants.LEDConstants.PWM_PORT);
@@ -45,7 +42,6 @@ public class LED extends SubsystemBase {
   private int                     levelMeterCount        = 0;
   private RobotState              robotState             = RobotState.BASE;
   private BaseRobotState          baseRobotState         = BaseRobotState.GAMEPIECE_STATUS;
-  private boolean                 gamepieceInRobot;
   private Color                   squirrelOrange         = new Color(0.1, 1, 0);
   private TunableNumberGroup      group                  = new TunableNumberGroup("LED");
   private LoggedTunableNumber     useTunableLEDs         = group.build("useTunableLEDs", 0);
@@ -160,7 +156,6 @@ public class LED extends SubsystemBase {
 
     log_robotState.info(robotState);
     log_baseRobotState.info(baseRobotState);
-    log_gamepieceInRobot.info(gamepieceInRobot);
     log_isTeleop.info(DriverStation.isTeleop());
 
     if (!sameAsPrevBuffer())
@@ -245,7 +240,7 @@ public class LED extends SubsystemBase {
   private void setAudioLevelMeter(int bpm) {
     double     theta          = levelMeterCount * 0.02 * Math.PI * bpm / 60.0;
     double     volume         = 1 + Math.abs(11.0 * Math.sin(theta)) + (3.0 * Math.sin(theta * 7.0))
-        + (1.0 * Math.sin(theta * 17.0));
+        + (Math.sin(theta * 17.0));
     double     mappedVolume   = (volume / 15) * 100;
     LEDPattern volumeMask     = LEDPattern.progressMaskLayer(() -> (mappedVolume) / 100);
     LEDPattern volumeGradient = LEDPattern.gradient(LEDPattern.GradientType.kDiscontinuous, Color.kGreen, Color.kRed)
@@ -286,25 +281,6 @@ public class LED extends SubsystemBase {
   /** Sets the base led robot state. */
   public void setBaseRobotState(BaseRobotState baseRobotState) {
     this.baseRobotState = baseRobotState;
-  }
-
-  /** Sets whether the leds indicate a gamepiece or not */
-  public void setGamepieceStatus(boolean gamepieceInRobot) {
-    this.gamepieceInRobot = gamepieceInRobot;
-  }
-
-  // Getters
-
-  public RobotState getCurrentState() {
-    return robotState;
-  }
-
-  public BaseRobotState getCurrentBaseState() {
-    return baseRobotState;
-  }
-
-  public boolean getGamepieceStatus() {
-    return gamepieceInRobot;
   }
 
   public boolean sameAsPrevBuffer() {
