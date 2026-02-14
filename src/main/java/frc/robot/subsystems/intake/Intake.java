@@ -14,135 +14,100 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.lib.team2930.ControlMode;
-import frc.lib.team2930.ExecutionTiming;
-import frc.lib.team2930.LoggerEntry;
-import frc.lib.team2930.LoggerGroup;
-import frc.lib.team2930.TunableNumberGroup;
+import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
-import frc.robot.Constants.IntakeConstants;
 import frc.robot.Constants.IntakeConstants.PivotConstants;
-import frc.robot.Constants.IntakeConstants.RollerConstants;
 import frc.robot.Constants.RobotMode.RobotType;
-import frc.lib.team2930.GeometryUtil;
 
 public class Intake extends SubsystemBase {
+  private static final String ROOT_TABLE = "Intake";
 
   public enum State {
     Idle, Stow, Down, Eject, Intake
   }
 
-  // Execution timing
-  private static final ExecutionTiming timing = new ExecutionTiming(IntakeConstants.ROOT_TABLE);
+  public static class RollerLogs extends AutoRegisterLoggers {
+    public LoggerEntry.Decimal                velocityRPM;
+    public LoggerEntry.Decimal                currentAmps;
+    public LoggerEntry.Decimal                tempCelsius;
+    public LoggerEntry.Decimal                appliedVolts;
+    public LoggerEntry.Decimal                targetVelocityRPM;
+    public LoggerEntry.EnumValue<ControlMode> controlMode;
+  }
 
-  // Logging
-  private static final LoggerGroup logGroup = LoggerGroup.build(IntakeConstants.ROOT_TABLE);
-  // Rollers
-  private static final LoggerGroup         rollerLogGroup               = logGroup.subgroup(RollerConstants.ROOT_TABLE);
-  private static final LoggerEntry.Decimal logInputs_rollerVelocityRPM  = rollerLogGroup.buildDecimal("VelocityRPM");
-  private static final LoggerEntry.Decimal logInputs_rollerCurrentAmps  = rollerLogGroup.buildDecimal("CurrentAmps");
-  private static final LoggerEntry.Decimal logInputs_rollerTempCelsius  = rollerLogGroup.buildDecimal("TempCelsius");
-  private static final LoggerEntry.Decimal logInputs_rollerAppliedVolts = rollerLogGroup.buildDecimal("AppliedVolts");
+  public static class PivotLogs extends AutoRegisterLoggers {
+    public LoggerEntry.Decimal                angle;
+    public LoggerEntry.Decimal                appliedVolts;
+    public LoggerEntry.Decimal                currentAmps;
+    public LoggerEntry.Decimal                tempCelsius;
+    public LoggerEntry.Decimal                velocityDegreesPerSecond;
+    public LoggerEntry.EnumValue<ControlMode> controlMode;
+    public LoggerEntry.Decimal                targetAngleDegrees;
+  }
 
-  private static final LoggerEntry.Decimal                logRollerTargetVelocityRPM = rollerLogGroup
-      .buildDecimal("TargetVelocityRPM");
-  private static final LoggerEntry.EnumValue<ControlMode> logRollerControlMode       = rollerLogGroup
-      .buildEnum("ControlMode");
+  public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.EnumValue<State> state;
 
-  private static final LoggerEntry.EnumValue<State> logIntakeState = logGroup.buildEnum("IntakeState");
+    public RollerLogs roller;
+    public PivotLogs  pivot;
+  }
 
-  // Pivot
-  private static final LoggerGroup                        pivotLogGroup                           = logGroup
-      .subgroup(PivotConstants.ROOT_TABLE);
-  private static final LoggerEntry.Decimal                logInputs_pivotAngle                    = pivotLogGroup
-      .buildDecimal("Angle");
-  private static final LoggerEntry.Decimal                logInputs_pivotAppliedVolts             = pivotLogGroup
-      .buildDecimal("AppliedVolts");
-  private static final LoggerEntry.Decimal                logInputs_pivotCurrentAmps              = pivotLogGroup
-      .buildDecimal("CurrentAmps");
-  private static final LoggerEntry.Decimal                logInputs_pivotTempCelsius              = pivotLogGroup
-      .buildDecimal("TempCelsius");
-  private static final LoggerEntry.Decimal                logInputs_pivotVelocityDegreesPerSecond = pivotLogGroup
-      .buildDecimal("VelocityDegreesPerSecond");
-  private static final LoggerEntry.EnumValue<ControlMode> logPivotControlMode                     = pivotLogGroup
-      .buildEnum("ControlMode");
-  private static final LoggerEntry.Decimal                logPivotTargetAngleDegrees              = pivotLogGroup
-      .buildDecimal("TargetAngleDegrees");
+  public static class PivotTunables extends AutoRegisterTunables {
+    public LoggedTunableNumber KP;
+    public LoggedTunableNumber KD;
+    public LoggedTunableNumber KG;
 
-  // Tunable numbers
-  private static final TunableNumberGroup group = new TunableNumberGroup(IntakeConstants.ROOT_TABLE);
+    public LoggedTunableNumber maxVelocityConfig;
+    public LoggedTunableNumber targetAccelerationConfig;
 
-  private static final LoggedTunableNumber intakingVelocity = group.build("Intaking/Fuel/Velocity", 3000);
+    @TunableEntry(defaultValue = 3.0)
+    public LoggedTunableNumber toleranceDegrees;
 
-  private static final LoggedTunableNumber ejectingFuelVelocity   = group.build("Score/Fuel/Velocity", 500.0);
-  private static final LoggedTunableNumber intakingFuelPivotAngle = group.build("Intaking/Fuel/AngleDeg", 20);
-
-  // Roller
-  private static final TunableNumberGroup  rollerSubgroup                 = group.subgroup(RollerConstants.ROOT_TABLE);
-  private static final LoggedTunableNumber rKS                            = rollerSubgroup.build("KS");
-  private static final LoggedTunableNumber rKP                            = rollerSubgroup.build("KP");
-  private static final LoggedTunableNumber rKV                            = rollerSubgroup.build("KV");
-  private static final LoggedTunableNumber rollerTargetAccelerationConfig = rollerSubgroup
-      .build("MaxAccelerationConstraint");
-
-  // Pivot
-  private static final TunableNumberGroup  pivotSubgroup = group.subgroup(PivotConstants.ROOT_TABLE);
-  private static final LoggedTunableNumber pKP           = pivotSubgroup.build("KP");
-  private static final LoggedTunableNumber pKD           = pivotSubgroup.build("KD");
-  private static final LoggedTunableNumber pKG           = pivotSubgroup.build("KG");
-
-  private static final LoggedTunableNumber pivotMaxVelocityConfig        = pivotSubgroup.build("MaxVelocityConfig");
-  private static final LoggedTunableNumber pivotTargetAccelerationConfig = pivotSubgroup
-      .build("TargetAccelerationConfig");
-  private static final LoggedTunableNumber pivotToleranceDegrees         = pivotSubgroup.build("ToleranceDegrees", 3);
-
-  // Motion constants
-  static {
-    if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_RETIRED_HOLO) {
-      rKS.initDefault(0);
-      rKP.initDefault(0.4);
-      rKV.initDefault(0.13);
-      rollerTargetAccelerationConfig.initDefault(200);
-
-      pKP.initDefault(60);
-      pKD.initDefault(0.3);
-      pKG.initDefault(0.4);
-
-      pivotMaxVelocityConfig.initDefault(200);
-      pivotTargetAccelerationConfig.initDefault(1500);
-    } else if (Constants.RobotMode.isSimBot()) {
-      rKS.initDefault(0);
-      rKP.initDefault(0.00006);
-      rKV.initDefault(0.0002);
-      rollerTargetAccelerationConfig.initDefault(0.0);
-
-      pKP.initDefault(120);
-      pKD.initDefault(0);
-      pKG.initDefault(0.0);
-
-      pivotMaxVelocityConfig.initDefault(40);
-      pivotTargetAccelerationConfig.initDefault(80);
-    } else {
-      rKS.initDefault(0);
-      rKP.initDefault(0.4);
-      rKV.initDefault(0.13);
-      rollerTargetAccelerationConfig.initDefault(200);
-
-      pKP.initDefault(60);
-      pKD.initDefault(0.3);
-      pKG.initDefault(0.4);
-
-      pivotMaxVelocityConfig.initDefault(200);
-      pivotTargetAccelerationConfig.initDefault(1500);
+    private boolean hasChanged() {
+      return KP.hasChanged() || KD.hasChanged() || KG.hasChanged() || maxVelocityConfig.hasChanged()
+          || targetAccelerationConfig.hasChanged();
     }
   }
 
+  public static class RollerTunables extends AutoRegisterTunables {
+    public LoggedTunableNumber KS;
+    public LoggedTunableNumber KP;
+    public LoggedTunableNumber KV;
+    public LoggedTunableNumber targetAccelerationConfig;
+
+    public boolean hasChanged() {
+      return KS.hasChanged() || KP.hasChanged() || KV.hasChanged() || targetAccelerationConfig.hasChanged();
+    }
+  }
+
+  public static class Tunables extends AutoRegisterTunables {
+    public PivotTunables  pivot;
+    public RollerTunables roller;
+
+    @TunableEntry(defaultValue = 3000.0)
+    public LoggedTunableNumber intakingFuelVelocity;
+
+    @TunableEntry(defaultValue = 500.0)
+    public LoggedTunableNumber ejectingFuelVelocity;
+
+    @TunableEntry(defaultValue = 20.0)
+    public LoggedTunableNumber intakingFuelPivotAngle;
+  }
+
+  public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
+
+  // Execution timing
+  private final ExecutionTiming timing = new ExecutionTiming(ROOT_TABLE);
+
+  // Tunable numbers
+  private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
+
   private final IntakeIO        io;
-  private final IntakeIO.Inputs inputs = new IntakeIO.Inputs(logGroup);
+  private final IntakeIO.Inputs inputs = new IntakeIO.Inputs(logs.group);
 
   // Intake states
-  private State intakeState = State.Stow;
+  private State state = State.Stow;
 
   private boolean intakeOverride = false;
 
@@ -160,6 +125,45 @@ public class Intake extends SubsystemBase {
   public Intake(IntakeIO io) {
     this.io = io;
 
+    // Motion constants
+    if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_RETIRED_HOLO) {
+      tunables.roller.KS.initDefault(0);
+      tunables.roller.KP.initDefault(0.4);
+      tunables.roller.KV.initDefault(0.13);
+      tunables.roller.targetAccelerationConfig.initDefault(200);
+
+      tunables.pivot.KP.initDefault(60);
+      tunables.pivot.KD.initDefault(0.3);
+      tunables.pivot.KG.initDefault(0.4);
+
+      tunables.pivot.maxVelocityConfig.initDefault(200);
+      tunables.pivot.targetAccelerationConfig.initDefault(1500);
+    } else if (Constants.RobotMode.isSimBot()) {
+      tunables.roller.KS.initDefault(0);
+      tunables.roller.KP.initDefault(0.00006);
+      tunables.roller.KV.initDefault(0.0002);
+      tunables.roller.targetAccelerationConfig.initDefault(0.0);
+
+      tunables.pivot.KP.initDefault(120);
+      tunables.pivot.KD.initDefault(0);
+      tunables.pivot.KG.initDefault(0.0);
+
+      tunables.pivot.maxVelocityConfig.initDefault(40);
+      tunables.pivot.targetAccelerationConfig.initDefault(80);
+    } else {
+      tunables.roller.KS.initDefault(0);
+      tunables.roller.KP.initDefault(0.4);
+      tunables.roller.KV.initDefault(0.13);
+      tunables.roller.targetAccelerationConfig.initDefault(200);
+
+      tunables.pivot.KP.initDefault(60);
+      tunables.pivot.KD.initDefault(0.3);
+      tunables.pivot.KG.initDefault(0.4);
+
+      tunables.pivot.maxVelocityConfig.initDefault(200);
+      tunables.pivot.targetAccelerationConfig.initDefault(1500);
+    }
+
     io.setPivotVoltage(0.0);
 
     setPivotConstants();
@@ -174,39 +178,34 @@ public class Intake extends SubsystemBase {
     try (var ignored = timing.start()) {
       // Logging
       io.updateInputs(inputs);
-      logInputs_rollerVelocityRPM.info(inputs.rollerVelocityRPM);
-      logInputs_rollerCurrentAmps.info(inputs.rollerCurrentAmps);
-      logInputs_rollerTempCelsius.info(inputs.rollerTempCelsius);
-      logInputs_rollerAppliedVolts.info(inputs.rollerAppliedVolts);
+      logs.roller.velocityRPM.info(inputs.rollerVelocityRPM);
+      logs.roller.currentAmps.info(inputs.rollerCurrentAmps);
+      logs.roller.tempCelsius.info(inputs.rollerTempCelsius);
+      logs.roller.appliedVolts.info(inputs.rollerAppliedVolts);
+      logs.roller.targetVelocityRPM.info(rollerTargetRPM);
+      logs.roller.controlMode.info(rollerControlMode);
 
-      logRollerControlMode.info(rollerControlMode);
+      logs.pivot.angle.info(inputs.pivotPosition);
+      logs.pivot.appliedVolts.info(inputs.pivotAppliedVolts);
+      logs.pivot.currentAmps.info(inputs.pivotCurrentAmps);
+      logs.pivot.tempCelsius.info(inputs.pivotTempCelsius);
+      logs.pivot.velocityDegreesPerSecond.info(inputs.pivotVelocityDegreesPerSecond);
+      logs.pivot.controlMode.info(pivotControlMode);
 
-      logInputs_pivotAngle.info(inputs.pivotPosition);
-      logInputs_pivotAppliedVolts.info(inputs.pivotAppliedVolts);
-      logInputs_pivotCurrentAmps.info(inputs.pivotCurrentAmps);
-      logInputs_pivotTempCelsius.info(inputs.pivotTempCelsius);
-      logInputs_pivotVelocityDegreesPerSecond.info(inputs.pivotVelocityDegreesPerSecond);
-
-      logPivotControlMode.info(pivotControlMode);
-
-      logIntakeState.info(intakeState);
+      logs.state.info(state);
 
       // Update tunable numbers
 
-      var rhc = hashCode();
-      if (rKS.hasChanged(rhc) || rKP.hasChanged(rhc) || rKV.hasChanged(rhc)
-          || rollerTargetAccelerationConfig.hasChanged(rhc)) {
+      if (tunables.roller.hasChanged()) {
         setRollerConstants();
       }
-      var phc = hashCode();
-      if (pKP.hasChanged(phc) || pKD.hasChanged(phc) || pKG.hasChanged(phc) || pivotMaxVelocityConfig.hasChanged(phc)
-          || pivotTargetAccelerationConfig.hasChanged(phc)) {
+      if (tunables.pivot.hasChanged()) {
         setPivotConstants();
       }
 
       // Intake state machine
       if (!intakeOverride) {
-        switch (intakeState) {
+        switch (state) {
           case Idle:
             setPivotVoltage(0);
             setRollerPercentOut(0);
@@ -219,10 +218,10 @@ public class Intake extends SubsystemBase {
             setRollerPercentOut(0);
             break;
           case Eject:
-            setRollerVelocity(ejectingFuelVelocity.get() * -1);
+            setRollerVelocity(tunables.ejectingFuelVelocity.get() * -1);
             break;
           case Intake:
-            setRollerVelocity(intakingVelocity.get());
+            setRollerVelocity(tunables.intakingFuelVelocity.get());
             setPivotAngle(computeDownAngle());
             break;
           default:
@@ -233,13 +232,15 @@ public class Intake extends SubsystemBase {
   }
 
   private Rotation2d computeDownAngle() {
-    return Rotation2d.fromDegrees(intakingFuelPivotAngle.get());
+    return Rotation2d.fromDegrees(tunables.intakingFuelPivotAngle.get());
   }
 
   // Setters
 
   private void setRollerConstants() {
-    io.setRollerClosedLoopConstants(rKP.get(), rKV.get(), rKS.get(), rollerTargetAccelerationConfig.get());
+    var roller = tunables.roller;
+    io.setRollerClosedLoopConstants(roller.KP.get(), roller.KV.get(), roller.KS.get(),
+        roller.targetAccelerationConfig.get());
   }
 
   public void setRollerPercentOut(double percent) {
@@ -251,14 +252,17 @@ public class Intake extends SubsystemBase {
     rollerControlMode = ControlMode.CLOSED_LOOP;
     io.setRollerVelocity(revPerMin);
     rollerTargetRPM = revPerMin;
-    logRollerTargetVelocityRPM.info(rollerTargetRPM);
+    logs.roller.targetVelocityRPM.info(rollerTargetRPM);
   }
 
   private void setPivotConstants() {
-    MotionMagicConfigs configs = new MotionMagicConfigs();
-    configs.MotionMagicCruiseVelocity = pivotMaxVelocityConfig.get();
-    configs.MotionMagicAcceleration   = pivotTargetAccelerationConfig.get();
-    io.setPivotClosedLoopConstants(pKP.get(), pKD.get(), pKG.get(), configs);
+    var pivot = tunables.pivot;
+
+    var configs = new MotionMagicConfigs();
+    configs.MotionMagicCruiseVelocity = pivot.maxVelocityConfig.get();
+    configs.MotionMagicAcceleration   = pivot.targetAccelerationConfig.get();
+
+    io.setPivotClosedLoopConstants(pivot.KP.get(), pivot.KD.get(), pivot.KG.get(), configs);
   }
 
   public void setPivotAngle(Rotation2d angle) {
@@ -268,7 +272,7 @@ public class Intake extends SubsystemBase {
     pivotControlMode = ControlMode.CLOSED_LOOP;
     pivotTargetAngle = targetAngle;
     io.setPivotClosedLoopPosition(targetAngle);
-    logPivotTargetAngleDegrees.info(targetAngle.getDegrees());
+    logs.pivot.targetAngleDegrees.info(targetAngle.getDegrees());
   }
 
   public void resetPivotSubsystem() {
@@ -305,7 +309,7 @@ public class Intake extends SubsystemBase {
 
   public boolean isStowed() {
     return GeometryUtil.isRotationAtTarget(inputs.pivotPosition, PivotConstants.HOME_POSITION,
-        pivotToleranceDegrees.get());
+        tunables.pivot.toleranceDegrees.get());
   }
 
   public Voltage getPivotVoltage() {
@@ -337,6 +341,6 @@ public class Intake extends SubsystemBase {
   }
 
   public void setState(State state) {
-    intakeState = state;
+    this.state = state;
   }
 }

@@ -23,7 +23,7 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
-import frc.lib.team2930.AllianceFlipUtil;
+import frc.lib.team2930.AllianceAwareTranslation2d;
 import frc.robot.Constants.RobotMode.RobotType;
 import frc.robot.configs.*;
 
@@ -86,8 +86,6 @@ public final class Constants {
       // by only creating the specific config object corresponding to the robot type
       ROBOT_SIMBOT(SimulatorRobotConfig::new),
       ROBOT_SIMBOT_REAL_CAMERAS(SimulatorRobotConfig::new),
-      ROBOT_2023_RETIRED_ROBER(RobotConfig2023::new),
-      ROBOT_2024_RETIRED_MAESTRO(RobotConfig2024::new),
       ROBOT_2025_RETIRED_HOLO(RobotConfig2025::new),
       ROBOT_2026(RobotConfig2026::new); // Someone please name it...
 
@@ -116,7 +114,7 @@ public final class Constants {
      * <p>y = front to back
      */
     public static Translation2d ROBOT_DIMENSIONS_WITHOUT_BUMPERS() {
-      if (RobotMode.getRobot() == RobotType.ROBOT_2024_RETIRED_MAESTRO) {
+      if (RobotMode.getRobot() == RobotType.ROBOT_2026) {
         return new Translation2d(Units.Inches.of(27.0), Units.Inches.of(32.5));
       } else {
         return new Translation2d(Units.Inches.of(28.5), Units.Inches.of(30.5));
@@ -137,6 +135,8 @@ public final class Constants {
     // Official Field dimensions from field dimensions manual
     public static Distance FIELD_LENGTH = Units.Inches.of(650.12);
     public static Distance FIELD_WIDTH = Units.Inches.of(316.64);
+    public static double FIELD_LENGTH_METERS = FIELD_LENGTH.in(Units.Meters);
+    public static double FIELD_WIDTH_METERS = FIELD_WIDTH.in(Units.Meters);
 
     public static Distance HUB_DIST_FROM_WALL = Units.Inches.of(158.06);
 
@@ -145,17 +145,13 @@ public final class Constants {
 
     public static Distance HUB_DIAGONAL_WIDTH = HUB_WIDTH.times(2.0 / Math.sqrt(3));
 
-    public static Translation2d BLUE_HUB_CENTER_POSE =
-        new Translation2d(HUB_DIST_FROM_WALL.plus(HUB_WIDTH.div(2.0)), FIELD_WIDTH.div(2.0));
+    public static AllianceAwareTranslation2d HUB_CENTER_POSE =
+        new AllianceAwareTranslation2d(new Translation2d(HUB_DIST_FROM_WALL.plus(HUB_WIDTH.div(2.0)), FIELD_WIDTH.div(2.0)));
 
-    public static Translation2d RIGHT_PASS_AIM_POINT =
-        new Translation2d(FIELD_LENGTH.div(4.0), FIELD_WIDTH.times(1.0 / 4.0));
-    public static Translation2d LEFT_PASS_AIM_POINT =
-        new Translation2d(FIELD_LENGTH.div(4.0), FIELD_WIDTH.times(3.0 / 4.0));
-
-    public static Translation2d REEF_CENTER_POSE() {
-      return AllianceFlipUtil.flipTranslationForAlliance(BLUE_HUB_CENTER_POSE);
-    }
+    public static AllianceAwareTranslation2d RIGHT_PASS_AIM_POINT =
+        new AllianceAwareTranslation2d(new Translation2d(FIELD_LENGTH.div(4.0), FIELD_WIDTH.times(1.0 / 4.0)));
+    public static AllianceAwareTranslation2d LEFT_PASS_AIM_POINT =
+        new AllianceAwareTranslation2d(new Translation2d(FIELD_LENGTH.div(4.0), FIELD_WIDTH.times(3.0 / 4.0)));
 
     public static Distance REEF_BRANCH_OFFSET = Units.Inches.of(6.5);
 
@@ -183,8 +179,6 @@ public final class Constants {
   }
 
   public static class IntakeConstants {
-    public static final String ROOT_TABLE = "Intake";
-
     public static class RollerConstants {
 
       public static final double ROLLER_GEARING = 10.4167;
@@ -220,52 +214,6 @@ public final class Constants {
       public static final Rotation2d ALGAE_SCORE_ANGLE = Rotation2d.fromDegrees(45);
 
       public static final Distance PIVOT_LENGTH = Units.Inches.of(6.215);
-
-      public static final String ROOT_TABLE = "Pivot";
-    }
-  }
-
-  public static class EndEffectorConstants {
-    public static final double INTAKING_PERCENT_OUT = 1.0;
-
-    public static final double GEARING = 14.0741;
-    public static final double MOI = 0.05;
-
-    public static final double SUPPLY_CURRENT_LIMIT = 40.0;
-    public static final double STATOR_CURRENT_LIMIT = 80.0;
-    public static final String ROOT_TABLE = "EndEffector";
-  }
-
-  public static class ElevatorConstants {
-    public static final double GEAR_RATIO =
-        RobotMode.ROBOT == RobotType.ROBOT_2024_RETIRED_MAESTRO ? 23.05 : 6.4935;
-    public static final Distance PULLEY_DIAMETER = Units.Inches.of(2.35);
-    public static final double CARRIAGE_MASS = 2.0; // arbitrary
-
-    public static final double INCHES_TO_MOTOR_ROT =
-        Constants.ElevatorConstants.GEAR_RATIO
-            / (Math.PI * Constants.ElevatorConstants.PULLEY_DIAMETER.in(Units.Inches));
-
-    public static final Distance MAX_HEIGHT =
-        RobotMode.ROBOT == RobotType.ROBOT_2024_RETIRED_MAESTRO
-            ? Units.Inches.of(26.2)
-            : Units.Inches.of(60);
-
-    public static final Distance SAFE_HEIGHT = Units.Inches.of(15.491);
-    public static final double SUPPLY_CURRENT_LIMIT = 40.0;
-    public static final double STATOR_CURRENT_LIMIT = 100.0;
-
-    public static final Distance HOME_POSITION = Units.Inches.of(26.96);
-
-    public static final Distance ELEVATOR_SAFETY_MARGIN = Units.Inches.of(1.5);
-    public static final String ROOT_TABLE = "Elevator";
-
-    public static final InterpolatingDoubleTreeMap SPEED_SCALAR_MAP =
-        new InterpolatingDoubleTreeMap();
-
-    static {
-      SPEED_SCALAR_MAP.put(HOME_POSITION.in(Units.Inch), 1.0);
-      SPEED_SCALAR_MAP.put(MAX_HEIGHT.in(Units.Inch), 0.8);
     }
   }
 
@@ -297,11 +245,10 @@ public final class Constants {
     // 4, 14, 24, 34
     // all these CAN ID's are reserved for the Drivetrain
 
-    public static final int ARM_CAN_ID = 17;
-
     public static final int GYRO_2_CAN_ID = 41;
 
-    public static final int CLIMBER_WINCH_CAN_ID = 40;
+    public static final int CLIMBER_INNER_CAN_ID = 40;
+    public static final int CLIMBER_OUTER_CAN_ID = 42;
 
     public static final int INTAKE_LEFT_PIVOT_CAN_ID = 19;
     public static final int INTAKE_RIGHT_ROLLER_CAN_ID = 20;
@@ -325,43 +272,27 @@ public final class Constants {
   }
 
   public static class ArmConstants {
-    public static final double SUPPLY_CURRENT_LIMIT = 40.0;
-    public static final double STATOR_CURRENT_LIMIT = 80.0;
-
-    public static final double GEAR_RATIO =
-        RobotMode.ROBOT == RobotType.ROBOT_2024_RETIRED_MAESTRO
-            ? (50.0 / 12.0) * (50.0 / 20.0) * (42.0 / 18.0)
-            : 50.07;
-
-    public static final double MOI = 0.00001;
-
-    public static final Rotation2d MAX_ARM_ANGLE = Rotation2d.fromDegrees(165);
-    public static final Rotation2d MIN_ARM_ANGLE = Rotation2d.fromDegrees(-90);
-    public static final Rotation2d HOME_POSITION = Rotation2d.fromDegrees(153.808);
-
-    public static final Rotation2d ARM_SAFE_ANGLE = Rotation2d.fromDegrees(-87);
-
     public static final Distance ARM_LENGTH =
-        RobotMode.ROBOT == RobotType.ROBOT_2024_RETIRED_MAESTRO
+        RobotMode.ROBOT == RobotType.ROBOT_2026
             ? Units.Inches.of(14)
             : Units.Inches.of(22.080109);
-
-    public static final String ROOT_TABLE = "Arm";
   }
 
   public static class ClimberConstants {
     public static final double SUPPLY_CURRENT_LIMIT = 60.0;
     public static final double STATOR_CURRENT_LIMIT = 90.0;
 
-    public static final double WINCH_GEAR_RATIO = (50.0 / 12.0) * (50.0 / 20.0) * (42.0 / 18.0);
+    public static final double INNER_CLIMBER_GEAR_RATIO = (50.0 / 12.0) * (50.0 / 20.0) * (42.0 / 18.0);
+    public static final double OUTER_CLIMBER_GEAR_RATIO = (50.0 / 12.0) * (50.0 / 20.0) * (42.0 / 18.0);
 
-    public static final double WINCH_MOI = 0.15;
+    public static final double CLIMBER_MOI = 0.15;
 
-    public static final Rotation2d MAX_CLIMBER_ANGLE = Rotation2d.fromRotations(12.0);
-    public static final Rotation2d MIN_CLIMBER_ANGLE = Rotation2d.fromRotations(0);
-    public static final Rotation2d HOME_POSITION = MAX_CLIMBER_ANGLE;
-
-    public static final Rotation2d CLIMBER_SAFE_ANGLE = Rotation2d.fromDegrees(-87);
+    public static final double MAX_INNER_CLIMBER_HEIGHT = 27;
+    public static final double MAX_OUTER_CLIMBER_HEIGHT = 27;
+    public static final double MIN_INNER_CLIMBER_HEIGHT = 0;
+    public static final double MIN_OUTER_CLIMBER_HEIGHT = 0;
+    public static final double INNER_HOME_POSITION = MAX_INNER_CLIMBER_HEIGHT;
+    public static final double OUTER_HOME_POSITION = MAX_OUTER_CLIMBER_HEIGHT;
 
     public static final Distance CLIMBER_LENGTH = Units.Inches.of(14);
 
@@ -369,37 +300,13 @@ public final class Constants {
 
     public static final Rotation2d SERVO_UNLOCK_ANGLE = Rotation2d.fromDegrees(170);
 
-    public static final String SERO_ROOT_TABLE = "ClimberServo";
+    // in inches
+    public static final double L1_CLIMB_HEIGHT = 25;
+    public static final double L2_CLIMB_HEIGHT = 24;
+    public static final double L3_CLIMB_HEIGHT = 23;
 
-    public static final Rotation2d OUT_WINCH_ROTATIONS = Rotation2d.fromRotations(6);
-
-    public static final Rotation2d IN_WINCH_ROTATIONS = Rotation2d.fromRotations(0);
-
-    public static final Rotation2d CLIMB_WINCH_ROTATIONS = Rotation2d.fromRotations(3);
-
-    public static final String WINCH_ROOT_TABLE = "ClimberWinch";
-  }
-
-  public static class VisionGamepieceConstants {
-    public static final Pose3d GAMEPIECE_CAMERA_POSE =
-        new Pose3d(
-            Units.Inches.of(5.3).in(Units.Meters),
-            0.0,
-            Units.Inches.of(18.725).in(Units.Meters),
-            new Rotation3d(0.0, Math.toRadians(-12), 0.0));
-    public static final String CAMERA_NAME = RobotConfig2024.OBJECT_DETECTION_CAMERA_NAME;
-    public static final int RESOLUTION_WIDTH_PIXELS = 960;
-    public static final int RESOLUTION_HEIGHT_PIXELS = 720;
-    public static final Rotation2d FOV_DIAGONAL = Rotation2d.fromDegrees(128.2);
-    public static final double AVERAGE_ERROR_PIXELS = 0.35;
-    public static final double AVERAGE_STANDARD_DEVIATION_PIXELS = 0.1;
-    public static final double FPS = 15;
-    public static final double AVERAGE_LATENCY_MS = 25;
-    public static final double AVERAGE_STANDARD_DEVIATION_MS = 10;
-  }
-
-  public static class AutoConstants {
-    public static final Distance DIST_TO_START_INTAKING = Units.Meters.of(1.0);
+    public static final double INNER_RETRACTION_HEIGHT = 0;
+    public static final double OUTER_RETRACTION_HEIGHT = 0;
   }
 
 public static class ShooterConstants {
@@ -407,6 +314,9 @@ public static class ShooterConstants {
     public static final Distance SHOOTER_LENGTH = Units.Inches.of(12.0);
 
     public static class Hood {
+
+      public static final double MOI = 5.0;
+
       public static final double GEARING = 125.0;
 
       public static final Rotation2d MIN_ANGLE_RAD = Rotation2d.fromDegrees(12.0);
@@ -443,13 +353,12 @@ public static class ShooterConstants {
     }
 
     public static class Interpolation {
-      public static final InterpolatingDoubleTreeMap HOOD_ANGLE_FOR_HUB_DISTANCE =
-          new InterpolatingDoubleTreeMap();
-      public static final InterpolatingDoubleTreeMap RPM_FOR_HUB_DISTANCE =
-          new InterpolatingDoubleTreeMap();
+      public static final InterpolatingDoubleTreeMap HOOD_ANGLE_FOR_HUB_DISTANCE;
+      public static final InterpolatingDoubleTreeMap RPM_FOR_HUB_DISTANCE;
 
-      public Interpolation() {
+      static {
 
+        HOOD_ANGLE_FOR_HUB_DISTANCE = new InterpolatingDoubleTreeMap();
         HOOD_ANGLE_FOR_HUB_DISTANCE.put(1.0, 61.80);
         HOOD_ANGLE_FOR_HUB_DISTANCE.put(1.5, 51.50);
         HOOD_ANGLE_FOR_HUB_DISTANCE.put(2.0, 42.75);
@@ -463,6 +372,7 @@ public static class ShooterConstants {
         HOOD_ANGLE_FOR_HUB_DISTANCE.put(6.0, 23.60);
         HOOD_ANGLE_FOR_HUB_DISTANCE.put(6.5, 22.80);
 
+        RPM_FOR_HUB_DISTANCE = new InterpolatingDoubleTreeMap();
         RPM_FOR_HUB_DISTANCE.put(1.0, 2000.0);
         RPM_FOR_HUB_DISTANCE.put(2.0, 3000.0);
         RPM_FOR_HUB_DISTANCE.put(3.0, 4500.0);

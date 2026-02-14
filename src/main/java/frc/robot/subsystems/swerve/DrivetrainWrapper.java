@@ -9,28 +9,31 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import frc.lib.team2930.LoggerEntry;
-import frc.lib.team2930.LoggerGroup;
-import frc.lib.team2930.TunableNumberGroup;
+import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 
 public class DrivetrainWrapper {
-  private static final String ROOT_TABLE = "DrivetrainWrapper";
+  private final String ROOT_TABLE = "DrivetrainWrapper";
 
-  // Logging
-  private static final LoggerGroup                       logGroup                 = LoggerGroup.build(ROOT_TABLE);
-  private static final LoggerEntry.Struct<ChassisSpeeds> logChassisSpeedsBase     = logGroup
-      .buildStruct(ChassisSpeeds.class, "chassisSpeedsBase");
-  private static final LoggerEntry.Struct<ChassisSpeeds> logChassisSpeedsOverride = logGroup
-      .buildStruct(ChassisSpeeds.class, "chassisSpeedsOverride");
-  private static final LoggerEntry.Decimal               logOmegaOverride         = logGroup
-      .buildDecimal("omegaOverride");
-  private static final LoggerEntry.Decimal               logGyroDrift             = logGroup.buildDecimal("gyroDrift");
+  public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.Struct<ChassisSpeeds> chassisSpeedsBase;
+    public LoggerEntry.Struct<ChassisSpeeds> chassisSpeedsOverride;
+    public LoggerEntry.Decimal               omegaOverride;
+    public LoggerEntry.Decimal               gyroDrift;
+  }
 
-  private static final TunableNumberGroup  tunableGroup       = new TunableNumberGroup(ROOT_TABLE);
-  private static final LoggedTunableNumber driveSpeedPercent  = tunableGroup.build("driveSpeedPercent", 100.0);
-  private static final LoggedTunableNumber rotateSpeedPercent = tunableGroup.build("rotateSpeedPercent", 100.0);
+  public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
+
+  public static class Tunables extends AutoRegisterTunables {
+    @TunableEntry(defaultValue = 100.0)
+    public LoggedTunableNumber driveSpeedPercent;
+
+    @TunableEntry(defaultValue = 100.0)
+    public LoggedTunableNumber rotateSpeedPercent;
+  }
+
+  private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
 
   private final Drivetrain drivetrain;
 
@@ -46,12 +49,12 @@ public class DrivetrainWrapper {
   public void apply() {
     // Log chassis speeds
     if (chassisSpeedsBase != null) {
-      logChassisSpeedsBase.info(chassisSpeedsBase);
+      logs.chassisSpeedsBase.info(chassisSpeedsBase);
     }
     if (chassisSpeedsOverride != null) {
-      logChassisSpeedsOverride.info(chassisSpeedsOverride);
+      logs.chassisSpeedsOverride.info(chassisSpeedsOverride);
     }
-    logOmegaOverride.info(omegaOverride);
+    logs.omegaOverride.info(omegaOverride);
 
     ChassisSpeeds chassisSpeeds = chassisSpeedsBase;
 
@@ -72,9 +75,9 @@ public class DrivetrainWrapper {
       chassisSpeeds = chassisSpeedsOverride;
     }
 
-    chassisSpeeds.vxMetersPerSecond     *= driveSpeedPercent.get() / 100.0;
-    chassisSpeeds.vyMetersPerSecond     *= driveSpeedPercent.get() / 100.0;
-    chassisSpeeds.omegaRadiansPerSecond *= rotateSpeedPercent.get() / 100.0;
+    chassisSpeeds.vxMetersPerSecond     *= tunables.driveSpeedPercent.get() / 100.0;
+    chassisSpeeds.vyMetersPerSecond     *= tunables.driveSpeedPercent.get() / 100.0;
+    chassisSpeeds.omegaRadiansPerSecond *= tunables.rotateSpeedPercent.get() / 100.0;
 
     // Run drivetrain
 
@@ -83,9 +86,8 @@ public class DrivetrainWrapper {
     var pose1 = getHubPoseEstimatorPose(false);
     var pose2 = getHubPoseEstimatorPose(true);
 
-    logGyroDrift.info(pose1.getRotation().minus(pose2.getRotation())); // Dif between strictly gyro estimate and vision
-                                                                       // assisted
-    // estimate
+    // Diff between strictly gyro estimate and vision assisted estimate
+    logs.gyroDrift.info(pose1.getRotation().minus(pose2.getRotation()));
   }
 
   // Setters

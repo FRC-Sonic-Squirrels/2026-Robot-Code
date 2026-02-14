@@ -9,7 +9,6 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -56,8 +55,6 @@ public class ShooterIOReal implements ShooterIO {
   private final MotionMagicVoltage         hoodClosedLoopControl = new MotionMagicVoltage(0).withEnableFOC(true);
   private final MotionMagicVelocityVoltage flywheelClosedLoop    = new MotionMagicVelocityVoltage(0.0)
       .withEnableFOC(true);
-
-  private final VoltageOut kickerOpenLoop = new VoltageOut(0.0).withEnableFOC(true);
 
   private final MotionMagicVelocityVoltage kickerClosedLoop = new MotionMagicVelocityVoltage(0).withEnableFOC(true);
 
@@ -208,11 +205,6 @@ public class ShooterIOReal implements ShooterIO {
   @Override
   public void setFlywheelRPM(double revPerMin) {
     flywheelLead.setControl(flywheelClosedLoop.withVelocity(revPerMin / 60));
-  }
-
-  @Override
-  public void setKickerVoltage(double volts) {
-    kicker.setControl(kickerOpenLoop.withOutput(volts));
   }
 
   @Override

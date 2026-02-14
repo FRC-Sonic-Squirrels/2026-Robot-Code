@@ -3,7 +3,6 @@ package frc.robot.subsystems.climber;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import com.ctre.phoenix6.controls.VoltageOut;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.Units;
@@ -12,36 +11,41 @@ import frc.robot.Constants;
 
 // anything commented out is arm code that we are not using yet
 public class ClimberIOSim implements ClimberIO {
-  private TalonFXSim climberSim = new TalonFXSim(DCMotor.getKrakenX60Foc(1),
-      Constants.ClimberConstants.WINCH_GEAR_RATIO, Constants.ClimberConstants.WINCH_MOI);
+  private TalonFXSim innerClimberSim = new TalonFXSim(DCMotor.getKrakenX60Foc(1),
+      Constants.ClimberConstants.INNER_CLIMBER_GEAR_RATIO, Constants.ClimberConstants.CLIMBER_MOI);
+  private TalonFXSim outerClimberSim = new TalonFXSim(DCMotor.getKrakenX60Foc(1),
+      Constants.ClimberConstants.OUTER_CLIMBER_GEAR_RATIO, Constants.ClimberConstants.CLIMBER_MOI);
 
-  private VoltageOut         openLoopControl        = new VoltageOut(0);
-  private MotionMagicVoltage winchClosedLoopControl = new MotionMagicVoltage(0);
+  private MotionMagicVoltage climberClosedLoopControl = new MotionMagicVoltage(0);
 
   public ClimberIOSim() {
   }
 
   @Override
-  public void updateWinchInputs(Inputs inputs) {
-    climberSim.update(Constants.kDefaultPeriod);
+  public void updateClimberInputs(Inputs inputs) {
+    innerClimberSim.update(Constants.kDefaultPeriod);
+    outerClimberSim.update(Constants.kDefaultPeriod);
 
-    inputs.winchPosition                 = climberSim.getPosition().in(Units.Degree);
-    inputs.winchAppliedVolts             = climberSim.getVoltage();
-    inputs.winchVelocityDegreesPerSecond = climberSim.getVelocity().in(Units.DegreesPerSecond);
+    inputs.innerClimberPosition                 = innerClimberSim.getPosition().in(Units.Degree);
+    inputs.innerClimberAppliedVolts             = innerClimberSim.getVoltage();
+    inputs.innerClimberVelocityDegreesPerSecond = innerClimberSim.getVelocity().in(Units.DegreesPerSecond);
+    inputs.outerClimberPosition                 = outerClimberSim.getPosition().in(Units.Degree);
+    inputs.outerClimberAppliedVolts             = outerClimberSim.getVoltage();
+    inputs.outerClimberVelocityDegreesPerSecond = outerClimberSim.getVelocity().in(Units.DegreesPerSecond);
   }
 
   @Override
-  public void setWinchVoltage(double volts) {
-    climberSim.setControl(openLoopControl.withOutput(volts));
+  public void setInnerClimberClosedLoopPosition(double inches) {
+    innerClimberSim.setControl(climberClosedLoopControl.withPosition(inches));
   }
 
   @Override
-  public void setWinchClosedLoopPosition(Rotation2d angle) {
-    climberSim.setControl(winchClosedLoopControl.withPosition(angle.getRadians()));
+  public void setOuterClimberClosedLoopPosition(double inches) {
+    outerClimberSim.setControl(climberClosedLoopControl.withPosition(inches));
   }
 
   @Override
-  public void setWinchClosedLoopConstants(double kP, double kD, double kG) {
+  public void setInnerClimberClosedLoopConstants(double kP, double kD, double kG) {
     TalonFXConfiguration config       = new TalonFXConfiguration();
     Slot0Configs         slot0Configs = new Slot0Configs();
 
@@ -51,11 +55,26 @@ public class ClimberIOSim implements ClimberIO {
 
     config.Slot0 = slot0Configs;
 
-    climberSim.setConfig(config);
+    innerClimberSim.setConfig(config);
   }
 
   @Override
-  public void resetWinchSensorPosition(Rotation2d angle) {
-    climberSim.setState(angle.getRadians(), 0.0);
+  public void setOuterClimberClosedLoopConstants(double kP, double kD, double kG) {
+    TalonFXConfiguration config       = new TalonFXConfiguration();
+    Slot0Configs         slot0Configs = new Slot0Configs();
+
+    slot0Configs.kP = kP;
+    slot0Configs.kD = kD;
+    slot0Configs.kG = kG;
+
+    config.Slot0 = slot0Configs;
+
+    outerClimberSim.setConfig(config);
+  }
+
+  @Override
+  public void resetClimberSensorPosition(Rotation2d angle) {
+    innerClimberSim.setState(angle.getRadians(), 0.0);
+    outerClimberSim.setState(angle.getRadians(), 0.0);
   }
 }

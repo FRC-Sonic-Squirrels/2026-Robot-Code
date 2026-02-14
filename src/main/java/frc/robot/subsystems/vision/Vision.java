@@ -3,7 +3,6 @@ package frc.robot.subsystems.vision;
 import com.ctre.phoenix6.Utils;
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -28,67 +27,65 @@ import java.util.function.Consumer;
 import java.util.function.Supplier;
 
 public class Vision extends SubsystemBase {
-  public static final String ROOT_TABLE = "Vision";
+  public final String ROOT_TABLE = "Vision";
 
-  private static final ExecutionTiming timing = new ExecutionTiming(ROOT_TABLE);
+  private final ExecutionTiming timing = new ExecutionTiming(ROOT_TABLE);
 
-  // Logging
+  public static class VisibleTagsLogs extends AutoRegisterLoggers {
+    public LoggerEntry.StructArray<Pose3d> rawAllVisibleTags;
+    public LoggerEntry.StructArray<Pose3d> tagsActuallyUsedInPoseEstimation;
+    public LoggerEntry.StructArray<Pose3d> posesFedToPoseEstimator3D;
+    public LoggerEntry.StructArray<Pose2d> posesFedToPoseEstimator2D;
+  }
 
-  public static final LoggerGroup                      logGroup                                  = LoggerGroup
-      .build(ROOT_TABLE);
-  private static final LoggerEntry.StructArray<Pose3d> logAllAprilTags3D                         = logGroup
-      .buildStructArray(Pose3d.class, "AllAprilTags3D");
-  private static final LoggerEntry.Bool                logUseVision                              = logGroup
-      .buildBoolean("useVision");
-  private static final LoggerEntry.Bool                logUseMaxDistanceAwayFromExistingEstimate = logGroup
-      .buildBoolean("useMaxDistanceAwayFromExistingEstimate");
+  public static class Logs extends AutoRegisterLoggers {
+    public VisibleTagsLogs visibleTags;
 
-  private static final LoggerEntry.Integer logRejectByGyro          = logGroup.buildInteger("RejectByGyro");
-  private static final LoggerEntry.Decimal logRejectByGyroError     = logGroup.buildDecimal("RejectByGyroError");
-  private static final LoggerEntry.Integer logRejectByDistance      = logGroup.buildInteger("RejectByDistance");
-  private static final LoggerEntry.Decimal logRejectByDistanceError = logGroup.buildDecimal("RejectByDistanceError");
-  public static final LoggerEntry.Integer  logConfigTagAmount       = logGroup.buildInteger("configTagAmount");
+    public LoggerEntry.StructArray<Pose3d> allAprilTags3D;
+    public LoggerEntry.Bool                useVision;
+    public LoggerEntry.Bool                useMaxDistanceAwayFromExistingEstimate;
 
-  private static final LoggerGroup                     logGroupVisibleTags                  = logGroup
-      .subgroup("visibleTags");
-  private static final LoggerEntry.StructArray<Pose3d> log_rawAllVisibleTags                = logGroupVisibleTags
-      .buildStructArray(Pose3d.class, "rawAllVisibleTags");
-  private static final LoggerEntry.StructArray<Pose3d> log_tagsActuallyUsedInPoseEstimation = logGroupVisibleTags
-      .buildStructArray(Pose3d.class, "tagsActuallyUsedInPoseEstimation");
-  private static final LoggerEntry.StructArray<Pose3d> log_posesFedToPoseEstimator3D        = logGroupVisibleTags
-      .buildStructArray(Pose3d.class, "posesFedToPoseEstimator3D");
-  private static final LoggerEntry.StructArray<Pose2d> log_posesFedToPoseEstimator2D        = logGroupVisibleTags
-      .buildStructArray(Pose2d.class, "posesFedToPoseEstimator2D");
+    public LoggerEntry.Integer rejectByGyro;
+    public LoggerEntry.Decimal rejectByGyroError;
+    public LoggerEntry.Integer rejectByDistance;
+    public LoggerEntry.Decimal rejectByDistanceError;
+    public LoggerEntry.Integer configTagAmount;
 
-  private static final LoggerEntry.Struct<Pose3d> log_poseEstimatorError         = logGroup.buildStruct(Pose3d.class,
-      "poseEstimatorError");
-  private static final LoggerEntry.Decimal        log_poseEstimatorErrorDistance = logGroup
-      .buildDecimal("poseEstimatorErrorDistanceMeters");
-  private static final LoggerEntry.Decimal        log_poseEstimatorErrorPitch    = logGroup
-      .buildDecimal("poseEstimatorErrorPitchDegrees");
-  private static final LoggerEntry.Decimal        log_poseEstimatorErrorYaw      = logGroup
-      .buildDecimal("poseEstimatorErrorYawDegrees");
-  private static final LoggerEntry.Decimal        log_poseEstimatorErrorRoll     = logGroup
-      .buildDecimal("poseEstimatorErrorRollDegrees");
+    public LoggerEntry.Struct<Pose3d> poseEstimatorError;
+    public LoggerEntry.Decimal        poseEstimatorErrorDistance;
+    public LoggerEntry.Decimal        poseEstimatorErrorPitch;
+    public LoggerEntry.Decimal        poseEstimatorErrorYaw;
+    public LoggerEntry.Decimal        poseEstimatorErrorRoll;
+  }
+
+  public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
   // Tunable numbers
 
-  protected static final TunableNumberGroup group = new TunableNumberGroup("Vision");
+  public static class Tunables extends AutoRegisterTunables {
+    @TunableEntry(defaultValue = 0.075)
+    public LoggedTunableNumber thetaStdDevCoefficient;
 
-  private static final LoggedTunableNumber thetaStdDevCoefficient = group.build("thetaStdDevCoefficient", 0.075);
-  private static final LoggedTunableNumber xyStdDevCoefficient    = group.build("xyStdDevCoefficient", 0.075);
+    @TunableEntry(defaultValue = 0.075)
+    public LoggedTunableNumber xyStdDevCoefficient;
 
-  private static final LoggedTunableNumber maxSingleTargetAmbiguity = group.build("MaxSingleTargetAmbiguity", 0.2);
+    @TunableEntry(defaultValue = 0.2)
+    public LoggedTunableNumber maxSingleTargetAmbiguity;
 
-  private static final LoggedTunableNumber maxValidDistanceAwayFromCurrentEstimateMeters = group
-      .build("MaxValidDistanceFromCurrentEstimateMeters", 30.0);
+    @TunableEntry(defaultValue = 30.0)
+    public LoggedTunableNumber maxValidDistanceAwayFromCurrentEstimateMeters;
 
-  private static final LoggedTunableNumber gyroFilteringToleranceDegrees = group.build("GyroFilteringToleranceDegrees",
-      20.0);
+    @TunableEntry(defaultValue = 20.0)
+    public LoggedTunableNumber gyroFilteringToleranceDegrees;
 
-  private static final LoggedTunableNumber zHeightToleranceMeters = group.build("zHeightToleranceMeters", 0.5);
+    @TunableEntry(defaultValue = 0.5)
+    public LoggedTunableNumber zHeightToleranceMeters;
 
-  private static final LoggedTunableNumber pitchAndRollToleranceDegrees = group.build("pitchToleranceDegrees", 10.0);
+    @TunableEntry(defaultValue = 10.0)
+    public LoggedTunableNumber pitchAndRollToleranceDegrees;
+  }
+
+  private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
 
   private final List<VisionModule> visionModules = new ArrayList<>();
 
@@ -123,7 +120,7 @@ public class Vision extends SubsystemBase {
     this.aprilTagLayout                        = aprilTagLayout;
 
     for (int i = 0; i < visionModuleConfigs.length; i++) {
-      visionModules.add(new VisionModule(logGroup, visionModuleConfigs[i], aprilTagLayout, i));
+      visionModules.add(new VisionModule(logs.group, visionModuleConfigs[i], aprilTagLayout, i));
     }
 
     aprilTagLayout.getTags().forEach((AprilTag tag) -> lastTagDetectionTimes.put(tag.ID, -1.0));
@@ -133,7 +130,7 @@ public class Vision extends SubsystemBase {
     for (int i = 0; i < aprilTagLayout.getTags().size(); i++) {
       allTagsArray[i] = allTagsList.get(i).pose;
     }
-    logAllAprilTags3D.info(allTagsArray);
+    logs.allAprilTags3D.info(allTagsArray);
   }
 
   @Override
@@ -186,7 +183,7 @@ public class Vision extends SubsystemBase {
           }
         }
       }
-      log_rawAllVisibleTags.info(allSeenTags.toArray(new Pose3d[0]));
+      logs.visibleTags.rawAllVisibleTags.info(allSeenTags.toArray(new Pose3d[0]));
 
       // logging tags actually used in pose estimation
       Pose3d[] tagsUsedInPoseEstimationPoses = new Pose3d[tagsUsedInPoseEstimation.size()];
@@ -194,9 +191,9 @@ public class Vision extends SubsystemBase {
         tagsUsedInPoseEstimationPoses[i] = aprilTagLayout.getTagPose(tagsUsedInPoseEstimation.get(i)).get();
       }
 
-      log_tagsActuallyUsedInPoseEstimation.info(tagsUsedInPoseEstimationPoses);
-      log_posesFedToPoseEstimator3D.info(posesFedToPoseEstimator3D.toArray(new Pose3d[0]));
-      log_posesFedToPoseEstimator2D.info(posesFedToPoseEstimator2D.toArray(new Pose2d[0]));
+      logs.visibleTags.tagsActuallyUsedInPoseEstimation.info(tagsUsedInPoseEstimationPoses);
+      logs.visibleTags.posesFedToPoseEstimator3D.info(posesFedToPoseEstimator3D.toArray(new Pose3d[0]));
+      logs.visibleTags.posesFedToPoseEstimator2D.info(posesFedToPoseEstimator2D.toArray(new Pose2d[0]));
 
       if (posesFedToPoseEstimator3D.size() > 1) {
         Pose3d lastError         = posesFedToPoseEstimator3D.get(0).relativeTo(posesFedToPoseEstimator3D.get(1));
@@ -205,19 +202,19 @@ public class Vision extends SubsystemBase {
         double lastErrorYaw      = Math.toDegrees(lastError.getRotation().getZ());
         double lastErrorRoll     = Math.toDegrees(lastError.getRotation().getX());
 
-        log_poseEstimatorError.info(lastError);
-        log_poseEstimatorErrorDistance.info(lastErrorDistance);
-        log_poseEstimatorErrorPitch.info(lastErrorPitch);
-        log_poseEstimatorErrorYaw.info(lastErrorYaw);
-        log_poseEstimatorErrorRoll.info(lastErrorRoll);
+        logs.poseEstimatorError.info(lastError);
+        logs.poseEstimatorErrorDistance.info(lastErrorDistance);
+        logs.poseEstimatorErrorPitch.info(lastErrorPitch);
+        logs.poseEstimatorErrorYaw.info(lastErrorYaw);
+        logs.poseEstimatorErrorRoll.info(lastErrorRoll);
       }
 
       tagsUsedInPoseEstimation.clear();
       posesFedToPoseEstimator3D.clear();
       posesFedToPoseEstimator2D.clear();
 
-      logUseVision.info(useVisionForPoseEstimation);
-      logUseMaxDistanceAwayFromExistingEstimate.info(useMaxDistanceAwayFromExistingEstimate);
+      logs.useVision.info(useVisionForPoseEstimation);
+      logs.useMaxDistanceAwayFromExistingEstimate.info(useMaxDistanceAwayFromExistingEstimate);
     }
   }
 
@@ -262,7 +259,7 @@ public class Vision extends SubsystemBase {
       PhotonTrackedTarget singularTag = pipelineResult.getTargets().get(0);
 
       if (!isValidTarget(singularTag)) {
-        return (singularTag.getPoseAmbiguity() > maxSingleTargetAmbiguity.get())
+        return (singularTag.getPoseAmbiguity() > tunables.maxSingleTargetAmbiguity.get())
             ? VisionResultLoggedFields.unsuccessfulResult(VisionResultStatus.INVALID_TAG_AMBIGUITY_TOO_HIGH)
             : VisionResultLoggedFields.unsuccessfulResult(VisionResultStatus.INVALID_TAG);
       }
@@ -305,19 +302,19 @@ public class Vision extends SubsystemBase {
       var yawDelta = GeometryUtil.optimizeRotation(poseYaw - gyroYaw.getRadians());
 
       var absError = Math.toDegrees(Math.abs(yawDelta));
-      logRejectByGyroError.info(absError);
+      logs.rejectByGyroError.info(absError);
 
-      if (absError > gyroFilteringToleranceDegrees.get()) {
-        logRejectByGyro.info(++useGyroBasedFilteringForVisionCount);
+      if (absError > tunables.gyroFilteringToleranceDegrees.get()) {
+        logs.rejectByGyro.info(++useGyroBasedFilteringForVisionCount);
         return VisionResultLoggedFields.unsuccessfulResult(VisionResultStatus.NOT_CLOSE_ENOUGH_TO_GYRO_ROTATION);
       }
     }
 
-    if (Math.abs(newCalculatedRobotPose.getZ()) >= zHeightToleranceMeters.get()) {
+    if (Math.abs(newCalculatedRobotPose.getZ()) >= tunables.zHeightToleranceMeters.get()) {
       return VisionResultLoggedFields.unsuccessfulResult(VisionResultStatus.Z_HEIGHT_BAD);
     }
 
-    var pitchAndRollToleranceValue = pitchAndRollToleranceDegrees.get();
+    var pitchAndRollToleranceValue = tunables.pitchAndRollToleranceDegrees.get();
     if (Math.abs(poseRoll) >= pitchAndRollToleranceValue || Math.abs(posePitch) >= pitchAndRollToleranceValue) {
       return VisionResultLoggedFields.unsuccessfulResult(VisionResultStatus.PITCH_OR_ROLL_BAD);
     }
@@ -346,20 +343,23 @@ public class Vision extends SubsystemBase {
     var distanceFromExistingPoseEstimate = GeometryUtil.getDist(prevEstimatedRobotPose, newCalculatedRobotPose2d);
 
     if (useMaxDistanceAwayFromExistingEstimate
-        && (distanceFromExistingPoseEstimate > (maxValidDistanceAwayFromCurrentEstimateMeters.get()
+        && (distanceFromExistingPoseEstimate > (tunables.maxValidDistanceAwayFromCurrentEstimateMeters.get()
             * numTargetsSeen))) {
-      logRejectByDistance.info(++useMaxDistanceAwayFromExistingEstimateCount);
-      logRejectByDistanceError.info(distanceFromExistingPoseEstimate);
+      logs.rejectByDistance.info(++useMaxDistanceAwayFromExistingEstimateCount);
+      logs.rejectByDistanceError.info(distanceFromExistingPoseEstimate);
       return VisionResultLoggedFields.unsuccessfulResult(VisionResultStatus.TOO_FAR_FROM_EXISTING_ESTIMATE);
     }
 
     var averageDistanceFromTagsSquared = averageDistanceFromTags * averageDistanceFromTags;
-    var xyStandardDeviation            = xyStdDevCoefficient.get() * averageDistanceFromTagsSquared / numTargetsSeen;
-    var thetaStandardDeviation         = thetaStdDevCoefficient.get() * averageDistanceFromTagsSquared / numTargetsSeen;
+    var xyStandardDeviation            = tunables.xyStdDevCoefficient.get() * averageDistanceFromTagsSquared
+        / numTargetsSeen;
+    var thetaStandardDeviation         = tunables.thetaStdDevCoefficient.get() * averageDistanceFromTagsSquared
+        / numTargetsSeen;
 
+    var visionUpdate            = new PoseEstimator.VisionUpdate(newCalculatedRobotPose2d, xyStandardDeviation,
+        xyStandardDeviation, thetaStandardDeviation);
     var timestampedVisionUpdate = new PoseEstimator.TimestampedVisionUpdate(cleanTargets,
-        currentResultTimeStampCTRETime, newCalculatedRobotPose2d,
-        VecBuilder.fill(xyStandardDeviation, xyStandardDeviation, thetaStandardDeviation));
+        currentResultTimeStampCTRETime, visionUpdate);
 
     allTimestampedVisionUpdates.add(timestampedVisionUpdate);
 
@@ -381,7 +381,7 @@ public class Vision extends SubsystemBase {
 
   public boolean isValidTarget(PhotonTrackedTarget target) {
     return target.getFiducialId() != -1 && target.getPoseAmbiguity() != -1
-        && target.getPoseAmbiguity() <= maxSingleTargetAmbiguity.get()
+        && target.getPoseAmbiguity() <= tunables.maxSingleTargetAmbiguity.get()
         && aprilTagLayout.getTagPose(target.getFiducialId()).isPresent();
   }
 

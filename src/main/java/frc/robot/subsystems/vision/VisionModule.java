@@ -4,6 +4,7 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
+import frc.lib.team2930.AutoRegisterLoggers;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 import frc.lib.team6328.Alert;
@@ -32,30 +33,34 @@ public class VisionModule {
 
   // Logging
 
-  public final LoggerEntry.ByteArray log_photonPacketBytes;
-  public final LoggerEntry.Decimal   log_lastTimestampCTRETime;
-  public final LoggerEntry.Bool      log_connected;
-  public final LoggerEntry.Decimal   log_medianLatency;
-  public final LoggerEntry.Decimal   log_medianUpdateTime;
+  public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.ByteArray photonPacketBytes;
+    public LoggerEntry.Decimal   lastTimestampCTRETime;
+    public LoggerEntry.Bool      connected;
+    public LoggerEntry.Decimal   medianLatency;
+    public LoggerEntry.Decimal   medianUpdateTime;
 
-  public final LoggerEntry.Decimal        log_lastTimestampCTRETimeSuccessful;
-  public final LoggerEntry.Text           log_status;
-  public final LoggerEntry.Struct<Pose3d> log_cameraPose;
-  public final LoggerEntry.Struct<Pose3d> log_calculatedRobotPose3d;
-  public final LoggerEntry.Struct<Pose2d> log_calculatedRobotPose2d;
-  public final LoggerEntry.Integer        log_numSeenTargets;
-  public final LoggerEntry.Decimal        log_distanceFromExistingPoseEstimate;
-  public final LoggerEntry.Decimal        log_averageDistanceFromTags;
-  public final LoggerEntry.Decimal        log_tagAmbiguity;
-  public final LoggerEntry.Decimal        log_xyStandardDeviation;
-  public final LoggerEntry.Decimal        log_thetaStandardDeviation;
-  public final LoggerEntry.Bool           log_successfulResult;
-  public final LoggerEntry.DecimalArray   log_seenTargetsIDs;
+    public LoggerEntry.Decimal        lastTimestampCTRETimeSuccessful;
+    public LoggerEntry.Text           status;
+    public LoggerEntry.Struct<Pose3d> cameraPose;
+    public LoggerEntry.Struct<Pose3d> calculatedRobotPose3d;
+    public LoggerEntry.Struct<Pose2d> calculatedRobotPose2d;
+    public LoggerEntry.Integer        numSeenTargets;
+    public LoggerEntry.Decimal        distanceFromExistingPoseEstimate;
+    public LoggerEntry.Decimal        averageDistanceFromTags;
+    public LoggerEntry.Decimal        tagAmbiguity;
+    public LoggerEntry.Decimal        xyStandardDeviation;
+    public LoggerEntry.Decimal        thetaStandardDeviation;
+    public LoggerEntry.Bool           successfulResult;
+    public LoggerEntry.DecimalArray   seenTargetsIDs;
 
-  public final LoggerEntry.Struct<Pose3d> log_distanceToTag;
-  public final LoggerEntry.Decimal        log_yawToTag;
+    public LoggerEntry.Struct<Pose3d> distanceToTag;
+    public LoggerEntry.Decimal        yawToTag;
+  }
 
   private final int TAG_ID = 15;
+
+  private final Logs logs;
 
   private final AprilTagFieldLayout aprilTagLayout;
 
@@ -79,30 +84,7 @@ public class VisionModule {
 
     // Logging
 
-    logGroup = logGroup.subgroup(name);
-
-    log_photonPacketBytes     = logGroup.buildBytes("photonPacketBytes");
-    log_lastTimestampCTRETime = logGroup.buildDecimal("lastTimestampCTRETime");
-    log_connected             = logGroup.buildBoolean("connected");
-    log_medianLatency         = logGroup.buildDecimal("medianLatency");
-    log_medianUpdateTime      = logGroup.buildDecimal("medianUpdateTime");
-
-    log_lastTimestampCTRETimeSuccessful  = logGroup.buildDecimal("lastTimestampCTRETimeSuccessful");
-    log_status                           = logGroup.buildString("*STATUS");
-    log_cameraPose                       = logGroup.buildStruct(Pose3d.class, "CameraPose");
-    log_calculatedRobotPose3d            = logGroup.buildStruct(Pose3d.class, "calculatedRobotPose3d");
-    log_calculatedRobotPose2d            = logGroup.buildStruct(Pose2d.class, "calculatedRobotPose2d");
-    log_numSeenTargets                   = logGroup.buildInteger("numSeenTargets");
-    log_distanceFromExistingPoseEstimate = logGroup.buildDecimal("distanceFromExistingPoseEstimate");
-    log_averageDistanceFromTags          = logGroup.buildDecimal("averageDistanceFromTags");
-    log_tagAmbiguity                     = logGroup.buildDecimal("tagAmbiguity");
-    log_xyStandardDeviation              = logGroup.buildDecimal("xyStandardDeviation");
-    log_thetaStandardDeviation           = logGroup.buildDecimal("thetaStandardDeviation");
-    log_successfulResult                 = logGroup.buildBoolean("SUCCESSFUL_RESULT?");
-    log_seenTargetsIDs                   = logGroup.buildDecimalArray("seenTargetsIDs");
-
-    log_distanceToTag = logGroup.buildStruct(Pose3d.class, "distanceToTag");
-    log_yawToTag      = logGroup.buildDecimal("yawToTag");
+    logs = logGroup.newAutoLogger(Logs.class, name);
   }
 
   public void log(Pose3d robotPose, double currentTime) {
@@ -110,17 +92,17 @@ public class VisionModule {
       var    pipelineResult    = visionIOInputs.lastResult.result();
       byte[] photonPacketBytes = new byte[pipelineResult.getPacketSize()];
       pipelineResult.getSerde().pack(new Packet(photonPacketBytes), pipelineResult);
-      log_photonPacketBytes.info(photonPacketBytes);
+      logs.photonPacketBytes.info(photonPacketBytes);
     }
-    log_lastTimestampCTRETime.info(visionIOInputs.lastResult.timestamp());
-    log_connected.info(visionIOInputs.connected);
-    log_medianLatency.info(visionIOInputs.medianLatency);
-    log_medianUpdateTime.info(visionIOInputs.medianUpdateTime);
+    logs.lastTimestampCTRETime.info(visionIOInputs.lastResult.timestamp());
+    logs.connected.info(visionIOInputs.connected);
+    logs.medianLatency.info(visionIOInputs.medianLatency);
+    logs.medianUpdateTime.info(visionIOInputs.medianUpdateTime);
 
-    log_lastTimestampCTRETimeSuccessful.info(lastSuccessfullyProcessedResultTimeStampCTRETime);
+    logs.lastTimestampCTRETimeSuccessful.info(lastSuccessfullyProcessedResultTimeStampCTRETime);
 
     // Logging
-    log_cameraPose.info(robotPose.transformBy(RobotToCamera));
+    logs.cameraPose.info(robotPose.transformBy(RobotToCamera));
 
     var fieldsToLog = loggedFields;
     var status      = fieldsToLog.status();
@@ -140,8 +122,8 @@ public class VisionModule {
     }
 
     lastStatus = status;
-    log_status.info(status.name());
-    log_successfulResult.info(status.success);
+    logs.status.info(status.name());
+    logs.successfulResult.info(status.success);
 
     if (!status.success) {
       return;
@@ -157,20 +139,20 @@ public class VisionModule {
       Pose3d tagPose = aprilTagLayout.getTagPose(TAG_ID).get();
       if (tagPose != null) {
         Pose3d relativePose = fieldsToLog.robotPose3d().relativeTo(tagPose);
-        log_distanceToTag.info(relativePose);
-        log_yawToTag.info(Math.toDegrees(relativePose.getRotation().getZ()));
+        logs.distanceToTag.info(relativePose);
+        logs.yawToTag.info(Math.toDegrees(relativePose.getRotation().getZ()));
       }
     }
 
-    log_calculatedRobotPose3d.info(fieldsToLog.robotPose3d());
-    log_calculatedRobotPose2d.info(fieldsToLog.robotPose3d().toPose2d());
-    log_numSeenTargets.info(fieldsToLog.numSeenTargets());
-    log_distanceFromExistingPoseEstimate.info(fieldsToLog.distanceFromExistingPoseEstimate());
-    log_averageDistanceFromTags.info(fieldsToLog.averageDistanceFromTags());
-    log_tagAmbiguity.info(fieldsToLog.tagAmbiguity());
-    log_xyStandardDeviation.info(fieldsToLog.xyStandardDeviation());
-    log_thetaStandardDeviation.info(fieldsToLog.thetaStandardDeviation());
-    log_seenTargetsIDs.info(seenTagsArray);
+    logs.calculatedRobotPose3d.info(fieldsToLog.robotPose3d());
+    logs.calculatedRobotPose2d.info(fieldsToLog.robotPose3d().toPose2d());
+    logs.numSeenTargets.info(fieldsToLog.numSeenTargets());
+    logs.distanceFromExistingPoseEstimate.info(fieldsToLog.distanceFromExistingPoseEstimate());
+    logs.averageDistanceFromTags.info(fieldsToLog.averageDistanceFromTags());
+    logs.tagAmbiguity.info(fieldsToLog.tagAmbiguity());
+    logs.xyStandardDeviation.info(fieldsToLog.xyStandardDeviation());
+    logs.thetaStandardDeviation.info(fieldsToLog.thetaStandardDeviation());
+    logs.seenTargetsIDs.info(seenTagsArray);
   }
 
   public Optional<EstimatedRobotPose> estimateRobotPose(PhotonPipelineResult cameraResult) {

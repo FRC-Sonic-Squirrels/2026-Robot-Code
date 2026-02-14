@@ -3,21 +3,34 @@ package frc.lib.team2930;
 import frc.lib.team6328.LoggedTunableNumber;
 
 public class TunableNumberGroup {
-  private final String root;
+  public static <T extends AutoRegisterTunables> T newAutoTunable(Class<T> clz, String path) {
+    var instance = Reflection.newInstance(clz);
 
-  public TunableNumberGroup(String root) {
-    this.root = root;
-  }
+    var fields = Reflection.collectFields(clz);
+    fields.forEach((f, v) -> {
+      var accessor = new Reflection.FieldAccessor(v);
 
-  public LoggedTunableNumber build(String name) {
-    return new LoggedTunableNumber(root + "/" + name);
-  }
+      double defaultValue = 0;
+      var    logName      = f.substring(0, 1).toUpperCase() + f.substring(1);
+      var    anno         = v.getAnnotation(TunableEntry.class);
+      if (anno != null) {
+        defaultValue = anno.defaultValue();
+        if (!anno.name().isEmpty()) {
+          logName = anno.name();
+        }
+      }
 
-  public LoggedTunableNumber build(String name, double defaultValue) {
-    return new LoggedTunableNumber(root + "/" + name, defaultValue);
-  }
+      String subPath = path + "/" + logName;
 
-  public TunableNumberGroup subgroup(String name) {
-    return new TunableNumberGroup(root + "/" + name);
+      var t = accessor.getNativeType();
+      if (AutoRegisterTunables.class.isAssignableFrom(t)) {
+        // noinspection unchecked
+        accessor.set(instance, newAutoTunable((Class<T>) t, subPath));
+      } else if (t == LoggedTunableNumber.class) {
+        accessor.set(instance, new LoggedTunableNumber(subPath, defaultValue));
+      }
+    });
+
+    return instance;
   }
 }

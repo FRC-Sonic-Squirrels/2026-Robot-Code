@@ -21,9 +21,7 @@ import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.lib.team2930.ExecutionTiming;
-import frc.lib.team2930.LoggerEntry;
-import frc.lib.team2930.LoggerGroup;
+import frc.lib.team2930.*;
 import frc.lib.team2930.commands.RunsWhenDisabledInstantCommand;
 import frc.robot.autonomous.AutosManager.Auto;
 import org.littletonrobotics.junction.LogFileUtil;
@@ -41,27 +39,41 @@ import org.littletonrobotics.junction.wpilog.WPILOGWriter;
  * project.
  */
 public class Robot extends LoggedRobot {
-  private static final ExecutionTiming timingCommandScheduler = new ExecutionTiming("CommandScheduler");
+  private final ExecutionTiming timingCommandScheduler = new ExecutionTiming("CommandScheduler");
 
-  private static final LoggerGroup      logGroupDIO          = LoggerGroup.build("DIO");
-  private static final LoggerEntry.Bool logBreakModeButton   = logGroupDIO.buildBoolean("0");
-  private static final LoggerEntry.Bool logHomeSensorsButton = logGroupDIO.buildBoolean("1");
+  public static class ButtonsLogs extends AutoRegisterLoggers {
+    public LoggerEntry.Bool breakModeButton;
+    public LoggerEntry.Bool homeSensorsButton;
+  }
 
-  private static final LoggerGroup logGroupActiveCommands = LoggerGroup.build("ActiveCommands");
+  public static class AutoLogs extends AutoRegisterLoggers {
+    public LoggerEntry.Text                              currentChooserValue;
+    public LoggerEntry.Text                              selectedAuto;
+    public LoggerEntry.EnumValue<DriverStation.Alliance> allianceColor;
+  }
 
-  private static final LoggerGroup      logGroupAuto           = LoggerGroup.build("Auto");
-  private static final LoggerEntry.Text logCurrentChooserValue = logGroupAuto.buildString("currentChooserValue");
-  private static final LoggerEntry.Text logSelectedAuto        = logGroupAuto.buildString("SelectedAuto");
-  private static final LoggerEntry.Text logAllianceColor       = logGroupAuto.buildString("AllianceColor");
+  public static class PowerDistributionLogs extends AutoRegisterLoggers {
+    public LoggerEntry.Decimal voltage;
+    public LoggerEntry.Decimal totalCurrent;
+    public LoggerEntry.Decimal totalPower;
+  }
 
-  private static final LoggerGroup         logGroupSimulatedRobot = LoggerGroup.build("SimulatedRobot");
-  private static final LoggerEntry.Decimal logBatteryVoltage      = logGroupSimulatedRobot
-      .buildDecimal("batteryVoltage");
+  public static class Logs extends AutoRegisterLoggers {
+    @LogEntry(name = "DIO")
+    public ButtonsLogs buttonsLogs;
 
-  private static final LoggerGroup         logGroupPDH     = LoggerGroup.build("PowerDistribution");
-  private static final LoggerEntry.Decimal logVoltage      = logGroupPDH.buildDecimal("Voltage");
-  private static final LoggerEntry.Decimal logTotalCurrent = logGroupPDH.buildDecimal("TotalCurrent");
-  private static final LoggerEntry.Decimal logTotalPower   = logGroupPDH.buildDecimal("TotalPower");
+    @LogEntry(name = "Auto")
+    public AutoLogs autoLogs;
+
+    @LogEntry(name = "PDH")
+    public PowerDistributionLogs powerDistributionLogs;
+
+    @LogEntry(name = "SimulatedRobot")
+    public PowerDistributionLogs simulatedRobotLogs;
+  }
+
+  public final Logs         logs                   = LoggerGroup.root.newAutoLogger(Logs.class, null);
+  private final LoggerGroup logGroupActiveCommands = LoggerGroup.build("ActiveCommands");
 
   private RobotContainer robotContainer;
 
@@ -177,11 +189,14 @@ public class Robot extends LoggedRobot {
 
     double voltage = powerDistribution.getVoltage();
     double current = powerDistribution.getTotalCurrent();
-    logVoltage.info(voltage);
-    logTotalCurrent.info(current);
-    logTotalPower.info(voltage * current);
+    logs.powerDistributionLogs.voltage.info(voltage);
+    logs.powerDistributionLogs.totalCurrent.info(current);
+    logs.powerDistributionLogs.totalPower.info(voltage * current);
 
-    logAllianceColor.info(DriverStation.getAlliance().toString());
+    var alliance = DriverStation.getAlliance();
+    if (alliance.isPresent()) {
+      logs.autoLogs.allianceColor.info(alliance.get());
+    }
 
     robotContainer.applyToDrivetrain();
     robotContainer.updateRobotState();
@@ -233,8 +248,8 @@ public class Robot extends LoggedRobot {
       robotContainer.matchRawOdometryToPoseEstimatorValue();
     }
 
-    logBreakModeButton.info(robotContainer.brakeModeButton.get());
-    logHomeSensorsButton.info(robotContainer.zeroSensorsButton.get());
+    logs.buttonsLogs.breakModeButton.info(robotContainer.brakeModeButton.get());
+    logs.buttonsLogs.homeSensorsButton.info(robotContainer.zeroSensorsButton.get());
   }
 
   /**
@@ -297,7 +312,7 @@ public class Robot extends LoggedRobot {
   /** This function is called periodically whilst in simulation. */
   @Override
   public void simulationPeriodic() {
-    logBatteryVoltage.info(RobotController.getBatteryVoltage());
+    logs.simulatedRobotLogs.voltage.info(RobotController.getBatteryVoltage());
   }
 
   private void prepForTeleop() {

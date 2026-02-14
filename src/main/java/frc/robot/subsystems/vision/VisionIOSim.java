@@ -33,8 +33,6 @@ public class VisionIOSim implements VisionIO {
     this.poseSupplier = poseSupplier;
     this.layout       = config.getAprilTagFieldLayout();
 
-    Vision.logConfigTagAmount.info(config.getAprilTagFieldLayout().getTags().size());
-
     var cameraProp = new SimCameraProperties();
     cameraProp.setCalibration(960, 720, Rotation2d.fromDegrees(128.2));
     cameraProp.setCalibError(0.01, 0.10);

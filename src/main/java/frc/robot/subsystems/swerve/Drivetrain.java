@@ -38,111 +38,112 @@ import frc.lib.team6328.PoseEstimator.TimestampedVisionUpdate;
 import frc.robot.Constants;
 import frc.robot.configs.RobotConfig;
 import frc.robot.subsystems.swerve.gyro.GyroIO;
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
 
 public class Drivetrain extends SubsystemBase {
-  public static final String ROOT_TABLE = "Drivetrain";
+  public final String ROOT_TABLE = "Drivetrain";
 
   // Execution timing
 
-  private static final ExecutionTiming timing         = new ExecutionTiming(ROOT_TABLE);
-  private static final ExecutionTiming timing_wait    = new ExecutionTiming(ROOT_TABLE + "/wait");
-  private static final ExecutionTiming timing_process = new ExecutionTiming(ROOT_TABLE + "/odometry");
-  private static final ExecutionTiming timing_vision  = new ExecutionTiming(ROOT_TABLE + "/vision");
-  private static final ExecutionTiming timing_pose    = new ExecutionTiming(ROOT_TABLE + "/pose");
+  private final ExecutionTiming timing         = new ExecutionTiming(ROOT_TABLE);
+  private final ExecutionTiming timing_wait    = new ExecutionTiming(ROOT_TABLE + "/wait");
+  private final ExecutionTiming timing_process = new ExecutionTiming(ROOT_TABLE + "/odometry");
+  private final ExecutionTiming timing_vision  = new ExecutionTiming(ROOT_TABLE + "/vision");
+  private final ExecutionTiming timing_pose    = new ExecutionTiming(ROOT_TABLE + "/pose");
 
-  private static final LoggerGroup         logGroupDrive                  = LoggerGroup.build(ROOT_TABLE);
-  private static final LoggerEntry.Decimal logGyro_canivoreBusUtilization = logGroupDrive
-      .buildDecimal("canivoreBusUtilization");
+  private final LoggerGroup logGroup = LoggerGroup.build(ROOT_TABLE);
 
-  // Logging
+  public static class GyroLogs extends AutoRegisterLoggers {
+    public LoggerEntry.Text    selectedGyro;
+    public LoggerEntry.Bool    usingSecondGyro;
+    public LoggerEntry.Decimal yawPosition;
+    public LoggerEntry.Decimal yawVelocityRadPerSec;
+    public LoggerEntry.Decimal xAcceleration;
+    public LoggerEntry.Decimal yAcceleration;
+    public LoggerEntry.Decimal zAcceleration;
+    public LoggerEntry.Decimal linearAcceleration;
+  }
 
-  // Gyro logging
+  private final GyroLogs gyroLogs = logGroup.newAutoLogger(GyroLogs.class, "Gyro");
 
-  private static final LoggerGroup logGyro = logGroupDrive.subgroup("Gyro");
+  public static class SwerveStatesLogs extends AutoRegisterLoggers {
+    public LoggerEntry.Decimal canivoreBusUtilization;
 
-  private static final LoggerEntry.Text    logGyro_selectedGyro         = logGyro.buildString("selectedGyro");
-  private static final LoggerEntry.Bool    logGyro_usingSecondGyro      = logGyro.buildBoolean("usingSecondGyro");
-  private static final LoggerEntry.Decimal logGyro_yawPosition          = logGyro.buildDecimal("YawPosition");
-  private static final LoggerEntry.Decimal logGyro_yawVelocityRadPerSec = logGyro.buildDecimal("YawVelocityRadPerSec");
-  private static final LoggerEntry.Decimal logGyro_xAcceleration        = logGyro.buildDecimal("XAcceleration");
-  private static final LoggerEntry.Decimal logGyro_yAcceleration        = logGyro.buildDecimal("YAcceleration");
-  private static final LoggerEntry.Decimal logGyro_zAcceleration        = logGyro.buildDecimal("ZAcceleration");
-  private static final LoggerEntry.Decimal logGyro_Acceleration         = logGyro.buildDecimal("linearAcceleration");
+    public LoggerEntry.StructArray<SwerveModuleState> setpoints;
+    public LoggerEntry.StructArray<SwerveModuleState> setpointsOptimized;
+    public LoggerEntry.StructArray<SwerveModuleState> measured;
+  }
 
-  // Swerve logging
+  private final SwerveStatesLogs swerveStatesLogs = LoggerGroup.root.newAutoLogger(SwerveStatesLogs.class,
+      "SwerveStates");
 
-  private static final LoggerGroup                                logGroupSwerveStates              = LoggerGroup
-      .build("SwerveStates");
-  private static final LoggerEntry.StructArray<SwerveModuleState> logSwerveStatesSetpoints          = logGroupSwerveStates
-      .buildStructArray(SwerveModuleState.class, "Setpoints");
-  private static final LoggerEntry.StructArray<SwerveModuleState> logSwerveStatesSetpointsOptimized = logGroupSwerveStates
-      .buildStructArray(SwerveModuleState.class, "SetpointsOptimized");
-  private static final LoggerEntry.StructArray<SwerveModuleState> logSwerveStatesMeasured           = logGroupSwerveStates
-      .buildStructArray(SwerveModuleState.class, "Measured");
+  public static class OdometryLogs extends AutoRegisterLoggers {
+    @LogEntry(updatePerSecond = SwerveModule.ODOMETRY_FREQUENCY)
+    public LoggerEntry.EnumValue<StatusCode> status;
 
-  // Odometry logging
+    @LogEntry(updatePerSecond = SwerveModule.ODOMETRY_FREQUENCY)
+    public LoggerEntry.Decimal timestampSpread;
 
-  private static final LoggerGroup                       logGroupOdometryThread     = LoggerGroup
-      .build("OdometryThread");
-  private static final LoggerEntry.EnumValue<StatusCode> logOdometryStatus          = logGroupOdometryThread
-      .buildEnum("status", SwerveModule.ODOMETRY_FREQUENCY);
-  private static final LoggerEntry.Decimal               logOdometryTimestampSpread = logGroupOdometryThread
-      .buildDecimal("timestampSpread", SwerveModule.ODOMETRY_FREQUENCY);
-  private static final LoggerEntry.Struct<Twist2d>       logOdometryTwist           = logGroupOdometryThread
-      .buildStruct(Twist2d.class, "twist", SwerveModule.ODOMETRY_FREQUENCY);
-  private static final LoggerEntry.Text                  logOdometryCrash           = logGroupOdometryThread
-      .buildString("crash");
+    @LogEntry(updatePerSecond = SwerveModule.ODOMETRY_FREQUENCY)
+    public LoggerEntry.Struct<Twist2d> twist;
 
-  // Drivetrain logging
+    @LogEntry(updatePerSecond = SwerveModule.ODOMETRY_FREQUENCY)
+    public LoggerEntry.Text crash;
+  }
 
-  private static final LoggerGroup         logGroupDrivetrain             = LoggerGroup.build("Drivetrain");
-  private static final LoggerEntry.Decimal logDrivetrain_leftoverVelocity = logGroupDrivetrain
-      .buildDecimal("leftoverVelocity");
+  private final OdometryLogs odometryLogs = logGroup.newAutoLogger(OdometryLogs.class, "OdometryThread");
 
-  private static final LoggerEntry.Decimal logDrivetrain_speedsX        = logGroupDrivetrain.buildDecimal("speedsX");
-  private static final LoggerEntry.Decimal logDrivetrain_speedsY        = logGroupDrivetrain.buildDecimal("speedsY");
-  private static final LoggerEntry.Decimal logDrivetrain_linearSpeed    = logGroupDrivetrain
-      .buildDecimal("linearSpeed");
-  private static final LoggerEntry.Decimal logDrivetrain_linearSpeedMax = logGroupDrivetrain
-      .buildDecimal("linearSpeedMax");
-  private static final LoggerEntry.Decimal logDrivetrain_speedsRot      = logGroupDrivetrain.buildDecimal("speedsRot");
+  public static class DrivetrainLogs extends AutoRegisterLoggers {
+    public LoggerEntry.Decimal leftoverVelocity;
+    public LoggerEntry.Decimal speedsX;
+    public LoggerEntry.Decimal speedsY;
+    public LoggerEntry.Decimal linearSpeed;
+    public LoggerEntry.Decimal linearSpeedMax;
+    public LoggerEntry.Decimal speedsRot;
+  }
 
-  // Robot position logging
-  private static final LoggerGroup logGroupLocalization = LoggerGroup.build("Localization");
+  private final DrivetrainLogs drivetrainLogs = logGroup.newAutoLogger(DrivetrainLogs.class, "Drivetrain");
 
-  private static final LoggerEntry.Struct<Pose2d> logLocalization_RobotPosition_RAW_ODOMETRY = logGroupLocalization
-      .buildStruct(Pose2d.class, "RobotPosition_RAW_ODOMETRY");
+  public static class LocalizationLogs extends AutoRegisterLoggers {
+    public LoggerEntry.Struct<Pose2d> rawOdometry;
+    public LoggerEntry.Struct<Pose2d> hubRobotPosition;
 
-  private static final LoggerEntry.Struct<Pose2d> logLocalization_HubRobotPosition = logGroupLocalization
-      .buildStruct(Pose2d.class, "HubRobotPosition");
+    public LoggerEntry.Decimal timeSinceVisionHub;
+    public LoggerEntry.Integer rejectionCutoff;
+    public LoggerEntry.Integer rejectionInvalidTags;
+    public LoggerEntry.Integer rejectionNoDriveData;
+  }
 
-  private static final LoggerEntry.Decimal logTimeSinceVisionHub   = logGroupLocalization
-      .buildDecimal("timeSinceVisionHub");
-  private static final LoggerEntry.Integer logRejectionCutoff      = logGroupLocalization
-      .buildInteger("rejectionCutoff");
-  private static final LoggerEntry.Integer logRejectionInvalidTags = logGroupLocalization
-      .buildInteger("rejectionInvalidTags");
-  private static final LoggerEntry.Integer logRejectionNoDriveData = logGroupLocalization
-      .buildInteger("rejectionNoDriveData");
+  private final LocalizationLogs localizationLogs = LoggerGroup.root.newAutoLogger(LocalizationLogs.class,
+      "Localization");
 
-  private static final LoggerGroup                logGroupRobot                 = LoggerGroup.build("Robot");
-  private static final LoggerEntry.Struct<Pose2d> log_FieldRelativeVel          = logGroupRobot
-      .buildStruct(Pose2d.class, "FieldRelativeVel");
-  private static final LoggerEntry.Decimal        log_FieldRelativeLinearVel    = logGroupRobot
-      .buildDecimal("FieldRelativeLinearVel");
-  private static final LoggerEntry.Decimal        log_FieldRelativeAcceleration = logGroupRobot
-      .buildDecimal("FieldRelativeAcceleration");
+  public static class RobotLogs extends AutoRegisterLoggers {
+    public LoggerEntry.Struct<Pose2d> fieldRelativeVel;
+    public LoggerEntry.Decimal        fieldRelativeLinearVel;
+    public LoggerEntry.Decimal        fieldRelativeAcceleration;
+  }
 
-  public static final AutoLock odometryLock = new AutoLock("odometry", 100);
+  private final RobotLogs robotLogs = logGroup.newAutoLogger(RobotLogs.class, "Robot");
+
+  public final AutoLock odometryLock = new AutoLock("Odometry", 100);
 
   // Tunable numbers
 
-  public static final TunableNumberGroup  group                      = new TunableNumberGroup("Drivetrain");
-  public static final LoggedTunableNumber driveMotorAccelerationAuto = group.build("SwerveDRIVEAccelerationAuto", 1000);
-  public static final LoggedTunableNumber driveMotorAccelerationTele = group.build("SwerveDRIVEAccelerationTele", 1000);
+  public static class Tunables extends AutoRegisterTunables {
+    @TunableEntry(defaultValue = 1000.0)
+    public LoggedTunableNumber driveMotorAccelerationAuto;
+
+    @TunableEntry(defaultValue = 1000.0)
+    public LoggedTunableNumber driveMotorAccelerationTele;
+
+    @TunableEntry(defaultValue = 1.0)
+    public LoggedTunableNumber visionWithLowestStdDev;
+  }
+
+  private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
 
   private boolean switchGyro;
   private Boolean useSecondGyro;
@@ -155,8 +156,8 @@ public class Drivetrain extends SubsystemBase {
   private final GyroIO        gyroIO;
   private final GyroIO        gyroIO2;
   private GyroIO              selectedGyroIO;
-  private final GyroIO.Inputs gyroInputs  = new GyroIO.Inputs(logGyro);
-  private final GyroIO.Inputs gyroInputs2 = new GyroIO.Inputs(logGyro);
+  private final GyroIO.Inputs gyroInputs  = new GyroIO.Inputs(gyroLogs.group);
+  private final GyroIO.Inputs gyroInputs2 = new GyroIO.Inputs(gyroLogs.group);
   private GyroIO.Inputs       selectedGyroInputs;
   private final SwerveModules modules;
 
@@ -211,12 +212,12 @@ public class Drivetrain extends SubsystemBase {
       GyroIO.Inputs inputs = selectedGyroInputs;
       if (gyroIO != null && inputs != null) { // Only log if real gyro
         gyroIO.updateInputs(inputs);
-        logGyro_yawPosition.info(inputs.yawPosition);
-        logGyro_yawVelocityRadPerSec.info(inputs.yawVelocityRadPerSec);
-        logGyro_xAcceleration.info(inputs.xAcceleration);
-        logGyro_yAcceleration.info(inputs.yAcceleration);
-        logGyro_zAcceleration.info(inputs.zAcceleration);
-        logGyro_Acceleration.info(Math.hypot(inputs.xAcceleration, inputs.yAcceleration));
+        gyroLogs.yawPosition.info(inputs.yawPosition);
+        gyroLogs.yawVelocityRadPerSec.info(inputs.yawVelocityRadPerSec);
+        gyroLogs.xAcceleration.info(inputs.xAcceleration);
+        gyroLogs.yAcceleration.info(inputs.yAcceleration);
+        gyroLogs.zAcceleration.info(inputs.zAcceleration);
+        gyroLogs.linearAcceleration.info(Math.hypot(inputs.xAcceleration, inputs.yAcceleration));
       }
 
       // Swerve modules
@@ -230,16 +231,17 @@ public class Drivetrain extends SubsystemBase {
       }
       // Log empty setpoint states when disabled
       if (DriverStation.isDisabled()) {
-        logSwerveStatesSetpoints.info(new SwerveModuleState[] {});
-        logSwerveStatesSetpointsOptimized.info(new SwerveModuleState[] {});
+        swerveStatesLogs.setpoints.info(new SwerveModuleState[] {});
+        swerveStatesLogs.setpointsOptimized.info(new SwerveModuleState[] {});
       }
 
-      logSwerveStatesMeasured.info(getModuleStates());
+      swerveStatesLogs.measured.info(getModuleStates());
 
-      log_FieldRelativeVel.info(getFieldRelativeVelocities());
+      robotLogs.fieldRelativeVel.info(getFieldRelativeVelocities());
       linearVel.calculate(getFieldRelativeVelocities().getTranslation().getNorm()); // Update linear vel approximation
-      log_FieldRelativeLinearVel.info(getLinearVel());
-      log_FieldRelativeAcceleration.info(getFieldRelativeAccelerationMagnitude(prevVel.getTranslation().getNorm()));
+      robotLogs.fieldRelativeLinearVel.info(getLinearVel());
+      robotLogs.fieldRelativeAcceleration
+          .info(getFieldRelativeAccelerationMagnitude(prevVel.getTranslation().getNorm()));
 
       prevVel = getFieldRelativeVelocities();
 
@@ -247,31 +249,31 @@ public class Drivetrain extends SubsystemBase {
       var hubVisionStaleness   = getHubVisionStaleness();
 
       // Log robot poses
-      logLocalization_HubRobotPosition.info(hubPoseEstimatorPose);
+      localizationLogs.hubRobotPosition.info(hubPoseEstimatorPose);
 
       SmartDashboard.putData("Localization/hubField2d", hubField2d);
 
       rawOdometryField2d.setRobotPose(rawOdometryPose);
-      logLocalization_RobotPosition_RAW_ODOMETRY.info(rawOdometryPose);
+      localizationLogs.rawOdometry.info(rawOdometryPose);
       SmartDashboard.putData("Localization/rawOdometryField2d", rawOdometryField2d);
 
       // Log other vision information
 
-      logTimeSinceVisionHub.info(hubVisionStaleness);
-      logRejectionCutoff.info(hubPoseEstimator.rejectionCutoff);
-      logRejectionInvalidTags.info(hubPoseEstimator.rejectionInvalidTags);
-      logRejectionNoDriveData.info(hubPoseEstimator.rejectionNoDriveData);
+      localizationLogs.timeSinceVisionHub.info(hubVisionStaleness);
+      localizationLogs.rejectionCutoff.info(hubPoseEstimator.rejectionCutoff);
+      localizationLogs.rejectionInvalidTags.info(hubPoseEstimator.rejectionInvalidTags);
+      localizationLogs.rejectionNoDriveData.info(hubPoseEstimator.rejectionNoDriveData);
 
       // Log which gyro in use
 
       if (useSecondGyro != null) {
-        logGyro_usingSecondGyro.info(useSecondGyro);
+        gyroLogs.usingSecondGyro.info(useSecondGyro);
       }
 
       // Log can bus util
 
       if (canBus != null) {
-        logGyro_canivoreBusUtilization.info(canBus.getStatus().BusUtilization);
+        swerveStatesLogs.canivoreBusUtilization.info(canBus.getStatus().BusUtilization);
       }
     }
   }
@@ -296,15 +298,15 @@ public class Drivetrain extends SubsystemBase {
       if (gyro1Healthy) {
         selectedGyroIO     = gyroIO;
         selectedGyroInputs = gyroInputs;
-        logGyro_selectedGyro.info("Primary");
+        gyroLogs.selectedGyro.info("Primary");
       } else if (gyro2Healthy) {
         selectedGyroIO     = gyroIO2;
         selectedGyroInputs = gyroInputs2;
-        logGyro_selectedGyro.info("Secondary");
+        gyroLogs.selectedGyro.info("Secondary");
       } else {
         selectedGyroIO     = null;
         selectedGyroInputs = null;
-        logGyro_selectedGyro.info("Disabled");
+        gyroLogs.selectedGyro.info("Disabled");
       }
 
       switchGyro = false;
@@ -352,7 +354,7 @@ public class Drivetrain extends SubsystemBase {
           }
 
           if (statusCode != lastStatusCode) {
-            logOdometryStatus.info(statusCode);
+            odometryLogs.status.info(statusCode);
             lastStatusCode = statusCode;
           }
 
@@ -373,7 +375,7 @@ public class Drivetrain extends SubsystemBase {
           timestamp = timeSum / signalsArray.length;
           var timestampSpread = Math.max(Math.abs(timeMax - timestamp), Math.abs(timeMin - timestamp));
 
-          logOdometryTimestampSpread.info(timestampSpread);
+          odometryLogs.timestampSpread.info(timestampSpread);
         } else {
           // "waitForAll" does not support blocking on multiple
           // signals with a bus that is not CAN FD, regardless
@@ -391,7 +393,7 @@ public class Drivetrain extends SubsystemBase {
         // sample in x, y, and theta based only on the modules, without
         // the gyro. The gyro is always disconnected in simulation.
         var twist = kinematics.toTwist2d(wheelDeltas);
-        logOdometryTwist.info(twist);
+        odometryLogs.twist.info(twist);
 
         if (selectedGyroIO != null) {
           var gyroRotation = selectedGyroIO.updateOdometry(selectedGyroInputs);
@@ -415,7 +417,7 @@ public class Drivetrain extends SubsystemBase {
           }
         }
       } catch (Exception e) {
-        logOdometryCrash.info(e.toString());
+        odometryLogs.crash.info(e.toString());
       }
     }
   }
@@ -464,15 +466,15 @@ public class Drivetrain extends SubsystemBase {
 
         speeds = new ChassisSpeeds(vxMetersPerSecond, vyMetersPerSecond, speeds.omegaRadiansPerSecond);
 
-        logDrivetrain_leftoverVelocity.info(config.getRobotMaxLinearVelocity() - rotationSpeedMetersPerSecond);
+        drivetrainLogs.leftoverVelocity.info(config.getRobotMaxLinearVelocity() - rotationSpeedMetersPerSecond);
       }
     }
 
-    logDrivetrain_speedsX.info(speeds.vxMetersPerSecond);
-    logDrivetrain_speedsY.info(speeds.vyMetersPerSecond);
-    logDrivetrain_linearSpeed.info(Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond));
-    logDrivetrain_linearSpeedMax.info(config.getRobotMaxLinearVelocity());
-    logDrivetrain_speedsRot.info(speeds.omegaRadiansPerSecond);
+    drivetrainLogs.speedsX.info(speeds.vxMetersPerSecond);
+    drivetrainLogs.speedsY.info(speeds.vyMetersPerSecond);
+    drivetrainLogs.linearSpeed.info(Math.hypot(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond));
+    drivetrainLogs.linearSpeedMax.info(config.getRobotMaxLinearVelocity());
+    drivetrainLogs.speedsRot.info(speeds.omegaRadiansPerSecond);
 
     // Calculate module setpoints
     ChassisSpeeds       discreteSpeeds = ChassisSpeeds.discretize(speeds, Constants.kDefaultPeriod);
@@ -484,16 +486,16 @@ public class Drivetrain extends SubsystemBase {
 
     double driveMotorAcceleration;
     if (isAutonomous.get()) {
-      driveMotorAcceleration = driveMotorAccelerationAuto.get();
+      driveMotorAcceleration = tunables.driveMotorAccelerationAuto.get();
     } else {
-      driveMotorAcceleration = driveMotorAccelerationTele.get();
+      driveMotorAcceleration = tunables.driveMotorAccelerationTele.get();
     }
 
     var optimizedSetpointStates = modules.runSetpoints(setpointStates, driveMotorAcceleration, motionMagicDrive);
 
     // Log setpoint states
-    logSwerveStatesSetpoints.info(setpointStates);
-    logSwerveStatesSetpointsOptimized.info(optimizedSetpointStates);
+    swerveStatesLogs.setpoints.info(setpointStates);
+    swerveStatesLogs.setpointsOptimized.info(optimizedSetpointStates);
   }
 
   /** Stops the drive. */
@@ -565,7 +567,7 @@ public class Drivetrain extends SubsystemBase {
     try (var ignored = odometryLock.lock()) // Prevents odometry updates while reading data
     {
       try (var ignored2 = timing_vision.start()) {
-        hubPoseEstimator.addVisionData(visionData);
+        hubPoseEstimator.addVisionData(visionData, tunables.visionWithLowestStdDev.get() > 0.0);
       }
     }
   }

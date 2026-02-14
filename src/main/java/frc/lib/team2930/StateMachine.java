@@ -57,15 +57,15 @@ public class StateMachine {
 
   private static final LoggerGroup logGroup = LoggerGroup.build("StateMachine");
 
-  private final String           name;
-  private final LoggerEntry.Text logName;
-  private Status                 status;
-  private StateHandler           currentState;
-  private double                 startTime;
-  private double                 startTimeOfState;
-  private EventState             nextEvent;
-  private StateHandler           interruptedState = () -> setDone();
-  private ArrayList<Command>     commands         = new ArrayList<Command>(0);
+  private final String             name;
+  private final LoggerEntry.Text   logName;
+  private Status                   status;
+  private StateHandler             currentState;
+  private double                   startTime;
+  private double                   startTimeOfState;
+  private EventState               nextEvent;
+  private StateHandler             interruptedState = this::setDone;
+  private final ArrayList<Command> commands         = new ArrayList<Command>(0);
 
   protected StateMachine(String name) {
     this.name = name;

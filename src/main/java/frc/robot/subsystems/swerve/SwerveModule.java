@@ -23,35 +23,41 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Voltage;
-import frc.lib.team2930.ExecutionTiming;
-import frc.lib.team2930.LoggerEntry;
-import frc.lib.team2930.LoggerGroup;
-import frc.lib.team2930.TunableNumberGroup;
+import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.configs.RobotConfig;
+
 import java.util.List;
 
 public class SwerveModule {
   public static final int ODOMETRY_FREQUENCY = 250;
 
-  // Logging
-  public static final TunableNumberGroup  group              = new TunableNumberGroup("RobotConfig");
-  public static final LoggedTunableNumber turnCruiseVelocity = group.build("SwerveTurnCruiseVelocity", 200);
-  public static final LoggedTunableNumber turnAcceleration   = group.build("SwerveTurnAcceleration", 200);
+  public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.Decimal drivePositionRad;
+    public LoggerEntry.Decimal driveVelocityRadPerSec;
+    public LoggerEntry.Decimal driveVelocityMetersPerSec;
+    public LoggerEntry.Decimal driveTargetVelocityMetersPerSec;
+    public LoggerEntry.Decimal driveAppliedVolts;
+    public LoggerEntry.Decimal driveCurrentAmps;
+    public LoggerEntry.Decimal turnAbsolutePosition;
+    public LoggerEntry.Decimal turnPosition;
+    public LoggerEntry.Decimal turnVelocityRadPerSec;
+    public LoggerEntry.Decimal turnAppliedVolts;
+    public LoggerEntry.Decimal turnCurrentAmps;
+    public LoggerEntry.Decimal angle;
+  }
 
-  private final LoggerEntry.Decimal log_drivePositionRad;
-  private final LoggerEntry.Decimal log_driveVelocityRadPerSec;
-  private final LoggerEntry.Decimal log_driveVelocityMetersPerSec;
-  private final LoggerEntry.Decimal log_driveTargetVelocityMetersPerSec;
-  private final LoggerEntry.Decimal log_driveAppliedVolts;
-  private final LoggerEntry.Decimal log_driveCurrentAmps;
-  private final LoggerEntry.Decimal log_turnAbsolutePosition;
-  private final LoggerEntry.Decimal log_turnPosition;
-  private final LoggerEntry.Decimal log_turnVelocityRadPerSec;
-  private final LoggerEntry.Decimal log_turnAppliedVolts;
-  private final LoggerEntry.Decimal log_turnCurrentAmps;
-  private final LoggerEntry.Decimal log_angle;
-  private final ExecutionTiming     timing;
+  public static class Tunables extends AutoRegisterTunables {
+    @TunableEntry(defaultValue = 200)
+    public LoggedTunableNumber SwerveTurnCruiseVelocity;
+
+    @TunableEntry(defaultValue = 200)
+    public LoggedTunableNumber SwerveTurnAcceleration;
+  }
+
+  private final Logs            logs;
+  private final Tunables        tunables = TunableNumberGroup.newAutoTunable(Tunables.class, "RobotConfig");
+  private final ExecutionTiming timing;
 
   private final SwerveModuleIO        io;
   private final SwerveModuleIO.Inputs inputs;
@@ -81,22 +87,11 @@ public class SwerveModule {
 
     // Logging
 
-    String key   = "SwerveModule" + index;
-    var    group = LoggerGroup.build(key);
-    log_drivePositionRad                = group.buildDecimal("DrivePositionRad");
-    log_driveVelocityRadPerSec          = group.buildDecimal("DriveVelocityRadPerSec");
-    log_driveVelocityMetersPerSec       = group.buildDecimal("DriveVelocityMetersPerSec");
-    log_driveTargetVelocityMetersPerSec = group.buildDecimal("DriveTargetVelocityMetersPerSec");
-    log_driveAppliedVolts               = group.buildDecimal("DriveAppliedVolts");
-    log_driveCurrentAmps                = group.buildDecimal("DriveCurrentAmps");
-    log_turnAbsolutePosition            = group.buildDecimal("TurnAbsolutePosition");
-    log_turnPosition                    = group.buildDecimal("TurnPosition");
-    log_turnVelocityRadPerSec           = group.buildDecimal("TurnVelocityRadPerSec");
-    log_turnAppliedVolts                = group.buildDecimal("TurnAppliedVolts");
-    log_turnCurrentAmps                 = group.buildDecimal("TurnCurrentAmps");
-    log_angle                           = group.buildDecimal("Angle");
-    timing                              = new ExecutionTiming(key);
-    inputs                              = new SwerveModuleIO.Inputs(group);
+    String key = "SwerveModule" + index;
+
+    logs   = LoggerGroup.root.newAutoLogger(Logs.class, key);
+    timing = new ExecutionTiming(key);
+    inputs = new SwerveModuleIO.Inputs(logs.group);
 
     wheelRadius = config.getWheelRadius().in(Units.Meters);
 
@@ -135,24 +130,23 @@ public class SwerveModule {
   public void periodic() {
     try (var ignored = timing.start()) {
       // Logging
-      log_drivePositionRad.info(inputs.drivePositionRad);
-      log_driveVelocityRadPerSec.info(inputs.driveVelocityRadPerSec);
-      log_driveVelocityMetersPerSec.info(getVelocity().in(Units.MetersPerSecond));
-      log_driveTargetVelocityMetersPerSec.info(speedSetpoint == null ? 0 : speedSetpoint);
-      log_driveAppliedVolts.info(inputs.driveAppliedVolts);
-      log_driveCurrentAmps.info(inputs.driveCurrentAmps);
-      log_turnAbsolutePosition.info(inputs.turnAbsolutePosition);
-      log_turnPosition.info(inputs.turnPosition);
-      log_turnVelocityRadPerSec.info(inputs.turnVelocityRadPerSec);
-      log_turnAppliedVolts.info(inputs.turnAppliedVolts);
-      log_turnCurrentAmps.info(inputs.turnCurrentAmps);
-      log_angle.info(inputs.angle);
+      logs.drivePositionRad.info(inputs.drivePositionRad);
+      logs.driveVelocityRadPerSec.info(inputs.driveVelocityRadPerSec);
+      logs.driveVelocityMetersPerSec.info(getVelocity().in(Units.MetersPerSecond));
+      logs.driveTargetVelocityMetersPerSec.info(speedSetpoint == null ? 0 : speedSetpoint);
+      logs.driveAppliedVolts.info(inputs.driveAppliedVolts);
+      logs.driveCurrentAmps.info(inputs.driveCurrentAmps);
+      logs.turnAbsolutePosition.info(inputs.turnAbsolutePosition);
+      logs.turnPosition.info(inputs.turnPosition);
+      logs.turnVelocityRadPerSec.info(inputs.turnVelocityRadPerSec);
+      logs.turnAppliedVolts.info(inputs.turnAppliedVolts);
+      logs.turnCurrentAmps.info(inputs.turnCurrentAmps);
+      logs.angle.info(inputs.angle);
 
       // update Tuneable PID and FF values
-      int hc = hashCode();
-      if (driveKS.hasChanged(hc) || driveKV.hasChanged(hc) || driveKA.hasChanged(hc) || driveKP.hasChanged(hc)
-          || driveKD.hasChanged(hc) || angleKP.hasChanged(hc) || angleKD.hasChanged(hc)
-          || turnCruiseVelocity.hasChanged(hc) || turnAcceleration.hasChanged(hc)) {
+      if (driveKS.hasChanged() || driveKV.hasChanged() || driveKA.hasChanged() || driveKP.hasChanged()
+          || driveKD.hasChanged() || angleKP.hasChanged() || angleKD.hasChanged()
+          || tunables.SwerveTurnCruiseVelocity.hasChanged() || tunables.SwerveTurnAcceleration.hasChanged()) {
         updateConstants();
       }
 
@@ -174,7 +168,11 @@ public class SwerveModule {
   private void updateConstants() {
     io.setDriveClosedLoopConstraints(driveKP.get(), driveKD.get(), driveKS.get(), driveKV.get(), driveKA.get());
 
-    io.setTurnClosedLoopConstraints(angleKP.get(), angleKD.get(), turnCruiseVelocity.get(), turnAcceleration.get());
+    double kP             = angleKP.get();
+    double kD             = angleKD.get();
+    double cruiseVelocity = tunables.SwerveTurnCruiseVelocity.get();
+    double acceleration   = tunables.SwerveTurnAcceleration.get();
+    io.setTurnClosedLoopConstraints(kP, kD, cruiseVelocity, acceleration);
   }
 
   public SwerveModulePosition updateOdometry() {

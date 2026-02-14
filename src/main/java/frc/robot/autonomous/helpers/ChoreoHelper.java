@@ -7,51 +7,49 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.Units;
-import frc.lib.team2930.GeometryUtil;
-import frc.lib.team2930.LoggerEntry;
-import frc.lib.team2930.LoggerGroup;
-import frc.lib.team2930.TunableNumberGroup;
+import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.autonomous.records.ChoreoTrajectoryWithName;
+
 import java.util.ArrayList;
 import java.util.List;
 
 public class ChoreoHelper {
-  private static final String ROOT_TABLE = "ChoreoHelper";
+  private final String ROOT_TABLE = "ChoreoHelper";
 
-  private static final LoggerGroup                     logGroup                = LoggerGroup.build(ROOT_TABLE);
-  private static final LoggerEntry.Decimal             log_stateLinearVel      = logGroup
-      .buildDecimal("stateLinearVel");
-  private static final LoggerEntry.Decimal             log_stateLinearVelError = logGroup
-      .buildDecimal("stateLinearVelError");
-  private static final LoggerEntry.Decimal             log_stateScaleVel       = logGroup.buildDecimal("stateScaleVel");
-  private static final LoggerEntry.Decimal             log_stateTimeOffset     = logGroup
-      .buildDecimal("stateTimeOffset");
-  private static final LoggerEntry.Decimal             log_stateTimestamp      = logGroup
-      .buildDecimal("stateTimestamp");
-  private static final LoggerEntry.Struct<Pose2d>      log_closestPose         = logGroup.buildStruct(Pose2d.class,
-      "closestPose");
-  private static final LoggerEntry.Struct<Pose2d>      log_optimalPose         = logGroup.buildStruct(Pose2d.class,
-      "optimalPose");
-  private static final LoggerEntry.Struct<Pose2d>      log_desiredVelocity     = logGroup.buildStruct(Pose2d.class,
-      "desiredVelocity");
-  private static final LoggerEntry.Decimal             log_distanceError       = logGroup.buildDecimal("distanceError");
-  private static final LoggerEntry.Decimal             log_offsetError         = logGroup.buildDecimal("offsetError");
-  private static final LoggerEntry.Decimal             log_targetError         = logGroup.buildDecimal("targetError");
-  private static final LoggerEntry.Decimal             log_headingError        = logGroup.buildDecimal("headingError");
-  private static final LoggerEntry.Decimal             log_pidXVelEffort       = logGroup.buildDecimal("pidXVelEffort");
-  private static final LoggerEntry.Decimal             log_pidYVelEffort       = logGroup.buildDecimal("pidYVelEffort");
-  private static final LoggerEntry.Decimal             log_pidVelEffort        = logGroup.buildDecimal("pidVelEffort");
-  private static final LoggerEntry.StructArray<Pose2d> log_path                = logGroup.buildStructArray(Pose2d.class,
-      "Path");
-  private static final LoggerEntry.Text                log_stallReason         = logGroup.buildString("stallReason");
+  public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.Decimal             stateLinearVel;
+    public LoggerEntry.Decimal             stateLinearVelError;
+    public LoggerEntry.Decimal             stateScaleVel;
+    public LoggerEntry.Decimal             stateTimeOffset;
+    public LoggerEntry.Decimal             stateTimestamp;
+    public LoggerEntry.Struct<Pose2d>      closestPose;
+    public LoggerEntry.Struct<Pose2d>      optimalPose;
+    public LoggerEntry.Struct<Pose2d>      desiredVelocity;
+    public LoggerEntry.Decimal             distanceError;
+    public LoggerEntry.Decimal             offsetError;
+    public LoggerEntry.Decimal             targetError;
+    public LoggerEntry.Decimal             headingError;
+    public LoggerEntry.Decimal             pidXVelEffort;
+    public LoggerEntry.Decimal             pidYVelEffort;
+    public LoggerEntry.Decimal             pidVelEffort;
+    public LoggerEntry.StructArray<Pose2d> path;
+    public LoggerEntry.Text                stallReason;
+    public LoggerEntry.Bool                isPaused;
+  }
 
-  private static final LoggerEntry.Bool log_isPaused = logGroup.buildBoolean("isPaused");
+  public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
-  private static final TunableNumberGroup  group         = new TunableNumberGroup(ROOT_TABLE);
-  private static final LoggedTunableNumber useCorrection = group.build("useCorrection", 1);
-  private static final LoggedTunableNumber minVelToPause = group.build("MinVelToPause_m/s", 2.0);
+  public static class Tunables extends AutoRegisterTunables {
+    @TunableEntry(defaultValue = 1.0)
+    public LoggedTunableNumber useCorrection;
+
+    @TunableEntry(defaultValue = 2_0)
+    public LoggedTunableNumber minVelToPause;
+  }
+
+  private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
 
   private final Trajectory<SwerveSample> traj;
   private final PIDController            xFeedback;
@@ -99,7 +97,7 @@ public class ChoreoHelper {
     double       closestDistance = Double.MAX_VALUE;
     double       lastDistance    = Double.MAX_VALUE;
 
-    if (useCorrection.get() != 0) {
+    if (tunables.useCorrection.get() != 0) {
       for (SwerveSample state : getStates(traj)) {
         SwerveSample stateComputed = traj.sampleAt(state.t, false).orElseThrow();
         double       stateDistance = GeometryUtil.getDist(initialPose, stateComputed.getPose());
@@ -120,12 +118,12 @@ public class ChoreoHelper {
 
     if (closestState != null) {
       this.timeOffset = closestState.t;
-      log_closestPose.info(closestState.getPose());
+      logs.closestPose.info(closestState.getPose());
     }
 
     this.initialTime = initialTime;
     var poses = trajWithName.states().getPoses();
-    log_path.info(poses);
+    logs.path.info(poses);
   }
 
   public void setFinalOffsetError(double maxError) {
@@ -170,7 +168,7 @@ public class ChoreoHelper {
   public ChassisSpeedsWithPathEnd calculateChassisSpeeds(Pose2d robotPose, double timestamp) {
     SwerveSample state;
 
-    log_isPaused.info(isPaused());
+    logs.isPaused.info(isPaused());
 
     boolean atTheEndOfPath = false;
 
@@ -189,17 +187,19 @@ public class ChoreoHelper {
       var lookaheadTime = Constants.kDefaultPeriod;
 
       var stateAhead = isFutureStateCloser(robotPose, state, lookaheadTime);
-      if (stateAhead == null)
+      if (stateAhead == null) {
         break;
+      }
 
       timeOffset += lookaheadTime;
       state       = stateAhead;
-      if (stateTooBehind != null)
+      if (stateTooBehind != null) {
         stateTooBehind = state;
+      }
     }
 
-    log_stateTimestamp.info(state.t);
-    log_stateTimeOffset.info(timeOffset);
+    logs.stateTimestamp.info(state.t);
+    logs.stateTimeOffset.info(timeOffset);
 
     double xRobot = robotPose.getX();
     double yRobot = robotPose.getY();
@@ -214,11 +214,11 @@ public class ChoreoHelper {
 
     double targetError = robotToStatePose.getX();
     double offsetError = robotToStatePose.getY();
-    log_distanceError.info(distanceError);
-    log_targetError.info(targetError);
-    log_offsetError.info(offsetError);
+    logs.distanceError.info(distanceError);
+    logs.targetError.info(targetError);
+    logs.offsetError.info(offsetError);
 
-    boolean useCorrection = ChoreoHelper.useCorrection.get() != 0;
+    boolean useCorrection = tunables.useCorrection.get() != 0;
     if (useCorrection) {
       if (distanceError < lagThreshold) {
         if (stateTooBehind != null) {
@@ -228,7 +228,7 @@ public class ChoreoHelper {
       } else {
         if (stateTooBehind == null) {
           var velMagnitude = Math.hypot(state.vx, state.vy);
-          if (velMagnitude >= minVelToPause.get() && state.t > 0.25) {
+          if (velMagnitude >= tunables.minVelToPause.get() && state.t > 0.25) {
             stateTooBehind = state;
             pause(timestamp);
           }
@@ -248,7 +248,7 @@ public class ChoreoHelper {
       scaleVelocity *= Math.exp(-(timestamp - pausedTime));
     }
 
-    log_stateScaleVel.info(scaleVelocity);
+    logs.stateScaleVel.info(scaleVelocity);
 
     double pidXVel = xFeedback.calculate(xRobot, xDesired);
     double pidYVel = yFeedback.calculate(yRobot, yDesired);
@@ -261,11 +261,11 @@ public class ChoreoHelper {
       yVel += pidYVel;
     }
 
-    log_pidXVelEffort.info(pidXVel);
-    log_pidYVelEffort.info(pidYVel);
-    log_pidVelEffort.info(Math.hypot(pidXVel, pidYVel));
-    log_stateLinearVel.info(Math.hypot(state.vx, state.vy));
-    log_stateLinearVelError.info(Math.hypot(state.vx - xVel, state.vy - yVel));
+    logs.pidXVelEffort.info(pidXVel);
+    logs.pidYVelEffort.info(pidYVel);
+    logs.pidVelEffort.info(Math.hypot(pidXVel, pidYVel));
+    logs.stateLinearVel.info(Math.hypot(state.vx, state.vy));
+    logs.stateLinearVelError.info(Math.hypot(state.vx - xVel, state.vy - yVel));
 
     Rotation2d rotation     = robotPose.getRotation();
     double     theta        = rotation.getRadians();
@@ -305,10 +305,10 @@ public class ChoreoHelper {
       }
     }
 
-    log_optimalPose.info(state.getPose());
-    log_desiredVelocity.info(new Pose2d(xVel, yVel, Rotation2d.fromRadians(omegaVel)));
-    log_headingError.info(headingError);
-    log_stallReason.info(waitingOn);
+    logs.optimalPose.info(state.getPose());
+    logs.desiredVelocity.info(new Pose2d(xVel, yVel, Rotation2d.fromRadians(omegaVel)));
+    logs.headingError.info(headingError);
+    logs.stallReason.info(waitingOn);
 
     var chassisSpeeds = new ChassisSpeeds(xVel, yVel, omegaVel);
     chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, rotation);

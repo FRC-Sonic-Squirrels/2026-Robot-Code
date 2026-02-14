@@ -2,21 +2,22 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import frc.lib.team2930.AllianceFlipUtil;
-import frc.lib.team2930.LoggerEntry;
-import frc.lib.team2930.LoggerGroup;
+import frc.lib.team2930.*;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.commands.drive.DriveToPoseHelper;
 import frc.robot.commands.drive.RotateToFaceHelper;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.intake.Intake.State;
+import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
+
 import java.util.function.Supplier;
 
 public class RobotStates {
+  private String ROOT_TABLE = "RobotStates";
+
   // End Effector states
   public enum EndEffectorDesiredAction {
     Idle(false), DepotIntake(false), GroundIntake(false), ShootFuel(true), PassCoralToEndEffector(false),
@@ -51,24 +52,30 @@ public class RobotStates {
 
   // Logging
 
-  private LoggerGroup logGroup = LoggerGroup.build("RobotState");
+  public static class SubsystemsInTargetStatesLogs extends AutoRegisterLoggers {
+    public LoggerEntry.Bool intakeInTargetState;
+    public LoggerEntry.Bool mechInTargetState;
+    public LoggerEntry.Text goal;
+    public LoggerEntry.Text wantedGoal;
 
-  private LoggerEntry.Bool logGamepieceInIntakeState = logGroup.buildBoolean("GamepieceInIntakeState");
+  }
 
-  private LoggerEntry.EnumValue<EndEffectorDesiredAction> logEndEffectorDesiredAction = logGroup
-      .buildEnum("EndEffectorDesiredAction");
-  private LoggerEntry.EnumValue<MechState>                logMechState                = logGroup.buildEnum("MechState");
+  public static class SubsystemsInUseLogs extends AutoRegisterLoggers {
+    public LoggerEntry.Bool mechInUse;
+    public LoggerEntry.Bool endEffectorInUse;
+  }
 
-  private LoggerGroup      logSubsystemsInUse  = logGroup.subgroup("SubsystemsInUse");
-  private LoggerEntry.Bool logMechInUse        = logSubsystemsInUse.buildBoolean("MechInUse");
-  private LoggerEntry.Bool logEndEffectorInUse = logSubsystemsInUse.buildBoolean("EndEffectorInUse");
+  public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.Integer                             counter;
+    public LoggerEntry.Bool                                gamepieceInIntakeState;
+    public LoggerEntry.EnumValue<EndEffectorDesiredAction> endEffectorDesiredAction;
+    public LoggerEntry.EnumValue<MechState>                mechState;
 
-  private LoggerGroup      logSubsystemsInTargetStates = logGroup.subgroup("SubsystemsInTargetStates");
-  private LoggerEntry.Bool logIntakeInTargetState      = logSubsystemsInTargetStates
-      .buildBoolean("IntakeInTargetState");
-  private LoggerEntry.Bool logMechInTargetState        = logSubsystemsInTargetStates.buildBoolean("MechInTargetState");
-  private LoggerEntry.Text logGoal                     = logSubsystemsInTargetStates.buildString("Goal");
-  private LoggerEntry.Text logWantedGoal               = logSubsystemsInTargetStates.buildString("WantedGoal");
+    public SubsystemsInUseLogs          subsystemsInUse;
+    public SubsystemsInTargetStatesLogs subsystemsInTargetStates;
+  }
+
+  private final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
   // States
 
@@ -106,9 +113,12 @@ public class RobotStates {
   public RobotStates() {
   }
 
+  private int periodicCounter;
+
   private Intake            leftIntake;
   private Intake            rightIntake;
   private DrivetrainWrapper drivetrain;
+  private Shooter           shooter;
 
   private RotateToFaceHelper rtfHelper;
   private DriveToPoseHelper  dtpHelpter;
@@ -116,12 +126,13 @@ public class RobotStates {
   private Pose2d             targetPose = null;
   private Supplier<Boolean>  intaking   = null;
 
-  public void setSubsystems(Intake leftIntake, Intake rightIntake, DrivetrainWrapper drivetrain,
+  public void setSubsystems(Intake leftIntake, Intake rightIntake, Shooter shooter, DrivetrainWrapper drivetrain,
       Supplier<Boolean> intaking) {
     this.leftIntake  = leftIntake;
     this.rightIntake = rightIntake;
     this.drivetrain  = drivetrain;
     this.intaking    = intaking;
+    this.shooter     = shooter;
     dtpHelpter       = new DriveToPoseHelper(this.drivetrain, () -> targetPose, () -> drivetrain.getRawOdometryPose(),
         () -> driveSlow);
     rtfHelper        = new RotateToFaceHelper(this.drivetrain, () -> targetPose.getTranslation(),
@@ -135,8 +146,9 @@ public class RobotStates {
   }
 
   private void handleGoalTransition() {
-    if (wantedGoal == goal)
+    if (wantedGoal == goal) {
       return;
+    }
     if (DriverStation.isAutonomous() && wantedGoal != RobotGoal.Auto) {
       wantedGoal = RobotGoal.Auto;
       return;
@@ -176,25 +188,28 @@ public class RobotStates {
   }
 
   public void periodic() {
+    periodicCounter = (periodicCounter + 1) % 100;
+    logs.counter.info(periodicCounter);
+
     handleGoalTransition();
     handleIntakeGoalTransition();
     switch (goal) {
       case None:
         drivetrain.resetVelocityOverride();
         drivetrain.resetRotationOverride();
+        shooter.setGoal(Shooter.Goal.Idle);
         break;
       case Auto:
         // TODO: run the auto state machene
         break;
       case Score:
-        targetPose = AllianceFlipUtil
-            .flipPoseForAlliance(new Pose2d(FieldConstants.BLUE_HUB_CENTER_POSE, Rotation2d.kZero));
+        targetPose = FieldConstants.HUB_CENTER_POSE.getPose2d();
         shoot();
         break;
       case Pass:
-        targetPose = new Pose2d(AllianceFlipUtil.getClosestTranslation(
-            new Translation2d[] { FieldConstants.RIGHT_PASS_AIM_POINT, FieldConstants.LEFT_PASS_AIM_POINT },
-            drivetrain.getRawOdometryPose()), Rotation2d.kZero);
+        targetPose = new Pose2d(GeometryUtil.getClosestTranslation(new AllianceAwareTranslation2d[] {
+            FieldConstants.RIGHT_PASS_AIM_POINT, FieldConstants.LEFT_PASS_AIM_POINT }, drivetrain.getRawOdometryPose()),
+            Rotation2d.kZero);
         shoot();
         break;
       case Climb:
@@ -221,11 +236,11 @@ public class RobotStates {
 
     CommandScheduler.getInstance().setPeriod(endEffectorOverrideVelocity);
 
-    logMechInUse.info(mechanismInUse);
-    logEndEffectorInUse.info(endEffectorInUse);
+    logs.subsystemsInUse.mechInUse.info(mechanismInUse);
+    logs.subsystemsInUse.endEffectorInUse.info(endEffectorInUse);
 
-    logIntakeInTargetState.info(intakeInTargetState);
-    logMechInTargetState.info(mechInTargetState);
+    logs.subsystemsInTargetStates.intakeInTargetState.info(intakeInTargetState);
+    logs.subsystemsInTargetStates.mechInTargetState.info(mechInTargetState);
 
     if (mechState == MechState.Override) {
       mechanismInUse = true;
@@ -233,12 +248,12 @@ public class RobotStates {
 
     // Log states
 
-    logEndEffectorDesiredAction.info(endEffectorDesiredAction);
-    logMechState.info(mechState);
-    logGoal.info(goal.name());
-    logWantedGoal.info(wantedGoal.name());
+    logs.endEffectorDesiredAction.info(endEffectorDesiredAction);
+    logs.mechState.info(mechState);
+    logs.subsystemsInTargetStates.goal.info(goal.name());
+    logs.subsystemsInTargetStates.wantedGoal.info(wantedGoal.name());
 
-    logGamepieceInIntakeState.info(fuelInIntake);
+    logs.gamepieceInIntakeState.info(fuelInIntake);
 
     mechanismInUse   = false;
     intakeInUse      = false;
@@ -247,10 +262,10 @@ public class RobotStates {
 
   private void shoot() {
     rtfHelper.execute();
-    // shooter.setAngle()hjmhjmh <- landon did this
-    if (rtfHelper.withinTolerance() /* && shooter.withinTolerance() */) {
-      // pew pew
-    }
+    // tell the shooter how far away we are from the target <- landon did this
+    shooter.setFacingTarget(rtfHelper.withinTolerance());
+    shooter.setGoal(Shooter.Goal.Shooting);
+    shooter.setDistanceFromTarget(rtfHelper.getDistance());
   }
 
   public void setMechState(MechState state) {

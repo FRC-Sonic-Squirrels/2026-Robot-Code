@@ -1,7 +1,6 @@
 package frc.robot.subsystems.climber;
 
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -14,71 +13,66 @@ import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.RobotMode.RobotType;
 
 public class Climber extends SubsystemBase {
+  private final String ROOT_TABLE = "Climber";
+
+  public enum ClimberGoal {
+    ClimbAuto, AutoDismount, L1Climb, L2Climb, L3Climb, Idle, Override
+  }
+
+  private enum ClimberState {
+    Idle, Override, L1Extend, L1Retract, AutoDismount, AutoRetract, L2Extend, L2Retract, L3Extend, L3Retract, Lock
+  }
+
+  public static class ElevatorLogs extends AutoRegisterLoggers {
+    public LoggerEntry.Decimal appliedVolts;
+    public LoggerEntry.Decimal currentAmps;
+    public LoggerEntry.Decimal tempCelsius;
+    public LoggerEntry.Decimal velocityDegreesPerSecond;
+    public LoggerEntry.Decimal targetHeightInches;
+  }
+
+  public static class Logs extends AutoRegisterLoggers {
+    public ElevatorLogs innerClimber;
+    public ElevatorLogs outerClimber;
+
+    public LoggerEntry.Decimal servoTargetAngle;
+
+  }
+
+  public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
+
   // Execution timing
-  private static final ExecutionTiming winchTiming = new ExecutionTiming(ClimberConstants.WINCH_ROOT_TABLE);
-  // Logging
-  private static final LoggerGroup                        winchLogGroup                           = LoggerGroup
-      .build(ClimberConstants.WINCH_ROOT_TABLE);
-  private static final LoggerEntry.Decimal                logInputs_winchAngle                    = winchLogGroup
-      .buildDecimal("AngleDegrees");
-  private static final LoggerEntry.Decimal                logInputs_winchAppliedVolts             = winchLogGroup
-      .buildDecimal("AppliedVolts");
-  private static final LoggerEntry.Decimal                logInputs_winchCurrentAmps              = winchLogGroup
-      .buildDecimal("CurrentAmps");
-  private static final LoggerEntry.Decimal                logInputs_winchTempCelsius              = winchLogGroup
-      .buildDecimal("TempCelsius");
-  private static final LoggerEntry.Decimal                logInputs_winchVelocityDegreesPerSecond = winchLogGroup
-      .buildDecimal("VelocityDegreesPerSecond");
-  private static final LoggerEntry.EnumValue<ControlMode> logWinchControlMode                     = winchLogGroup
-      .buildEnum("ControlMode");
-  private static final LoggerEntry.Decimal                logTargetAngleDegrees                   = winchLogGroup
-      .buildDecimal("targetAngleDegrees");
+  private final ExecutionTiming climberTiming = new ExecutionTiming(ROOT_TABLE);
 
-  private static final LoggerGroup         servoLogGroup        = LoggerGroup.build(ClimberConstants.SERO_ROOT_TABLE);
-  private static final LoggerEntry.Decimal log_servoTargetAngle = servoLogGroup.buildDecimal("TargetAngle");
+  public static class Tunables extends AutoRegisterTunables {
+    public LoggedTunableNumber climberKP;
+    public LoggedTunableNumber climberKD;
+    public LoggedTunableNumber climberKG;
 
-  // Tunable Numbers
-  private static final TunableNumberGroup winchGroup = new TunableNumberGroup(ClimberConstants.WINCH_ROOT_TABLE);
+    public LoggedTunableNumber maxVelocityConfig;
+    public LoggedTunableNumber climberTargetAccelerationConfig;
 
-  private static final LoggedTunableNumber winchkP = winchGroup.build("kP");
-  private static final LoggedTunableNumber winchkD = winchGroup.build("kD");
-  private static final LoggedTunableNumber winchkG = winchGroup.build("kG");
+    @TunableEntry(defaultValue = 40.0)
+    public LoggedTunableNumber toleranceDegrees;
 
-  private static final LoggedTunableNumber maxVelocityConfig             = winchGroup.build("MaxVelocityConfig");
-  private static final LoggedTunableNumber winchTargetAccelerationConfig = winchGroup.build("TargetAccelerationConfig");
-  private static final LoggedTunableNumber toleranceDegrees              = winchGroup.build("ToleranceDegrees", 40);
+    @TunableEntry(defaultValue = 1.0)
+    public LoggedTunableNumber toleranceHeight;
 
-  // Tunable numbers
+    public boolean hasChanged() {
+      return climberKP.hasChanged() || climberKD.hasChanged() || climberKG.hasChanged();
 
-  static {
-    if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_RETIRED_HOLO) {
-      winchkP.initDefault(4);
-      winchkD.initDefault(0);
-      winchkG.initDefault(0.0);
-
-      maxVelocityConfig.initDefault(10);
-      winchTargetAccelerationConfig.initDefault(10);
-
-    } else if (Constants.RobotMode.getRobot() == RobotType.ROBOT_SIMBOT) {
-
-      winchkP.initDefault(.02);
-      winchkD.initDefault(0);
-      winchkG.initDefault(0.0);
-
-      maxVelocityConfig.initDefault(40);
-      winchTargetAccelerationConfig.initDefault(80);
-    } else {
-      winchkP.initDefault(4);
-      winchkD.initDefault(0);
-      winchkG.initDefault(0.0);
     }
   }
 
-  private final ClimberIO        io;
-  private final ClimberIO.Inputs winchInputs = new ClimberIO.Inputs(winchLogGroup);
+  private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
 
-  private ControlMode winchControlMode        = ControlMode.OPEN_LOOP;
-  private Rotation2d  winchTargetAngleDegrees = Constants.zeroRotation2d;
+  private final ClimberIO        io;
+  private final ClimberIO.Inputs climberInputs;
+
+  private ClimberState climberState = ClimberState.Idle;
+  private ClimberGoal  climberGoal  = ClimberGoal.Idle;
+  private double       innerClimberHeight;
+  private double       outerClimberHeight;
 
   // This also acts as its current angle because the servo cannot tell us where it
   // is
@@ -86,9 +80,29 @@ public class Climber extends SubsystemBase {
 
   /** Creates a new ClimberSubsystem. */
   public Climber(ClimberIO io) {
-    this.io = io;
+    this.io            = io;
+    this.climberInputs = new ClimberIO.Inputs(logs.group);
 
-    io.setWinchVoltage(0.0);
+    if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_RETIRED_HOLO) {
+      tunables.climberKP.initDefault(4);
+      tunables.climberKD.initDefault(0);
+      tunables.climberKG.initDefault(0.0);
+
+      tunables.maxVelocityConfig.initDefault(10);
+      tunables.climberTargetAccelerationConfig.initDefault(10);
+
+    } else if (Constants.RobotMode.getRobot() == RobotType.ROBOT_SIMBOT) {
+      tunables.climberKP.initDefault(.02);
+      tunables.climberKD.initDefault(0);
+      tunables.climberKG.initDefault(0.0);
+
+      tunables.maxVelocityConfig.initDefault(40);
+      tunables.climberTargetAccelerationConfig.initDefault(80);
+    } else {
+      tunables.climberKP.initDefault(4);
+      tunables.climberKD.initDefault(0);
+      tunables.climberKG.initDefault(0.0);
+    }
 
     setConstants();
     setServoAngle(ClimberConstants.SERVO_UNLOCK_ANGLE);
@@ -96,59 +110,226 @@ public class Climber extends SubsystemBase {
 
   @Override
   public void periodic() {
-    try (var ignored = winchTiming.start()) {
-      // Winch logging
-      io.updateWinchInputs(winchInputs);
-      logInputs_winchAngle.info(winchInputs.winchPosition);
-      logInputs_winchAppliedVolts.info(winchInputs.winchAppliedVolts);
-      logInputs_winchCurrentAmps.info(winchInputs.winchCurrentAmps);
-      logInputs_winchTempCelsius.info(winchInputs.winchTempCelsius);
-      logInputs_winchVelocityDegreesPerSecond.info(winchInputs.winchVelocityDegreesPerSecond);
+    try (var ignored = climberTiming.start()) {
+      // Climber logging
+      io.updateClimberInputs(climberInputs);
+      logs.innerClimber.appliedVolts.info(climberInputs.innerClimberAppliedVolts);
+      logs.innerClimber.currentAmps.info(climberInputs.innerClimberCurrentAmps);
+      logs.innerClimber.tempCelsius.info(climberInputs.innerClimberTempCelsius);
+      logs.innerClimber.velocityDegreesPerSecond.info(climberInputs.innerClimberVelocityDegreesPerSecond);
+      logs.innerClimber.targetHeightInches.info(innerClimberHeight);
 
-      logWinchControlMode.info(winchControlMode);
+      logs.outerClimber.appliedVolts.info(climberInputs.outerClimberAppliedVolts);
+      logs.outerClimber.currentAmps.info(climberInputs.outerClimberCurrentAmps);
+      logs.outerClimber.tempCelsius.info(climberInputs.outerClimberTempCelsius);
+      logs.outerClimber.velocityDegreesPerSecond.info(climberInputs.outerClimberVelocityDegreesPerSecond);
+      logs.outerClimber.targetHeightInches.info(outerClimberHeight);
+
+      logs.servoTargetAngle.info(servoTargetAngle);
 
       // Updating tunable numbers
-      var hc = hashCode();
-      if (winchkP.hasChanged(hc) || winchkD.hasChanged(hc) || winchkG.hasChanged(hc)) {
+      if (tunables.hasChanged()) {
         setConstants();
       }
+
+      switch (climberState) {
+        case Override:
+          break;
+
+        case Idle:
+          setInnerTargetHeight(0);
+          setOuterTargetHeight(0);
+          break;
+
+        case Lock:
+          setServoAngle(ClimberConstants.SERVO_LOCK_ANGLE);
+          break;
+
+        case L1Extend:
+          setOuterTargetHeight(ClimberConstants.L1_CLIMB_HEIGHT);
+          if (isOuterClimberAtTargetHeight(ClimberConstants.L1_CLIMB_HEIGHT)) {
+            setOuterTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT);
+            climberState = ClimberState.L1Retract;
+          }
+          break;
+
+        case L1Retract:
+          if (isOuterClimberAtTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT)) {
+            setOuterTargetHeight(0);
+            switch (climberGoal) {
+
+              case Override:
+                break;
+
+              case Idle:
+                break;
+
+              case ClimbAuto:
+                break;
+
+              case L1Climb:
+                climberState = ClimberState.Lock;
+                break;
+
+              default:
+                climberState = ClimberState.L2Extend;
+                break;
+            }
+          }
+          break;
+
+        case AutoDismount:
+          setOuterTargetHeight(ClimberConstants.L1_CLIMB_HEIGHT);
+          break;
+
+        case AutoRetract:
+          setOuterTargetHeight(0);
+          if (isOuterClimberAtTargetHeight(0)) {
+            climberState = ClimberState.Idle;
+          }
+          break;
+
+        case L2Extend:
+          setInnerTargetHeight(ClimberConstants.L2_CLIMB_HEIGHT);
+          if (isInnerClimberAtTargetHeight(ClimberConstants.L2_CLIMB_HEIGHT)) {
+            setInnerTargetHeight(ClimberConstants.INNER_RETRACTION_HEIGHT);
+            climberState = ClimberState.L2Retract;
+          }
+          break;
+
+        case L2Retract:
+          if (isInnerClimberAtTargetHeight(ClimberConstants.INNER_RETRACTION_HEIGHT)) {
+            setInnerTargetHeight(0);
+            switch (climberGoal) {
+
+              case Override:
+                break;
+
+              case Idle:
+                break;
+
+              case ClimbAuto:
+                break;
+
+              case AutoDismount:
+                break;
+
+              case L1Climb:
+                break;
+
+              case L2Climb:
+                climberState = ClimberState.Lock;
+                break;
+
+              default:
+                climberState = ClimberState.L3Extend;
+                break;
+            }
+          }
+          break;
+
+        case L3Extend:
+          setOuterTargetHeight(ClimberConstants.L3_CLIMB_HEIGHT);
+          if (isOuterClimberAtTargetHeight(ClimberConstants.L3_CLIMB_HEIGHT)) {
+            setOuterTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT);
+            climberState = ClimberState.L3Retract;
+          }
+          break;
+
+        case L3Retract:
+          if (isOuterClimberAtTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT)) {
+            setOuterTargetHeight(0);
+            switch (climberGoal) {
+
+              case Override:
+                break;
+
+              case Idle:
+                break;
+
+              case ClimbAuto:
+                break;
+
+              case AutoDismount:
+                break;
+
+              case L1Climb:
+                break;
+
+              case L2Climb:
+                break;
+
+              case L3Climb:
+                climberState = ClimberState.Lock;
+                break;
+            }
+          }
+        default:
+          break;
+      }
     }
-    log_servoTargetAngle.info(servoTargetAngle);
   }
 
   // setters
 
+  public void setClimberGoal(ClimberGoal goal) {
+    climberGoal = goal;
+    if (climberState != ClimberState.Idle) {
+      return;
+    }
+    switch (goal) {
+
+      case Override:
+        climberState = ClimberState.Override;
+        break;
+
+      case Idle:
+        climberState = ClimberState.Idle;
+        break;
+
+      case ClimbAuto:
+        climberState = ClimberState.L1Extend;
+        break;
+
+      case AutoDismount:
+        climberState = ClimberState.AutoDismount;
+        break;
+
+      case L1Climb:
+        climberState = ClimberState.L1Extend;
+        break;
+
+      case L2Climb:
+        climberState = ClimberState.L1Extend;
+        break;
+
+      case L3Climb:
+        climberState = ClimberState.L1Extend;
+        break;
+
+      default:
+        break;
+    }
+  }
+
   private void setConstants() {
-    io.setWinchClosedLoopConstants(winchkP.get(), winchkD.get(), winchkG.get());
+    double kP = tunables.climberKP.get();
+    double kD = tunables.climberKD.get();
+    double kG = tunables.climberKG.get();
+    io.setInnerClimberClosedLoopConstants(kP, kD, kG);
+    io.setOuterClimberClosedLoopConstants(kP, kD, kG);
   }
 
-  public void setWinchAngle(Rotation2d angle) {
-    angle = Rotation2d
-        .fromDegrees(MathUtil.clamp(angle.getDegrees(), Constants.ClimberConstants.MIN_CLIMBER_ANGLE.getDegrees(),
-            Constants.ClimberConstants.MAX_CLIMBER_ANGLE.getDegrees()));
-
-    winchControlMode        = ControlMode.CLOSED_LOOP;
-    winchTargetAngleDegrees = angle;
-    io.setWinchClosedLoopPosition(angle);
-    logTargetAngleDegrees.info(winchTargetAngleDegrees);
+  public void setInnerTargetHeight(double height) {
+    io.setInnerClimberClosedLoopPosition(height);
   }
 
-  public void resetWinchSubsystem() {
-    winchControlMode = ControlMode.OPEN_LOOP;
-    io.setWinchVoltage(0);
+  public void setOuterTargetHeight(double height) {
+    io.setOuterClimberClosedLoopPosition(height);
   }
 
-  public void setWinchVoltage(double percent) {
-    winchControlMode = ControlMode.OPEN_LOOP;
-    io.setWinchVoltage(percent);
-  }
-
-  public void resetWinchSensorToHomePosition() {
-    io.resetWinchSensorPosition(Constants.ClimberConstants.MIN_CLIMBER_ANGLE);
-  }
-
-  public boolean setWinchNeutralMode(NeutralModeValue value) {
-    return io.setWinchNeutralMode(value);
+  public boolean setClimberNeutralMode(NeutralModeValue value) {
+    return io.setClimberNeutralMode(value);
   }
 
   public void setServoAngle(Rotation2d angle) {
@@ -160,29 +341,39 @@ public class Climber extends SubsystemBase {
     return servoTargetAngle;
   }
 
-  // Winch getters
+  // getters
 
-  public Rotation2d getWinchAngle() {
-    return Rotation2d.fromDegrees(winchInputs.winchPosition);
+  public boolean isInnerClimberAtTargetHeight(double target) {
+    var error = climberInputs.innerClimberPosition - target;
+    return error <= tunables.toleranceHeight.get();
   }
 
-  public boolean isWinchAtTargetAngle() {
-    return isWinchAtTargetAngle(winchTargetAngleDegrees);
+  public boolean isOuterClimberAtTargetHeight(double target) {
+    var error = climberInputs.outerClimberPosition - target;
+    return error <= tunables.toleranceHeight.get();
   }
 
-  public boolean isWinchAtTargetAngle(Rotation2d target, Rotation2d tolerance) {
-    return GeometryUtil.isRotationAtTarget(Rotation2d.fromDegrees(winchInputs.winchPosition), target, tolerance);
+  public double getInnerClimberHeight() {
+    return innerClimberHeight;
   }
 
-  public boolean isWinchAtTargetAngle(Rotation2d target) {
-    return isWinchAtTargetAngle(target, Rotation2d.fromDegrees(toleranceDegrees.get()));
+  public double getOuterClimberHeight() {
+    return outerClimberHeight;
   }
 
-  public Voltage getWinchVoltage() {
-    return Units.Volts.of(winchInputs.winchAppliedVolts);
+  public Voltage getInnerClimberVoltage() {
+    return Units.Volts.of(climberInputs.innerClimberAppliedVolts);
   }
 
-  public AngularVelocity getWinchVelocity() {
-    return Units.DegreesPerSecond.of(winchInputs.winchVelocityDegreesPerSecond);
+  public Voltage getOuterClimberVoltage() {
+    return Units.Volts.of(climberInputs.outerClimberAppliedVolts);
+  }
+
+  public AngularVelocity getInnerClimberVelocity() {
+    return Units.DegreesPerSecond.of(climberInputs.innerClimberVelocityDegreesPerSecond);
+  }
+
+  public AngularVelocity getOuterClimberVelocity() {
+    return Units.DegreesPerSecond.of(climberInputs.outerClimberVelocityDegreesPerSecond);
   }
 }

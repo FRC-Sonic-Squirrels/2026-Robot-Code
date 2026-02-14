@@ -8,24 +8,30 @@ import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj2.command.Command;
-import frc.lib.team2930.LoggerEntry;
-import frc.lib.team2930.LoggerGroup;
-import frc.lib.team2930.TunableNumberGroup;
+import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.configs.RobotConfig;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
 
-/* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
+/* You should consider using the more terse Command factories API instead https://docs.wpilib
+.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class WheelRadiusCharacterization extends Command {
+  private final String ROOT_TABLE = "WheelRadiusCharacterization";
+
   /** Creates a new WheelRadiusCharacterization. */
-  private static final LoggerGroup loggerGroup = LoggerGroup.build("WheelRadiusCharacterization");
+  public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.Decimal currentEstimatedRadius;
+  }
 
-  private static final LoggerEntry.Decimal loggerCurrentEstimatedRadius = loggerGroup
-      .buildDecimal("CurrentEstimatedRadius");
+  public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
-  private static final TunableNumberGroup group = new TunableNumberGroup("WheelRadiusCharacterization");
-  // radians per second
-  private static final LoggedTunableNumber characterizationSpeed = group.build("characterizationSpeed", 0.5);
+  public static class Tunables extends AutoRegisterTunables {
+    @TunableEntry(defaultValue = 0.5)
+    // radians per second
+    public LoggedTunableNumber characterizationSpeed;
+  }
+
+  private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
 
   private final DrivetrainWrapper drivetrainWrapper;
   // inches
@@ -51,7 +57,7 @@ public class WheelRadiusCharacterization extends Command {
     totalYaw              = 0.0;
     initialWheelRotations = drivetrainWrapper.getModuleRotations();
 
-    drivetrainWrapper.setRotationOverride(characterizationSpeed.get());
+    drivetrainWrapper.setRotationOverride(tunables.characterizationSpeed.get());
   }
 
   // Called every time the scheduler runs while the command is scheduled.
@@ -71,7 +77,7 @@ public class WheelRadiusCharacterization extends Command {
     averageWheelRotation /= 4;
     double currentEstimatedRadius = (totalYaw * driveBaseRadius) / averageWheelRotation;
 
-    loggerCurrentEstimatedRadius.info(currentEstimatedRadius);
+    logs.currentEstimatedRadius.info(currentEstimatedRadius);
   }
 
   // Called once the command ends or is interrupted.

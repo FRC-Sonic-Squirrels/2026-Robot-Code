@@ -20,11 +20,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.wpilibj.DigitalInput;
-import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj.GenericHID;
-import edu.wpi.first.wpilibj.Threads;
-import edu.wpi.first.wpilibj.XboxController;
+import edu.wpi.first.wpilibj.*;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -42,11 +38,10 @@ import frc.robot.RobotStates.RobotGoal;
 import frc.robot.autonomous.AutosManager;
 import frc.robot.autonomous.AutosManager.Auto;
 import frc.robot.autonomous.AutosSubsystems;
-import frc.robot.autonomous.records.PickupLocation;
-import frc.robot.commands.climber.ClimberSetAngle;
 import frc.robot.commands.drive.DriveToPose;
 import frc.robot.commands.drive.DrivetrainDefaultTeleopDrive;
 import frc.robot.commands.drive.WheelRadiusCharacterization;
+import frc.robot.commands.setGoal.SetRobotGoal;
 import frc.robot.configs.SimulatorRobotConfig;
 import frc.robot.subsystems.LED;
 import frc.robot.subsystems.LED.BaseRobotState;
@@ -55,31 +50,27 @@ import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.ClimberIO;
 import frc.robot.subsystems.climber.ClimberIOReal;
 import frc.robot.subsystems.climber.ClimberIOSim;
+import frc.robot.subsystems.climber.Climber.ClimberGoal;
 import frc.robot.subsystems.hopper.Hopper;
 import frc.robot.subsystems.hopper.HopperIO;
 import frc.robot.subsystems.hopper.HopperIOReal;
 import frc.robot.subsystems.hopper.HopperIOSim;
-import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.intake.*;
 import frc.robot.subsystems.intake.Intake.State;
-import frc.robot.subsystems.intake.IntakeIO;
-import frc.robot.subsystems.intake.IntakeIOConfig;
-import frc.robot.subsystems.intake.IntakeIOReal;
-import frc.robot.subsystems.intake.IntakeIOSim;
+import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.shooter.ShooterIO;
+import frc.robot.subsystems.shooter.ShooterIOReal;
+import frc.robot.subsystems.shooter.ShooterIOSim;
 import frc.robot.subsystems.swerve.Drivetrain;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
 import frc.robot.subsystems.swerve.gyro.GyroIO;
 import frc.robot.subsystems.swerve.gyro.GyroIOPigeon2;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionModuleConfiguration;
-import frc.robot.subsystems.visionGamepiece.VisionGamepiece;
-import frc.robot.subsystems.visionGamepiece.VisionGamepieceIO;
-import frc.robot.subsystems.visionGamepiece.VisionGamepieceIOReal;
-import frc.robot.subsystems.visionGamepiece.VisionGamepieceIOSim;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.function.Supplier;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
+
+import java.util.HashMap;
+import java.util.function.Supplier;
 
 /**
  * This class is where the bulk of the robot should be declared. Since
@@ -89,9 +80,15 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
  * commands, and button mappings) should be declared here.
  */
 public class RobotContainer {
+  public String ROOT_TABLE = "RobotContainer";
+
+  public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.EnumValue<RobotType> robotType;
+    public LoggerEntry.EnumValue<Mode>      robotMode;
+  }
+
   // Robot logging
-  private static final LoggerEntry.EnumValue<RobotType> logRobotType = LoggerGroup.root.buildEnum("RobotType");
-  private static final LoggerEntry.EnumValue<Mode>      logRobotMode = LoggerGroup.root.buildEnum("RobotMode");
+  public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
   // Subsystems
   private final Drivetrain          drivetrain;
@@ -100,22 +97,18 @@ public class RobotContainer {
   private final Vision              vision;
   private final Intake              rightIntake;
   private final Intake              leftIntake;
-  private final VisionGamepiece     visionGamepiece;
   private final LED                 led;
   private final Climber             climber;
   private final Hopper              hopper;
+  private final Shooter             shooter;
 
   // Controllers
   private final XboxControllerWrapper driverController   = new XboxControllerWrapper(0);
   private final XboxControllerWrapper operatorController = new XboxControllerWrapper(1);
 
   // Auto
-  private final LoggedDashboardChooser<String>               autoChooser            = new LoggedDashboardChooser<>(
-      "Auto Routine");
-  private final LoggedDashboardChooser<Boolean>              flipAutoChooser        = new LoggedDashboardChooser<>(
-      "Flip Auto?");
-  private final List<LoggedDashboardChooser<PickupLocation>> coralStationPosChooser = new ArrayList<>();
-  private final int                                          customGamepieceCount   = 5;
+  private final LoggedDashboardChooser<String>  autoChooser     = new LoggedDashboardChooser<>("Auto Routine");
+  private final LoggedDashboardChooser<Boolean> flipAutoChooser = new LoggedDashboardChooser<>("Flip Auto?");
 
   private final HashMap<String, Supplier<Auto>> stringToAutoSupplierMap = new HashMap<>();
   private final AutosManager                    autoManager;
@@ -143,16 +136,19 @@ public class RobotContainer {
 
   // Tunable numbers
 
-  private final TunableNumberGroup tunableNumberGroup = new TunableNumberGroup("RobotContainer");
+  public static class Tunables extends AutoRegisterTunables {
+    @TunableEntry(defaultValue = 13.75)
+    public LoggedTunableNumber tunableX;
 
-  @SuppressWarnings("unused")
-  private final LoggedTunableNumber tunableX = tunableNumberGroup.build("TunableX", 13.75);
+    @TunableEntry(defaultValue = 5.15)
+    public LoggedTunableNumber tunableY;
 
-  @SuppressWarnings("unused")
-  private final LoggedTunableNumber tunableY = tunableNumberGroup.build("TunableY", 5.15);
+    @TunableEntry(defaultValue = 0.0)
+    public LoggedTunableNumber tunableAngle;
 
-  @SuppressWarnings("unused")
-  private final LoggedTunableNumber tunableAngle = tunableNumberGroup.build("TunableAngle", 0);
+  }
+
+  private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, "RobotContainer");
 
   private final RobotStates robotStates;
 
@@ -160,7 +156,6 @@ public class RobotContainer {
    * The container for the robot. Contains subsystems, OI devices, and commands.
    */
   public RobotContainer() {
-
     robotStates = new RobotStates();
 
     DriverStation.silenceJoystickConnectionWarning(true); // Silence joystick warning
@@ -168,8 +163,8 @@ public class RobotContainer {
     RobotType robotType = Constants.RobotMode.getRobot();
     Mode      mode      = Constants.RobotMode.getMode();
 
-    logRobotType.info(robotType);
-    logRobotMode.info(mode);
+    logs.robotType.info(robotType);
+    logs.robotMode.info(mode);
 
     var config = robotType.config.get();
     aprilTagLayout = config.getAprilTagFieldLayout();
@@ -189,15 +184,10 @@ public class RobotContainer {
                   });
       hopper      = new Hopper(new HopperIO() {
                   });
+      shooter     = new Shooter(new ShooterIO() {
+                  });
 
-      if (Constants.unusedCode) {
-        visionGamepiece = new VisionGamepiece(new VisionGamepieceIO() {
-        }, drivetrain::getHubPoseEstimatorPoseAtTimestamp);
-      } else {
-        visionGamepiece = null;
-      }
-
-      led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered, robotStates);
+      led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
     } else { // REAL and SIM robots HERE
       switch (robotType) {
         case ROBOT_SIMBOT_REAL_CAMERAS:
@@ -211,90 +201,26 @@ public class RobotContainer {
             // Sim Robot, Real Cameras
             vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
                 drivetrain::addVisionEstimate, config.getVisionModuleObjects());
-
-            if (Constants.unusedCode) {
-              visionGamepiece = new VisionGamepiece(new VisionGamepieceIOReal(),
-                  drivetrain::getHubPoseEstimatorPoseAtTimestamp);
-            } else {
-              visionGamepiece = null;
-            }
-
           } else {
+            var                         config2       = (SimulatorRobotConfig) config;
             VisionModuleConfiguration[] visionModules = {
-                VisionModuleConfiguration.buildSim(SimulatorRobotConfig.SHOOTER_SIDE_LEFT_CAMERA_NAME,
-                    SimulatorRobotConfig.SHOOTER_SIDE_LEFT, config, drivetrain::getHubPoseEstimatorPose),
-                VisionModuleConfiguration.buildSim(SimulatorRobotConfig.SHOOTER_SIDE_RIGHT_CAMERA_NAME,
-                    SimulatorRobotConfig.SHOOTER_SIDE_RIGHT, config, drivetrain::getHubPoseEstimatorPose), };
+                VisionModuleConfiguration.buildSim(config2.SHOOTER_SIDE_LEFT_CAMERA_NAME, config2.SHOOTER_SIDE_LEFT,
+                    config, drivetrain::getHubPoseEstimatorPose),
+                VisionModuleConfiguration.buildSim(config2.SHOOTER_SIDE_RIGHT_CAMERA_NAME, config2.SHOOTER_SIDE_RIGHT,
+                    config, drivetrain::getHubPoseEstimatorPose), };
 
             vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
                 drivetrain::addVisionEstimate, visionModules);
 
-            if (Constants.unusedCode) {
-              visionGamepiece = new VisionGamepiece(
-                  new VisionGamepieceIOSim(config, drivetrain::getHubPoseEstimatorPose),
-                  drivetrain::getHubPoseEstimatorPoseAtTimestamp);
-            } else {
-              visionGamepiece = null;
-            }
+            vision.logs.configTagAmount.info(config.getAprilTagFieldLayout().getTags().size());
           }
 
           rightIntake = new Intake(new IntakeIOSim());
           leftIntake = new Intake(new IntakeIOSim());
           climber = new Climber(new ClimberIOSim());
-          hopper = new Hopper(new HopperIOSim() {
-          });
-          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered, robotStates);
-          break;
-
-        case ROBOT_2023_RETIRED_ROBER:
-          drivetrain = new Drivetrain(config, new GyroIOPigeon2(config, config.getGyroCANID()),
-              new GyroIOPigeon2(config, Constants.CanIDs.GYRO_2_CAN_ID), config.getSwerveModuleObjects(),
-              () -> is_autonomous);
-
-          vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
-              drivetrain::addVisionEstimate, config.getReplayVisionModules());
-          leftIntake = new Intake(new IntakeIO() {
-          });
-          rightIntake = new Intake(new IntakeIO() {
-          });
-          climber = new Climber(new ClimberIO() {
-          });
-          hopper = new Hopper(new HopperIO() {
-          });
-
-          if (Constants.unusedCode) {
-            visionGamepiece = new VisionGamepiece(new VisionGamepieceIO() {
-            }, drivetrain::getHubPoseEstimatorPoseAtTimestamp);
-          } else {
-            visionGamepiece = null;
-          }
-
-          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered, robotStates);
-          break;
-
-        case ROBOT_2024_RETIRED_MAESTRO:
-          drivetrain = new Drivetrain(config, new GyroIOPigeon2(config, config.getGyroCANID()),
-              new GyroIOPigeon2(config, Constants.CanIDs.GYRO_2_CAN_ID), config.getSwerveModuleObjects(),
-              () -> is_autonomous);
-          leftIntake = new Intake(new IntakeIO() {
-          });
-          rightIntake = new Intake(new IntakeIO() {
-          });
-          climber = new Climber(new ClimberIO() {
-          });
-          hopper = new Hopper(new HopperIO() {
-          });
-          vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
-              drivetrain::addVisionEstimate, config.getVisionModuleObjects());
-
-          if (Constants.unusedCode) {
-            visionGamepiece = new VisionGamepiece(new VisionGamepieceIOReal(),
-                drivetrain::getHubPoseEstimatorPoseAtTimestamp);
-          } else {
-            visionGamepiece = null;
-          }
-
-          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered, robotStates);
+          hopper = new Hopper(new HopperIOSim());
+          shooter = new Shooter(new ShooterIOSim());
+          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
           break;
 
         case ROBOT_2025_RETIRED_HOLO:
@@ -312,17 +238,12 @@ public class RobotContainer {
               config.getSwerveModuleObjects(), () -> is_autonomous);
           hopper = new Hopper(new HopperIO() {
           });
+          shooter = new Shooter(new ShooterIO() {
+          });
           vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
               drivetrain::addVisionEstimate, config.getVisionModuleObjects());
 
-          if (Constants.unusedCode) {
-            visionGamepiece = new VisionGamepiece(new VisionGamepieceIOReal(),
-                drivetrain::getHubPoseEstimatorPoseAtTimestamp);
-          } else {
-            visionGamepiece = null;
-          }
-
-          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered, robotStates);
+          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
 
           break;
 
@@ -342,12 +263,15 @@ public class RobotContainer {
             leftIntake  = new Intake(new IntakeIOReal(leftIntakeIOConfig));
             rightIntake = new Intake(new IntakeIOReal(rightIntakeIOConfig));
             climber     = new Climber(new ClimberIOReal());
+            shooter     = new Shooter(new ShooterIOReal());
           } else {
             leftIntake  = new Intake(new IntakeIO() {
                         });
             rightIntake = new Intake(new IntakeIO() {
                         });
             climber     = new Climber(new ClimberIO() {
+                        });
+            shooter     = new Shooter(new ShooterIO() {
                         });
           }
           drivetrain = new Drivetrain(config, new GyroIOPigeon2(config, config.getGyroCANID()), new GyroIO.Fake(),
@@ -357,14 +281,7 @@ public class RobotContainer {
           vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
               drivetrain::addVisionEstimate, config.getVisionModuleObjects());
 
-          if (Constants.unusedCode) {
-            visionGamepiece = new VisionGamepiece(new VisionGamepieceIOReal(),
-                drivetrain::getHubPoseEstimatorPoseAtTimestamp);
-          } else {
-            visionGamepiece = null;
-          }
-
-          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered, robotStates);
+          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
           break;
 
         default:
@@ -380,15 +297,10 @@ public class RobotContainer {
           });
           hopper = new Hopper(new HopperIO() {
           });
+          shooter = new Shooter(new ShooterIO() {
+          });
 
-          if (Constants.unusedCode) {
-            visionGamepiece = new VisionGamepiece(new VisionGamepieceIO() {
-            }, drivetrain::getHubPoseEstimatorPoseAtTimestamp);
-          } else {
-            visionGamepiece = null;
-          }
-
-          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered, robotStates);
+          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
           break;
       }
     }
@@ -398,18 +310,9 @@ public class RobotContainer {
     flipAutoChooser.addDefaultOption("No", false);
     flipAutoChooser.addOption("Yes", true);
 
-    for (int i = 1; i < customGamepieceCount; i++) { // Add custom pickup choosers
-      LoggedDashboardChooser<PickupLocation> chooser = new LoggedDashboardChooser<>(i + " CustomPickup");
-      for (PickupLocation side : PickupLocation.values()) {
-        chooser.addOption(side.name(), side);
-      }
-      chooser.addDefaultOption(PickupLocation.IA.name(), PickupLocation.IA);
-      coralStationPosChooser.add(chooser);
-    }
-
     var subsystems = new AutosSubsystems(drivetrainWrapper, led, leftIntake, rightIntake);
 
-    robotStates.setSubsystems(leftIntake, rightIntake, drivetrainWrapper,
+    robotStates.setSubsystems(leftIntake, rightIntake, shooter, drivetrainWrapper,
         () -> driverController.getRightTrigger().getAsBoolean());
 
     autoManager = new AutosManager(subsystems, config, autoChooser, stringToAutoSupplierMap, () -> {
@@ -418,7 +321,7 @@ public class RobotContainer {
         return result;
       }
       return false;
-    }, this::getCustomCoralStationLocations, robotStates);
+    }, robotStates);
 
     led.setPreloadSupplier(autoManager::preloadingComplete);
 
@@ -438,11 +341,12 @@ public class RobotContainer {
   private void configureButtonBindings() {
     // ----------- DRIVER CONTROLS ------------
 
-    if (Constants.unusedCode)
+    if (Constants.unusedCode) {
       driverController.registerTrigger(XboxControllerWrapper.Button.back, "Zero Robot").onTrue(Commands.runOnce(() -> {
         Pose2d pose = drivetrain.getHubPoseEstimatorPose();
         drivetrain.setPose(new Pose2d(pose.getX(), pose.getY(), Constants.zeroRotation2d));
       }, drivetrain));
+    }
     driverController.registerTrigger(XboxControllerWrapper.Button.start, "X Stance")
         .onTrue(Commands.runOnce(drivetrain::stopWithX));
     driverController.registerTrigger(XboxControllerWrapper.Button.a, "DriveToTag").whileTrue(Commands.repeatingSequence(
@@ -465,6 +369,15 @@ public class RobotContainer {
             aprilTagLayout.getTagPose(15).get().toPose2d().transformBy(new Transform2d(
                 Units.Inches.of(60).in(Units.Meters), Units.Inches.of(15).in(Units.Meters), Rotation2d.kZero)),
             () -> drivetrainWrapper.getHubPoseEstimatorPose(true)));
+    driverController.registerTrigger(XboxControllerWrapper.Button.leftTrigger, "Shoot")
+        .onTrue(Commands.runOnce(() -> robotStates.setRobotGoal(RobotGoal.Score)))
+        .onFalse(Commands.runOnce(() -> robotStates.setRobotGoal(RobotGoal.None)));
+    driverController.registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Pass")
+        .onTrue(Commands.runOnce(() -> robotStates.setRobotGoal(RobotGoal.Pass)))
+        .onFalse(Commands.runOnce(() -> robotStates.setRobotGoal(RobotGoal.None)));
+
+    driverController.registerTrigger(XboxControllerWrapper.Button.leftBumper, "Score")
+        .whileTrue(new SetRobotGoal(robotStates, RobotStates.RobotGoal.Score, true, false));
 
     // ---------- OPERATOR CONTROLS -----------
 
@@ -494,43 +407,32 @@ public class RobotContainer {
     operatorController.registerTrigger(XboxControllerWrapper.Button.rightStick, "Right Intake Pivot Out")
         .onTrue(Commands.runOnce(() -> rightIntake.setState(State.Down)));
 
-    // Climber in
-    operatorController.registerTrigger(XboxControllerWrapper.Button.b, "Climber In")
-        .onTrue(Commands.runOnce(() -> climber.setServoAngle(Constants.ClimberConstants.SERVO_UNLOCK_ANGLE))
-            .andThen(Commands.waitSeconds(0.15))
-            .andThen(new ClimberSetAngle(climber, Constants.ClimberConstants.MIN_CLIMBER_ANGLE)));
-
-    operatorController.registerTrigger(XboxControllerWrapper.Button.y, "Climber Out")
-        .onTrue(new ClimberSetAngle(climber, Rotation2d.fromRotations(5.4)));
-
-    operatorController.registerTrigger(XboxControllerWrapper.Button.rightStick, "Climber in")
-        .onTrue(new ClimberSetAngle(climber, Rotation2d.fromRotations(0)));
-
     // ---------- ON-ROBOT CONTROLS ------------
 
     zeroSensorsButtonTrigger.onTrue(new RunsWhenDisabledInstantCommand(() -> {
       leftIntake.resetPivotSensorToHomePosition();
       rightIntake.resetPivotSensorToHomePosition();
+      climber.setClimberGoal(ClimberGoal.Idle);
       led.setRobotState(RobotState.ZERO_SUBSYSTEMS);
-      climber.resetWinchSensorToHomePosition();
+
       zeroButtonTriggered = true;
     }));
 
     brakeModeButtonTrigger.onTrue(new ConditionalCommand(new RunsWhenDisabledInstantCommand(() -> {
       boolean intakeLeftPivotSuccess  = leftIntake.setPivotNeutralMode(NeutralModeValue.Coast);
       boolean intakeRightPivotSuccess = rightIntake.setPivotNeutralMode(NeutralModeValue.Coast);
-      boolean climberWinchSuccess     = climber.setWinchNeutralMode(NeutralModeValue.Coast);
+      boolean climberSuccess          = climber.setClimberNeutralMode(NeutralModeValue.Coast);
 
-      brakeModeFailure = !intakeLeftPivotSuccess || !intakeRightPivotSuccess || !climberWinchSuccess;
+      brakeModeFailure = !intakeLeftPivotSuccess || !intakeRightPivotSuccess || !climberSuccess;
 
       brakeModeTriggered = false;
       led.setRobotState(brakeModeFailure ? RobotState.BRAKE_MODE_FAILED : RobotState.BRAKE_MODE_OFF);
     }), new RunsWhenDisabledInstantCommand(() -> {
       boolean intakeLeftPivotSuccess  = leftIntake.setPivotNeutralMode(NeutralModeValue.Brake);
       boolean intakeRightPivotSuccess = rightIntake.setPivotNeutralMode(NeutralModeValue.Brake);
-      boolean climberWinchSuccess     = climber.setWinchNeutralMode(NeutralModeValue.Brake);
+      boolean climberSuccess          = climber.setClimberNeutralMode(NeutralModeValue.Brake);
 
-      brakeModeFailure = !intakeLeftPivotSuccess || !intakeRightPivotSuccess || !climberWinchSuccess;
+      brakeModeFailure = !intakeLeftPivotSuccess || !intakeRightPivotSuccess || !climberSuccess;
 
       brakeModeTriggered = true;
       led.setRobotState(brakeModeFailure ? RobotState.BRAKE_MODE_FAILED : RobotState.BRAKE_MODE_ON);
@@ -628,7 +530,6 @@ public class RobotContainer {
     vision.useGyroBasedFilteringForVision(false);
 
     if (!DriverStation.isFMSAttached()) {
-      climber.setWinchVoltage(0);
       leftIntake.setPivotVoltage(0);
       rightIntake.setPivotVoltage(0);
       leftIntake.setRollerPercentOut(0);
@@ -650,10 +551,6 @@ public class RobotContainer {
     vision.useMaxDistanceAwayFromExistingEstimate(true);
     vision.useGyroBasedFilteringForVision(true);
 
-    if (visionGamepiece != null) {
-      visionGamepiece.setPipelineIndex(0);
-    }
-
     is_teleop     = false;
     is_autonomous = true;
   }
@@ -667,10 +564,6 @@ public class RobotContainer {
     vision.useGyroBasedFilteringForVision(true);
 
     led.setBaseRobotState(BaseRobotState.LEVEL_MODE);
-
-    if (visionGamepiece != null) {
-      visionGamepiece.setPipelineIndex(1);
-    }
 
     is_teleop     = true;
     is_autonomous = false;
@@ -686,19 +579,6 @@ public class RobotContainer {
 
   public void updateRobotState() {
     robotStates.periodic();
-  }
-
-  public void getCustomScoringLocations() {
-  }
-
-  public List<PickupLocation> getCustomCoralStationLocations() {
-    List<PickupLocation> coralStationLocations = new ArrayList<>();
-
-    for (LoggedDashboardChooser<PickupLocation> location : coralStationPosChooser) {
-      coralStationLocations.add(location.get());
-    }
-
-    return coralStationLocations;
   }
 
   public Command threadCommand() { // Used to set thread priority to main thread after a timed delay

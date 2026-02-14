@@ -16,9 +16,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.lib.team2930.LoggerEntry;
-import frc.lib.team2930.LoggerGroup;
-import frc.lib.team2930.TunableNumberGroup;
+import frc.lib.team2930.*;
 import frc.lib.team6328.GeomUtil;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
@@ -26,62 +24,50 @@ import frc.robot.subsystems.swerve.DrivetrainWrapper;
 import java.util.function.Supplier;
 
 public class DriveToPoseHelper {
-  private static final String ROOT_TABLE = "DriveToPoseHelper";
+  private final String ROOT_TABLE = "DriveToPoseHelper";
 
-  private static final LoggerGroup                logGroup                    = LoggerGroup.build(ROOT_TABLE);
-  private static final LoggerEntry.Decimal        log_DistanceMeasured        = logGroup
-      .buildDecimal("DistanceMeasured");
-  private static final LoggerEntry.Decimal        log_DistanceSetpoint        = logGroup
-      .buildDecimal("DistanceSetpoint");
-  private static final LoggerEntry.Decimal        log_ThetaMeasured           = logGroup.buildDecimal("ThetaMeasured");
-  private static final LoggerEntry.Decimal        log_ThetaSetpoint           = logGroup.buildDecimal("ThetaSetpoint");
-  private static final LoggerEntry.Bool           log_DriveControllerIsAtGoal = logGroup
-      .buildBoolean("DriveControllerIsAtGoal");
-  private static final LoggerEntry.Bool           log_ThetaControllerIsAtGoal = logGroup
-      .buildBoolean("ThetaControllerIsAtGoal");
-  private static final LoggerEntry.Bool           log_IsAtGoal                = logGroup.buildBoolean("IsAtGoal");
-  private static final LoggerEntry.Struct<Pose2d> log_Setpoint                = logGroup.buildStruct(Pose2d.class,
-      "Setpoint");
-  private static final LoggerEntry.Struct<Pose2d> log_Goal                    = logGroup.buildStruct(Pose2d.class,
-      "Goal");
-
-  private static final TunableNumberGroup group = new TunableNumberGroup(ROOT_TABLE);
-
-  private static final LoggedTunableNumber driveKp              = group.build("DriveKp");
-  private static final LoggedTunableNumber driveKd              = group.build("DriveKd");
-  private static final LoggedTunableNumber thetaKp              = group.build("ThetaKp");
-  private static final LoggedTunableNumber thetaKd              = group.build("ThetaKd");
-  private static final LoggedTunableNumber driveMaxVelocity     = group.build("DriveMaxVelocity");
-  private static final LoggedTunableNumber driveMaxVelocitySlow = group.build("DriveMaxVelocitySlow");
-  private static final LoggedTunableNumber driveMaxAcceleration = group.build("DriveMaxAcceleration");
-  private static final LoggedTunableNumber thetaMaxVelocity     = group.build("ThetaMaxVelocity");
-  private static final LoggedTunableNumber thetaMaxVelocitySlow = group.build("ThetaMaxVelocitySlow");
-  private static final LoggedTunableNumber thetaMaxAcceleration = group.build("ThetaMaxAcceleration");
-  private static final LoggedTunableNumber driveTolerance       = group.build("DriveTolerance");
-  private static final LoggedTunableNumber driveToleranceSlow   = group.build("DriveToleranceSlow");
-  private static final LoggedTunableNumber thetaTolerance       = group.build("ThetaTolerance");
-  private static final LoggedTunableNumber thetaToleranceSlow   = group.build("ThetaToleranceSlow");
-  private static final LoggedTunableNumber ffMinRadius          = group.build("FFMinRadius");
-  private static final LoggedTunableNumber ffMaxRadius          = group.build("FFMaxRadius");
-
-  static {
-    driveKp.initDefault(3.0);
-    driveKd.initDefault(0.01);
-    thetaKp.initDefault(5.0);
-    thetaKd.initDefault(0.0);
-    driveMaxVelocity.initDefault(5);
-    driveMaxVelocitySlow.initDefault(Units.Inches.of(50.0).in(Units.Meters));
-    driveMaxAcceleration.initDefault(Units.Inches.of(118.0).in(Units.Meters));
-    thetaMaxVelocity.initDefault(Math.toRadians(360.0));
-    thetaMaxVelocitySlow.initDefault(Math.toRadians(90.0));
-    thetaMaxAcceleration.initDefault(Math.toRadians(720.0));
-    driveTolerance.initDefault(0.02);
-    driveToleranceSlow.initDefault(0.05);
-    thetaTolerance.initDefault(0.01);
-    thetaToleranceSlow.initDefault(Math.toRadians(3.0));
-    ffMinRadius.initDefault(0.0);
-    ffMaxRadius.initDefault(1);
+  public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.Decimal        distanceMeasured;
+    public LoggerEntry.Decimal        distanceSetpoint;
+    public LoggerEntry.Decimal        thetaMeasured;
+    public LoggerEntry.Decimal        thetaSetpoint;
+    public LoggerEntry.Bool           driveControllerIsAtGoal;
+    public LoggerEntry.Bool           thetaControllerIsAtGoal;
+    public LoggerEntry.Bool           isAtGoal;
+    public LoggerEntry.Struct<Pose2d> setpoint;
+    public LoggerEntry.Struct<Pose2d> goal;
   }
+
+  public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
+
+  public static class Tunables extends AutoRegisterTunables {
+    @TunableEntry(defaultValue = 3.0)
+    public LoggedTunableNumber driveKP;
+    @TunableEntry(defaultValue = 0.01)
+    public LoggedTunableNumber driveKD;
+
+    @TunableEntry(defaultValue = 5.0)
+    public LoggedTunableNumber thetaKP;
+
+    @TunableEntry(defaultValue = 0.0)
+    public LoggedTunableNumber thetaKD;
+
+    @TunableEntry(defaultValue = 5.0)
+    public LoggedTunableNumber driveMaxVelocity;
+    public LoggedTunableNumber driveMaxVelocitySlow;
+    public LoggedTunableNumber driveMaxAcceleration;
+    public LoggedTunableNumber thetaMaxVelocity;
+    public LoggedTunableNumber thetaMaxVelocitySlow;
+    public LoggedTunableNumber thetaMaxAcceleration;
+    public LoggedTunableNumber driveTolerance;
+    public LoggedTunableNumber driveToleranceSlow;
+    public LoggedTunableNumber thetaTolerance;
+    public LoggedTunableNumber thetaToleranceSlow;
+    public LoggedTunableNumber ffMinRadius;
+    public LoggedTunableNumber ffMaxRadius;
+  }
+
+  private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
 
   private final DrivetrainWrapper drive;
   private final Supplier<Boolean> slowMode;
@@ -106,6 +92,20 @@ public class DriveToPoseHelper {
     this.poseSupplier        = poseSupplier;
     this.currentRobotPose    = currentRobotPose;
     this.driveToleranceValue = 0.1;
+
+    tunables.driveMaxVelocity.initDefault(5);
+    tunables.driveMaxVelocitySlow.initDefault(Units.Inches.of(50.0).in(Units.Meters));
+    tunables.driveMaxAcceleration.initDefault(Units.Inches.of(118.0).in(Units.Meters));
+    tunables.thetaMaxVelocity.initDefault(Math.toRadians(360.0));
+    tunables.thetaMaxVelocitySlow.initDefault(Math.toRadians(90.0));
+    tunables.thetaMaxAcceleration.initDefault(Math.toRadians(720.0));
+    tunables.driveTolerance.initDefault(0.02);
+    tunables.driveToleranceSlow.initDefault(0.05);
+    tunables.thetaTolerance.initDefault(0.01);
+    tunables.thetaToleranceSlow.initDefault(Math.toRadians(3.0));
+    tunables.ffMinRadius.initDefault(0.0);
+    tunables.ffMaxRadius.initDefault(1);
+
     thetaController.enableContinuousInput(-Math.PI, Math.PI);
     withinTolerance = new Trigger(() -> driveController.atGoal() && thetaController.atGoal()).debounce(0.3);
   }
@@ -117,18 +117,20 @@ public class DriveToPoseHelper {
     var currentPose = currentRobotPose.get();
 
     // Update from tunable numbers
-    driveController.setP(driveKp.get());
-    driveController.setD(driveKd.get());
+    driveController.setP(tunables.driveKP.get());
+    driveController.setD(tunables.driveKD.get());
     driveController.setConstraints(new TrapezoidProfile.Constraints(
-        slowMode.get() ? driveMaxVelocitySlow.get() : driveMaxVelocity.get(), driveMaxAcceleration.get()));
+        slowMode.get() ? tunables.driveMaxVelocitySlow.get() : tunables.driveMaxVelocity.get(),
+        tunables.driveMaxAcceleration.get()));
     driveController.setTolerance(
         // slowMode ? driveToleranceSlow.get() : driveTolerance.get()
         driveToleranceValue);
-    thetaController.setP(thetaKp.get());
-    thetaController.setD(thetaKd.get());
+    thetaController.setP(tunables.thetaKP.get());
+    thetaController.setD(tunables.thetaKD.get());
     thetaController.setConstraints(new TrapezoidProfile.Constraints(
-        slowMode.get() ? thetaMaxVelocitySlow.get() : thetaMaxVelocity.get(), thetaMaxAcceleration.get()));
-    thetaController.setTolerance(slowMode.get() ? thetaToleranceSlow.get() : thetaTolerance.get());
+        slowMode.get() ? tunables.thetaMaxVelocitySlow.get() : tunables.thetaMaxVelocity.get(),
+        tunables.thetaMaxAcceleration.get()));
+    thetaController.setTolerance(slowMode.get() ? tunables.thetaToleranceSlow.get() : tunables.thetaTolerance.get());
     if (pose == null) {
       driveController.reset(0);
       thetaController.reset(0);
@@ -156,8 +158,9 @@ public class DriveToPoseHelper {
 
     // Calculate drive speed
     double currentDistance = currentPose.getTranslation().getDistance(targetPose.getTranslation());
-    double ffScaler        = MathUtil
-        .clamp((currentDistance - ffMinRadius.get()) / (ffMaxRadius.get() - ffMinRadius.get()), 0.0, 1.0);
+    double ffScaler        = MathUtil.clamp(
+        (currentDistance - tunables.ffMinRadius.get()) / (tunables.ffMaxRadius.get() - tunables.ffMinRadius.get()), 0.0,
+        1.0);
     driveErrorAbs = currentDistance;
     driveController.reset(lastSetpointTranslation.getDistance(targetPose.getTranslation()),
         driveController.getSetpoint().velocity);
@@ -184,21 +187,21 @@ public class DriveToPoseHelper {
         thetaVelocity, currentPose.getRotation()));
 
     // Log data
-    log_DistanceMeasured.info(currentDistance);
-    log_DistanceSetpoint.info(driveController.getSetpoint().position);
-    log_ThetaMeasured.info(currentPose.getRotation().getRadians());
-    log_ThetaSetpoint.info(thetaController.getSetpoint().position);
-    log_Setpoint.info(new Pose2d(lastSetpointTranslation, new Rotation2d(thetaController.getSetpoint().position)));
-    log_Goal.info(targetPose);
-    log_DriveControllerIsAtGoal.info(driveController.atGoal());
-    log_ThetaControllerIsAtGoal.info(thetaController.atGoal());
-    log_IsAtGoal.info(atGoal());
+    logs.distanceMeasured.info(currentDistance);
+    logs.distanceSetpoint.info(driveController.getSetpoint().position);
+    logs.thetaMeasured.info(currentPose.getRotation().getRadians());
+    logs.thetaSetpoint.info(thetaController.getSetpoint().position);
+    logs.setpoint.info(new Pose2d(lastSetpointTranslation, new Rotation2d(thetaController.getSetpoint().position)));
+    logs.goal.info(targetPose);
+    logs.driveControllerIsAtGoal.info(driveController.atGoal());
+    logs.thetaControllerIsAtGoal.info(thetaController.atGoal());
+    logs.isAtGoal.info(atGoal());
   }
 
   public void end() {
     drive.resetVelocityOverride();
-    log_Setpoint.info(Constants.zeroPose2d);
-    log_Goal.info(Constants.zeroPose2d);
+    logs.setpoint.info(Constants.zeroPose2d);
+    logs.goal.info(Constants.zeroPose2d);
   }
 
   /** Checks if the robot is stopped at the final pose. */
