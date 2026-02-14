@@ -47,6 +47,7 @@ import frc.robot.commands.climber.ClimberSetAngle;
 import frc.robot.commands.drive.DriveToPose;
 import frc.robot.commands.drive.DrivetrainDefaultTeleopDrive;
 import frc.robot.commands.drive.WheelRadiusCharacterization;
+import frc.robot.commands.setGoal.SetRobotGoal;
 import frc.robot.configs.SimulatorRobotConfig;
 import frc.robot.subsystems.LED;
 import frc.robot.subsystems.LED.BaseRobotState;
@@ -483,6 +484,9 @@ public class RobotContainer {
             aprilTagLayout.getTagPose(15).get().toPose2d().transformBy(new Transform2d(
                 Units.Inches.of(60).in(Units.Meters), Units.Inches.of(15).in(Units.Meters), Rotation2d.kZero)),
             () -> drivetrainWrapper.getHubPoseEstimatorPose(true)));
+
+    driverController.registerTrigger(XboxControllerWrapper.Button.leftBumper, "Score")
+        .whileTrue(new SetRobotGoal(robotStates, RobotStates.RobotGoal.Score, true, false));
 
     // ---------- OPERATOR CONTROLS -----------
 
