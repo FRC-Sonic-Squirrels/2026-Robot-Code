@@ -159,8 +159,9 @@ public class RobotStates {
         break;
       case Pass:
         targetPose = new Pose2d(GeometryUtil.getClosestTranslation(new AllianceAwareTranslation2d[] {
-            FieldConstants.RIGHT_PASS_AIM_POINT, FieldConstants.LEFT_PASS_AIM_POINT }, drivetrain.getRawOdometryPose()),
-            Rotation2d.kZero);
+            FieldConstants.RIGHT_PASS_AIM_POINT,
+            FieldConstants.LEFT_PASS_AIM_POINT
+        }, drivetrain.getRawOdometryPose()), Rotation2d.kZero);
         shoot();
         break;
       case Climb:

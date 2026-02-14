@@ -203,7 +203,8 @@ public class RobotContainer {
                 VisionModuleConfiguration.buildSim(config2.SHOOTER_SIDE_LEFT_CAMERA_NAME, config2.SHOOTER_SIDE_LEFT,
                     config, drivetrain::getHubPoseEstimatorPose),
                 VisionModuleConfiguration.buildSim(config2.SHOOTER_SIDE_RIGHT_CAMERA_NAME, config2.SHOOTER_SIDE_RIGHT,
-                    config, drivetrain::getHubPoseEstimatorPose), };
+                    config, drivetrain::getHubPoseEstimatorPose),
+            };
 
             vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
                 drivetrain::addVisionEstimate, visionModules);

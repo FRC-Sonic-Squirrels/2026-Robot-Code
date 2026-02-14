@@ -34,13 +34,21 @@ public class SwerveModules {
   }
 
   public SwerveModuleState[] getModuleStates() {
-    return new SwerveModuleState[] { front_left.getState(), front_right.getState(), back_left.getState(),
-        back_right.getState() };
+    return new SwerveModuleState[] {
+        front_left.getState(),
+        front_right.getState(),
+        back_left.getState(),
+        back_right.getState()
+    };
   }
 
   public Angle[] getRawModuleDrivePosition() {
-    return new Angle[] { front_left.getRawDrivePosition(), front_right.getRawDrivePosition(),
-        back_left.getRawDrivePosition(), back_right.getRawDrivePosition() };
+    return new Angle[] {
+        front_left.getRawDrivePosition(),
+        front_right.getRawDrivePosition(),
+        back_left.getRawDrivePosition(),
+        back_right.getRawDrivePosition()
+    };
   }
 
   public SwerveModuleState[] runSetpoints(SwerveModuleState[] setpointStates, double driveMotorMotionMagicAcceleration,
@@ -49,7 +57,8 @@ public class SwerveModules {
         front_left.runSetpoint(setpointStates[0], driveMotorMotionMagicAcceleration, motionMagicDrive),
         front_right.runSetpoint(setpointStates[1], driveMotorMotionMagicAcceleration, motionMagicDrive),
         back_left.runSetpoint(setpointStates[2], driveMotorMotionMagicAcceleration, motionMagicDrive),
-        back_right.runSetpoint(setpointStates[3], driveMotorMotionMagicAcceleration, motionMagicDrive) };
+        back_right.runSetpoint(setpointStates[3], driveMotorMotionMagicAcceleration, motionMagicDrive)
+    };
   }
 
   public void runCharacterizationVolts(double volts) {
@@ -75,8 +84,12 @@ public class SwerveModules {
   }
 
   public SwerveModulePosition[] updateOdometry() {
-    return new SwerveModulePosition[] { front_left.updateOdometry(), front_right.updateOdometry(),
-        back_left.updateOdometry(), back_right.updateOdometry() };
+    return new SwerveModulePosition[] {
+        front_left.updateOdometry(),
+        front_right.updateOdometry(),
+        back_left.updateOdometry(),
+        back_right.updateOdometry()
+    };
   }
 
   public void updateInputs() {

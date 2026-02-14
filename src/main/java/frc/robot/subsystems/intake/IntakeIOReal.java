@@ -123,8 +123,17 @@ public class IntakeIOReal implements IntakeIO {
 
     pivotMotor.optimizeBusUtilization();
 
-    refreshSet = new BaseStatusSignal[] { rollerCurrent, rollerDeviceTemp, rollerAppliedVoltage, rollerVelocity,
-        pivotCurrent, pivotTemp, pivotAppliedVoltage, pivotVelocity, pivotPosition };
+    refreshSet = new BaseStatusSignal[] {
+        rollerCurrent,
+        rollerDeviceTemp,
+        rollerAppliedVoltage,
+        rollerVelocity,
+        pivotCurrent,
+        pivotTemp,
+        pivotAppliedVoltage,
+        pivotVelocity,
+        pivotPosition
+    };
   }
 
   @Override

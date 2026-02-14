@@ -70,7 +70,12 @@ public class GyroIOPigeon2 implements GyroIO {
 
     pigeon.optimizeBusUtilization();
 
-    refreshSet = new BaseStatusSignal[] { yawVelocity, xAcceleration, yAcceleration, zAcceleration };
+    refreshSet = new BaseStatusSignal[] {
+        yawVelocity,
+        xAcceleration,
+        yAcceleration,
+        zAcceleration
+    };
   }
 
   @Override

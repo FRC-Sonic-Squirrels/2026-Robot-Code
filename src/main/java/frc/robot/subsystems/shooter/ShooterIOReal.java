@@ -152,14 +152,28 @@ public class ShooterIOReal implements ShooterIO {
     hood.optimizeBusUtilization();
     kicker.optimizeBusUtilization();
 
-    refreshSet = new BaseStatusSignal[] { hoodPosition, hoodVelocity, hoodVoltage, hoodCurrentAmps,
+    refreshSet = new BaseStatusSignal[] {
+        hoodPosition,
+        hoodVelocity,
+        hoodVoltage,
+        hoodCurrentAmps,
         // --
-        flywheelLeadVelocity, flywheelLeadVoltage, flywheelLeadCurrentAmps, flywheelFollowVelocity,
-        flywheelFollowerVoltage, flywheelFollowerCurrentAmps,
+        flywheelLeadVelocity,
+        flywheelLeadVoltage,
+        flywheelLeadCurrentAmps,
+        flywheelFollowVelocity,
+        flywheelFollowerVoltage,
+        flywheelFollowerCurrentAmps,
         // --
-        kickerAppliedVolts, kickerCurrentAmps,
+        kickerAppliedVolts,
+        kickerCurrentAmps,
         // --
-        flywheelLeadTempCelsius, flywheelFollowTempCelsius, hoodTempCelsius, kickerTempCelsius, kickerVelocity };
+        flywheelLeadTempCelsius,
+        flywheelFollowTempCelsius,
+        hoodTempCelsius,
+        kickerTempCelsius,
+        kickerVelocity
+    };
   }
 
   @Override

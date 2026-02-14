@@ -34,7 +34,11 @@ public class PoseEstimator {
   public int     rejectionNoDriveData;
 
   public PoseEstimator(double x, double y, double theta, int[] validTags) {
-    q = new double[] { x * x, y * y, theta * theta };
+    q = new double[] {
+        x * x,
+        y * y,
+        theta * theta
+    };
 
     var tagsMask = 0L;
     for (int tag : validTags) {

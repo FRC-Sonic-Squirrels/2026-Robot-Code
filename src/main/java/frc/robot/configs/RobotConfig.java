@@ -134,7 +134,8 @@ public abstract class RobotConfig {
         // Back left
         new Translation2d(-widthX, widthY),
         // Back right
-        new Translation2d(-widthX, -widthY) };
+        new Translation2d(-widthX, -widthY)
+    };
   }
 
   // -------- CURRENT LIMITS -------------

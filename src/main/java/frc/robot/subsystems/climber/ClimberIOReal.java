@@ -111,9 +111,18 @@ public class ClimberIOReal implements ClimberIO {
     innerClimberMotor.optimizeBusUtilization();
     outerClimberMotor.optimizeBusUtilization();
 
-    climberRefreshSet = new BaseStatusSignal[] { innerClimberAppliedVoltage, innerClimberPosition, innerClimberCurrent,
-        innerClimberTemp, innerClimberVelocity, outerClimberAppliedVoltage, outerClimberPosition, outerClimberCurrent,
-        outerClimberTemp, outerClimberVelocity };
+    climberRefreshSet = new BaseStatusSignal[] {
+        innerClimberAppliedVoltage,
+        innerClimberPosition,
+        innerClimberCurrent,
+        innerClimberTemp,
+        innerClimberVelocity,
+        outerClimberAppliedVoltage,
+        outerClimberPosition,
+        outerClimberCurrent,
+        outerClimberTemp,
+        outerClimberVelocity
+    };
   }
 
   @Override

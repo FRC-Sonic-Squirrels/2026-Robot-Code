@@ -333,7 +333,10 @@ public class ChoreoHelper {
     return Math.hypot(xDesired - xRobot, yDesired - yRobot);
   }
 
-  @SuppressWarnings({ "rawtypes", "unchecked" })
+  @SuppressWarnings({
+      "rawtypes",
+      "unchecked"
+  })
   public static Trajectory<SwerveSample> rescale(Trajectory<SwerveSample> traj, double speedScaling) {
     if (speedScaling == 1.0) {
       return traj;
@@ -349,7 +352,10 @@ public class ChoreoHelper {
     return new Trajectory(traj.name(), newStates, traj.splits(), traj.events());
   }
 
-  @SuppressWarnings({ "rawtypes", "unchecked" })
+  @SuppressWarnings({
+      "rawtypes",
+      "unchecked"
+  })
   public static Trajectory<SwerveSample> flipOnAlliance(Trajectory<SwerveSample> states) {
     var newStates = new ArrayList<SwerveSample>();
 

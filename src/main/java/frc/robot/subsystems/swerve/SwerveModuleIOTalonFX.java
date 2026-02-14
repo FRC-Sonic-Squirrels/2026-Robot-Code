@@ -189,8 +189,14 @@ public class SwerveModuleIOTalonFX implements SwerveModuleIO {
     turnTalon.optimizeBusUtilization();
     cancoder.optimizeBusUtilization();
 
-    refreshSet = new BaseStatusSignal[] { driveVelocity, driveAppliedVolts, driveCurrent, turnVelocity,
-        turnAppliedVolts, turnCurrent };
+    refreshSet = new BaseStatusSignal[] {
+        driveVelocity,
+        driveAppliedVolts,
+        driveCurrent,
+        turnVelocity,
+        turnAppliedVolts,
+        turnCurrent
+    };
   }
 
   @Override

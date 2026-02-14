@@ -211,7 +211,8 @@ public class RobotConfig2025 extends RobotConfig {
         VisionModuleConfiguration.build(REEF_SIDE_LEFT_CAMERA_NAME, REEF_SIDE_LEFT),
         VisionModuleConfiguration.build(REEF_SIDE_RIGHT_CAMERA_NAME, REEF_SIDE_RIGHT),
         VisionModuleConfiguration.build(CORAL_STATION_SIDE_LEFT_CAMERA_NAME, CORAL_STATION_SIDE_LEFT),
-        VisionModuleConfiguration.build(CORAL_STATION_SIDE_RIGHT_CAMERA_NAME, CORAL_STATION_SIDE_RIGHT) };
+        VisionModuleConfiguration.build(CORAL_STATION_SIDE_RIGHT_CAMERA_NAME, CORAL_STATION_SIDE_RIGHT)
+    };
   }
 
   @Override
@@ -220,7 +221,8 @@ public class RobotConfig2025 extends RobotConfig {
         VisionModuleConfiguration.buildReplayStub(REEF_SIDE_LEFT_CAMERA_NAME, REEF_SIDE_LEFT),
         VisionModuleConfiguration.buildReplayStub(REEF_SIDE_RIGHT_CAMERA_NAME, REEF_SIDE_RIGHT),
         VisionModuleConfiguration.buildReplayStub(CORAL_STATION_SIDE_LEFT_CAMERA_NAME, CORAL_STATION_SIDE_LEFT),
-        VisionModuleConfiguration.buildReplayStub(CORAL_STATION_SIDE_RIGHT_CAMERA_NAME, CORAL_STATION_SIDE_RIGHT) };
+        VisionModuleConfiguration.buildReplayStub(CORAL_STATION_SIDE_RIGHT_CAMERA_NAME, CORAL_STATION_SIDE_RIGHT)
+    };
   }
 
   @Override
@@ -235,8 +237,12 @@ public class RobotConfig2025 extends RobotConfig {
 
   @Override
   public IndividualSwerveModuleConfig[] getIndividualModuleConfigurations() {
-    return new IndividualSwerveModuleConfig[] { FRONT_LEFT_MODULE_CONFIG, FRONT_RIGHT_MODULE_CONFIG,
-        BACK_LEFT_MODULE_CONFIG, BACK_RIGHT_MODULE_CONFIG };
+    return new IndividualSwerveModuleConfig[] {
+        FRONT_LEFT_MODULE_CONFIG,
+        FRONT_RIGHT_MODULE_CONFIG,
+        BACK_LEFT_MODULE_CONFIG,
+        BACK_RIGHT_MODULE_CONFIG
+    };
   }
 
   @Override
