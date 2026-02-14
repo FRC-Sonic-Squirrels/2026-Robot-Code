@@ -137,6 +137,8 @@ public final class Constants {
     // Official Field dimensions from field dimensions manual
     public static Distance FIELD_LENGTH = Units.Inches.of(650.12);
     public static Distance FIELD_WIDTH = Units.Inches.of(316.64);
+    public static double FIELD_LENGTH_METERS = FIELD_LENGTH.in(Units.Meters);
+    public static double FIELD_WIDTH_METERS = FIELD_WIDTH.in(Units.Meters);
 
     public static Distance HUB_DIST_FROM_WALL = Units.Inches.of(158.06);
 

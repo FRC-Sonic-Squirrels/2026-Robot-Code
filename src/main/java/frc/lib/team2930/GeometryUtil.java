@@ -83,8 +83,8 @@ public class GeometryUtil {
   }
 
   public static Translation2d rotateTranslation2dAroundCenterPoint(Translation2d originalTranslation) {
-    return new Translation2d(Constants.FieldConstants.FIELD_LENGTH.in(Units.Meters) - originalTranslation.getX(),
-        Constants.FieldConstants.FIELD_WIDTH.in(Units.Meters) - originalTranslation.getY());
+    return new Translation2d(Constants.FieldConstants.FIELD_LENGTH_METERS - originalTranslation.getX(),
+        Constants.FieldConstants.FIELD_WIDTH_METERS - originalTranslation.getY());
   }
 
   public static Pose2d rotatePose2DAroundCenterPoint(Pose2d originalPose) {
