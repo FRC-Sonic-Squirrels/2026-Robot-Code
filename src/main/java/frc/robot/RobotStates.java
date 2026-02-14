@@ -167,7 +167,7 @@ public class RobotStates {
       case LeftIntake:
       case RightIntake:
         if (goal == RobotGoal.Climb) {
-          intakeGoal = intakeGoal.Stow;
+          intakeGoal = IntakeGoal.Stow;
           return;
         }
         break;
@@ -205,17 +205,17 @@ public class RobotStates {
     }
     switch (intakeGoal) {
       case Stow:
-        rightIntake.setState(intakeState.Stow);
-        leftIntake.setState(intakeState.Stow);
+        rightIntake.setState(State.Stow);
+        leftIntake.setState(State.Stow);
       case LeftIntake:
-        rightIntake.setState(intakeState.Stow);
+        rightIntake.setState(State.Stow);
         if (rightIntake.isStowed()) {
-          leftIntake.setState(intakeState.Intake);
+          leftIntake.setState(State.Intake);
         }
       case RightIntake:
-        leftIntake.setState(intakeState.Stow);
+        leftIntake.setState(State.Stow);
         if (leftIntake.isStowed()) {
-          rightIntake.setState(intakeState.Intake);
+          rightIntake.setState(State.Intake);
         }
     }
 
