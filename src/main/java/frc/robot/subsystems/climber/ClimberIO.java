@@ -6,21 +6,28 @@ import frc.lib.team2930.LoggerGroup;
 import frc.robot.subsystems.BaseInputs;
 
 public interface ClimberIO {
+  class Elevator extends BaseInputs {
+    public double position;
+    public double appliedVolts;
+    public double currentAmps;
+    public double tempCelsius;
+    public double velocityDegreesPerSecond;
+
+    public Elevator(LoggerGroup logInputs) {
+      super(logInputs);
+    }
+  }
+
   class Inputs extends BaseInputs {
-    public double innerClimberPosition;
-    public double innerClimberAppliedVolts;
-    public double innerClimberCurrentAmps;
-    public double innerClimberTempCelsius;
-    public double innerClimberVelocityDegreesPerSecond;
-    public double outerClimberPosition;
-    public double outerClimberAppliedVolts;
-    public double outerClimberCurrentAmps;
-    public double outerClimberTempCelsius;
-    public double outerClimberVelocityDegreesPerSecond;
+    private LoggerGroup logInputs;
 
     public Inputs(LoggerGroup logInputs) {
       super(logInputs);
+      this.logInputs = logInputs;
     }
+
+    public Elevator innerClimber = new Elevator(logInputs);
+    public Elevator outerClimber = new Elevator(logInputs);
   }
 
   /** Updates the set of loggable inputs. */

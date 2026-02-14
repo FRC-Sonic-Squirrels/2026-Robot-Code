@@ -36,13 +36,13 @@ public class ClimberIOReal implements ClimberIO {
     public StatusSignal<Temperature>     tempCelsius;
     public StatusSignal<AngularVelocity> velocityDegreesPerSecond;
     /**
-     * @deprecated This field actually stores an angular position in degrees, not a height
-     *     in inches. Use {@link #angleDegrees} instead.
+     * @deprecated This field actually stores an angular position in degrees, not a
+     *             height in inches. Use {@link #angleDegrees} instead.
      */
     @Deprecated
     public StatusSignal<Angle>           targetHeightInches;
     // Correctly named alias for the climber's angular position in degrees.
-    public StatusSignal<Angle>           angleDegrees;
+    public StatusSignal<Angle> angleDegrees;
   }
 
   public static class Logs extends AutoRegisterLoggers {
@@ -146,17 +146,17 @@ public class ClimberIOReal implements ClimberIO {
   public void updateClimberInputs(Inputs inputs) {
     inputs.refreshAll(climberRefreshSet);
 
-    inputs.innerClimberPosition                 = logs.innerClimber.targetHeightInches.getValue().in(Units.Degrees);
-    inputs.innerClimberAppliedVolts             = logs.innerClimber.appliedVoltage.getValue().in(Units.Volts);
-    inputs.innerClimberCurrentAmps              = logs.innerClimber.currentAmps.getValue().in(Units.Amps);
-    inputs.innerClimberTempCelsius              = logs.innerClimber.tempCelsius.getValue().in(Units.Celsius);
-    inputs.innerClimberVelocityDegreesPerSecond = logs.innerClimber.velocityDegreesPerSecond.getValue()
+    inputs.innerClimber.position                 = logs.innerClimber.targetHeightInches.getValue().in(Units.Degrees);
+    inputs.innerClimber.appliedVolts             = logs.innerClimber.appliedVoltage.getValue().in(Units.Volts);
+    inputs.innerClimber.currentAmps              = logs.innerClimber.currentAmps.getValue().in(Units.Amps);
+    inputs.innerClimber.tempCelsius              = logs.innerClimber.tempCelsius.getValue().in(Units.Celsius);
+    inputs.innerClimber.velocityDegreesPerSecond = logs.innerClimber.velocityDegreesPerSecond.getValue()
         .in(Units.DegreesPerSecond);
-    inputs.outerClimberPosition                 = logs.outerClimber.targetHeightInches.getValue().in(Units.Degrees);
-    inputs.outerClimberAppliedVolts             = logs.outerClimber.appliedVoltage.getValue().in(Units.Volts);
-    inputs.outerClimberCurrentAmps              = logs.outerClimber.currentAmps.getValue().in(Units.Amps);
-    inputs.outerClimberTempCelsius              = logs.outerClimber.tempCelsius.getValue().in(Units.Celsius);
-    inputs.outerClimberVelocityDegreesPerSecond = logs.outerClimber.velocityDegreesPerSecond.getValue()
+    inputs.outerClimber.position                 = logs.outerClimber.targetHeightInches.getValue().in(Units.Degrees);
+    inputs.outerClimber.appliedVolts             = logs.outerClimber.appliedVoltage.getValue().in(Units.Volts);
+    inputs.outerClimber.currentAmps              = logs.outerClimber.currentAmps.getValue().in(Units.Amps);
+    inputs.outerClimber.tempCelsius              = logs.outerClimber.tempCelsius.getValue().in(Units.Celsius);
+    inputs.outerClimber.velocityDegreesPerSecond = logs.outerClimber.velocityDegreesPerSecond.getValue()
         .in(Units.DegreesPerSecond);
   }
 

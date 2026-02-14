@@ -26,12 +26,12 @@ public class ClimberIOSim implements ClimberIO {
     innerClimberSim.update(Constants.kDefaultPeriod);
     outerClimberSim.update(Constants.kDefaultPeriod);
 
-    inputs.innerClimberPosition                 = innerClimberSim.getPosition().in(Units.Degree);
-    inputs.innerClimberAppliedVolts             = innerClimberSim.getVoltage();
-    inputs.innerClimberVelocityDegreesPerSecond = innerClimberSim.getVelocity().in(Units.DegreesPerSecond);
-    inputs.outerClimberPosition                 = outerClimberSim.getPosition().in(Units.Degree);
-    inputs.outerClimberAppliedVolts             = outerClimberSim.getVoltage();
-    inputs.outerClimberVelocityDegreesPerSecond = outerClimberSim.getVelocity().in(Units.DegreesPerSecond);
+    inputs.innerClimber.position                 = innerClimberSim.getPosition().in(Units.Degree);
+    inputs.innerClimber.appliedVolts             = innerClimberSim.getVoltage();
+    inputs.innerClimber.velocityDegreesPerSecond = innerClimberSim.getVelocity().in(Units.DegreesPerSecond);
+    inputs.outerClimber.position                 = outerClimberSim.getPosition().in(Units.Degree);
+    inputs.outerClimber.appliedVolts             = outerClimberSim.getVoltage();
+    inputs.outerClimber.velocityDegreesPerSecond = outerClimberSim.getVelocity().in(Units.DegreesPerSecond);
   }
 
   @Override

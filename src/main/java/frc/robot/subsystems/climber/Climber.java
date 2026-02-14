@@ -113,16 +113,16 @@ public class Climber extends SubsystemBase {
     try (var ignored = climberTiming.start()) {
       // Climber logging
       io.updateClimberInputs(climberInputs);
-      logs.innerClimber.appliedVolts.info(climberInputs.innerClimberAppliedVolts);
-      logs.innerClimber.currentAmps.info(climberInputs.innerClimberCurrentAmps);
-      logs.innerClimber.tempCelsius.info(climberInputs.innerClimberTempCelsius);
-      logs.innerClimber.velocityDegreesPerSecond.info(climberInputs.innerClimberVelocityDegreesPerSecond);
+      logs.innerClimber.appliedVolts.info(climberInputs.innerClimber.appliedVolts);
+      logs.innerClimber.currentAmps.info(climberInputs.innerClimber.currentAmps);
+      logs.innerClimber.tempCelsius.info(climberInputs.innerClimber.tempCelsius);
+      logs.innerClimber.velocityDegreesPerSecond.info(climberInputs.innerClimber.velocityDegreesPerSecond);
       logs.innerClimber.targetHeightInches.info(innerClimberHeight);
 
-      logs.outerClimber.appliedVolts.info(climberInputs.outerClimberAppliedVolts);
-      logs.outerClimber.currentAmps.info(climberInputs.outerClimberCurrentAmps);
-      logs.outerClimber.tempCelsius.info(climberInputs.outerClimberTempCelsius);
-      logs.outerClimber.velocityDegreesPerSecond.info(climberInputs.outerClimberVelocityDegreesPerSecond);
+      logs.outerClimber.appliedVolts.info(climberInputs.outerClimber.appliedVolts);
+      logs.outerClimber.currentAmps.info(climberInputs.outerClimber.currentAmps);
+      logs.outerClimber.tempCelsius.info(climberInputs.outerClimber.tempCelsius);
+      logs.outerClimber.velocityDegreesPerSecond.info(climberInputs.outerClimber.velocityDegreesPerSecond);
       logs.outerClimber.targetHeightInches.info(outerClimberHeight);
 
       logs.servoTargetAngle.info(servoTargetAngle);
@@ -344,12 +344,12 @@ public class Climber extends SubsystemBase {
   // getters
 
   public boolean isInnerClimberAtTargetHeight(double target) {
-    var error = climberInputs.innerClimberPosition - target;
+    var error = climberInputs.innerClimber.position - target;
     return error <= tunables.toleranceHeight.get();
   }
 
   public boolean isOuterClimberAtTargetHeight(double target) {
-    var error = climberInputs.outerClimberPosition - target;
+    var error = climberInputs.outerClimber.position - target;
     return error <= tunables.toleranceHeight.get();
   }
 
@@ -362,18 +362,18 @@ public class Climber extends SubsystemBase {
   }
 
   public Voltage getInnerClimberVoltage() {
-    return Units.Volts.of(climberInputs.innerClimberAppliedVolts);
+    return Units.Volts.of(climberInputs.innerClimber.appliedVolts);
   }
 
   public Voltage getOuterClimberVoltage() {
-    return Units.Volts.of(climberInputs.outerClimberAppliedVolts);
+    return Units.Volts.of(climberInputs.outerClimber.appliedVolts);
   }
 
   public AngularVelocity getInnerClimberVelocity() {
-    return Units.DegreesPerSecond.of(climberInputs.innerClimberVelocityDegreesPerSecond);
+    return Units.DegreesPerSecond.of(climberInputs.innerClimber.velocityDegreesPerSecond);
   }
 
   public AngularVelocity getOuterClimberVelocity() {
-    return Units.DegreesPerSecond.of(climberInputs.outerClimberVelocityDegreesPerSecond);
+    return Units.DegreesPerSecond.of(climberInputs.outerClimber.velocityDegreesPerSecond);
   }
 }
