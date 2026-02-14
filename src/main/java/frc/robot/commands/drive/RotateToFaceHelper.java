@@ -38,7 +38,7 @@ public class RotateToFaceHelper {
   private final Supplier<Pose2d>        currentPose;
   private final ProfiledPIDController   rotationalPID = new ProfiledPIDController(0, 0, 0, new Constraints(0.0, 0.0));
 
-  private double currentDist = -1.0;
+  private double currentDist = Double.MAX_VALUE;
 
   /** Creates a new RotateToFaceHelper . */
   public RotateToFaceHelper(DrivetrainWrapper wrapper, Supplier<Translation2d> target, Supplier<Pose2d> pose2d) {
