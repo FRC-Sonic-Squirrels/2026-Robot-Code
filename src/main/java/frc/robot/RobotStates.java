@@ -47,6 +47,8 @@ public class RobotStates {
   public static class SubsystemsInTargetStatesLogs extends AutoRegisterLoggers {
     public LoggerEntry.Text goal;
     public LoggerEntry.Text wantedGoal;
+    public LoggerEntry.Text wantedIntakeGoal;
+    public LoggerEntry.Text intakeGoal;
 
   }
 
@@ -190,6 +192,8 @@ public class RobotStates {
 
     logs.subsystemsInTargetStates.goal.info(goal.name());
     logs.subsystemsInTargetStates.wantedGoal.info(wantedGoal.name());
+    logs.subsystemsInTargetStates.wantedIntakeGoal.info(wantedIntakeGoal.name());
+    logs.subsystemsInTargetStates.intakeGoal.info(intakeGoal.name());
   }
 
   private void shoot() {
