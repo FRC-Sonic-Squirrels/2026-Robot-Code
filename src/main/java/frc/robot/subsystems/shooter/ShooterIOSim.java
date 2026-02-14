@@ -19,6 +19,7 @@ import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.TalonFXArmSim;
 import frc.lib.team2930.TalonFXSim;
 import frc.robot.Constants;
+import frc.lib.team2930.ControlMode;
 
 public class ShooterIOSim implements ShooterIO {
   public static class Logs extends AutoRegisterLoggers {
