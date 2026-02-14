@@ -203,48 +203,7 @@ public class DriveToPosePathing extends Command {
     // stalled.getAsBoolean();
   }
 
-  private boolean trajIntersectsWithReef(Trajectory<SwerveSample> traj) {
-    for (SwerveSample sample : traj.samples()) {
-      Pose2d pose        = sample.getPose();
-      double distToStart = GeometryUtil.getDist(pose, traj.getInitialPose(false).get());
-      double distToEnd   = GeometryUtil.getDist(pose, traj.getFinalPose(false).get());
-      if (poseIntersectsWithReef(pose) && distToStart > 0.3 && distToEnd > 0.3) {
-        log_intersectingPose.info(pose);
-        return true;
-      }
-    }
-    log_intersectingPose.info(Pose2d.kZero);
-    return false;
-  }
-
-  private boolean poseIntersectsWithReef(Pose2d pose) {
-    return false;
-  }
-
-  private Translation2d[] getRobotCorners(Pose2d pose) {
-    Translation2d[] corners = new Translation2d[4];
-
-    double xRad = Constants.RobotDimensions.ROBOT_DIMENSIONS_WITH_BUMPERS.getX() / 2.0;
-    double yRad = Constants.RobotDimensions.ROBOT_DIMENSIONS_WITH_BUMPERS.getY() / 2.0;
-
-    Translation2d[] robotRelativeCorners = new Translation2d[] { new Translation2d(xRad, yRad),
-        new Translation2d(-xRad, yRad), new Translation2d(xRad, -yRad), new Translation2d(-xRad, -yRad) };
-
-    for (int i = 0; i < corners.length; i++) {
-      corners[i] = pose.getTranslation().plus(robotRelativeCorners[i].rotateBy(pose.getRotation())); // TODO: change to
-                                                                                                     // corners of
-                                                                                                     // bumpers
-    }
-    return corners;
-  }
-
   private Trajectory<SwerveSample> rerouteTrajectory(Trajectory<SwerveSample> traj, Pose2d start, Pose2d end) {
-
-    if (!trajIntersectsWithReef(traj)) {
-      log_intermediatePose.info(Pose2d.kZero);
-      log_unAttemptedPath.info(new Pose2d[0]);
-      return traj;
-    }
 
     if (debugRerouting) {
       System.out.println("START REROUTING DEBUG -------------------");
