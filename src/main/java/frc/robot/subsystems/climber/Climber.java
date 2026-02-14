@@ -2,11 +2,8 @@ package frc.robot.subsystems.climber;
 
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.team2930.*;
-import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.Constants.ClimberConstants;
 
@@ -21,20 +18,8 @@ public class Climber extends SubsystemBase {
     Idle, Override, L1Extend, L1Retract, AutoDismount, AutoRetract, L2Extend, L2Retract, L3Extend, L3Retract, Lock
   }
 
-  public static class ElevatorLogs extends AutoRegisterLoggers {
-    public LoggerEntry.Decimal appliedVolts;
-    public LoggerEntry.Decimal currentAmps;
-    public LoggerEntry.Decimal tempCelsius;
-    public LoggerEntry.Decimal velocityDegreesPerSecond;
-    public LoggerEntry.Decimal targetHeightInches;
-  }
-
   public static class Logs extends AutoRegisterLoggers {
-    public ElevatorLogs innerClimber;
-    public ElevatorLogs outerClimber;
-
     public LoggerEntry.Decimal servoTargetAngle;
-
   }
 
   public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
@@ -42,34 +27,11 @@ public class Climber extends SubsystemBase {
   // Execution timing
   private final ExecutionTiming climberTiming = new ExecutionTiming(ROOT_TABLE);
 
-  public static class Tunables extends AutoRegisterTunables {
-    public LoggedTunableNumber climberKP;
-    public LoggedTunableNumber climberKD;
-    public LoggedTunableNumber climberKG;
-
-    public LoggedTunableNumber maxVelocityConfig;
-    public LoggedTunableNumber climberTargetAccelerationConfig;
-
-    @TunableEntry(defaultValue = 1.0)
-    public LoggedTunableNumber toleranceHeight;
-
-    public boolean hasChanged() {
-      return climberKP.hasChanged() || climberKD.hasChanged() || climberKG.hasChanged();
-
-    }
-  }
-
-  private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
-
-  private final ElevatorIO innerElevatorIO;
-  private final ElevatorIO outerElevatorIO;
-  private final Elevator   innerElevator;
-  private final Elevator   outerElevator;
+  private final Elevator innerElevator;
+  private final Elevator outerElevator;
 
   private ClimberState climberState = ClimberState.Idle;
   private ClimberGoal  climberGoal  = ClimberGoal.Idle;
-  private double       innerClimberHeight;
-  private double       outerClimberHeight;
 
   // This also acts as its current angle because the servo cannot tell us where it
   // is
@@ -77,12 +39,9 @@ public class Climber extends SubsystemBase {
 
   /** Creates a new ClimberSubsystem. */
   public Climber(ElevatorIO innerIO, ElevatorIO outerIO) {
-    this.innerElevatorIO = innerIO;
-    this.outerElevatorIO = outerIO;
-    this.innerElevator   = new Elevator(logs.group.subgroup("Inner"), innerIO);
-    this.outerElevator   = new Elevator(logs.group.subgroup("Outer"), outerIO);
+    this.innerElevator = new Elevator(logs.group.subgroup("Inner"), innerIO);
+    this.outerElevator = new Elevator(logs.group.subgroup("Outer"), outerIO);
 
-    setConstants();
     setServoAngle(ClimberConstants.SERVO_UNLOCK_ANGLE);
   }
 
@@ -94,11 +53,6 @@ public class Climber extends SubsystemBase {
       // Climber logging
 
       logs.servoTargetAngle.info(servoTargetAngle);
-
-      // Updating tunable numbers
-      if (tunables.hasChanged()) {
-        setConstants();
-      }
 
       switch (climberState) {
         case Override:
@@ -280,24 +234,16 @@ public class Climber extends SubsystemBase {
     }
   }
 
-  private void setConstants() {
-    double kP = tunables.climberKP.get();
-    double kD = tunables.climberKD.get();
-    double kG = tunables.climberKG.get();
-    innerElevatorIO.setElevatorClosedLoopConstants(kP, kD, kG);
-    outerElevatorIO.setElevatorClosedLoopConstants(kP, kD, kG);
-  }
-
   public void setInnerTargetHeight(double height) {
-    innerElevatorIO.setElevatorClosedLoopPosition(height);
+    innerElevator.setTargetHeight(height);
   }
 
   public void setOuterTargetHeight(double height) {
-    outerElevatorIO.setElevatorClosedLoopPosition(height);
+    outerElevator.setTargetHeight(height);
   }
 
   public boolean setClimberNeutralMode(NeutralModeValue value) {
-    return innerElevatorIO.setElevatorNeutralMode(value);
+    return innerElevator.setElevatorNeutralMode(value) && outerElevator.setElevatorNeutralMode(value);
   }
 
   public void setServoAngle(Rotation2d angle) {
@@ -311,36 +257,10 @@ public class Climber extends SubsystemBase {
   // getters
 
   public boolean isInnerClimberAtTargetHeight(double target) {
-    var error = innerElevator.getElevatorHeight() - target;
-    return error <= tunables.toleranceHeight.get();
+    return innerElevator.isElevatorAtTargetHeight(target);
   }
 
   public boolean isOuterClimberAtTargetHeight(double target) {
-    var error = outerElevator.getElevatorHeight() - target;
-    return error <= tunables.toleranceHeight.get();
-  }
-
-  public double getInnerClimberHeight() {
-    return innerClimberHeight;
-  }
-
-  public double getOuterClimberHeight() {
-    return outerClimberHeight;
-  }
-
-  public Voltage getInnerClimberVoltage() {
-    return innerElevator.getElevatorVoltage();
-  }
-
-  public Voltage getOuterClimberVoltage() {
-    return outerElevator.getElevatorVoltage();
-  }
-
-  public AngularVelocity getInnerClimberVelocity() {
-    return innerElevator.getElevatorVelocity();
-  }
-
-  public AngularVelocity getOuterClimberVelocity() {
-    return outerElevator.getElevatorVelocity();
+    return outerElevator.isElevatorAtTargetHeight(target);
   }
 }
