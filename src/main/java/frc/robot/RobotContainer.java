@@ -165,8 +165,8 @@ public class RobotContainer {
     var config = robotType.config.get();
     aprilTagLayout = config.getAprilTagFieldLayout();
 
-    String leftIntakeRoot  = "LeftIntake";
-    String rightIntakeRoot = "RightIntake";
+    String leftIntakeRoot  = "Intake/Left";
+    String rightIntakeRoot = "Intake/Right";
 
     if (mode == Mode.REPLAY) {
       drivetrain = new Drivetrain(config, new GyroIO.Fake(), new GyroIO.Fake(), config.getReplaySwerveModuleObjects(),
