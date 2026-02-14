@@ -9,7 +9,6 @@ import frc.robot.Constants.FieldConstants;
 import frc.robot.commands.drive.DriveToPoseHelper;
 import frc.robot.commands.drive.RotateToFaceHelper;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.intake.Intake.State;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
 
@@ -38,10 +37,6 @@ public class RobotStates {
 
   // Desired mech to hold coral
 
-  public enum TargetCoralPosition {
-    Intake, EndEffector
-  }
-
   public enum RobotGoal {
     None, Auto, Score, Pass, Climb
   }
@@ -53,8 +48,6 @@ public class RobotStates {
   // Logging
 
   public static class SubsystemsInTargetStatesLogs extends AutoRegisterLoggers {
-    public LoggerEntry.Bool intakeInTargetState;
-    public LoggerEntry.Bool mechInTargetState;
     public LoggerEntry.Text goal;
     public LoggerEntry.Text wantedGoal;
 
@@ -84,23 +77,9 @@ public class RobotStates {
 
   public MechState mechState = MechState.Idle;
 
-  public State intakeState = State.Idle;
-
-  public boolean fuelInIntake;
-
-  public boolean highStowMode = true;
-
-  public TargetCoralPosition targetCoralPosition = TargetCoralPosition.EndEffector;
-
   public boolean endEffectorInUse;
   public boolean mechanismInUse;
   public boolean intakeInUse;
-
-  public boolean intakeInTargetState;
-  public boolean mechInTargetState;
-
-  public boolean coralExpectedInEndEffector = true;
-  public boolean coralExpectedInIntake      = true;
 
   private RobotGoal goal       = RobotGoal.None;
   private RobotGoal wantedGoal = RobotGoal.None;
@@ -179,7 +158,7 @@ public class RobotStates {
       case LeftIntake:
       case RightIntake:
         if (goal == RobotGoal.Climb) {
-          intakeGoal = intakeGoal.Stow;
+          intakeGoal = IntakeGoal.Stow;
           return;
         }
         break;
@@ -220,17 +199,17 @@ public class RobotStates {
     }
     switch (intakeGoal) {
       case Stow:
-        rightIntake.setState(Intake.State.Stow);
-        leftIntake.setState(Intake.State.Stow);
+        rightIntake.setGoal(Intake.Goal.Stow);
+        leftIntake.setGoal(Intake.Goal.Stow);
       case LeftIntake:
-        rightIntake.setState(Intake.State.Stow);
+        rightIntake.setGoal(Intake.Goal.Stow);
         if (rightIntake.isStowed()) {
-          leftIntake.setState(Intake.State.Intake);
+          leftIntake.setGoal(Intake.Goal.Intake);
         }
       case RightIntake:
-        leftIntake.setState(Intake.State.Stow);
+        leftIntake.setGoal(Intake.Goal.Stow);
         if (leftIntake.isStowed()) {
-          rightIntake.setState(Intake.State.Intake);
+          rightIntake.setGoal(Intake.Goal.Intake);
         }
     }
 
@@ -238,9 +217,6 @@ public class RobotStates {
 
     logs.subsystemsInUse.mechInUse.info(mechanismInUse);
     logs.subsystemsInUse.endEffectorInUse.info(endEffectorInUse);
-
-    logs.subsystemsInTargetStates.intakeInTargetState.info(intakeInTargetState);
-    logs.subsystemsInTargetStates.mechInTargetState.info(mechInTargetState);
 
     if (mechState == MechState.Override) {
       mechanismInUse = true;
@@ -252,8 +228,6 @@ public class RobotStates {
     logs.mechState.info(mechState);
     logs.subsystemsInTargetStates.goal.info(goal.name());
     logs.subsystemsInTargetStates.wantedGoal.info(wantedGoal.name());
-
-    logs.gamepieceInIntakeState.info(fuelInIntake);
 
     mechanismInUse   = false;
     intakeInUse      = false;
