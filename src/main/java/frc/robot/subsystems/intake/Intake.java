@@ -220,6 +220,7 @@ public class Intake extends SubsystemBase {
           case Stow:
             setPivotAngle(PivotConstants.HOME_POSITION);
             setRollerPercentOut(0);
+            break;
           case Down:
             setPivotAngle(computeDownAngle());
             setRollerPercentOut(0);
