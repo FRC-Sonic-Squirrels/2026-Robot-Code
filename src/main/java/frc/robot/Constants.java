@@ -324,7 +324,6 @@ public static class ShooterConstants {
       public static final Rotation2d IDLE_ANGLE_RAD = Rotation2d.fromDegrees(30);
 
       public static final double SIM_INITIAL_ANGLE = Math.toRadians(14.0);
-      public static final Distance MIN_DISTANCE = Units.Inches.of(40.0);
 
       public static final double SUPPLY_CURRENT_LIMIT = 40;
       public static final double STATOR_CURRENT_LIMIT = 40;
@@ -355,6 +354,7 @@ public static class ShooterConstants {
     public static class Interpolation {
       public static final InterpolatingDoubleTreeMap HOOD_ANGLE_FOR_HUB_DISTANCE;
       public static final InterpolatingDoubleTreeMap RPM_FOR_HUB_DISTANCE;
+      public static final InterpolatingDoubleTreeMap HOOD_ANGLE_FOR_ALLIANCE_ZONE_DISTANCE;
 
       static {
 
@@ -381,6 +381,20 @@ public static class ShooterConstants {
         RPM_FOR_HUB_DISTANCE.put(8.0, 6800.0);
         RPM_FOR_HUB_DISTANCE.put(9.5, 7200.0);
         RPM_FOR_HUB_DISTANCE.put(11.5, 8000.0);
+
+        HOOD_ANGLE_FOR_ALLIANCE_ZONE_DISTANCE = new InterpolatingDoubleTreeMap();
+        HOOD_ANGLE_FOR_ALLIANCE_ZONE_DISTANCE.put(1.0, 61.80);
+        HOOD_ANGLE_FOR_ALLIANCE_ZONE_DISTANCE.put(1.5, 51.50);
+        HOOD_ANGLE_FOR_ALLIANCE_ZONE_DISTANCE.put(2.0, 42.75);
+        HOOD_ANGLE_FOR_ALLIANCE_ZONE_DISTANCE.put(2.5, 36.70);
+        HOOD_ANGLE_FOR_ALLIANCE_ZONE_DISTANCE.put(3.0, 34.00);
+        HOOD_ANGLE_FOR_ALLIANCE_ZONE_DISTANCE.put(3.5, 31.20);
+        HOOD_ANGLE_FOR_ALLIANCE_ZONE_DISTANCE.put(4.0, 29.50);
+        HOOD_ANGLE_FOR_ALLIANCE_ZONE_DISTANCE.put(4.5, 27.50);
+        HOOD_ANGLE_FOR_ALLIANCE_ZONE_DISTANCE.put(5.0, 26.00);
+        HOOD_ANGLE_FOR_ALLIANCE_ZONE_DISTANCE.put(5.5, 24.85);
+        HOOD_ANGLE_FOR_ALLIANCE_ZONE_DISTANCE.put(6.0, 23.60);
+        HOOD_ANGLE_FOR_ALLIANCE_ZONE_DISTANCE.put(6.5, 22.80);
       }
     }
   }

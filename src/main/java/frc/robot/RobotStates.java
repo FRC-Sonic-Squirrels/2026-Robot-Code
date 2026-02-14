@@ -158,6 +158,7 @@ public class RobotStates {
       case Score:
         targetPose = FieldConstants.HUB_CENTER_POSE.getPose2d();
         shoot();
+        shooter.setGoal(Shooter.Goal.Scoring);
         break;
       case Pass:
         targetPose = new Pose2d(GeometryUtil.getClosestTranslation(new AllianceAwareTranslation2d[] {
@@ -165,6 +166,7 @@ public class RobotStates {
             FieldConstants.LEFT_PASS_AIM_POINT
         }, drivetrain.getRawOdometryPose()), Rotation2d.kZero);
         shoot();
+        shooter.setGoal(Shooter.Goal.Passing);
         break;
       case Climb:
         // TODO: set proper tower positon
@@ -203,7 +205,6 @@ public class RobotStates {
     rtfHelper.execute();
     // tell the shooter how far away we are from the target <- landon did this
     shooter.setFacingTarget(rtfHelper.withinTolerance());
-    shooter.setGoal(Shooter.Goal.Shooting);
     shooter.setDistanceFromTarget(rtfHelper.getDistance());
   }
 

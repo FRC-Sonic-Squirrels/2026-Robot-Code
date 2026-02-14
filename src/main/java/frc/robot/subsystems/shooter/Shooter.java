@@ -18,7 +18,7 @@ import java.util.List;
 
 public class Shooter extends SubsystemBase {
   public enum Goal {
-    Idle, Shooting, Passing, Stop
+    Idle, Scoring, Passing, Stop
   }
 
   private final String ROOT_TABLE = "Shooter";
@@ -35,6 +35,8 @@ public class Shooter extends SubsystemBase {
     public LoggerEntry.Decimal targetDistance;
     public LoggerEntry.Bool    facingTarget;
     public LoggerEntry.Bool    shooterReady;
+    public LoggerEntry.Bool    hoodReady;
+    public LoggerEntry.Bool    flywheelReady;
 
     public InputsLogs inputs;
   }
@@ -185,6 +187,8 @@ public class Shooter extends SubsystemBase {
       logs.targetDistance.info(distanceFromTarget.in(Units.Meters));
       logs.facingTarget.info(isFacingTarget);
       logs.shooterReady.info(isShooterReady());
+      logs.hoodReady.info(isHoodReady());
+      logs.flywheelReady.info(isFlywheelReady());
 
       switch (goal) {
         case Idle:
@@ -193,7 +197,7 @@ public class Shooter extends SubsystemBase {
           setKickerVelocity(0);
           break;
 
-        case Shooting:
+        case Scoring:
           setFlywheelRPM(getFlywheelRPM(distanceFromTarget));
           setHoodPosition(getHoodAngle(distanceFromTarget));
           if (isShooterReady()) {
@@ -265,12 +269,17 @@ public class Shooter extends SubsystemBase {
     return inputs.hoodPosition;
   }
 
-  public static Rotation2d getHoodAngle(Distance distance) {
-    if (distance.lt(ShooterConstants.Hood.MIN_DISTANCE)) {
-      return Rotation2d.fromDegrees(0.0);
+  public Rotation2d getHoodAngle(Distance distance) {
+    switch (goal) {
+      case Scoring:
+        return Rotation2d
+            .fromDegrees(ShooterConstants.Interpolation.HOOD_ANGLE_FOR_HUB_DISTANCE.get(distance.in(Units.Meters)));
+      case Passing:
+        return Rotation2d.fromDegrees(
+            ShooterConstants.Interpolation.HOOD_ANGLE_FOR_ALLIANCE_ZONE_DISTANCE.get(distance.in(Units.Meters)));
+      default:
+        return Rotation2d.kZero;
     }
-    return Rotation2d
-        .fromDegrees(ShooterConstants.Interpolation.HOOD_ANGLE_FOR_HUB_DISTANCE.get(distance.in(Units.Meters)));
   }
 
   public static double getFlywheelRPM(Distance distance) {
