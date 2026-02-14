@@ -66,8 +66,8 @@ public class Climber extends SubsystemBase {
 
   private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
 
-  private final ClimberIO        io;
-  private final ClimberIO.Inputs climberInputs;
+  private final ElevatorIO        io;
+  private final ElevatorIO.Inputs climberInputs;
 
   private ClimberState climberState = ClimberState.Idle;
   private ClimberGoal  climberGoal  = ClimberGoal.Idle;
@@ -79,9 +79,9 @@ public class Climber extends SubsystemBase {
   private Rotation2d servoTargetAngle = Constants.ClimberConstants.SERVO_LOCK_ANGLE;
 
   /** Creates a new ClimberSubsystem. */
-  public Climber(ClimberIO io) {
+  public Climber(ElevatorIO io) {
     this.io            = io;
-    this.climberInputs = new ClimberIO.Inputs(logs.group);
+    this.climberInputs = new ElevatorIO.Inputs(logs.group);
 
     if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_RETIRED_HOLO) {
       tunables.climberKP.initDefault(4);
