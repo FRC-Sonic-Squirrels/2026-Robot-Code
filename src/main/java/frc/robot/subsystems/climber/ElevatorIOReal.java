@@ -19,15 +19,12 @@ import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 import frc.lib.team2930.AutoRegisterLoggers;
-import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 import frc.robot.Constants;
 import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.MotorConstants.KrakenConstants;
 
 public class ElevatorIOReal implements ElevatorIO {
-
-  private final String ROOT_TABLE = "Elevator";
 
   public static class ElevatorLogs extends AutoRegisterLoggers {
     public StatusSignal<Voltage>         appliedVoltage;
@@ -44,73 +41,66 @@ public class ElevatorIOReal implements ElevatorIO {
     public StatusSignal<Angle> angleDegrees;
   }
 
-  public static class Logs extends AutoRegisterLoggers {
-    public ElevatorLogs elevatorLogs;
-
-    public LoggerEntry.Decimal servoTargetAngle;
-
-  }
-
-  public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
+  public final ElevatorLogs logs;
 
   private final PositionVoltage closedLoopControl = new PositionVoltage(0.0).withEnableFOC(true);
 
-  private final BaseStatusSignal[] climberRefreshSet;
+  private final BaseStatusSignal[] refreshSet;
 
-  private TalonFX elevatorMotor;
+  private TalonFX motor;
 
-  public ElevatorIOReal(TalonFX elevatorMotor) {
-    this.elevatorMotor = elevatorMotor;
+  public ElevatorIOReal(String name, TalonFX motor) {
+    this.motor = motor;
+    this.logs  = LoggerGroup.root.newAutoLogger(ElevatorLogs.class, name);
     // Elevator motor config
-    TalonFXConfiguration elevatorConfig = new TalonFXConfiguration();
+    TalonFXConfiguration config = new TalonFXConfiguration();
 
-    elevatorConfig.CurrentLimits.SupplyCurrentLimit              = ClimberConstants.SUPPLY_CURRENT_LIMIT;
-    elevatorConfig.CurrentLimits.SupplyCurrentLimitEnable        = true;
-    elevatorConfig.CurrentLimits.StatorCurrentLimit              = ClimberConstants.STATOR_CURRENT_LIMIT;
-    elevatorConfig.CurrentLimits.StatorCurrentLimitEnable        = true;
-    elevatorConfig.MotorOutput.NeutralMode                       = NeutralModeValue.Brake;
-    elevatorConfig.MotorOutput.Inverted                          = InvertedValue.Clockwise_Positive;
-    elevatorConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable    = true;
-    elevatorConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable    = true;
-    elevatorConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Constants.ClimberConstants.MAX_INNER_CLIMBER_HEIGHT
+    config.CurrentLimits.SupplyCurrentLimit              = ClimberConstants.SUPPLY_CURRENT_LIMIT;
+    config.CurrentLimits.SupplyCurrentLimitEnable        = true;
+    config.CurrentLimits.StatorCurrentLimit              = ClimberConstants.STATOR_CURRENT_LIMIT;
+    config.CurrentLimits.StatorCurrentLimitEnable        = true;
+    config.MotorOutput.NeutralMode                       = NeutralModeValue.Brake;
+    config.MotorOutput.Inverted                          = InvertedValue.Clockwise_Positive;
+    config.SoftwareLimitSwitch.ForwardSoftLimitEnable    = true;
+    config.SoftwareLimitSwitch.ReverseSoftLimitEnable    = true;
+    config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Constants.ClimberConstants.MAX_INNER_CLIMBER_HEIGHT
         * ClimberConstants.INNER_CLIMBER_GEAR_RATIO;
-    elevatorConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = Constants.ClimberConstants.MIN_INNER_CLIMBER_HEIGHT
+    config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = Constants.ClimberConstants.MIN_INNER_CLIMBER_HEIGHT
         * ClimberConstants.INNER_CLIMBER_GEAR_RATIO;
 
-    elevatorConfig.Feedback.SensorToMechanismRatio = ClimberConstants.INNER_CLIMBER_GEAR_RATIO;
-    elevatorConfig.Slot0.GravityType               = GravityTypeValue.Arm_Cosine;
+    config.Feedback.SensorToMechanismRatio   = ClimberConstants.INNER_CLIMBER_GEAR_RATIO;
+    config.Slot0.GravityType                 = GravityTypeValue.Arm_Cosine;
+    config.Voltage.SupplyVoltageTimeConstant = KrakenConstants.SUPPLY_VOLTAGE_TIME;
 
-    elevatorConfig.Voltage.SupplyVoltageTimeConstant = KrakenConstants.SUPPLY_VOLTAGE_TIME;
-
-    elevatorMotor.getConfigurator().apply(elevatorConfig);
+    motor.getConfigurator().apply(config);
     // Status signals
-    logs.elevatorLogs.appliedVoltage           = elevatorMotor.getMotorVoltage();
-    logs.elevatorLogs.targetHeightInches       = elevatorMotor.getPosition();
-    logs.elevatorLogs.currentAmps              = elevatorMotor.getStatorCurrent();
-    logs.elevatorLogs.tempCelsius              = elevatorMotor.getDeviceTemp();
-    logs.elevatorLogs.velocityDegreesPerSecond = elevatorMotor.getVelocity();
+    logs.appliedVoltage           = motor.getMotorVoltage();
+    logs.targetHeightInches       = motor.getPosition();
+    logs.currentAmps              = motor.getStatorCurrent();
+    logs.tempCelsius              = motor.getDeviceTemp();
+    logs.velocityDegreesPerSecond = motor.getVelocity();
     // Update status signals
 
-    BaseStatusSignal.setUpdateFrequencyForAll(100, logs.elevatorLogs.appliedVoltage,
-        logs.elevatorLogs.targetHeightInches, logs.elevatorLogs.velocityDegreesPerSecond);
-    BaseStatusSignal.setUpdateFrequencyForAll(50, logs.elevatorLogs.currentAmps);
-    BaseStatusSignal.setUpdateFrequencyForAll(1, logs.elevatorLogs.tempCelsius);
+    BaseStatusSignal.setUpdateFrequencyForAll(100, logs.appliedVoltage, logs.targetHeightInches,
+        logs.velocityDegreesPerSecond);
+    BaseStatusSignal.setUpdateFrequencyForAll(50, logs.currentAmps);
+    BaseStatusSignal.setUpdateFrequencyForAll(1, logs.tempCelsius);
 
-    elevatorMotor.optimizeBusUtilization();
+    motor.optimizeBusUtilization();
 
-    climberRefreshSet = new BaseStatusSignal[] { logs.elevatorLogs.appliedVoltage, logs.elevatorLogs.targetHeightInches,
-        logs.elevatorLogs.currentAmps, logs.elevatorLogs.tempCelsius, logs.elevatorLogs.velocityDegreesPerSecond };
+    refreshSet = new BaseStatusSignal[] { logs.appliedVoltage, logs.targetHeightInches, logs.currentAmps,
+        logs.tempCelsius, logs.velocityDegreesPerSecond };
   }
 
   @Override
   public void updateElevatorInputs(Inputs inputs) {
-    inputs.refreshAll(climberRefreshSet);
+    inputs.refreshAll(refreshSet);
 
-    inputs.position                 = logs.elevatorLogs.targetHeightInches.getValue().in(Units.Degrees);
-    inputs.appliedVolts             = logs.elevatorLogs.appliedVoltage.getValue().in(Units.Volts);
-    inputs.currentAmps              = logs.elevatorLogs.currentAmps.getValue().in(Units.Amps);
-    inputs.tempCelsius              = logs.elevatorLogs.tempCelsius.getValue().in(Units.Celsius);
-    inputs.velocityDegreesPerSecond = logs.elevatorLogs.velocityDegreesPerSecond.getValue().in(Units.DegreesPerSecond);
+    inputs.position                 = logs.targetHeightInches.getValue().in(Units.Degrees);
+    inputs.appliedVolts             = logs.appliedVoltage.getValue().in(Units.Volts);
+    inputs.currentAmps              = logs.currentAmps.getValue().in(Units.Amps);
+    inputs.tempCelsius              = logs.tempCelsius.getValue().in(Units.Celsius);
+    inputs.velocityDegreesPerSecond = logs.velocityDegreesPerSecond.getValue().in(Units.DegreesPerSecond);
   }
 
   // Climber
@@ -118,39 +108,39 @@ public class ElevatorIOReal implements ElevatorIO {
   @Override
   public void setElevatorClosedLoopPosition(double inches) {
     closedLoopControl.withPosition(inches);
-    elevatorMotor.setControl(closedLoopControl);
+    motor.setControl(closedLoopControl);
   }
 
   @Override
   public void setElevatorClosedLoopConstants(double kP, double kD, double kG) {
     var slot0Configs = new Slot0Configs();
 
-    elevatorMotor.getConfigurator().refresh(slot0Configs);
+    motor.getConfigurator().refresh(slot0Configs);
 
     slot0Configs.kP = kP;
     slot0Configs.kD = kD;
     slot0Configs.kG = kG;
 
-    elevatorMotor.getConfigurator().apply(slot0Configs);
+    motor.getConfigurator().apply(slot0Configs);
   }
 
   @Override
   public void resetElevatorSensorPosition(Rotation2d angle) {
-    elevatorMotor.setPosition(angle.getRotations());
+    motor.setPosition(angle.getRotations());
   }
 
   @Override
   public boolean setElevatorNeutralMode(NeutralModeValue value) {
     var config = new MotorOutputConfigs();
 
-    var status = elevatorMotor.getConfigurator().refresh(config);
+    var status = motor.getConfigurator().refresh(config);
 
     if (status != StatusCode.OK)
       return false;
 
     config.NeutralMode = value;
 
-    elevatorMotor.getConfigurator().apply(config);
+    motor.getConfigurator().apply(config);
     return true;
   }
 }

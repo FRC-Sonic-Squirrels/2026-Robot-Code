@@ -11,9 +11,8 @@ import frc.robot.Constants;
 import frc.robot.Constants.RobotMode.RobotType;
 
 public class Elevator extends SubsystemBase {
-  private final String ROOT_TABLE = "Elevator";
 
-  public static class ElevatorLogs extends AutoRegisterLoggers {
+  public static class Logs extends AutoRegisterLoggers {
     public LoggerEntry.Decimal appliedVolts;
     public LoggerEntry.Decimal currentAmps;
     public LoggerEntry.Decimal tempCelsius;
@@ -21,14 +20,10 @@ public class Elevator extends SubsystemBase {
     public LoggerEntry.Decimal targetHeightInches;
   }
 
-  public static class Logs extends AutoRegisterLoggers {
-    public ElevatorLogs elevator;
-  }
-
-  public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
+  public final Logs logs;
 
   // Execution timing
-  private final ExecutionTiming elevatorTiming = new ExecutionTiming(ROOT_TABLE);
+  private final ExecutionTiming timing;
 
   public static class Tunables extends AutoRegisterTunables {
     public LoggedTunableNumber elevatorKP;
@@ -50,17 +45,20 @@ public class Elevator extends SubsystemBase {
     }
   }
 
-  private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
+  private final Tunables tunables;
 
   private final ElevatorIO        io;
-  private final ElevatorIO.Inputs elevatorInputs;
+  private final ElevatorIO.Inputs inputs;
 
   private double elevatorHeight;
 
   /** Creates a new ElevatorSubsystem. */
-  public Elevator(ElevatorIO io) {
-    this.io             = io;
-    this.elevatorInputs = new ElevatorIO.Inputs(logs.group);
+  public Elevator(String name, ElevatorIO io) {
+    this.io       = io;
+    this.timing   = new ExecutionTiming(name);
+    this.logs     = LoggerGroup.root.newAutoLogger(Logs.class, name);
+    this.inputs   = new ElevatorIO.Inputs(logs.group);
+    this.tunables = TunableNumberGroup.newAutoTunable(Tunables.class, name);
 
     if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_RETIRED_HOLO) {
       tunables.elevatorKP.initDefault(4);
@@ -88,15 +86,15 @@ public class Elevator extends SubsystemBase {
 
   @Override
   public void periodic() {
-    try (var ignored = elevatorTiming.start()) {
+    try (var ignored = timing.start()) {
       // Elevator logging
-      io.updateElevatorInputs(elevatorInputs);
+      io.updateElevatorInputs(inputs);
 
-      logs.elevator.appliedVolts.info(elevatorInputs.appliedVolts);
-      logs.elevator.currentAmps.info(elevatorInputs.currentAmps);
-      logs.elevator.tempCelsius.info(elevatorInputs.tempCelsius);
-      logs.elevator.velocityDegreesPerSecond.info(elevatorInputs.velocityDegreesPerSecond);
-      logs.elevator.targetHeightInches.info(elevatorHeight);
+      logs.appliedVolts.info(inputs.appliedVolts);
+      logs.currentAmps.info(inputs.currentAmps);
+      logs.tempCelsius.info(inputs.tempCelsius);
+      logs.velocityDegreesPerSecond.info(inputs.velocityDegreesPerSecond);
+      logs.targetHeightInches.info(elevatorHeight);
 
       // Updating tunable numbers
       if (tunables.hasChanged()) {
@@ -125,7 +123,7 @@ public class Elevator extends SubsystemBase {
   // getters
 
   public boolean isElevatorAtTargetHeight(double target) {
-    var error = elevatorInputs.position - target;
+    var error = inputs.position - target;
     return error <= tunables.toleranceHeight.get();
   }
 
@@ -134,10 +132,10 @@ public class Elevator extends SubsystemBase {
   }
 
   public Voltage getElevatorVoltage() {
-    return Units.Volts.of(elevatorInputs.appliedVolts);
+    return Units.Volts.of(inputs.appliedVolts);
   }
 
   public AngularVelocity getElevatorVelocity() {
-    return Units.DegreesPerSecond.of(elevatorInputs.velocityDegreesPerSecond);
+    return Units.DegreesPerSecond.of(inputs.velocityDegreesPerSecond);
   }
 }
