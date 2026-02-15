@@ -35,30 +35,30 @@ public class ElevatorIOReal implements ElevatorIO {
 
   private final TalonFX motor;
 
-  public ElevatorIOReal(TalonFX motor) {
-    this.motor = motor;
+  public ElevatorIOReal(ElevatorIOConfig config) {
+    this.motor = new TalonFX(config.motorCANID());
 
     // Elevator motor config
-    TalonFXConfiguration config = new TalonFXConfiguration();
+    TalonFXConfiguration configFx = new TalonFXConfiguration();
 
-    config.CurrentLimits.SupplyCurrentLimit              = ClimberConstants.SUPPLY_CURRENT_LIMIT;
-    config.CurrentLimits.SupplyCurrentLimitEnable        = true;
-    config.CurrentLimits.StatorCurrentLimit              = ClimberConstants.STATOR_CURRENT_LIMIT;
-    config.CurrentLimits.StatorCurrentLimitEnable        = true;
-    config.MotorOutput.NeutralMode                       = NeutralModeValue.Brake;
-    config.MotorOutput.Inverted                          = InvertedValue.Clockwise_Positive;
-    config.SoftwareLimitSwitch.ForwardSoftLimitEnable    = true;
-    config.SoftwareLimitSwitch.ReverseSoftLimitEnable    = true;
-    config.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Constants.ClimberConstants.MAX_INNER_CLIMBER_HEIGHT
+    configFx.CurrentLimits.SupplyCurrentLimit              = ClimberConstants.SUPPLY_CURRENT_LIMIT;
+    configFx.CurrentLimits.SupplyCurrentLimitEnable        = true;
+    configFx.CurrentLimits.StatorCurrentLimit              = ClimberConstants.STATOR_CURRENT_LIMIT;
+    configFx.CurrentLimits.StatorCurrentLimitEnable        = true;
+    configFx.MotorOutput.NeutralMode                       = NeutralModeValue.Brake;
+    configFx.MotorOutput.Inverted                          = InvertedValue.Clockwise_Positive;
+    configFx.SoftwareLimitSwitch.ForwardSoftLimitEnable    = true;
+    configFx.SoftwareLimitSwitch.ReverseSoftLimitEnable    = true;
+    configFx.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Constants.ClimberConstants.MAX_INNER_CLIMBER_HEIGHT
         * ClimberConstants.INNER_CLIMBER_GEAR_RATIO;
-    config.SoftwareLimitSwitch.ReverseSoftLimitThreshold = Constants.ClimberConstants.MIN_INNER_CLIMBER_HEIGHT
+    configFx.SoftwareLimitSwitch.ReverseSoftLimitThreshold = Constants.ClimberConstants.MIN_INNER_CLIMBER_HEIGHT
         * ClimberConstants.INNER_CLIMBER_GEAR_RATIO;
 
-    config.Feedback.SensorToMechanismRatio   = ClimberConstants.INNER_CLIMBER_GEAR_RATIO;
-    config.Slot0.GravityType                 = GravityTypeValue.Arm_Cosine;
-    config.Voltage.SupplyVoltageTimeConstant = KrakenConstants.SUPPLY_VOLTAGE_TIME;
+    configFx.Feedback.SensorToMechanismRatio   = ClimberConstants.INNER_CLIMBER_GEAR_RATIO;
+    configFx.Slot0.GravityType                 = GravityTypeValue.Arm_Cosine;
+    configFx.Voltage.SupplyVoltageTimeConstant = KrakenConstants.SUPPLY_VOLTAGE_TIME;
 
-    motor.getConfigurator().apply(config);
+    motor.getConfigurator().apply(configFx);
     // Status signals
     appliedVoltage           = motor.getMotorVoltage();
     targetHeightInches       = motor.getPosition();
@@ -73,8 +73,13 @@ public class ElevatorIOReal implements ElevatorIO {
 
     motor.optimizeBusUtilization();
 
-    refreshSet = new BaseStatusSignal[] { appliedVoltage, targetHeightInches, currentAmps, tempCelsius,
-        velocityDegreesPerSecond };
+    refreshSet = new BaseStatusSignal[] {
+        appliedVoltage,
+        targetHeightInches,
+        currentAmps,
+        tempCelsius,
+        velocityDegreesPerSecond
+    };
   }
 
   @Override
