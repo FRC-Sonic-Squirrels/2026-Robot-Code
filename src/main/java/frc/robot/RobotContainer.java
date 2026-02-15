@@ -312,7 +312,7 @@ public class RobotContainer {
 
     var subsystems = new AutosSubsystems(drivetrainWrapper, led, leftIntake, rightIntake);
 
-    robotStates = new RobotStates(leftIntake, rightIntake, shooter, drivetrainWrapper);
+    robotStates = new RobotStates(leftIntake, rightIntake, shooter, drivetrainWrapper, hopper);
 
     autoManager = new AutosManager(subsystems, config, autoChooser, stringToAutoSupplierMap, () -> {
       var result = flipAutoChooser.get();
