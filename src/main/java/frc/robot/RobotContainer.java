@@ -49,6 +49,8 @@ import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.ElevatorIO;
 import frc.robot.subsystems.climber.ElevatorIOSim;
 import frc.robot.subsystems.climber.Climber.ClimberGoal;
+import frc.robot.subsystems.climber.ElevatorIOConfig;
+import frc.robot.subsystems.climber.ElevatorIOReal;
 import frc.robot.subsystems.hopper.Hopper;
 import frc.robot.subsystems.hopper.HopperIO;
 import frc.robot.subsystems.hopper.HopperIOReal;
@@ -265,10 +267,13 @@ public class RobotContainer {
                 InvertedValue.Clockwise_Positive);
             leftIntake  = new Intake(leftIntakeRoot, new IntakeIOReal(leftIntakeIOConfig));
             rightIntake = new Intake(rightIntakeRoot, new IntakeIOReal(rightIntakeIOConfig));
-            climber     = new Climber(new ElevatorIO() {
-                        }, new ElevatorIO() {
-                        });
-            shooter     = new Shooter(new ShooterIOReal());
+            ElevatorIOConfig innerElevatorIOConfig = new ElevatorIOConfig(Constants.CanIDs.CLIMBER_INNER_CAN_ID, false,
+                ClimberConstants.INNER_CLIMBER_GEAR_RATIO);
+            ElevatorIOConfig outerElevatorIOConfig = new ElevatorIOConfig(Constants.CanIDs.CLIMBER_OUTER_CAN_ID, false,
+                ClimberConstants.OUTER_CLIMBER_GEAR_RATIO);
+            climber = new Climber(new ElevatorIOReal(innerElevatorIOConfig), new ElevatorIOReal(outerElevatorIOConfig));
+
+            shooter = new Shooter(new ShooterIOReal());
           } else {
             leftIntake  = new Intake(leftIntakeRoot, new IntakeIO() {
                         });
