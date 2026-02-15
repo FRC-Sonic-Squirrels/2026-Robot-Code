@@ -25,7 +25,7 @@ public class Hopper extends SubsystemBase {
     public LoggerEntry.Decimal rollerAppliedVolts;
     public LoggerEntry.Decimal rollerTargetVelocityRPM;
 
-    public LoggerEntry.EnumValue<Goal> hopperState;
+    public LoggerEntry.EnumValue<Goal> goal;
   }
 
   public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
@@ -87,7 +87,7 @@ public class Hopper extends SubsystemBase {
       logs.rollerTempCelsius.info(inputs.rollerTempCelsius);
       logs.rollerAppliedVolts.info(inputs.rollerAppliedVolts);
 
-      logs.hopperState.info(goal);
+      logs.goal.info(goal);
 
       if (tunables.KS.hasChanged() || tunables.KP.hasChanged() || tunables.KV.hasChanged()
           || tunables.rollerTargetAccelerationConfig.hasChanged()) {
