@@ -41,6 +41,7 @@ import frc.robot.commands.drive.DriveToPose;
 import frc.robot.commands.drive.DrivetrainDefaultTeleopDrive;
 import frc.robot.commands.drive.WheelRadiusCharacterization;
 import frc.robot.commands.setGoal.SetRobotGoal;
+import frc.robot.commands.setGoal.SetIntakingGoal;
 import frc.robot.configs.SimulatorRobotConfig;
 import frc.robot.subsystems.LED;
 import frc.robot.subsystems.LED.BaseRobotState;
@@ -380,15 +381,18 @@ public class RobotContainer {
             aprilTagLayout.getTagPose(15).get().toPose2d().transformBy(new Transform2d(
                 Units.Inches.of(60).in(Units.Meters), Units.Inches.of(15).in(Units.Meters), Rotation2d.kZero)),
             () -> drivetrainWrapper.getHubPoseEstimatorPose(true)));
-    driverController.registerTrigger(XboxControllerWrapper.Button.leftTrigger, "Shoot")
-        .onTrue(Commands.runOnce(() -> robotStates.setRobotGoal(RobotGoal.Score)))
-        .onFalse(Commands.runOnce(() -> robotStates.setRobotGoal(RobotGoal.None)));
-    driverController.registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Pass")
-        .onTrue(Commands.runOnce(() -> robotStates.setRobotGoal(RobotGoal.Pass)))
-        .onFalse(Commands.runOnce(() -> robotStates.setRobotGoal(RobotGoal.None)));
 
     driverController.registerTrigger(XboxControllerWrapper.Button.leftBumper, "Score")
         .whileTrue(new SetRobotGoal(robotStates, RobotStates.RobotGoal.Score, true, false));
+
+    driverController.registerTrigger(XboxControllerWrapper.Button.rightBumper, "Pass")
+        .whileTrue(new SetRobotGoal(robotStates, RobotStates.RobotGoal.Pass, true, false));
+
+    driverController.registerTrigger(XboxControllerWrapper.Button.leftTrigger, "Left Intake")
+        .whileTrue(new SetIntakingGoal(robotStates, RobotStates.IntakeGoal.LeftIntake, true, false));
+
+    driverController.registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Right Intake")
+        .whileTrue(new SetIntakingGoal(robotStates, RobotStates.IntakeGoal.RightIntake, true, false));
 
     // ---------- OPERATOR CONTROLS -----------
 
