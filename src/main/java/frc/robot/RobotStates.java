@@ -155,6 +155,7 @@ public class RobotStates {
         drivetrain.resetVelocityOverride();
         drivetrain.resetRotationOverride();
         shooter.setGoal(Shooter.Goal.Idle);
+        hopper.setGoal(Hopper.Goal.Idle);
         break;
       case Auto:
         // TODO: run the auto state machene
