@@ -14,7 +14,7 @@ import frc.robot.Constants.RobotMode.RobotType;
 public class Hopper extends SubsystemBase {
   public final String ROOT_TABLE = "Hopper";
 
-  public enum HopperState {
+  public enum Goal {
     Idle, Override, Shooting
   }
 
@@ -25,7 +25,7 @@ public class Hopper extends SubsystemBase {
     public LoggerEntry.Decimal rollerAppliedVolts;
     public LoggerEntry.Decimal rollerTargetVelocityRPM;
 
-    public LoggerEntry.EnumValue<HopperState> hopperState;
+    public LoggerEntry.EnumValue<Goal> hopperState;
   }
 
   public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
@@ -45,7 +45,7 @@ public class Hopper extends SubsystemBase {
   private final HopperIO        io;
   private final HopperIO.Inputs inputs = new HopperIO.Inputs(logs.group);
 
-  private HopperState hopperState = HopperState.Idle;
+  private Goal goal = Goal.Idle;
 
   private double rollerTargetRPM;
 
@@ -87,14 +87,14 @@ public class Hopper extends SubsystemBase {
       logs.rollerTempCelsius.info(inputs.rollerTempCelsius);
       logs.rollerAppliedVolts.info(inputs.rollerAppliedVolts);
 
-      logs.hopperState.info(hopperState);
+      logs.hopperState.info(goal);
 
       if (tunables.KS.hasChanged() || tunables.KP.hasChanged() || tunables.KV.hasChanged()
           || tunables.rollerTargetAccelerationConfig.hasChanged()) {
         setRollerConstants();
       }
 
-      switch (hopperState) {
+      switch (goal) {
         case Override:
           break;
 
@@ -125,8 +125,8 @@ public class Hopper extends SubsystemBase {
     logs.rollerTargetVelocityRPM.info(rollerTargetRPM);
   }
 
-  public void setState(HopperState state) {
-    hopperState = state;
+  public void setState(Goal goal) {
+    this.goal = goal;
   }
 
   // Getters
@@ -149,5 +149,9 @@ public class Hopper extends SubsystemBase {
 
   public boolean rollerStallDetected() {
     return stallDetected.getAsBoolean();
+  }
+
+  public void setGoal(Goal goal) {
+    this.goal = goal;
   }
 }

@@ -7,6 +7,7 @@ import frc.lib.team2930.*;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.commands.drive.DriveToPoseHelper;
 import frc.robot.commands.drive.RotateToFaceHelper;
+import frc.robot.subsystems.hopper.Hopper;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
@@ -82,16 +83,19 @@ public class RobotStates {
   private final Shooter            shooter;
   private final RotateToFaceHelper rtfHelper;
   private final DriveToPoseHelper  dtpHelpter;
+  private final Hopper             hopper;
 
   private int     periodicCounter;
   private boolean driveSlow;
   private Pose2d  targetPose;
 
-  public RobotStates(Intake leftIntake, Intake rightIntake, Shooter shooter, DrivetrainWrapper drivetrain) {
+  public RobotStates(Intake leftIntake, Intake rightIntake, Shooter shooter, DrivetrainWrapper drivetrain,
+      Hopper hopper) {
     this.leftIntake  = leftIntake;
     this.rightIntake = rightIntake;
     this.drivetrain  = drivetrain;
     this.shooter     = shooter;
+    this.hopper      = hopper;
     dtpHelpter       = new DriveToPoseHelper(this.drivetrain, () -> targetPose, drivetrain::getRawOdometryPose,
         () -> driveSlow);
     rtfHelper        = new RotateToFaceHelper(this.drivetrain, () -> targetPose.getTranslation(),
@@ -159,6 +163,7 @@ public class RobotStates {
         targetPose = FieldConstants.HUB_CENTER_POSE.getPose2d();
         shoot();
         shooter.setGoal(Shooter.Goal.Scoring);
+        hopper.setGoal(Hopper.Goal.Shooting);
         break;
       case Pass:
         targetPose = new Pose2d(GeometryUtil.getClosestTranslation(new AllianceAwareTranslation2d[] {
@@ -167,6 +172,7 @@ public class RobotStates {
         }, drivetrain.getRawOdometryPose()), Rotation2d.kZero);
         shoot();
         shooter.setGoal(Shooter.Goal.Passing);
+        hopper.setGoal(Hopper.Goal.Shooting);
         break;
       case Climb:
         // TODO: set proper tower positon
