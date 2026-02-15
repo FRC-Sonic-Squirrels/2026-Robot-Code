@@ -18,40 +18,26 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
-import frc.lib.team2930.AutoRegisterLoggers;
-import frc.lib.team2930.LoggerGroup;
 import frc.robot.Constants;
 import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.MotorConstants.KrakenConstants;
 
 public class ElevatorIOReal implements ElevatorIO {
-
-  public static class ElevatorLogs extends AutoRegisterLoggers {
-    public StatusSignal<Voltage>         appliedVoltage;
-    public StatusSignal<Current>         currentAmps;
-    public StatusSignal<Temperature>     tempCelsius;
-    public StatusSignal<AngularVelocity> velocityDegreesPerSecond;
-    /**
-     * @deprecated This field actually stores an angular position in degrees, not a
-     *             height in inches. Use {@link #angleDegrees} instead.
-     */
-    @Deprecated
-    public StatusSignal<Angle>           targetHeightInches;
-    // Correctly named alias for the climber's angular position in degrees.
-    public StatusSignal<Angle> angleDegrees;
-  }
-
-  public final ElevatorLogs logs;
-
   private final PositionVoltage closedLoopControl = new PositionVoltage(0.0).withEnableFOC(true);
+
+  public StatusSignal<Voltage>         appliedVoltage;
+  public StatusSignal<Current>         currentAmps;
+  public StatusSignal<Temperature>     tempCelsius;
+  public StatusSignal<AngularVelocity> velocityDegreesPerSecond;
+  public StatusSignal<Angle>           targetHeightInches;
 
   private final BaseStatusSignal[] refreshSet;
 
-  private TalonFX motor;
+  private final TalonFX motor;
 
-  public ElevatorIOReal(String name, TalonFX motor) {
+  public ElevatorIOReal(TalonFX motor) {
     this.motor = motor;
-    this.logs  = LoggerGroup.root.newAutoLogger(ElevatorLogs.class, name);
+
     // Elevator motor config
     TalonFXConfiguration config = new TalonFXConfiguration();
 
@@ -74,33 +60,32 @@ public class ElevatorIOReal implements ElevatorIO {
 
     motor.getConfigurator().apply(config);
     // Status signals
-    logs.appliedVoltage           = motor.getMotorVoltage();
-    logs.targetHeightInches       = motor.getPosition();
-    logs.currentAmps              = motor.getStatorCurrent();
-    logs.tempCelsius              = motor.getDeviceTemp();
-    logs.velocityDegreesPerSecond = motor.getVelocity();
+    appliedVoltage           = motor.getMotorVoltage();
+    targetHeightInches       = motor.getPosition();
+    currentAmps              = motor.getStatorCurrent();
+    tempCelsius              = motor.getDeviceTemp();
+    velocityDegreesPerSecond = motor.getVelocity();
     // Update status signals
 
-    BaseStatusSignal.setUpdateFrequencyForAll(100, logs.appliedVoltage, logs.targetHeightInches,
-        logs.velocityDegreesPerSecond);
-    BaseStatusSignal.setUpdateFrequencyForAll(50, logs.currentAmps);
-    BaseStatusSignal.setUpdateFrequencyForAll(1, logs.tempCelsius);
+    BaseStatusSignal.setUpdateFrequencyForAll(50, appliedVoltage, targetHeightInches, velocityDegreesPerSecond);
+    BaseStatusSignal.setUpdateFrequencyForAll(50, currentAmps);
+    BaseStatusSignal.setUpdateFrequencyForAll(1, tempCelsius);
 
     motor.optimizeBusUtilization();
 
-    refreshSet = new BaseStatusSignal[] { logs.appliedVoltage, logs.targetHeightInches, logs.currentAmps,
-        logs.tempCelsius, logs.velocityDegreesPerSecond };
+    refreshSet = new BaseStatusSignal[] { appliedVoltage, targetHeightInches, currentAmps, tempCelsius,
+        velocityDegreesPerSecond };
   }
 
   @Override
   public void updateElevatorInputs(Inputs inputs) {
     inputs.refreshAll(refreshSet);
 
-    inputs.position                 = logs.targetHeightInches.getValue().in(Units.Degrees);
-    inputs.appliedVolts             = logs.appliedVoltage.getValue().in(Units.Volts);
-    inputs.currentAmps              = logs.currentAmps.getValue().in(Units.Amps);
-    inputs.tempCelsius              = logs.tempCelsius.getValue().in(Units.Celsius);
-    inputs.velocityDegreesPerSecond = logs.velocityDegreesPerSecond.getValue().in(Units.DegreesPerSecond);
+    inputs.position                 = targetHeightInches.getValue().in(Units.Degrees);
+    inputs.appliedVolts             = appliedVoltage.getValue().in(Units.Volts);
+    inputs.currentAmps              = currentAmps.getValue().in(Units.Amps);
+    inputs.tempCelsius              = tempCelsius.getValue().in(Units.Celsius);
+    inputs.velocityDegreesPerSecond = velocityDegreesPerSecond.getValue().in(Units.DegreesPerSecond);
   }
 
   // Climber
