@@ -3,6 +3,7 @@ package frc.robot.subsystems.climber;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.Servo;
 import frc.lib.team2930.*;
 import frc.robot.Constants;
 import frc.robot.Constants.ClimberConstants;
@@ -19,8 +20,11 @@ public class Climber extends SubsystemBase {
   }
 
   public static class Logs extends AutoRegisterLoggers {
-    public LoggerEntry.Decimal servoTargetAngle;
+    private static final LoggerGroup servoLogGroup = LoggerGroup.build("ClimberServo");
+    public LoggerEntry.Decimal       servoTargetAngle;
   }
+
+  private Servo climberServo = new Servo(8);
 
   public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
@@ -232,6 +236,7 @@ public class Climber extends SubsystemBase {
       default:
         break;
     }
+    logs.servoTargetAngle.info(servoTargetAngle);
   }
 
   public void setInnerTargetHeight(double height) {
@@ -247,7 +252,9 @@ public class Climber extends SubsystemBase {
   }
 
   public void setServoAngle(Rotation2d angle) {
+    climberServo.setAngle(angle.getDegrees());
     servoTargetAngle = angle;
+    logs.servoTargetAngle.info(servoTargetAngle);
   }
 
   public Rotation2d getServoAngle() {
