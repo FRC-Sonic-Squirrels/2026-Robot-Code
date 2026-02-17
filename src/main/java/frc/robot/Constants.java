@@ -16,7 +16,6 @@ package frc.robot;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.interpolation.InterpolatingDoubleTreeMap;
 import edu.wpi.first.units.Units;
@@ -295,6 +294,8 @@ public final class Constants {
     public static final double OUTER_HOME_POSITION = MAX_OUTER_CLIMBER_HEIGHT;
 
     public static final Distance CLIMBER_LENGTH = Units.Inches.of(14);
+
+    public static final int SERVO_CHANNEL = 8;
 
     public static final Rotation2d SERVO_LOCK_ANGLE = Rotation2d.fromDegrees(90);
 
