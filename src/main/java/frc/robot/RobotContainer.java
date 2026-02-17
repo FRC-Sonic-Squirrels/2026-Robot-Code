@@ -49,7 +49,7 @@ import frc.robot.subsystems.LED.RobotState;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.climber.ElevatorIO;
 import frc.robot.subsystems.climber.ElevatorIOSim;
-import frc.robot.subsystems.climber.Climber.ClimberGoal;
+import frc.robot.subsystems.climber.Climber.Goal;
 import frc.robot.subsystems.climber.ElevatorIOConfig;
 import frc.robot.subsystems.climber.ElevatorIOReal;
 import frc.robot.subsystems.hopper.Hopper;
@@ -325,7 +325,7 @@ public class RobotContainer {
 
     var subsystems = new AutosSubsystems(drivetrainWrapper, led, leftIntake, rightIntake);
 
-    robotStates = new RobotStates(leftIntake, rightIntake, shooter, drivetrainWrapper, hopper);
+    robotStates = new RobotStates(climber, leftIntake, rightIntake, shooter, drivetrainWrapper, hopper);
 
     autoManager = new AutosManager(subsystems, config, autoChooser, stringToAutoSupplierMap, () -> {
       var result = flipAutoChooser.get();
@@ -427,7 +427,7 @@ public class RobotContainer {
     zeroSensorsButtonTrigger.onTrue(new RunsWhenDisabledInstantCommand(() -> {
       leftIntake.resetPivotSensorToHomePosition();
       rightIntake.resetPivotSensorToHomePosition();
-      climber.setClimberGoal(ClimberGoal.Idle);
+      climber.setClimberGoal(Goal.Idle);
       led.setRobotState(RobotState.ZERO_SUBSYSTEMS);
 
       zeroButtonTriggered = true;

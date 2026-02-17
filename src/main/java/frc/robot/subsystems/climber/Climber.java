@@ -11,7 +11,7 @@ import frc.robot.Constants.ClimberConstants;
 public class Climber extends SubsystemBase {
   private final String ROOT_TABLE = "Climber";
 
-  public enum ClimberGoal {
+  public enum Goal {
     ClimbAuto, AutoDismount, L1Climb, L2Climb, L3Climb, Idle, Override
   }
 
@@ -34,7 +34,7 @@ public class Climber extends SubsystemBase {
   private final Elevator outerElevator;
 
   private ClimberState climberState = ClimberState.Idle;
-  private ClimberGoal  climberGoal  = ClimberGoal.Idle;
+  private Goal         climberGoal  = Goal.Idle;
 
   // This also acts as its current angle because the servo cannot tell us where it
   // is
@@ -197,7 +197,7 @@ public class Climber extends SubsystemBase {
 
   // setters
 
-  public void setClimberGoal(ClimberGoal goal) {
+  public void setClimberGoal(Goal goal) {
     climberGoal = goal;
     if (climberState != ClimberState.Idle) {
       return;
