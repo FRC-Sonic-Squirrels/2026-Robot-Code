@@ -235,7 +235,6 @@ public class Climber extends SubsystemBase {
       default:
         break;
     }
-    logs.servoTargetAngle.info(servoTargetAngle);
   }
 
   public void setInnerTargetHeight(double height) {
@@ -253,7 +252,6 @@ public class Climber extends SubsystemBase {
   public void setServoAngle(Rotation2d angle) {
     climberServo.setAngle(angle.getDegrees());
     servoTargetAngle = angle;
-    logs.servoTargetAngle.info(servoTargetAngle);
   }
 
   public Rotation2d getServoAngle() {
