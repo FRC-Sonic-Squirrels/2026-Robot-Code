@@ -537,13 +537,8 @@ public class RobotContainer {
     vision.useGyroBasedFilteringForVision(false);
 
     if (!DriverStation.isFMSAttached()) {
-      leftIntake.setPivotVoltage(0);
-      rightIntake.setPivotVoltage(0);
-      leftIntake.setRollerPercentOut(0);
-      rightIntake.setRollerPercentOut(0);
-
-      leftIntake.setGoal(Intake.Goal.Idle);
-      rightIntake.setGoal(Intake.Goal.Idle);
+      leftIntake.setGoal(Intake.Goal.Stow);
+      rightIntake.setGoal(Intake.Goal.Stow);
     }
 
     is_teleop     = false;
