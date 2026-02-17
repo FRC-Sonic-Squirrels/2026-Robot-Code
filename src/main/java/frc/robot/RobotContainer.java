@@ -389,10 +389,10 @@ public class RobotContainer {
         .whileTrue(new SetRobotGoal(robotStates, RobotStates.RobotGoal.Pass, true, false));
 
     driverController.registerTrigger(XboxControllerWrapper.Button.leftTrigger, "Left Intake")
-        .whileTrue(new SetIntakingGoal(robotStates, RobotStates.IntakeGoal.LeftIntake, true, false));
+        .whileTrue(new SetIntakingGoal(robotStates, RobotStates.IntakeGoal.LeftIntake, true, true));
 
     driverController.registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Right Intake")
-        .whileTrue(new SetIntakingGoal(robotStates, RobotStates.IntakeGoal.RightIntake, true, false));
+        .whileTrue(new SetIntakingGoal(robotStates, RobotStates.IntakeGoal.RightIntake, true, true));
 
     // ---------- OPERATOR CONTROLS -----------
 
