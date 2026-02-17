@@ -2,7 +2,6 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.wpilibj.DriverStation;
 import frc.lib.team2930.*;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.commands.drive.DriveToPoseHelper;
@@ -31,7 +30,24 @@ public class RobotStates {
   // Desired mech to hold coral
 
   public enum RobotGoal {
-    None, Auto, Score, Pass, ClimbL1, ClimbL2, ClimbL3, ClimbAuto
+    // @formatter:off
+    None     (false, false),
+    Auto     (false, false),
+    Score    ( true, false),
+    Pass     ( true, false),
+    ClimbL1  (false,  true),
+    ClimbL2  (false,  true),
+    ClimbL3  (false,  true),
+    ClimbAuto(false,  true);
+    // @formatter:on
+
+    public final boolean shooterActive;
+    public final boolean climberActive;
+
+    RobotGoal(boolean shooterActive, boolean climberActive) {
+      this.shooterActive = shooterActive;
+      this.climberActive = climberActive;
+    }
   }
 
   public enum IntakeGoal {
@@ -42,8 +58,6 @@ public class RobotStates {
 
   public static class SubsystemsInTargetStatesLogs extends AutoRegisterLoggers {
     public LoggerEntry.Text goal;
-    public LoggerEntry.Text wantedGoal;
-    public LoggerEntry.Text wantedIntakeGoal;
     public LoggerEntry.Text intakeGoal;
 
   }
@@ -64,11 +78,8 @@ public class RobotStates {
 
   // States
 
-  private RobotGoal goal       = RobotGoal.None;
-  private RobotGoal wantedGoal = RobotGoal.None;
-
-  private IntakeGoal intakeGoal       = IntakeGoal.Stow;
-  private IntakeGoal wantedIntakeGoal = IntakeGoal.Stow;
+  private RobotGoal  goal       = RobotGoal.None;
+  private IntakeGoal intakeGoal = IntakeGoal.Stow;
 
   // Commands
 
@@ -99,62 +110,19 @@ public class RobotStates {
         drivetrain::getRawOdometryPose);
   }
 
-  private void handleGoalTransition() {
-    if (wantedGoal == goal) {
-      return;
-    }
-    if (DriverStation.isAutonomous() && wantedGoal != RobotGoal.Auto) {
-      wantedGoal = RobotGoal.Auto;
-      return;
-    }
-    switch (wantedGoal) {
-      case None:
-        drivetrain.resetVelocityOverride();
-        drivetrain.resetRotationOverride();
-        break;
-      case Auto:
-        break;
-      case Score:
-        break;
-      case Pass:
-        break;
-      case ClimbL1:
-        break;
-      case ClimbL2:
-        break;
-      case ClimbL3:
-        break;
-      case ClimbAuto:
-        break;
-    }
-    dtpHelpter.initialize();
-    rtfHelper.initialize();
-    goal = wantedGoal;
-  }
-
-  private void handleIntakeGoalTransition() {
-    switch (wantedIntakeGoal) {
-      case Stow:
-        break;
-      case LeftIntake:
-      case RightIntake:
-        if (goal == RobotGoal.ClimbL1 || goal == RobotGoal.ClimbL2 || goal == RobotGoal.ClimbL3
-            || goal == RobotGoal.ClimbAuto) {
-          intakeGoal = IntakeGoal.Stow;
-          return;
-        }
-        break;
-    }
-    intakeGoal = wantedIntakeGoal;
-  }
-
   public void periodic() {
     periodicCounter = (periodicCounter + 1) % 100;
     logs.counter.info(periodicCounter);
 
-    handleGoalTransition();
-    handleIntakeGoalTransition();
-    switch (goal) {
+    var currentIntakeGoal = intakeGoal;
+    var currentGoal       = goal;
+
+    if (goal.climberActive) {
+      // Force intakes in.
+      currentIntakeGoal = IntakeGoal.Stow;
+    }
+
+    switch (currentGoal) {
       case None:
         drivetrain.resetVelocityOverride();
         drivetrain.resetRotationOverride();
@@ -171,6 +139,7 @@ public class RobotStates {
         hopper.setGoal(Hopper.Goal.Shooting);
         break;
       case Pass:
+        // TODO: Did the target change? Reset rtfHelper
         targetPose = new Pose2d(GeometryUtil.getClosestTranslation(new AllianceAwareTranslation2d[] {
             FieldConstants.RIGHT_PASS_AIM_POINT,
             FieldConstants.LEFT_PASS_AIM_POINT
@@ -201,6 +170,16 @@ public class RobotStates {
         dtpHelpter.execute();
         break;
     }
+
+    periodicIntake(currentIntakeGoal);
+
+    // Log states
+
+    logs.subsystemsInTargetStates.goal.info(goal.name());
+    logs.subsystemsInTargetStates.intakeGoal.info(intakeGoal.name());
+  }
+
+  private void periodicIntake(IntakeGoal intakeGoal) {
     switch (intakeGoal) {
       case Stow:
         rightIntake.setGoal(Intake.Goal.Stow);
@@ -227,13 +206,6 @@ public class RobotStates {
         rightIntake.setGoal(Intake.Goal.Eject);
         break;
     }
-
-    // Log states
-
-    logs.subsystemsInTargetStates.goal.info(goal.name());
-    logs.subsystemsInTargetStates.wantedGoal.info(wantedGoal.name());
-    logs.subsystemsInTargetStates.wantedIntakeGoal.info(wantedIntakeGoal.name());
-    logs.subsystemsInTargetStates.intakeGoal.info(intakeGoal.name());
   }
 
   private void shoot() {
@@ -252,11 +224,19 @@ public class RobotStates {
   }
 
   public void setRobotGoal(RobotGoal newGoal) {
-    wantedGoal = newGoal;
+    if (goal == newGoal) {
+      return;
+    }
+
+    if (newGoal.shooterActive) {
+      rtfHelper.initialize();
+    }
+
+    goal = newGoal;
   }
 
   public void setIntakeGoal(IntakeGoal newGoal) {
-    wantedIntakeGoal = newGoal;
+    intakeGoal = newGoal;
   }
 
   public TriggerOnce changeRobotGoal(RobotGoal setGoal, RobotGoal resetGoal) {
