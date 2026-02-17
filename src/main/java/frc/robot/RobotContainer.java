@@ -40,18 +40,12 @@ import frc.robot.autonomous.AutosSubsystems;
 import frc.robot.commands.drive.DriveToPose;
 import frc.robot.commands.drive.DrivetrainDefaultTeleopDrive;
 import frc.robot.commands.drive.WheelRadiusCharacterization;
-import frc.robot.commands.setGoal.SetRobotGoal;
-import frc.robot.commands.setGoal.SetIntakingGoal;
 import frc.robot.configs.SimulatorRobotConfig;
 import frc.robot.subsystems.LED;
 import frc.robot.subsystems.LED.BaseRobotState;
 import frc.robot.subsystems.LED.RobotState;
-import frc.robot.subsystems.climber.Climber;
-import frc.robot.subsystems.climber.ElevatorIO;
-import frc.robot.subsystems.climber.ElevatorIOSim;
+import frc.robot.subsystems.climber.*;
 import frc.robot.subsystems.climber.Climber.Goal;
-import frc.robot.subsystems.climber.ElevatorIOConfig;
-import frc.robot.subsystems.climber.ElevatorIOReal;
 import frc.robot.subsystems.hopper.Hopper;
 import frc.robot.subsystems.hopper.HopperIO;
 import frc.robot.subsystems.hopper.HopperIOReal;
@@ -383,34 +377,32 @@ public class RobotContainer {
             () -> drivetrainWrapper.getHubPoseEstimatorPose(true)));
 
     driverController.registerTrigger(XboxControllerWrapper.Button.leftBumper, "Score")
-        .whileTrue(new SetRobotGoal(robotStates, RobotStates.RobotGoal.Score, true, false));
+        .react(robotStates.changeRobotGoal(RobotStates.RobotGoal.Score, RobotStates.RobotGoal.None));
 
     driverController.registerTrigger(XboxControllerWrapper.Button.rightBumper, "Pass")
-        .whileTrue(new SetRobotGoal(robotStates, RobotStates.RobotGoal.Pass, true, false));
+        .react(robotStates.changeRobotGoal(RobotStates.RobotGoal.Pass, RobotStates.RobotGoal.None));
 
     driverController.registerTrigger(XboxControllerWrapper.Button.leftTrigger, "Left Intake")
-        .whileTrue(new SetIntakingGoal(robotStates, RobotStates.IntakeGoal.LeftIntake, true, true));
+        .react(robotStates.changeIntakeGoal(RobotStates.IntakeGoal.LeftIntake, RobotStates.IntakeGoal.Stow));
 
     driverController.registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Right Intake")
-        .whileTrue(new SetIntakingGoal(robotStates, RobotStates.IntakeGoal.RightIntake, true, true));
+        .react(robotStates.changeIntakeGoal(IntakeGoal.RightIntake, RobotStates.IntakeGoal.Stow));
 
     // ---------- OPERATOR CONTROLS -----------
 
     // Eject
     operatorController.registerTrigger(XboxControllerWrapper.Button.leftBumper, "Left Intake Eject")
-        .onTrue(Commands.runOnce(() -> leftIntake.setGoal(Intake.Goal.Eject)))
-        .onFalse(Commands.runOnce(() -> leftIntake.setGoal(Intake.Goal.Stow)));
+        .react(robotStates.changeIntakeGoal(IntakeGoal.LeftEject, RobotStates.IntakeGoal.Stow));
+
     operatorController.registerTrigger(XboxControllerWrapper.Button.rightBumper, "Right Intake Eject")
-        .onTrue(Commands.runOnce(() -> rightIntake.setGoal(Intake.Goal.Eject)))
-        .onFalse(Commands.runOnce(() -> rightIntake.setGoal(Intake.Goal.Stow)));
+        .react(robotStates.changeIntakeGoal(IntakeGoal.RightEject, RobotStates.IntakeGoal.Stow));
 
     // Intake
     operatorController.registerTrigger(XboxControllerWrapper.Button.leftTrigger, "Left Intake")
-        .onTrue(Commands.runOnce(() -> robotStates.setIntakeGoal(IntakeGoal.LeftIntake)))
-        .onFalse(Commands.runOnce(() -> robotStates.setIntakeGoal(IntakeGoal.Stow)));
+        .react(robotStates.changeIntakeGoal(IntakeGoal.LeftIntake, RobotStates.IntakeGoal.Stow));
+
     operatorController.registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Right Intake")
-        .onTrue(Commands.runOnce(() -> robotStates.setIntakeGoal(IntakeGoal.RightIntake)))
-        .onFalse(Commands.runOnce(() -> robotStates.setIntakeGoal(IntakeGoal.Stow)));
+        .react(robotStates.changeIntakeGoal(IntakeGoal.RightIntake, RobotStates.IntakeGoal.Stow));
 
     // Intake positions
     operatorController.registerTrigger(XboxControllerWrapper.Button.a, "Left Intake Pivot In")

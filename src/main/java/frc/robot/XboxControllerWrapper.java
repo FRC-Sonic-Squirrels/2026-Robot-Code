@@ -11,13 +11,24 @@ import java.util.function.Function;
 
 public class XboxControllerWrapper {
   public enum Button {
-    a(CommandXboxController::a), b(CommandXboxController::b), x(CommandXboxController::x), y(CommandXboxController::y),
-    back(CommandXboxController::back), start(CommandXboxController::start), leftStick(CommandXboxController::leftStick),
-    rightStick(CommandXboxController::rightStick), leftBumper(CommandXboxController::leftBumper),
-    rightBumper(CommandXboxController::rightBumper), leftTrigger(CommandXboxController::leftTrigger),
-    rightTrigger(CommandXboxController::rightTrigger), povUp(CommandXboxController::povUp),
-    povDown(CommandXboxController::povDown), povLeft(CommandXboxController::povLeft),
+    // @formatter:off
+    a(CommandXboxController::a),
+    b(CommandXboxController::b),
+    x(CommandXboxController::x),
+    y(CommandXboxController::y),
+    back(CommandXboxController::back),
+    start(CommandXboxController::start),
+    leftStick(CommandXboxController::leftStick),
+    rightStick(CommandXboxController::rightStick),
+    leftBumper(CommandXboxController::leftBumper),
+    rightBumper(CommandXboxController::rightBumper),
+    leftTrigger(CommandXboxController::leftTrigger),
+    rightTrigger(CommandXboxController::rightTrigger),
+    povUp(CommandXboxController::povUp),
+    povDown(CommandXboxController::povDown),
+    povLeft(CommandXboxController::povLeft),
     povRight(CommandXboxController::povRight);
+    // @formatter:on
 
     final Function<CommandXboxController, Trigger> binder;
 
@@ -54,10 +65,10 @@ public class XboxControllerWrapper {
     }
   }
 
-  public Trigger registerTrigger(Button button, String role) {
+  public TriggerWrapper registerTrigger(Button button, String role) {
     buttons.get(button).info(role);
 
-    return button.bind(controller);
+    return new TriggerWrapper(button.bind(controller));
   }
 
   public GenericHID getHID() {
@@ -78,33 +89,5 @@ public class XboxControllerWrapper {
 
   public double getRightY() {
     return controller.getRightY();
-  }
-
-  public Trigger getPovUp() {
-    return controller.povUp();
-  }
-
-  public Trigger getPovDown() {
-    return controller.povDown();
-  }
-
-  public Trigger getPovLeft() {
-    return controller.povLeft();
-  }
-
-  public Trigger getPovRight() {
-    return controller.povRight();
-  }
-
-  public Trigger getRightStick() {
-    return controller.rightStick();
-  }
-
-  public Trigger getLeftTrigger() {
-    return controller.leftTrigger();
-  }
-
-  public Trigger getRightTrigger() {
-    return controller.rightTrigger();
   }
 }

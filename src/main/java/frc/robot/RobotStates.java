@@ -35,7 +35,7 @@ public class RobotStates {
   }
 
   public enum IntakeGoal {
-    Stow, LeftIntake, RightIntake
+    Stow, LeftIntake, RightIntake, LeftEject, RightEject
   }
 
   // Logging
@@ -218,6 +218,14 @@ public class RobotStates {
           rightIntake.setGoal(Intake.Goal.Intake);
         }
         break;
+
+      case LeftEject:
+        leftIntake.setGoal(Intake.Goal.Eject);
+        break;
+
+      case RightEject:
+        rightIntake.setGoal(Intake.Goal.Eject);
+        break;
     }
 
     // Log states
@@ -249,6 +257,34 @@ public class RobotStates {
 
   public void setIntakeGoal(IntakeGoal newGoal) {
     wantedIntakeGoal = newGoal;
+  }
+
+  public TriggerOnce changeRobotGoal(RobotGoal setGoal, RobotGoal resetGoal) {
+    return new TriggerOnce() {
+      @Override
+      public void start() {
+        setRobotGoal(setGoal);
+      }
+
+      @Override
+      public void end() {
+        setRobotGoalIf(setGoal, resetGoal);
+      }
+    };
+  }
+
+  public TriggerOnce changeIntakeGoal(IntakeGoal setGoal, IntakeGoal resetGoal) {
+    return new TriggerOnce() {
+      @Override
+      public void start() {
+        setIntakeGoal(setGoal);
+      }
+
+      @Override
+      public void end() {
+        setIntakeGoalIf(setGoal, resetGoal);
+      }
+    };
   }
 
   public boolean setRobotGoalIf(RobotGoal expetedGoal, RobotGoal newGoal) {

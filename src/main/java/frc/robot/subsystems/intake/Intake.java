@@ -107,8 +107,6 @@ public class Intake extends SubsystemBase {
   // Intake states
   private Goal goal = Goal.Stow;
 
-  private boolean intakeOverride = false;
-
   private double rollerTargetRPM;
 
   private ControlMode pivotControlMode = ControlMode.OPEN_LOOP;
@@ -211,30 +209,28 @@ public class Intake extends SubsystemBase {
       }
 
       // Intake state machine
-      if (!intakeOverride) {
-        switch (goal) {
-          case Idle:
-            setPivotVoltage(0);
-            setRollerPercentOut(0);
-            break;
-          case Stow:
-            setPivotAngle(PivotConstants.HOME_POSITION);
-            setRollerPercentOut(0);
-            break;
-          case Down:
-            setPivotAngle(computeDownAngle());
-            setRollerPercentOut(0);
-            break;
-          case Eject:
-            setRollerVelocity(tunables.ejectingFuelVelocity.get() * -1);
-            break;
-          case Intake:
-            setRollerVelocity(tunables.intakingFuelVelocity.get());
-            setPivotAngle(computeDownAngle());
-            break;
-          default:
-            break;
-        }
+      switch (goal) {
+        case Idle:
+          setPivotVoltage(0);
+          setRollerPercentOut(0);
+          break;
+        case Stow:
+          setPivotAngle(PivotConstants.HOME_POSITION);
+          setRollerPercentOut(0);
+          break;
+        case Down:
+          setPivotAngle(computeDownAngle());
+          setRollerPercentOut(0);
+          break;
+        case Eject:
+          setRollerVelocity(tunables.ejectingFuelVelocity.get() * -1);
+          break;
+        case Intake:
+          setRollerVelocity(tunables.intakingFuelVelocity.get());
+          setPivotAngle(computeDownAngle());
+          break;
+        default:
+          break;
       }
     }
   }
@@ -326,14 +322,6 @@ public class Intake extends SubsystemBase {
 
   public AngularVelocity getPivotVelocity() {
     return Units.DegreesPerSecond.of(inputs.pivotVelocityDegreesPerSecond);
-  }
-
-  public void setIntakeOverride(boolean intakeOverride) {
-    this.intakeOverride = intakeOverride;
-  }
-
-  public boolean getIntakeOverride() {
-    return intakeOverride;
   }
 
   public boolean rollerStallDetected() {
