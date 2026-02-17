@@ -20,8 +20,7 @@ public class Climber extends SubsystemBase {
   }
 
   public static class Logs extends AutoRegisterLoggers {
-    private static final LoggerGroup servoLogGroup = LoggerGroup.build("ClimberServo");
-    public LoggerEntry.Decimal       servoTargetAngle;
+    public LoggerEntry.Decimal servoTargetAngle;
   }
 
   private Servo climberServo = new Servo(ClimberConstants.SERVO_CHANNEL);
