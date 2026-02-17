@@ -24,7 +24,7 @@ public class Climber extends SubsystemBase {
     public LoggerEntry.Decimal       servoTargetAngle;
   }
 
-  private Servo climberServo = new Servo(8);
+  private Servo climberServo = new Servo(ClimberConstants.SERVO_CHANNEL);
 
   public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
