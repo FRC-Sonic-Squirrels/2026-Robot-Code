@@ -11,7 +11,6 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.team2930.*;
@@ -22,7 +21,7 @@ import frc.robot.Constants.RobotMode.RobotType;
 
 public class Intake extends SubsystemBase {
   public enum Goal {
-    Idle, Stow, Down, Eject, Intake
+    Stow, Down, Eject, Intake
   }
 
   public static class RollerLogs extends AutoRegisterLoggers {
@@ -42,6 +41,7 @@ public class Intake extends SubsystemBase {
     public LoggerEntry.Decimal                velocityDegreesPerSecond;
     public LoggerEntry.EnumValue<ControlMode> controlMode;
     public LoggerEntry.Decimal                targetAngleDegrees;
+    public LoggerEntry.Decimal                targetAngle;
   }
 
   public static class Logs extends AutoRegisterLoggers {
@@ -109,10 +109,7 @@ public class Intake extends SubsystemBase {
 
   private double rollerTargetRPM;
 
-  private ControlMode pivotControlMode = ControlMode.OPEN_LOOP;
-  private Rotation2d  pivotTargetAngle = PivotConstants.HOME_POSITION;
-
-  private ControlMode rollerControlMode = ControlMode.OPEN_LOOP;
+  private Rotation2d pivotTargetAngle = PivotConstants.HOME_POSITION;
 
   private final Trigger stallDetected;
 
@@ -188,14 +185,13 @@ public class Intake extends SubsystemBase {
       logs.roller.tempCelsius.info(inputs.rollerTempCelsius);
       logs.roller.appliedVolts.info(inputs.rollerAppliedVolts);
       logs.roller.targetVelocityRPM.info(rollerTargetRPM);
-      logs.roller.controlMode.info(rollerControlMode);
 
       logs.pivot.angle.info(inputs.pivotPosition);
       logs.pivot.appliedVolts.info(inputs.pivotAppliedVolts);
       logs.pivot.currentAmps.info(inputs.pivotCurrentAmps);
       logs.pivot.tempCelsius.info(inputs.pivotTempCelsius);
       logs.pivot.velocityDegreesPerSecond.info(inputs.pivotVelocityDegreesPerSecond);
-      logs.pivot.controlMode.info(pivotControlMode);
+      logs.pivot.targetAngle.info(pivotTargetAngle);
 
       logs.goal.info(goal);
 
@@ -210,17 +206,13 @@ public class Intake extends SubsystemBase {
 
       // Intake state machine
       switch (goal) {
-        case Idle:
-          setPivotVoltage(0);
-          setRollerPercentOut(0);
-          break;
         case Stow:
           setPivotAngle(PivotConstants.HOME_POSITION);
-          setRollerPercentOut(0);
+          setRollerVelocity(0);
           break;
         case Down:
           setPivotAngle(computeDownAngle());
-          setRollerPercentOut(0);
+          setRollerVelocity(0);
           break;
         case Eject:
           setRollerVelocity(tunables.ejectingFuelVelocity.get() * -1);
@@ -247,13 +239,7 @@ public class Intake extends SubsystemBase {
         roller.targetAccelerationConfig.get());
   }
 
-  public void setRollerPercentOut(double percent) {
-    io.setRollerVoltage(percent * Constants.MAX_VOLTAGE);
-    rollerControlMode = ControlMode.OPEN_LOOP;
-  }
-
   public void setRollerVelocity(double revPerMin) {
-    rollerControlMode = ControlMode.CLOSED_LOOP;
     io.setRollerVelocity(revPerMin);
     rollerTargetRPM = revPerMin;
     logs.roller.targetVelocityRPM.info(rollerTargetRPM);
@@ -273,20 +259,9 @@ public class Intake extends SubsystemBase {
     Rotation2d targetAngle = Rotation2d.fromRadians(MathUtil.clamp(angle.getRadians(),
         PivotConstants.MIN_PIVOT_ANGLE.getRadians(), PivotConstants.MAX_PIVOT_ANGLE.getRadians()));
 
-    pivotControlMode = ControlMode.CLOSED_LOOP;
     pivotTargetAngle = targetAngle;
     io.setPivotClosedLoopPosition(targetAngle);
     logs.pivot.targetAngleDegrees.info(targetAngle);
-  }
-
-  public void resetPivotSubsystem() {
-    pivotControlMode = ControlMode.OPEN_LOOP;
-    io.setPivotVoltage(0.0);
-  }
-
-  public void setPivotVoltage(double percent) {
-    pivotControlMode = ControlMode.OPEN_LOOP;
-    io.setPivotVoltage(percent);
   }
 
   public void resetPivotSensorToHomePosition() {
@@ -314,10 +289,6 @@ public class Intake extends SubsystemBase {
   public boolean isStowed() {
     return GeometryUtil.isRotationAtTarget(inputs.pivotPosition, PivotConstants.HOME_POSITION,
         tunables.pivot.toleranceDegrees.get());
-  }
-
-  public Voltage getPivotVoltage() {
-    return Units.Volts.of(inputs.pivotAppliedVolts);
   }
 
   public AngularVelocity getPivotVelocity() {
