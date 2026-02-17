@@ -109,8 +109,7 @@ public class Intake extends SubsystemBase {
 
   private double rollerTargetRPM;
 
-  private Rotation2d  pivotTargetAngle = PivotConstants.HOME_POSITION;
-
+  private Rotation2d pivotTargetAngle = PivotConstants.HOME_POSITION;
 
   private final Trigger stallDetected;
 
@@ -262,7 +261,6 @@ public class Intake extends SubsystemBase {
     io.setPivotClosedLoopPosition(targetAngle);
     logs.pivot.targetAngleDegrees.info(targetAngle);
   }
-
 
   public void resetPivotSensorToHomePosition() {
     io.resetPivotSensorPosition(PivotConstants.HOME_POSITION);
