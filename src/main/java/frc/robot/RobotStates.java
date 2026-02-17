@@ -7,6 +7,7 @@ import frc.lib.team2930.*;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.commands.drive.DriveToPoseHelper;
 import frc.robot.commands.drive.RotateToFaceHelper;
+import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.hopper.Hopper;
 import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.Shooter;
@@ -27,16 +28,10 @@ public class RobotStates {
     }
   }
 
-  // Mechanism (Arm + Elevator) States
-
-  public enum MechState {
-    Idle, Override, StowPosition, ClimbPosition, AvoidIntake, Default, AutoPrep,
-  }
-
   // Desired mech to hold coral
 
   public enum RobotGoal {
-    None, Auto, Score, Pass, Climb
+    None, Auto, Score, Pass, ClimbL1, ClimbL2, ClimbL3, ClimbAuto
   }
 
   public enum IntakeGoal {
@@ -84,13 +79,15 @@ public class RobotStates {
   private final RotateToFaceHelper rtfHelper;
   private final DriveToPoseHelper  dtpHelpter;
   private final Hopper             hopper;
+  private final Climber            climber;
 
   private int     periodicCounter;
   private boolean driveSlow;
   private Pose2d  targetPose;
 
-  public RobotStates(Intake leftIntake, Intake rightIntake, Shooter shooter, DrivetrainWrapper drivetrain,
-      Hopper hopper) {
+  public RobotStates(Climber climber, Intake leftIntake, Intake rightIntake, Shooter shooter,
+      DrivetrainWrapper drivetrain, Hopper hopper) {
+    this.climber     = climber;
     this.leftIntake  = leftIntake;
     this.rightIntake = rightIntake;
     this.drivetrain  = drivetrain;
@@ -121,7 +118,13 @@ public class RobotStates {
         break;
       case Pass:
         break;
-      case Climb:
+      case ClimbL1:
+        break;
+      case ClimbL2:
+        break;
+      case ClimbL3:
+        break;
+      case ClimbAuto:
         break;
     }
     dtpHelpter.initialize();
@@ -135,7 +138,8 @@ public class RobotStates {
         break;
       case LeftIntake:
       case RightIntake:
-        if (goal == RobotGoal.Climb) {
+        if (goal == RobotGoal.ClimbL1 || goal == RobotGoal.ClimbL2 || goal == RobotGoal.ClimbL3
+            || goal == RobotGoal.ClimbAuto) {
           intakeGoal = IntakeGoal.Stow;
           return;
         }
@@ -158,7 +162,7 @@ public class RobotStates {
         hopper.setGoal(Hopper.Goal.Idle);
         break;
       case Auto:
-        // TODO: run the auto state machene
+        // TODO: run the auto state machine
         break;
       case Score:
         targetPose = FieldConstants.HUB_CENTER_POSE.getPose2d();
@@ -175,9 +179,25 @@ public class RobotStates {
         shooter.setGoal(Shooter.Goal.Passing);
         hopper.setGoal(Hopper.Goal.Shooting);
         break;
-      case Climb:
+      case ClimbL1:
         // TODO: set proper tower positon
         targetPose = new Pose2d(0, 0, Rotation2d.kZero);
+        climber.setClimberGoal(Climber.Goal.L1Climb);
+        dtpHelpter.execute();
+        break;
+      case ClimbL2:
+        targetPose = new Pose2d(0, 0, Rotation2d.kZero);
+        climber.setClimberGoal(Climber.Goal.L2Climb);
+        dtpHelpter.execute();
+        break;
+      case ClimbL3:
+        targetPose = new Pose2d(0, 0, Rotation2d.kZero);
+        climber.setClimberGoal(Climber.Goal.L3Climb);
+        dtpHelpter.execute();
+        break;
+      case ClimbAuto:
+        targetPose = new Pose2d(0, 0, Rotation2d.kZero);
+        climber.setClimberGoal(Climber.Goal.ClimbAuto);
         dtpHelpter.execute();
         break;
     }
