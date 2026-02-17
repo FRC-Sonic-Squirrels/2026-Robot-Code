@@ -2,15 +2,11 @@ package frc.robot.subsystems.climber;
 
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.units.Units;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj.Servo;
 import frc.lib.team2930.*;
-import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.Constants.ClimberConstants;
-import frc.robot.Constants.RobotMode.RobotType;
 
 public class Climber extends SubsystemBase {
   private final String ROOT_TABLE = "Climber";
@@ -23,114 +19,43 @@ public class Climber extends SubsystemBase {
     Idle, Override, L1Extend, L1Retract, AutoDismount, AutoRetract, L2Extend, L2Retract, L3Extend, L3Retract, Lock
   }
 
-  public static class ElevatorLogs extends AutoRegisterLoggers {
-    public LoggerEntry.Decimal appliedVolts;
-    public LoggerEntry.Decimal currentAmps;
-    public LoggerEntry.Decimal tempCelsius;
-    public LoggerEntry.Decimal velocityDegreesPerSecond;
-    public LoggerEntry.Decimal targetHeightInches;
-  }
-
   public static class Logs extends AutoRegisterLoggers {
-    public ElevatorLogs innerClimber;
-    public ElevatorLogs outerClimber;
-
     public LoggerEntry.Decimal servoTargetAngle;
-
   }
+
+  private Servo climberServo = new Servo(ClimberConstants.SERVO_CHANNEL);
 
   public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
   // Execution timing
   private final ExecutionTiming climberTiming = new ExecutionTiming(ROOT_TABLE);
 
-  public static class Tunables extends AutoRegisterTunables {
-    public LoggedTunableNumber climberKP;
-    public LoggedTunableNumber climberKD;
-    public LoggedTunableNumber climberKG;
-
-    public LoggedTunableNumber maxVelocityConfig;
-    public LoggedTunableNumber climberTargetAccelerationConfig;
-
-    @TunableEntry(defaultValue = 40.0)
-    public LoggedTunableNumber toleranceDegrees;
-
-    @TunableEntry(defaultValue = 1.0)
-    public LoggedTunableNumber toleranceHeight;
-
-    public boolean hasChanged() {
-      return climberKP.hasChanged() || climberKD.hasChanged() || climberKG.hasChanged();
-
-    }
-  }
-
-  private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
-
-  private final ClimberIO        io;
-  private final ClimberIO.Inputs climberInputs;
+  private final Elevator innerElevator;
+  private final Elevator outerElevator;
 
   private ClimberState climberState = ClimberState.Idle;
   private ClimberGoal  climberGoal  = ClimberGoal.Idle;
-  private double       innerClimberHeight;
-  private double       outerClimberHeight;
 
   // This also acts as its current angle because the servo cannot tell us where it
   // is
   private Rotation2d servoTargetAngle = Constants.ClimberConstants.SERVO_LOCK_ANGLE;
 
   /** Creates a new ClimberSubsystem. */
-  public Climber(ClimberIO io) {
-    this.io            = io;
-    this.climberInputs = new ClimberIO.Inputs(logs.group);
+  public Climber(ElevatorIO innerIO, ElevatorIO outerIO) {
+    this.innerElevator = new Elevator(logs.group.subgroup("Inner"), innerIO);
+    this.outerElevator = new Elevator(logs.group.subgroup("Outer"), outerIO);
 
-    if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_RETIRED_HOLO) {
-      tunables.climberKP.initDefault(4);
-      tunables.climberKD.initDefault(0);
-      tunables.climberKG.initDefault(0.0);
-
-      tunables.maxVelocityConfig.initDefault(10);
-      tunables.climberTargetAccelerationConfig.initDefault(10);
-
-    } else if (Constants.RobotMode.getRobot() == RobotType.ROBOT_SIMBOT) {
-      tunables.climberKP.initDefault(.02);
-      tunables.climberKD.initDefault(0);
-      tunables.climberKG.initDefault(0.0);
-
-      tunables.maxVelocityConfig.initDefault(40);
-      tunables.climberTargetAccelerationConfig.initDefault(80);
-    } else {
-      tunables.climberKP.initDefault(4);
-      tunables.climberKD.initDefault(0);
-      tunables.climberKG.initDefault(0.0);
-    }
-
-    setConstants();
     setServoAngle(ClimberConstants.SERVO_UNLOCK_ANGLE);
   }
 
   @Override
   public void periodic() {
+    innerElevator.periodic();
+    outerElevator.periodic();
     try (var ignored = climberTiming.start()) {
       // Climber logging
-      io.updateClimberInputs(climberInputs);
-      logs.innerClimber.appliedVolts.info(climberInputs.innerClimberAppliedVolts);
-      logs.innerClimber.currentAmps.info(climberInputs.innerClimberCurrentAmps);
-      logs.innerClimber.tempCelsius.info(climberInputs.innerClimberTempCelsius);
-      logs.innerClimber.velocityDegreesPerSecond.info(climberInputs.innerClimberVelocityDegreesPerSecond);
-      logs.innerClimber.targetHeightInches.info(innerClimberHeight);
-
-      logs.outerClimber.appliedVolts.info(climberInputs.outerClimberAppliedVolts);
-      logs.outerClimber.currentAmps.info(climberInputs.outerClimberCurrentAmps);
-      logs.outerClimber.tempCelsius.info(climberInputs.outerClimberTempCelsius);
-      logs.outerClimber.velocityDegreesPerSecond.info(climberInputs.outerClimberVelocityDegreesPerSecond);
-      logs.outerClimber.targetHeightInches.info(outerClimberHeight);
 
       logs.servoTargetAngle.info(servoTargetAngle);
-
-      // Updating tunable numbers
-      if (tunables.hasChanged()) {
-        setConstants();
-      }
 
       switch (climberState) {
         case Override:
@@ -312,28 +237,20 @@ public class Climber extends SubsystemBase {
     }
   }
 
-  private void setConstants() {
-    double kP = tunables.climberKP.get();
-    double kD = tunables.climberKD.get();
-    double kG = tunables.climberKG.get();
-    io.setInnerClimberClosedLoopConstants(kP, kD, kG);
-    io.setOuterClimberClosedLoopConstants(kP, kD, kG);
-  }
-
   public void setInnerTargetHeight(double height) {
-    io.setInnerClimberClosedLoopPosition(height);
+    innerElevator.setTargetHeight(height);
   }
 
   public void setOuterTargetHeight(double height) {
-    io.setOuterClimberClosedLoopPosition(height);
+    outerElevator.setTargetHeight(height);
   }
 
   public boolean setClimberNeutralMode(NeutralModeValue value) {
-    return io.setClimberNeutralMode(value);
+    return innerElevator.setElevatorNeutralMode(value) && outerElevator.setElevatorNeutralMode(value);
   }
 
   public void setServoAngle(Rotation2d angle) {
-    io.setClimberServoAngle(angle);
+    climberServo.setAngle(angle.getDegrees());
     servoTargetAngle = angle;
   }
 
@@ -344,36 +261,10 @@ public class Climber extends SubsystemBase {
   // getters
 
   public boolean isInnerClimberAtTargetHeight(double target) {
-    var error = climberInputs.innerClimberPosition - target;
-    return error <= tunables.toleranceHeight.get();
+    return innerElevator.isElevatorAtTargetHeight(target);
   }
 
   public boolean isOuterClimberAtTargetHeight(double target) {
-    var error = climberInputs.outerClimberPosition - target;
-    return error <= tunables.toleranceHeight.get();
-  }
-
-  public double getInnerClimberHeight() {
-    return innerClimberHeight;
-  }
-
-  public double getOuterClimberHeight() {
-    return outerClimberHeight;
-  }
-
-  public Voltage getInnerClimberVoltage() {
-    return Units.Volts.of(climberInputs.innerClimberAppliedVolts);
-  }
-
-  public Voltage getOuterClimberVoltage() {
-    return Units.Volts.of(climberInputs.outerClimberAppliedVolts);
-  }
-
-  public AngularVelocity getInnerClimberVelocity() {
-    return Units.DegreesPerSecond.of(climberInputs.innerClimberVelocityDegreesPerSecond);
-  }
-
-  public AngularVelocity getOuterClimberVelocity() {
-    return Units.DegreesPerSecond.of(climberInputs.outerClimberVelocityDegreesPerSecond);
+    return outerElevator.isElevatorAtTargetHeight(target);
   }
 }
