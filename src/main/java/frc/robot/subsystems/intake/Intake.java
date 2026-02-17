@@ -185,13 +185,13 @@ public class Intake extends SubsystemBase {
       logs.roller.tempCelsius.info(inputs.rollerTempCelsius);
       logs.roller.appliedVolts.info(inputs.rollerAppliedVolts);
       logs.roller.targetVelocityRPM.info(rollerTargetRPM);
-      logs.pivot.targetAngle.info(pivotTargetAngle);
 
       logs.pivot.angle.info(inputs.pivotPosition);
       logs.pivot.appliedVolts.info(inputs.pivotAppliedVolts);
       logs.pivot.currentAmps.info(inputs.pivotCurrentAmps);
       logs.pivot.tempCelsius.info(inputs.pivotTempCelsius);
       logs.pivot.velocityDegreesPerSecond.info(inputs.pivotVelocityDegreesPerSecond);
+      logs.pivot.targetAngle.info(pivotTargetAngle);
 
       logs.goal.info(goal);
 
@@ -208,9 +208,11 @@ public class Intake extends SubsystemBase {
       switch (goal) {
         case Stow:
           setPivotAngle(PivotConstants.HOME_POSITION);
+          setRollerVelocity(0);
           break;
         case Down:
           setPivotAngle(computeDownAngle());
+          setRollerVelocity(0);
           break;
         case Eject:
           setRollerVelocity(tunables.ejectingFuelVelocity.get() * -1);
