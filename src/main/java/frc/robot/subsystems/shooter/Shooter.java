@@ -18,7 +18,7 @@ import java.util.List;
 
 public class Shooter extends SubsystemBase {
   public enum Goal {
-    Idle, Scoring, Passing, Stop, KickerUp
+    Idle, Scoring, Passing, Stop, PreLoad
   }
 
   private final String ROOT_TABLE = "Shooter";
@@ -216,9 +216,14 @@ public class Shooter extends SubsystemBase {
           setKickerVelocity(0);
           break;
 
-        case KickerUp:
-          setKickerVelocity(ShooterConstants.Kicker.SHOOTING_KICKER_RPM);
+        case PreLoad:
+          if (!getFuelInUpperKicker()) {
+            setKickerVelocity(ShooterConstants.Kicker.SHOOTING_KICKER_RPM);
+          } else {
+            setKickerVelocity(0);
+          }
           break;
+
       }
 
       if (Constants.unusedCode) {
