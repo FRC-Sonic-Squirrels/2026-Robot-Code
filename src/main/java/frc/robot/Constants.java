@@ -262,7 +262,9 @@ public final class Constants {
     public static final int HOPPER_ROLLER_CAN_ID = 26;
   }
 
-  public static class DIOPorts {}
+  public static class DIOPorts {
+    public static final int SHOOTER_BEAM_BREAKER_DOI_CAN_ID = 0;
+  }
 
   public enum ControlMode {
     POSITION,

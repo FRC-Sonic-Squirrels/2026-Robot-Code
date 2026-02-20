@@ -154,8 +154,7 @@ public class RobotStates {
       case None:
         drivetrain.resetVelocityOverride();
         drivetrain.resetRotationOverride();
-        shooter.setGoal(Shooter.Goal.Idle);
-        hopper.setGoal(Hopper.Goal.Idle);
+        preLoadKicker();
         break;
       case Auto:
         // TODO: run the auto state machene
@@ -164,7 +163,7 @@ public class RobotStates {
         targetPose = FieldConstants.HUB_CENTER_POSE.getPose2d();
         shoot();
         shooter.setGoal(Shooter.Goal.Scoring);
-        hopper.setGoal(Hopper.Goal.Shooting);
+        hopper.setGoal(Hopper.Goal.Forward);
         break;
       case Pass:
         targetPose = new Pose2d(GeometryUtil.getClosestTranslation(new AllianceAwareTranslation2d[] {
@@ -173,7 +172,7 @@ public class RobotStates {
         }, drivetrain.getRawOdometryPose()), Rotation2d.kZero);
         shoot();
         shooter.setGoal(Shooter.Goal.Passing);
-        hopper.setGoal(Hopper.Goal.Shooting);
+        hopper.setGoal(Hopper.Goal.Forward);
         break;
       case Climb:
         // TODO: set proper tower positon
@@ -213,6 +212,16 @@ public class RobotStates {
     // tell the shooter how far away we are from the target <- landon did this
     shooter.setFacingTarget(rtfHelper.withinTolerance());
     shooter.setDistanceFromTarget(rtfHelper.getDistance());
+  }
+
+  private void preLoadKicker() {
+    if (!shooter.getFuelInUpperKicker()) {
+      shooter.setGoal(Shooter.Goal.KickerUp);
+      hopper.setGoal(Hopper.Goal.Forward);
+    } else {
+      shooter.setGoal(Shooter.Goal.Idle);
+      hopper.setGoal(Hopper.Goal.Idle);
+    }
   }
 
   public RobotGoal getRobotGoal() {

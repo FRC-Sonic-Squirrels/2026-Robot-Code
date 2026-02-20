@@ -22,6 +22,8 @@ public interface ShooterIO {
     public double kickerCurrentAmps  = 0.0;
     public double kickerVelocityRPM  = 0.0;
 
+    public boolean fuelInUpperKicker = false;
+
     public Inputs(LoggerGroup logInputs) {
       super(logInputs);
     }
@@ -52,6 +54,9 @@ public interface ShooterIO {
   }
 
   // Kicker
+
+  public default void setKickerVoltage(double volts) {
+  }
 
   public default boolean setNeutralMode(NeutralModeValue value) {
     return false;
