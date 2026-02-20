@@ -4,6 +4,8 @@
 
 package frc.robot.commands.drive;
 
+import java.util.Objects;
+
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -13,8 +15,6 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
 import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
-import frc.robot.subsystems.swerve.DrivetrainWrapper;
-import java.util.function.Supplier;
 
 public class RotateToFaceHelper {
   private final String ROOT_TABLE = "RotateToFaceHelper";
@@ -42,26 +42,20 @@ public class RotateToFaceHelper {
     public LoggedTunableNumber toleranceDegrees;
   }
 
-  private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
-
-  private final DrivetrainWrapper       wrapper;
-  private final Supplier<Translation2d> target;
-  private final Supplier<Pose2d>        currentPose;
-  private final ProfiledPIDController   rotationalPID = new ProfiledPIDController(0, 0, 0, new Constraints(0.0, 0.0));
-
-  private double currentDist = Double.MAX_VALUE;
-
-  /** Creates a new RotateToFaceHelper . */
-  public RotateToFaceHelper(DrivetrainWrapper wrapper, Supplier<Translation2d> target, Supplier<Pose2d> pose2d) {
-    this.wrapper     = wrapper;
-    this.target      = target;
-    this.currentPose = pose2d;
-    // Use addRequirements() here to declare subsystem dependencies.
+  public record RotateToFaceState(double omega, boolean withinTolerance, Distance distance) {
   }
 
-  public void initialize() {
-    rotationalPID.reset(currentPose.get().getRotation().getRadians(),
-        wrapper.getFieldRelativeVelocities().getRotation().getRadians());
+  private final Tunables              tunables      = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
+  private final ProfiledPIDController rotationalPID = new ProfiledPIDController(0, 0, 0, new Constraints(0.0, 0.0));
+
+  private Translation2d target = new Translation2d();
+
+  /** Creates a new RotateToFaceHelper . */
+  public RotateToFaceHelper() {
+  }
+
+  public void resetPID(Pose2d currentPose, Pose2d fieldRelativeVelocities) {
+    rotationalPID.reset(currentPose.getRotation().getRadians(), fieldRelativeVelocities.getRotation().getRadians());
     rotationalPID.setP(tunables.KP.get());
     rotationalPID.setConstraints(new Constraints(tunables.cruiseVelocity.get(), tunables.maxAcceleration.get()));
     rotationalPID.enableContinuousInput(-Math.PI, Math.PI);
@@ -83,40 +77,32 @@ public class RotateToFaceHelper {
     return finalRotation.rotateBy(Rotation2d.k180deg);
   }
 
-  public void execute() {
-    if (target.get() == null) {
-      wrapper.resetRotationOverride();
-      return;
-    }
-    Pose2d        pose               = currentPose.get();
+  public RotateToFaceState periodic(Pose2d pose) {
     Translation2d currentTranslation = pose.getTranslation();
-    Translation2d targetTranslation  = target.get();
 
-    var targetangle         = RotateToFaceHelper.faceTowardsCenter(currentTranslation, targetTranslation);
+    var targetangle         = RotateToFaceHelper.faceTowardsCenter(currentTranslation, target);
     var currentPoseRotation = pose.getRotation();
     var rotVel              = rotationalPID.calculate(currentPoseRotation.getRadians(), targetangle.getRadians());
-    wrapper.setRotationOverride(rotVel);
-    currentDist = targetTranslation.getDistance(currentTranslation);
 
     logs.rotVel.info(rotVel);
     logs.targetRotation.info(targetangle);
     logs.currentRotation.info(currentPoseRotation);
     logs.positionErrorDeg.info(Math.toDegrees(getError()));
+
+    return new RotateToFaceState(rotVel, withinTolerance(), Units.Meters.of(target.getDistance(currentTranslation)));
   }
 
-  public void end() {
-    wrapper.resetRotationOverride();
+  public boolean setTarget(Translation2d target) {
+    boolean reset = !Objects.equals(this.target, target);
+    this.target = target;
+    return reset;
   }
 
-  public boolean withinTolerance() {
+  private boolean withinTolerance() {
     return Math.abs(Math.toDegrees(getError())) <= tunables.toleranceDegrees.get();
   }
 
-  public double getError() {
+  private double getError() {
     return rotationalPID.getPositionError();
-  }
-
-  public Distance getDistance() {
-    return Units.Meters.of(currentDist);
   }
 }

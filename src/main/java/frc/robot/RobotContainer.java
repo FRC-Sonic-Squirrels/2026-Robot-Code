@@ -388,6 +388,9 @@ public class RobotContainer {
     driverController.registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Right Intake")
         .react(robotStates.changeIntakeGoal(IntakeGoal.RightIntake, RobotStates.IntakeGoal.Stow));
 
+    driverController.registerTrigger(XboxControllerWrapper.Button.povDown, "Climb")
+        .react(robotStates.changeRobotGoal(RobotGoal.ClimbL1, RobotGoal.None));
+
     // ---------- OPERATOR CONTROLS -----------
 
     // Eject

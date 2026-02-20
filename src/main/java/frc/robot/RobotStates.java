@@ -1,11 +1,13 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.lib.team2930.*;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.commands.drive.DriveToPoseHelper;
 import frc.robot.commands.drive.RotateToFaceHelper;
+import frc.robot.commands.drive.RotateToFaceHelper.RotateToFaceState;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.hopper.Hopper;
 import frc.robot.subsystems.intake.Intake;
@@ -87,27 +89,24 @@ public class RobotStates {
   private final Intake             rightIntake;
   private final DrivetrainWrapper  drivetrain;
   private final Shooter            shooter;
-  private final RotateToFaceHelper rtfHelper;
-  private final DriveToPoseHelper  dtpHelpter;
+  private final RotateToFaceHelper rotateToFaceHelper;
+  private final DriveToPoseHelper  driveToPoseHelpter;
   private final Hopper             hopper;
   private final Climber            climber;
 
   private int     periodicCounter;
   private boolean driveSlow;
-  private Pose2d  targetPose;
 
   public RobotStates(Climber climber, Intake leftIntake, Intake rightIntake, Shooter shooter,
       DrivetrainWrapper drivetrain, Hopper hopper) {
-    this.climber     = climber;
-    this.leftIntake  = leftIntake;
-    this.rightIntake = rightIntake;
-    this.drivetrain  = drivetrain;
-    this.shooter     = shooter;
-    this.hopper      = hopper;
-    dtpHelpter       = new DriveToPoseHelper(this.drivetrain, () -> targetPose, drivetrain::getRawOdometryPose,
-        () -> driveSlow);
-    rtfHelper        = new RotateToFaceHelper(this.drivetrain, () -> targetPose.getTranslation(),
-        drivetrain::getRawOdometryPose);
+    this.climber       = climber;
+    this.leftIntake    = leftIntake;
+    this.rightIntake   = rightIntake;
+    this.drivetrain    = drivetrain;
+    this.shooter       = shooter;
+    this.hopper        = hopper;
+    driveToPoseHelpter = new DriveToPoseHelper(() -> driveSlow);
+    rotateToFaceHelper = new RotateToFaceHelper();
   }
 
   public void periodic() {
@@ -133,42 +132,42 @@ public class RobotStates {
         // TODO: run the auto state machine
         break;
       case Score:
-        targetPose = FieldConstants.HUB_CENTER_POSE.getPose2d();
-        shoot();
+        setRotateToFaceTarget(FieldConstants.HUB_CENTER_POSE.get());
         shooter.setGoal(Shooter.Goal.Scoring);
         hopper.setGoal(Hopper.Goal.Shooting);
         break;
       case Pass:
-        // TODO: Did the target change? Reset rtfHelper
-        targetPose = new Pose2d(GeometryUtil.getClosestTranslation(new AllianceAwareTranslation2d[] {
-            FieldConstants.RIGHT_PASS_AIM_POINT,
-            FieldConstants.LEFT_PASS_AIM_POINT
-        }, drivetrain.getRawOdometryPose()), Rotation2d.kZero);
-        shoot();
+        Translation2d target = GeometryUtil.getClosestTranslation(FieldConstants.PASS_AIM_POINTS,
+            drivetrain.getHubPoseEstimatorPose(true));
+        setRotateToFaceTarget(target);
         shooter.setGoal(Shooter.Goal.Passing);
         hopper.setGoal(Hopper.Goal.Shooting);
         break;
       case ClimbL1:
         // TODO: set proper tower positon
-        targetPose = new Pose2d(0, 0, Rotation2d.kZero);
         climber.setClimberGoal(Climber.Goal.L1Climb);
-        dtpHelpter.execute();
+        setDriveToPoseTarget(Pose2d.kZero);
         break;
       case ClimbL2:
-        targetPose = new Pose2d(0, 0, Rotation2d.kZero);
         climber.setClimberGoal(Climber.Goal.L2Climb);
-        dtpHelpter.execute();
+        setDriveToPoseTarget(Pose2d.kZero);
         break;
       case ClimbL3:
-        targetPose = new Pose2d(0, 0, Rotation2d.kZero);
         climber.setClimberGoal(Climber.Goal.L3Climb);
-        dtpHelpter.execute();
+        setDriveToPoseTarget(Pose2d.kZero);
         break;
       case ClimbAuto:
-        targetPose = new Pose2d(0, 0, Rotation2d.kZero);
         climber.setClimberGoal(Climber.Goal.ClimbAuto);
-        dtpHelpter.execute();
+        setDriveToPoseTarget(Pose2d.kZero);
         break;
+    }
+
+    if (goal.climberActive) {
+      ChassisSpeeds speeds = driveToPoseHelpter.periodic(drivetrain.getHubPoseEstimatorPose(true));
+      drivetrain.setVelocityOverride(speeds);
+    }
+    if (goal.shooterActive) {
+      shoot();
     }
 
     periodicIntake(currentIntakeGoal);
@@ -177,6 +176,20 @@ public class RobotStates {
 
     logs.subsystemsInTargetStates.goal.info(goal.name());
     logs.subsystemsInTargetStates.intakeGoal.info(intakeGoal.name());
+  }
+
+  private void setRotateToFaceTarget(Translation2d target) {
+    boolean resetPID = rotateToFaceHelper.setTarget(target);
+    if (resetPID) {
+      rotateToFaceHelper.resetPID(drivetrain.getHubPoseEstimatorPose(true), drivetrain.getRobotCentricVelocities());
+    }
+  }
+
+  private void setDriveToPoseTarget(Pose2d target) {
+    boolean resetPID = driveToPoseHelpter.setTarget(target);
+    if (resetPID) {
+      driveToPoseHelpter.resetPID(drivetrain.getHubPoseEstimatorPose(true), drivetrain.getRobotCentricVelocities());
+    }
   }
 
   private void periodicIntake(IntakeGoal intakeGoal) {
@@ -225,10 +238,10 @@ public class RobotStates {
   }
 
   private void shoot() {
-    rtfHelper.execute();
-    // tell the shooter how far away we are from the target <- landon did this
-    shooter.setFacingTarget(rtfHelper.withinTolerance());
-    shooter.setDistanceFromTarget(rtfHelper.getDistance());
+    RotateToFaceState rotateState = rotateToFaceHelper.periodic(drivetrain.getHubPoseEstimatorPose(true));
+    drivetrain.setRotationOverride(rotateState.omega());
+    shooter.setFacingTarget(rotateState.withinTolerance());
+    shooter.setDistanceFromTarget(rotateState.distance());
   }
 
   public RobotGoal getRobotGoal() {
@@ -243,9 +256,11 @@ public class RobotStates {
     if (goal == newGoal) {
       return;
     }
-
-    if (newGoal.shooterActive) {
-      rtfHelper.initialize();
+    if (!newGoal.climberActive) {
+      drivetrain.resetVelocityOverride();
+    }
+    if (!newGoal.shooterActive) {
+      drivetrain.resetRotationOverride();
     }
 
     goal = newGoal;
