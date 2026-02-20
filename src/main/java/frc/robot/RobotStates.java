@@ -163,7 +163,7 @@ public class RobotStates {
         targetPose = FieldConstants.HUB_CENTER_POSE.getPose2d();
         shoot();
         shooter.setGoal(Shooter.Goal.Scoring);
-        hopper.setGoal(Hopper.Goal.Forward);
+        hopper.setGoal(Hopper.Goal.Shooting);
         break;
       case Pass:
         targetPose = new Pose2d(GeometryUtil.getClosestTranslation(new AllianceAwareTranslation2d[] {
@@ -172,7 +172,7 @@ public class RobotStates {
         }, drivetrain.getRawOdometryPose()), Rotation2d.kZero);
         shoot();
         shooter.setGoal(Shooter.Goal.Passing);
-        hopper.setGoal(Hopper.Goal.Forward);
+        hopper.setGoal(Hopper.Goal.Shooting);
         break;
       case Climb:
         // TODO: set proper tower positon
@@ -217,7 +217,7 @@ public class RobotStates {
   private void preLoadKicker() {
     shooter.setGoal(Shooter.Goal.PreLoad);
     if (!shooter.getFuelInUpperKicker()) {
-      hopper.setGoal(Hopper.Goal.Forward);
+      hopper.setGoal(Hopper.Goal.Shooting);
     } else {
       hopper.setGoal(Hopper.Goal.Idle);
     }
