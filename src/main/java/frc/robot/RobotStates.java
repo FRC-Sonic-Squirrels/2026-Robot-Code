@@ -185,30 +185,35 @@ public class RobotStates {
         rightIntake.setGoal(Intake.Goal.Stow);
         leftIntake.setGoal(Intake.Goal.Stow);
         break;
+
       case LeftIntake:
         rightIntake.setGoal(Intake.Goal.Stow);
         if (rightIntake.isStowed()) {
           leftIntake.setGoal(Intake.Goal.Intake);
         }
         break;
+        
       case RightIntake:
         leftIntake.setGoal(Intake.Goal.Stow);
         if (leftIntake.isStowed()) {
           rightIntake.setGoal(Intake.Goal.Intake);
         }
         break;
+
       case RightDown:
         leftIntake.setGoal(Intake.Goal.Stow);
         if (leftIntake.isStowed()) {
           rightIntake.setGoal(Intake.Goal.Down);
         }
         break;
+
       case LeftDown:
         rightIntake.setGoal(Intake.Goal.Stow);
         if (rightIntake.isStowed()) {
           leftIntake.setGoal(Intake.Goal.Down);
         }
         break;
+
       case LeftEject:
         leftIntake.setGoal(Intake.Goal.Eject);
         break;

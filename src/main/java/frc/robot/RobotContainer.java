@@ -407,7 +407,7 @@ public class RobotContainer {
     operatorController.registerTrigger(XboxControllerWrapper.Button.a, "Stow")
         .react(robotStates.changeIntakeGoal(IntakeGoal.Stow, RobotStates.IntakeGoal.Stow));
 
-    operatorController.registerTrigger(XboxControllerWrapper.Button.leftStick, "Right Intake Pivot Out")
+    operatorController.registerTrigger(XboxControllerWrapper.Button.rightStick, "Right Intake Pivot Out")
         .react(robotStates.changeIntakeGoal(IntakeGoal.RightDown, RobotStates.IntakeGoal.Stow));
 
     operatorController.registerTrigger(XboxControllerWrapper.Button.leftStick, "Left Intake Pivot Out")
