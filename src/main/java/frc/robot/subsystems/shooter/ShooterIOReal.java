@@ -26,12 +26,12 @@ import frc.robot.Constants.DIOPorts;
 
 public class ShooterIOReal implements ShooterIO {
 
-  TalonFX flywheelLead     = new TalonFX(Constants.CanIDs.SHOOTER_LEAD_CAN_ID);
-  TalonFX flywheelFollower = new TalonFX(Constants.CanIDs.SHOOTER_FOLLOW_CAN_ID);
-  TalonFX hood             = new TalonFX(Constants.CanIDs.SHOOTER_HOOD_CAN_ID);
-  TalonFX kicker           = new TalonFX(Constants.CanIDs.SHOOTER_KICKER_CAN_ID);
+  private final TalonFX flywheelLead     = new TalonFX(Constants.CanIDs.SHOOTER_LEAD_CAN_ID);
+  private final TalonFX flywheelFollower = new TalonFX(Constants.CanIDs.SHOOTER_FOLLOW_CAN_ID);
+  private final TalonFX hood             = new TalonFX(Constants.CanIDs.SHOOTER_HOOD_CAN_ID);
+  private final TalonFX kicker           = new TalonFX(Constants.CanIDs.SHOOTER_KICKER_CAN_ID);
 
-  private DigitalInput kickerBeamBreak = new DigitalInput(DIOPorts.SHOOTER_BEAM_BREAKER_DOI_ID);
+  private final DigitalInput kickerBeamBreak = new DigitalInput(DIOPorts.SHOOTER_BEAM_BREAKER_DOI_ID);
 
   private final StatusSignal<Angle>           hoodPosition;
   private final StatusSignal<AngularVelocity> hoodVelocity;
