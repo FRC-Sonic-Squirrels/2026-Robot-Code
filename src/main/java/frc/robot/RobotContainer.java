@@ -408,11 +408,10 @@ public class RobotContainer {
         .react(robotStates.changeIntakeGoal(IntakeGoal.Stow, RobotStates.IntakeGoal.Stow));
 
     operatorController.registerTrigger(XboxControllerWrapper.Button.leftStick, "Right Intake Pivot Out")
-       .react(robotStates.changeIntakeGoal(IntakeGoal.rightDown, RobotStates.IntakeGoal.rightDown));
+        .react(robotStates.changeIntakeGoal(IntakeGoal.rightDown, RobotStates.IntakeGoal.rightDown));
 
     operatorController.registerTrigger(XboxControllerWrapper.Button.leftStick, "Left Intake Pivot Out")
-       .react(robotStates.changeIntakeGoal(IntakeGoal.leftDown, RobotStates.IntakeGoal.leftDown));
-
+        .react(robotStates.changeIntakeGoal(IntakeGoal.leftDown, RobotStates.IntakeGoal.leftDown));
 
     // ---------- ON-ROBOT CONTROLS ------------
 
