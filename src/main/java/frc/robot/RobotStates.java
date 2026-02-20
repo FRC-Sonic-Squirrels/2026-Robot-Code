@@ -154,7 +154,12 @@ public class RobotStates {
       case None:
         drivetrain.resetVelocityOverride();
         drivetrain.resetRotationOverride();
-        preLoadKicker();
+        if (intakeGoal == IntakeGoal.LeftIntake || intakeGoal == IntakeGoal.RightIntake) {
+          preLoadKicker();
+        } else {
+          shooter.setGoal(Shooter.Goal.Idle);
+          hopper.setGoal(Hopper.Goal.Idle);
+        }
         break;
       case Auto:
         // TODO: run the auto state machene
