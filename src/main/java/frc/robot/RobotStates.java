@@ -1,7 +1,6 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.lib.team2930.*;
@@ -139,7 +138,7 @@ public class RobotStates {
         break;
       case Pass:
         Translation2d target = GeometryUtil.getClosestTranslation(FieldConstants.PASS_AIM_POINTS,
-            drivetrain.getRawOdometryPose());
+            drivetrain.getHubPoseEstimatorPose(true));
         setRotateToFaceTarget(target);
         shooter.setGoal(Shooter.Goal.Passing);
         hopper.setGoal(Hopper.Goal.Shooting);
@@ -147,19 +146,19 @@ public class RobotStates {
       case ClimbL1:
         // TODO: set proper tower positon
         climber.setClimberGoal(Climber.Goal.L1Climb);
-        setDriveToPoseTarget(new Pose2d(0, 0, Rotation2d.kZero));
+        setDriveToPoseTarget(Pose2d.kZero);
         break;
       case ClimbL2:
         climber.setClimberGoal(Climber.Goal.L2Climb);
-        setDriveToPoseTarget(new Pose2d(0, 0, Rotation2d.kZero));
+        setDriveToPoseTarget(Pose2d.kZero);
         break;
       case ClimbL3:
         climber.setClimberGoal(Climber.Goal.L3Climb);
-        setDriveToPoseTarget(new Pose2d(0, 0, Rotation2d.kZero));
+        setDriveToPoseTarget(Pose2d.kZero);
         break;
       case ClimbAuto:
         climber.setClimberGoal(Climber.Goal.ClimbAuto);
-        setDriveToPoseTarget(new Pose2d(0, 0, Rotation2d.kZero));
+        setDriveToPoseTarget(Pose2d.kZero);
         break;
     }
 
