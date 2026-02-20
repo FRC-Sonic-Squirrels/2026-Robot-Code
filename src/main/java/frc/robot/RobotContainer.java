@@ -383,32 +383,36 @@ public class RobotContainer {
         .react(robotStates.changeRobotGoal(RobotStates.RobotGoal.Pass, RobotStates.RobotGoal.None));
 
     driverController.registerTrigger(XboxControllerWrapper.Button.leftTrigger, "Left Intake")
-        .react(robotStates.changeIntakeGoal(RobotStates.IntakeGoal.LeftIntake, RobotStates.IntakeGoal.Stow));
+        .react(robotStates.changeIntakeGoal(RobotStates.IntakeGoal.leftIntake, RobotStates.IntakeGoal.Stow));
 
     driverController.registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Right Intake")
-        .react(robotStates.changeIntakeGoal(IntakeGoal.RightIntake, RobotStates.IntakeGoal.Stow));
+        .react(robotStates.changeIntakeGoal(IntakeGoal.rightIntake, RobotStates.IntakeGoal.Stow));
 
     // ---------- OPERATOR CONTROLS -----------
 
     // Eject
     operatorController.registerTrigger(XboxControllerWrapper.Button.leftBumper, "Left Intake Eject")
-        .react(robotStates.changeIntakeGoal(IntakeGoal.LeftEject, RobotStates.IntakeGoal.Stow));
+        .react(robotStates.changeIntakeGoal(IntakeGoal.leftEject, RobotStates.IntakeGoal.Stow));
 
     operatorController.registerTrigger(XboxControllerWrapper.Button.rightBumper, "Right Intake Eject")
-        .react(robotStates.changeIntakeGoal(IntakeGoal.RightEject, RobotStates.IntakeGoal.Stow));
+        .react(robotStates.changeIntakeGoal(IntakeGoal.rightEject, RobotStates.IntakeGoal.Stow));
 
     // Intake
     operatorController.registerTrigger(XboxControllerWrapper.Button.leftTrigger, "Left Intake")
-        .react(robotStates.changeIntakeGoal(IntakeGoal.LeftIntake, RobotStates.IntakeGoal.Stow));
+        .react(robotStates.changeIntakeGoal(IntakeGoal.leftIntake, RobotStates.IntakeGoal.Stow));
 
     operatorController.registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Right Intake")
-        .react(robotStates.changeIntakeGoal(IntakeGoal.RightIntake, RobotStates.IntakeGoal.Stow));
+        .react(robotStates.changeIntakeGoal(IntakeGoal.rightIntake, RobotStates.IntakeGoal.Stow));
 
     operatorController.registerTrigger(XboxControllerWrapper.Button.a, "Stow")
         .react(robotStates.changeIntakeGoal(IntakeGoal.Stow, RobotStates.IntakeGoal.Stow));
 
-    operatorController.registerTrigger(XboxControllerWrapper.Button.leftStick, "Intake Pivot Out")
-       .react(robotStates.changeIntakeGoal(IntakeGoal.Down, RobotStates.IntakeGoal.Down));
+    operatorController.registerTrigger(XboxControllerWrapper.Button.leftStick, "Right Intake Pivot Out")
+       .react(robotStates.changeIntakeGoal(IntakeGoal.rightDown, RobotStates.IntakeGoal.rightDown));
+
+    operatorController.registerTrigger(XboxControllerWrapper.Button.leftStick, "Left Intake Pivot Out")
+       .react(robotStates.changeIntakeGoal(IntakeGoal.leftDown, RobotStates.IntakeGoal.leftDown));
+
 
     // ---------- ON-ROBOT CONTROLS ------------
 
