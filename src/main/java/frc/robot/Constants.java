@@ -263,7 +263,7 @@ public final class Constants {
   }
 
   public static class DIOPorts {
-    public static final int SHOOTER_BEAM_BREAKER_DOI_CAN_ID = 0;
+    public static final int SHOOTER_BEAM_BREAKER_DOI_ID = 0;
   }
 
   public enum ControlMode {

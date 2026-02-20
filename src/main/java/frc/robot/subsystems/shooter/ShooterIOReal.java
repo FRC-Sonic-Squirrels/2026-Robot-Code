@@ -31,7 +31,7 @@ public class ShooterIOReal implements ShooterIO {
   TalonFX hood             = new TalonFX(Constants.CanIDs.SHOOTER_HOOD_CAN_ID);
   TalonFX kicker           = new TalonFX(Constants.CanIDs.SHOOTER_KICKER_CAN_ID);
 
-  private DigitalInput kickerBeamBreak = new DigitalInput(DIOPorts.SHOOTER_BEAM_BREAKER_DOI_CAN_ID);
+  private DigitalInput kickerBeamBreak = new DigitalInput(DIOPorts.SHOOTER_BEAM_BREAKER_DOI_ID);
 
   private final StatusSignal<Angle>           hoodPosition;
   private final StatusSignal<AngularVelocity> hoodVelocity;
