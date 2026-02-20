@@ -51,7 +51,7 @@ public class RobotStates {
   }
 
   public enum IntakeGoal {
-    Stow, LeftIntake, RightIntake, LeftEject, RightEject
+    Stow, LeftIntake, RightIntake, LeftEject, RightEject, Down
   }
 
   // Logging

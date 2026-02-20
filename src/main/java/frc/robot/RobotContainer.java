@@ -404,15 +404,11 @@ public class RobotContainer {
     operatorController.registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Right Intake")
         .react(robotStates.changeIntakeGoal(IntakeGoal.RightIntake, RobotStates.IntakeGoal.Stow));
 
-    // Intake positions
-    operatorController.registerTrigger(XboxControllerWrapper.Button.a, "Left Intake Pivot In")
-        .onTrue(Commands.runOnce(() -> leftIntake.setGoal(Intake.Goal.Stow)));
-    operatorController.registerTrigger(XboxControllerWrapper.Button.leftStick, "Left Intake Pivot Out")
-        .onTrue(Commands.runOnce(() -> leftIntake.setGoal(Intake.Goal.Down)));
-    operatorController.registerTrigger(XboxControllerWrapper.Button.x, "Right Intake Pivot In")
-        .onTrue(Commands.runOnce(() -> rightIntake.setGoal(Intake.Goal.Stow)));
-    operatorController.registerTrigger(XboxControllerWrapper.Button.rightStick, "Right Intake Pivot Out")
-        .onTrue(Commands.runOnce(() -> rightIntake.setGoal(Intake.Goal.Down)));
+    operatorController.registerTrigger(XboxControllerWrapper.Button.a, "Stow")
+        .react(robotStates.changeIntakeGoal(IntakeGoal.Stow, RobotStates.IntakeGoal.Stow));
+
+    operatorController.registerTrigger(XboxControllerWrapper.Button.leftStick, "Intake Pivot Out")
+       .react(robotStates.changeIntakeGoal(IntakeGoal.Down, RobotStates.IntakeGoal.Down));
 
     // ---------- ON-ROBOT CONTROLS ------------
 
