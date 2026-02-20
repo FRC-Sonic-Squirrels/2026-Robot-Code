@@ -51,7 +51,7 @@ public class RobotStates {
   }
 
   public enum IntakeGoal {
-    Stow, leftIntake, rightIntake, leftEject, rightEject, rightDown, leftDown
+    Stow, LeftIntake, RightIntake, LeftEject, RightEject, RightDown, LeftDown
   }
 
   // Logging
@@ -185,35 +185,35 @@ public class RobotStates {
         rightIntake.setGoal(Intake.Goal.Stow);
         leftIntake.setGoal(Intake.Goal.Stow);
         break;
-      case leftIntake:
+      case LeftIntake:
         rightIntake.setGoal(Intake.Goal.Stow);
         if (rightIntake.isStowed()) {
           leftIntake.setGoal(Intake.Goal.Intake);
         }
         break;
-      case rightIntake:
+      case RightIntake:
         leftIntake.setGoal(Intake.Goal.Stow);
         if (leftIntake.isStowed()) {
           rightIntake.setGoal(Intake.Goal.Intake);
         }
         break;
-      case rightDown:
+      case RightDown:
         leftIntake.setGoal(Intake.Goal.Stow);
         if (leftIntake.isStowed()) {
           rightIntake.setGoal(Intake.Goal.Down);
         }
         break;
-      case leftDown:
+      case LeftDown:
         rightIntake.setGoal(Intake.Goal.Stow);
         if (rightIntake.isStowed()) {
           leftIntake.setGoal(Intake.Goal.Down);
         }
         break;
-      case leftEject:
+      case LeftEject:
         leftIntake.setGoal(Intake.Goal.Eject);
         break;
 
-      case rightEject:
+      case RightEject:
         rightIntake.setGoal(Intake.Goal.Eject);
         break;
     }
