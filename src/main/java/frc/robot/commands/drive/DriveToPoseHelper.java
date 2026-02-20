@@ -124,12 +124,13 @@ public class DriveToPoseHelper {
       driveController.reset(0);
       thetaController.reset(0);
     } else {
-      driveController.reset(currentPose.getTranslation().getDistance(targetPose.getTranslation()),
-          Math.min(0.0,
-              -new Translation2d(fieldRelativeVelocities.getX(), fieldRelativeVelocities.getY())
-                  .rotateBy(targetPose.getTranslation().minus(currentPose.getTranslation()).getAngle().unaryMinus())
-                  .getX()));
-      thetaController.reset(currentPose.getRotation().getRadians(), fieldRelativeVelocities.getRotation().getRadians());
+      Translation2d currentTranslation     = currentPose.getTranslation();
+      Translation2d targetTranslation      = targetPose.getTranslation();
+      double        currentRotationRadians = currentPose.getRotation().getRadians();
+      double        targetRotationRadians  = targetPose.getRotation().getRadians();
+      driveController.reset(currentTranslation.getDistance(targetTranslation), Math.min(0.0, -fieldRelativeVelocities
+          .getTranslation().rotateBy(targetTranslation.minus(currentTranslation).getAngle().unaryMinus()).getX()));
+      thetaController.reset(currentRotationRadians, targetRotationRadians);
     }
   }
 
