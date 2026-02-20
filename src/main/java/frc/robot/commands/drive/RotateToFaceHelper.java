@@ -42,15 +42,13 @@ public class RotateToFaceHelper {
     public LoggedTunableNumber toleranceDegrees;
   }
 
-  public record RotateToFaceState(double omeaga, boolean withinTolerance, Distance distance) {
+  public record RotateToFaceState(double omega, boolean withinTolerance, Distance distance) {
   }
 
-  private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
-
+  private final Tunables              tunables      = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
   private final ProfiledPIDController rotationalPID = new ProfiledPIDController(0, 0, 0, new Constraints(0.0, 0.0));
 
-  private double        currentDist = Double.MAX_VALUE;
-  private Translation2d target      = new Translation2d();
+  private Translation2d target = new Translation2d();
 
   /** Creates a new RotateToFaceHelper . */
   public RotateToFaceHelper() {

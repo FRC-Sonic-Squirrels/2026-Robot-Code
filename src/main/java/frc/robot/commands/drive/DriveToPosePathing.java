@@ -64,8 +64,6 @@ public class DriveToPosePathing extends Command {
   private static LoggerGroup                     pathFollowingLogGroup   = logGroup.subgroup("PathFollowing");
   private static LoggerEntry.Struct<Pose2d>      log_intermediatePose    = pathGenLogGroup.buildStruct(Pose2d.class,
       "IntermediatePose");
-  private static LoggerEntry.Struct<Pose2d>      log_intersectingPose    = pathGenLogGroup.buildStruct(Pose2d.class,
-      "IntersectingPose");
   private static LoggerEntry.StructArray<Pose2d> log_unAttemptedPath     = pathGenLogGroup
       .buildStructArray(Pose2d.class, "UnAttemptedPath");
   private static LoggerEntry.Struct<Pose2d>      log_targetChassisSpeeds = pathFollowingLogGroup
