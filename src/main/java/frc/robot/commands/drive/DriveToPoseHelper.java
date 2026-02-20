@@ -20,7 +20,8 @@ import frc.lib.team2930.*;
 import frc.lib.team6328.GeomUtil;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
-import frc.robot.subsystems.swerve.DrivetrainWrapper;
+
+import java.util.Objects;
 import java.util.function.Supplier;
 
 public class DriveToPoseHelper {
@@ -69,7 +70,6 @@ public class DriveToPoseHelper {
 
   private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
 
-  private final DrivetrainWrapper drive;
   private final Supplier<Boolean> slowMode;
   private final double            driveToleranceValue;
   private final Trigger           withinTolerance;
@@ -85,8 +85,7 @@ public class DriveToPoseHelper {
   private Translation2d               lastSetpointTranslation;
 
   /** Drives to the specified pose under full software control. */
-  public DriveToPoseHelper(DrivetrainWrapper drive, Supplier<Boolean> slowMode) {
-    this.drive               = drive;
+  public DriveToPoseHelper(Supplier<Boolean> slowMode) {
     this.slowMode            = slowMode;
     this.driveToleranceValue = 0.1;
 
@@ -107,8 +106,7 @@ public class DriveToPoseHelper {
     withinTolerance = new Trigger(() -> driveController.atGoal() && thetaController.atGoal()).debounce(0.3);
   }
 
-  public void initialize(Pose2d currentPose) {
-    drive.resetVelocityOverride();
+  public void resetPID(Pose2d currentPose, Pose2d fieldRelativeVelocities) {
     // Reset all controllers
 
     // Update from tunable numbers
@@ -133,16 +131,15 @@ public class DriveToPoseHelper {
     } else {
       driveController.reset(currentPose.getTranslation().getDistance(targetPose.getTranslation()),
           Math.min(0.0,
-              -new Translation2d(drive.getFieldRelativeVelocities().getX(), drive.getFieldRelativeVelocities().getY())
+              -new Translation2d(fieldRelativeVelocities.getX(), fieldRelativeVelocities.getY())
                   .rotateBy(targetPose.getTranslation().minus(currentPose.getTranslation()).getAngle().unaryMinus())
                   .getX()));
-      thetaController.reset(currentPose.getRotation().getRadians(),
-          drive.getFieldRelativeVelocities().getRotation().getRadians());
+      thetaController.reset(currentPose.getRotation().getRadians(), fieldRelativeVelocities.getRotation().getRadians());
       lastSetpointTranslation = currentPose.getTranslation();
     }
   }
 
-  public void periodic(Pose2d currentPose) {
+  public ChassisSpeeds periodic(Pose2d currentPose) {
 
     // Calculate drive speed
     double currentDistance = currentPose.getTranslation().getDistance(targetPose.getTranslation());
@@ -171,8 +168,6 @@ public class DriveToPoseHelper {
     var driveVelocity = new Pose2d(Constants.zeroTranslation2d,
         currentPose.getTranslation().minus(targetPose.getTranslation()).getAngle())
         .transformBy(GeomUtil.translationToTransform(driveVelocityScalar, 0.0)).getTranslation();
-    drive.setVelocityOverride(ChassisSpeeds.fromFieldRelativeSpeeds(driveVelocity.getX(), driveVelocity.getY(),
-        thetaVelocity, currentPose.getRotation()));
 
     // Log data
     logs.distanceMeasured.info(currentDistance);
@@ -184,19 +179,14 @@ public class DriveToPoseHelper {
     logs.driveControllerIsAtGoal.info(driveController.atGoal());
     logs.thetaControllerIsAtGoal.info(thetaController.atGoal());
     logs.isAtGoal.info(atGoal());
+    return ChassisSpeeds.fromFieldRelativeSpeeds(driveVelocity.getX(), driveVelocity.getY(), thetaVelocity,
+        currentPose.getRotation());
   }
 
-  public void setTarget(Pose2d target, Pose2d currentPose) {
-    if (this.targetPose != target) {
-      initialize(currentPose);
-    }
+  public boolean setTarget(Pose2d target) {
+    boolean reset = !Objects.equals(this.targetPose, target);
     this.targetPose = target;
-  }
-
-  public void end() {
-    drive.resetVelocityOverride();
-    logs.setpoint.info(Constants.zeroPose2d);
-    logs.goal.info(Constants.zeroPose2d);
+    return reset;
   }
 
   /** Checks if the robot is stopped at the final pose. */

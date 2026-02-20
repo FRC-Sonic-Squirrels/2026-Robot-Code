@@ -3,10 +3,12 @@ package frc.robot;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.lib.team2930.*;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.commands.drive.DriveToPoseHelper;
 import frc.robot.commands.drive.RotateToFaceHelper;
+import frc.robot.commands.drive.RotateToFaceHelper.RTFSTATE;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.hopper.Hopper;
 import frc.robot.subsystems.intake.Intake;
@@ -104,8 +106,8 @@ public class RobotStates {
     this.drivetrain  = drivetrain;
     this.shooter     = shooter;
     this.hopper      = hopper;
-    dtpHelpter       = new DriveToPoseHelper(this.drivetrain, () -> driveSlow);
-    rtfHelper        = new RotateToFaceHelper(this.drivetrain);
+    dtpHelpter       = new DriveToPoseHelper(() -> driveSlow);
+    rtfHelper        = new RotateToFaceHelper();
   }
 
   public void periodic() {
@@ -131,8 +133,7 @@ public class RobotStates {
         // TODO: run the auto state machine
         break;
       case Score:
-        rtfHelper.setTarget(FieldConstants.HUB_CENTER_POSE.get(), drivetrain.getHubPoseEstimatorPose(true));
-        shoot();
+        setRTFTarget(FieldConstants.HUB_CENTER_POSE.get());
         shooter.setGoal(Shooter.Goal.Scoring);
         hopper.setGoal(Hopper.Goal.Shooting);
         break;
@@ -141,32 +142,35 @@ public class RobotStates {
             FieldConstants.RIGHT_PASS_AIM_POINT,
             FieldConstants.LEFT_PASS_AIM_POINT
         }, drivetrain.getRawOdometryPose());
-        rtfHelper.setTarget(target, drivetrain.getHubPoseEstimatorPose(true));
-        shoot();
+        setRTFTarget(target);
         shooter.setGoal(Shooter.Goal.Passing);
         hopper.setGoal(Hopper.Goal.Shooting);
         break;
       case ClimbL1:
         // TODO: set proper tower positon
         climber.setClimberGoal(Climber.Goal.L1Climb);
-        dtpHelpter.setTarget(new Pose2d(0, 0, Rotation2d.kZero), drivetrain.getHubPoseEstimatorPose(true));
-        dtpHelpter.periodic(drivetrain.getHubPoseEstimatorPose(true));
+        setDTPTarget(new Pose2d(0, 0, Rotation2d.kZero));
         break;
       case ClimbL2:
         climber.setClimberGoal(Climber.Goal.L2Climb);
-        dtpHelpter.setTarget(new Pose2d(0, 0, Rotation2d.kZero), drivetrain.getHubPoseEstimatorPose(true));
-        dtpHelpter.periodic(drivetrain.getHubPoseEstimatorPose(true));
+        setDTPTarget(new Pose2d(0, 0, Rotation2d.kZero));
         break;
       case ClimbL3:
         climber.setClimberGoal(Climber.Goal.L3Climb);
-        dtpHelpter.setTarget(new Pose2d(0, 0, Rotation2d.kZero), drivetrain.getHubPoseEstimatorPose(true));
-        dtpHelpter.periodic(drivetrain.getHubPoseEstimatorPose(true));
+        setDTPTarget(new Pose2d(0, 0, Rotation2d.kZero));
         break;
       case ClimbAuto:
         climber.setClimberGoal(Climber.Goal.ClimbAuto);
-        dtpHelpter.setTarget(new Pose2d(0, 0, Rotation2d.kZero), drivetrain.getHubPoseEstimatorPose(true));
-        dtpHelpter.periodic(drivetrain.getHubPoseEstimatorPose(true));
+        setDTPTarget(new Pose2d(0, 0, Rotation2d.kZero));
         break;
+    }
+
+    if (goal.climberActive) {
+      ChassisSpeeds speeds = dtpHelpter.periodic(drivetrain.getHubPoseEstimatorPose(true));
+      drivetrain.setVelocityOverride(speeds);
+    }
+    if (goal.shooterActive) {
+      shoot();
     }
 
     periodicIntake(currentIntakeGoal);
@@ -175,6 +179,20 @@ public class RobotStates {
 
     logs.subsystemsInTargetStates.goal.info(goal.name());
     logs.subsystemsInTargetStates.intakeGoal.info(intakeGoal.name());
+  }
+
+  private void setRTFTarget(Translation2d target) {
+    boolean resetPID = rtfHelper.setTarget(target);
+    if (resetPID) {
+      rtfHelper.resetPID(drivetrain.getHubPoseEstimatorPose(true), drivetrain.getRobotCentricVelocities());
+    }
+  }
+
+  private void setDTPTarget(Pose2d target) {
+    boolean resetPID = dtpHelpter.setTarget(target);
+    if (resetPID) {
+      dtpHelpter.resetPID(drivetrain.getHubPoseEstimatorPose(true), drivetrain.getRobotCentricVelocities());
+    }
   }
 
   private void periodicIntake(IntakeGoal intakeGoal) {
@@ -207,8 +225,9 @@ public class RobotStates {
   }
 
   private void shoot() {
-    rtfHelper.periodic(drivetrain.getHubPoseEstimatorPose(true));
-    shooter.setFacingTarget(rtfHelper.withinTolerance());
+    RTFSTATE rotateState = rtfHelper.periodic(drivetrain.getHubPoseEstimatorPose(true));
+    drivetrain.setRotationOverride(rotateState.omeaga());
+    shooter.setFacingTarget(rotateState.withinTolerance());
     shooter.setDistanceFromTarget(rtfHelper.getDistance());
   }
 
@@ -223,6 +242,12 @@ public class RobotStates {
   public void setRobotGoal(RobotGoal newGoal) {
     if (goal == newGoal) {
       return;
+    }
+    if (!newGoal.climberActive) {
+      drivetrain.resetVelocityOverride();
+    }
+    if (!newGoal.shooterActive) {
+      drivetrain.resetRotationOverride();
     }
 
     goal = newGoal;
