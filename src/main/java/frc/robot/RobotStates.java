@@ -138,10 +138,8 @@ public class RobotStates {
         hopper.setGoal(Hopper.Goal.Shooting);
         break;
       case Pass:
-        Translation2d target = GeometryUtil.getClosestTranslation(new AllianceAwareTranslation2d[] {
-            FieldConstants.RIGHT_PASS_AIM_POINT,
-            FieldConstants.LEFT_PASS_AIM_POINT
-        }, drivetrain.getRawOdometryPose());
+        Translation2d target = GeometryUtil.getClosestTranslation(FieldConstants.PASS_AIM_POINTS,
+            drivetrain.getRawOdometryPose());
         setRotateToFaceTarget(target);
         shooter.setGoal(Shooter.Goal.Passing);
         hopper.setGoal(Hopper.Goal.Shooting);

@@ -152,6 +152,10 @@ public final class Constants {
     public static AllianceAwareTranslation2d LEFT_PASS_AIM_POINT =
         new AllianceAwareTranslation2d(new Translation2d(FIELD_LENGTH.div(4.0), FIELD_WIDTH.times(3.0 / 4.0)));
 
+    public static AllianceAwareTranslation2d[] PASS_AIM_POINTS = {
+      RIGHT_PASS_AIM_POINT,LEFT_PASS_AIM_POINT
+    };
+
     public static Distance REEF_BRANCH_OFFSET = Units.Inches.of(6.5);
 
     public static final Distance CORAL_STATION_WIDTH = Units.Inches.of(76);
