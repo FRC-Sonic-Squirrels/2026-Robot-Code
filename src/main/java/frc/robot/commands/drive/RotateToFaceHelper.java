@@ -14,7 +14,6 @@ import edu.wpi.first.units.measure.Distance;
 import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
-import java.util.function.Supplier;
 
 public class RotateToFaceHelper {
   private final String ROOT_TABLE = "RotateToFaceHelper";
@@ -44,23 +43,20 @@ public class RotateToFaceHelper {
 
   private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
 
-  private final DrivetrainWrapper       wrapper;
-  private final Supplier<Translation2d> target;
-  private final Supplier<Pose2d>        currentPose;
-  private final ProfiledPIDController   rotationalPID = new ProfiledPIDController(0, 0, 0, new Constraints(0.0, 0.0));
+  private final DrivetrainWrapper     wrapper;
+  private final ProfiledPIDController rotationalPID = new ProfiledPIDController(0, 0, 0, new Constraints(0.0, 0.0));
 
-  private double currentDist = Double.MAX_VALUE;
+  private double        currentDist = Double.MAX_VALUE;
+  private Translation2d target      = new Translation2d();
 
   /** Creates a new RotateToFaceHelper . */
-  public RotateToFaceHelper(DrivetrainWrapper wrapper, Supplier<Translation2d> target, Supplier<Pose2d> pose2d) {
-    this.wrapper     = wrapper;
-    this.target      = target;
-    this.currentPose = pose2d;
+  public RotateToFaceHelper(DrivetrainWrapper wrapper) {
+    this.wrapper = wrapper;
     // Use addRequirements() here to declare subsystem dependencies.
   }
 
-  public void initialize() {
-    rotationalPID.reset(currentPose.get().getRotation().getRadians(),
+  public void initialize(Pose2d currentPose) {
+    rotationalPID.reset(currentPose.getRotation().getRadians(),
         wrapper.getFieldRelativeVelocities().getRotation().getRadians());
     rotationalPID.setP(tunables.KP.get());
     rotationalPID.setConstraints(new Constraints(tunables.cruiseVelocity.get(), tunables.maxAcceleration.get()));
@@ -83,20 +79,14 @@ public class RotateToFaceHelper {
     return finalRotation.rotateBy(Rotation2d.k180deg);
   }
 
-  public void execute() {
-    if (target.get() == null) {
-      wrapper.resetRotationOverride();
-      return;
-    }
-    Pose2d        pose               = currentPose.get();
+  public void periodic(Pose2d pose) {
     Translation2d currentTranslation = pose.getTranslation();
-    Translation2d targetTranslation  = target.get();
 
-    var targetangle         = RotateToFaceHelper.faceTowardsCenter(currentTranslation, targetTranslation);
+    var targetangle         = RotateToFaceHelper.faceTowardsCenter(currentTranslation, target);
     var currentPoseRotation = pose.getRotation();
     var rotVel              = rotationalPID.calculate(currentPoseRotation.getRadians(), targetangle.getRadians());
     wrapper.setRotationOverride(rotVel);
-    currentDist = targetTranslation.getDistance(currentTranslation);
+    currentDist = target.getDistance(currentTranslation);
 
     logs.rotVel.info(rotVel);
     logs.targetRotation.info(targetangle);
@@ -104,8 +94,11 @@ public class RotateToFaceHelper {
     logs.positionErrorDeg.info(Math.toDegrees(getError()));
   }
 
-  public void end() {
-    wrapper.resetRotationOverride();
+  public void setTarget(Translation2d target, Pose2d currentPose) {
+    if (this.target != target) {
+      initialize(currentPose);
+    }
+    this.target = target;
   }
 
   public boolean withinTolerance() {

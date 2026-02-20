@@ -2,6 +2,7 @@ package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
 import frc.lib.team2930.*;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.commands.drive.DriveToPoseHelper;
@@ -94,7 +95,6 @@ public class RobotStates {
 
   private int     periodicCounter;
   private boolean driveSlow;
-  private Pose2d  targetPose;
 
   public RobotStates(Climber climber, Intake leftIntake, Intake rightIntake, Shooter shooter,
       DrivetrainWrapper drivetrain, Hopper hopper) {
@@ -104,10 +104,8 @@ public class RobotStates {
     this.drivetrain  = drivetrain;
     this.shooter     = shooter;
     this.hopper      = hopper;
-    dtpHelpter       = new DriveToPoseHelper(this.drivetrain, () -> targetPose, drivetrain::getRawOdometryPose,
-        () -> driveSlow);
-    rtfHelper        = new RotateToFaceHelper(this.drivetrain, () -> targetPose.getTranslation(),
-        drivetrain::getRawOdometryPose);
+    dtpHelpter       = new DriveToPoseHelper(this.drivetrain, () -> driveSlow);
+    rtfHelper        = new RotateToFaceHelper(this.drivetrain);
   }
 
   public void periodic() {
@@ -133,41 +131,41 @@ public class RobotStates {
         // TODO: run the auto state machine
         break;
       case Score:
-        targetPose = FieldConstants.HUB_CENTER_POSE.getPose2d();
+        rtfHelper.setTarget(FieldConstants.HUB_CENTER_POSE.get(), drivetrain.getHubPoseEstimatorPose(true));
         shoot();
         shooter.setGoal(Shooter.Goal.Scoring);
         hopper.setGoal(Hopper.Goal.Shooting);
         break;
       case Pass:
-        // TODO: Did the target change? Reset rtfHelper
-        targetPose = new Pose2d(GeometryUtil.getClosestTranslation(new AllianceAwareTranslation2d[] {
+        Translation2d target = GeometryUtil.getClosestTranslation(new AllianceAwareTranslation2d[] {
             FieldConstants.RIGHT_PASS_AIM_POINT,
             FieldConstants.LEFT_PASS_AIM_POINT
-        }, drivetrain.getRawOdometryPose()), Rotation2d.kZero);
+        }, drivetrain.getRawOdometryPose());
+        rtfHelper.setTarget(target, drivetrain.getHubPoseEstimatorPose(true));
         shoot();
         shooter.setGoal(Shooter.Goal.Passing);
         hopper.setGoal(Hopper.Goal.Shooting);
         break;
       case ClimbL1:
         // TODO: set proper tower positon
-        targetPose = new Pose2d(0, 0, Rotation2d.kZero);
         climber.setClimberGoal(Climber.Goal.L1Climb);
-        dtpHelpter.execute();
+        dtpHelpter.setTarget(new Pose2d(0, 0, Rotation2d.kZero), drivetrain.getHubPoseEstimatorPose(true));
+        dtpHelpter.periodic(drivetrain.getHubPoseEstimatorPose(true));
         break;
       case ClimbL2:
-        targetPose = new Pose2d(0, 0, Rotation2d.kZero);
         climber.setClimberGoal(Climber.Goal.L2Climb);
-        dtpHelpter.execute();
+        dtpHelpter.setTarget(new Pose2d(0, 0, Rotation2d.kZero), drivetrain.getHubPoseEstimatorPose(true));
+        dtpHelpter.periodic(drivetrain.getHubPoseEstimatorPose(true));
         break;
       case ClimbL3:
-        targetPose = new Pose2d(0, 0, Rotation2d.kZero);
         climber.setClimberGoal(Climber.Goal.L3Climb);
-        dtpHelpter.execute();
+        dtpHelpter.setTarget(new Pose2d(0, 0, Rotation2d.kZero), drivetrain.getHubPoseEstimatorPose(true));
+        dtpHelpter.periodic(drivetrain.getHubPoseEstimatorPose(true));
         break;
       case ClimbAuto:
-        targetPose = new Pose2d(0, 0, Rotation2d.kZero);
         climber.setClimberGoal(Climber.Goal.ClimbAuto);
-        dtpHelpter.execute();
+        dtpHelpter.setTarget(new Pose2d(0, 0, Rotation2d.kZero), drivetrain.getHubPoseEstimatorPose(true));
+        dtpHelpter.periodic(drivetrain.getHubPoseEstimatorPose(true));
         break;
     }
 
@@ -209,8 +207,7 @@ public class RobotStates {
   }
 
   private void shoot() {
-    rtfHelper.execute();
-    // tell the shooter how far away we are from the target <- landon did this
+    rtfHelper.periodic(drivetrain.getHubPoseEstimatorPose(true));
     shooter.setFacingTarget(rtfHelper.withinTolerance());
     shooter.setDistanceFromTarget(rtfHelper.getDistance());
   }
@@ -226,10 +223,6 @@ public class RobotStates {
   public void setRobotGoal(RobotGoal newGoal) {
     if (goal == newGoal) {
       return;
-    }
-
-    if (newGoal.shooterActive) {
-      rtfHelper.initialize();
     }
 
     goal = newGoal;

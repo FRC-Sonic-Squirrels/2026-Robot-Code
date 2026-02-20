@@ -71,10 +71,10 @@ public class DriveToPoseHelper {
 
   private final DrivetrainWrapper drive;
   private final Supplier<Boolean> slowMode;
-  private final Supplier<Pose2d>  poseSupplier;
-  private final Supplier<Pose2d>  currentRobotPose;
   private final double            driveToleranceValue;
   private final Trigger           withinTolerance;
+
+  private Pose2d targetPose;
 
   private final ProfiledPIDController driveController = new ProfiledPIDController(0.0, 0.0, 0.0,
       new TrapezoidProfile.Constraints(0.0, 0.0));
@@ -85,12 +85,9 @@ public class DriveToPoseHelper {
   private Translation2d               lastSetpointTranslation;
 
   /** Drives to the specified pose under full software control. */
-  public DriveToPoseHelper(DrivetrainWrapper drive, Supplier<Pose2d> poseSupplier, Supplier<Pose2d> currentRobotPose,
-      Supplier<Boolean> slowMode) {
+  public DriveToPoseHelper(DrivetrainWrapper drive, Supplier<Boolean> slowMode) {
     this.drive               = drive;
     this.slowMode            = slowMode;
-    this.poseSupplier        = poseSupplier;
-    this.currentRobotPose    = currentRobotPose;
     this.driveToleranceValue = 0.1;
 
     tunables.driveMaxVelocity.initDefault(5);
@@ -110,11 +107,9 @@ public class DriveToPoseHelper {
     withinTolerance = new Trigger(() -> driveController.atGoal() && thetaController.atGoal()).debounce(0.3);
   }
 
-  public void initialize() {
+  public void initialize(Pose2d currentPose) {
     drive.resetVelocityOverride();
     // Reset all controllers
-    var pose        = poseSupplier.get();
-    var currentPose = currentRobotPose.get();
 
     // Update from tunable numbers
     driveController.setP(tunables.driveKP.get());
@@ -131,30 +126,23 @@ public class DriveToPoseHelper {
         slowMode.get() ? tunables.thetaMaxVelocitySlow.get() : tunables.thetaMaxVelocity.get(),
         tunables.thetaMaxAcceleration.get()));
     thetaController.setTolerance(slowMode.get() ? tunables.thetaToleranceSlow.get() : tunables.thetaTolerance.get());
-    if (pose == null) {
+    if (targetPose == null) {
       driveController.reset(0);
       thetaController.reset(0);
       lastSetpointTranslation = currentPose.getTranslation();
     } else {
-      driveController.reset(currentPose.getTranslation().getDistance(pose.getTranslation()),
+      driveController.reset(currentPose.getTranslation().getDistance(targetPose.getTranslation()),
           Math.min(0.0,
               -new Translation2d(drive.getFieldRelativeVelocities().getX(), drive.getFieldRelativeVelocities().getY())
-                  .rotateBy(pose.getTranslation().minus(currentPose.getTranslation()).getAngle().unaryMinus()).getX()));
+                  .rotateBy(targetPose.getTranslation().minus(currentPose.getTranslation()).getAngle().unaryMinus())
+                  .getX()));
       thetaController.reset(currentPose.getRotation().getRadians(),
           drive.getFieldRelativeVelocities().getRotation().getRadians());
       lastSetpointTranslation = currentPose.getTranslation();
     }
   }
 
-  public void execute() {
-    // Get current and target pose
-    var currentPose = currentRobotPose.get();
-    var targetPose  = poseSupplier.get();
-
-    if (currentPose == null) {
-      drive.resetVelocityOverride();
-      return;
-    }
+  public void periodic(Pose2d currentPose) {
 
     // Calculate drive speed
     double currentDistance = currentPose.getTranslation().getDistance(targetPose.getTranslation());
@@ -196,6 +184,13 @@ public class DriveToPoseHelper {
     logs.driveControllerIsAtGoal.info(driveController.atGoal());
     logs.thetaControllerIsAtGoal.info(thetaController.atGoal());
     logs.isAtGoal.info(atGoal());
+  }
+
+  public void setTarget(Pose2d target, Pose2d currentPose) {
+    if (this.targetPose != target) {
+      initialize(currentPose);
+    }
+    this.targetPose = target;
   }
 
   public void end() {
