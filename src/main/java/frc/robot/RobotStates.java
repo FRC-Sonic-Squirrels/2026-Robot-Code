@@ -192,7 +192,7 @@ public class RobotStates {
           leftIntake.setGoal(Intake.Goal.Intake);
         }
         break;
-        
+
       case RightIntake:
         leftIntake.setGoal(Intake.Goal.Stow);
         if (leftIntake.isStowed()) {
