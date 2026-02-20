@@ -8,7 +8,7 @@ import frc.lib.team2930.*;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.commands.drive.DriveToPoseHelper;
 import frc.robot.commands.drive.RotateToFaceHelper;
-import frc.robot.commands.drive.RotateToFaceHelper.RTFSTATE;
+import frc.robot.commands.drive.RotateToFaceHelper.RotateToFaceState;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.hopper.Hopper;
 import frc.robot.subsystems.intake.Intake;
@@ -90,8 +90,8 @@ public class RobotStates {
   private final Intake             rightIntake;
   private final DrivetrainWrapper  drivetrain;
   private final Shooter            shooter;
-  private final RotateToFaceHelper rtfHelper;
-  private final DriveToPoseHelper  dtpHelpter;
+  private final RotateToFaceHelper rotateToFaceHelper;
+  private final DriveToPoseHelper  driveToPoseHelpter;
   private final Hopper             hopper;
   private final Climber            climber;
 
@@ -100,14 +100,14 @@ public class RobotStates {
 
   public RobotStates(Climber climber, Intake leftIntake, Intake rightIntake, Shooter shooter,
       DrivetrainWrapper drivetrain, Hopper hopper) {
-    this.climber     = climber;
-    this.leftIntake  = leftIntake;
-    this.rightIntake = rightIntake;
-    this.drivetrain  = drivetrain;
-    this.shooter     = shooter;
-    this.hopper      = hopper;
-    dtpHelpter       = new DriveToPoseHelper(() -> driveSlow);
-    rtfHelper        = new RotateToFaceHelper();
+    this.climber       = climber;
+    this.leftIntake    = leftIntake;
+    this.rightIntake   = rightIntake;
+    this.drivetrain    = drivetrain;
+    this.shooter       = shooter;
+    this.hopper        = hopper;
+    driveToPoseHelpter = new DriveToPoseHelper(() -> driveSlow);
+    rotateToFaceHelper = new RotateToFaceHelper();
   }
 
   public void periodic() {
@@ -133,7 +133,7 @@ public class RobotStates {
         // TODO: run the auto state machine
         break;
       case Score:
-        setRTFTarget(FieldConstants.HUB_CENTER_POSE.get());
+        setRotateToFaceTarget(FieldConstants.HUB_CENTER_POSE.get());
         shooter.setGoal(Shooter.Goal.Scoring);
         hopper.setGoal(Hopper.Goal.Shooting);
         break;
@@ -142,31 +142,31 @@ public class RobotStates {
             FieldConstants.RIGHT_PASS_AIM_POINT,
             FieldConstants.LEFT_PASS_AIM_POINT
         }, drivetrain.getRawOdometryPose());
-        setRTFTarget(target);
+        setRotateToFaceTarget(target);
         shooter.setGoal(Shooter.Goal.Passing);
         hopper.setGoal(Hopper.Goal.Shooting);
         break;
       case ClimbL1:
         // TODO: set proper tower positon
         climber.setClimberGoal(Climber.Goal.L1Climb);
-        setDTPTarget(new Pose2d(0, 0, Rotation2d.kZero));
+        setDriveToPoseTarget(new Pose2d(0, 0, Rotation2d.kZero));
         break;
       case ClimbL2:
         climber.setClimberGoal(Climber.Goal.L2Climb);
-        setDTPTarget(new Pose2d(0, 0, Rotation2d.kZero));
+        setDriveToPoseTarget(new Pose2d(0, 0, Rotation2d.kZero));
         break;
       case ClimbL3:
         climber.setClimberGoal(Climber.Goal.L3Climb);
-        setDTPTarget(new Pose2d(0, 0, Rotation2d.kZero));
+        setDriveToPoseTarget(new Pose2d(0, 0, Rotation2d.kZero));
         break;
       case ClimbAuto:
         climber.setClimberGoal(Climber.Goal.ClimbAuto);
-        setDTPTarget(new Pose2d(0, 0, Rotation2d.kZero));
+        setDriveToPoseTarget(new Pose2d(0, 0, Rotation2d.kZero));
         break;
     }
 
     if (goal.climberActive) {
-      ChassisSpeeds speeds = dtpHelpter.periodic(drivetrain.getHubPoseEstimatorPose(true));
+      ChassisSpeeds speeds = driveToPoseHelpter.periodic(drivetrain.getHubPoseEstimatorPose(true));
       drivetrain.setVelocityOverride(speeds);
     }
     if (goal.shooterActive) {
@@ -181,17 +181,17 @@ public class RobotStates {
     logs.subsystemsInTargetStates.intakeGoal.info(intakeGoal.name());
   }
 
-  private void setRTFTarget(Translation2d target) {
-    boolean resetPID = rtfHelper.setTarget(target);
+  private void setRotateToFaceTarget(Translation2d target) {
+    boolean resetPID = rotateToFaceHelper.setTarget(target);
     if (resetPID) {
-      rtfHelper.resetPID(drivetrain.getHubPoseEstimatorPose(true), drivetrain.getRobotCentricVelocities());
+      rotateToFaceHelper.resetPID(drivetrain.getHubPoseEstimatorPose(true), drivetrain.getRobotCentricVelocities());
     }
   }
 
-  private void setDTPTarget(Pose2d target) {
-    boolean resetPID = dtpHelpter.setTarget(target);
+  private void setDriveToPoseTarget(Pose2d target) {
+    boolean resetPID = driveToPoseHelpter.setTarget(target);
     if (resetPID) {
-      dtpHelpter.resetPID(drivetrain.getHubPoseEstimatorPose(true), drivetrain.getRobotCentricVelocities());
+      driveToPoseHelpter.resetPID(drivetrain.getHubPoseEstimatorPose(true), drivetrain.getRobotCentricVelocities());
     }
   }
 
@@ -225,10 +225,10 @@ public class RobotStates {
   }
 
   private void shoot() {
-    RTFSTATE rotateState = rtfHelper.periodic(drivetrain.getHubPoseEstimatorPose(true));
+    RotateToFaceState rotateState = rotateToFaceHelper.periodic(drivetrain.getHubPoseEstimatorPose(true));
     drivetrain.setRotationOverride(rotateState.omeaga());
     shooter.setFacingTarget(rotateState.withinTolerance());
-    shooter.setDistanceFromTarget(rtfHelper.getDistance());
+    shooter.setDistanceFromTarget(rotateState.distance());
   }
 
   public RobotGoal getRobotGoal() {

@@ -42,7 +42,7 @@ public class RotateToFaceHelper {
     public LoggedTunableNumber toleranceDegrees;
   }
 
-  public record RTFSTATE(double omeaga, boolean withinTolerance, Distance distance) {
+  public record RotateToFaceState(double omeaga, boolean withinTolerance, Distance distance) {
   }
 
   private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
@@ -79,20 +79,19 @@ public class RotateToFaceHelper {
     return finalRotation.rotateBy(Rotation2d.k180deg);
   }
 
-  public RTFSTATE periodic(Pose2d pose) {
+  public RotateToFaceState periodic(Pose2d pose) {
     Translation2d currentTranslation = pose.getTranslation();
 
     var targetangle         = RotateToFaceHelper.faceTowardsCenter(currentTranslation, target);
     var currentPoseRotation = pose.getRotation();
     var rotVel              = rotationalPID.calculate(currentPoseRotation.getRadians(), targetangle.getRadians());
-    currentDist = target.getDistance(currentTranslation);
 
     logs.rotVel.info(rotVel);
     logs.targetRotation.info(targetangle);
     logs.currentRotation.info(currentPoseRotation);
     logs.positionErrorDeg.info(Math.toDegrees(getError()));
 
-    return new RTFSTATE(rotVel, withinTolerance(), getDistance());
+    return new RotateToFaceState(rotVel, withinTolerance(), Units.Meters.of(target.getDistance(currentTranslation)));
   }
 
   public boolean setTarget(Translation2d target) {
@@ -101,15 +100,11 @@ public class RotateToFaceHelper {
     return reset;
   }
 
-  public boolean withinTolerance() {
+  private boolean withinTolerance() {
     return Math.abs(Math.toDegrees(getError())) <= tunables.toleranceDegrees.get();
   }
 
-  public double getError() {
+  private double getError() {
     return rotationalPID.getPositionError();
-  }
-
-  public Distance getDistance() {
-    return Units.Meters.of(currentDist);
   }
 }
