@@ -220,7 +220,7 @@ public class RobotStates {
   }
 
   private void preLoadKicker() {
-    shooter.setGoal(Shooter.Goal.PreLoad);
+    shooter.setGoal(Shooter.Goal.PreLoading);
     if (!shooter.getFuelInUpperKicker()) {
       hopper.setGoal(Hopper.Goal.Shooting);
     } else {
