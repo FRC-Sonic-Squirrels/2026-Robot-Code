@@ -55,6 +55,9 @@ public interface ShooterIO {
 
   // Kicker
 
+  public default void setKickerVoltage(double volts) {
+  }
+
   public default boolean setNeutralMode(NeutralModeValue value) {
     return false;
   }
