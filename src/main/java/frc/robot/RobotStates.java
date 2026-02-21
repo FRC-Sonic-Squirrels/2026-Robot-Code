@@ -80,8 +80,8 @@ public class RobotStates {
 
   // States
 
-  private RobotGoal  goal       = RobotGoal.None;
-  private IntakeGoal intakeGoal = IntakeGoal.Stow;
+  private RobotGoal   goal        = RobotGoal.None;
+  private IntakeGoal  intakeGoal  = IntakeGoal.Stow;
   private ShooterGoal shooterGoal = ShooterGoal.Idle;
 
   // Commands
@@ -93,8 +93,6 @@ public class RobotStates {
   private final RotateToFaceHelper rotateToFaceHelper;
   private final Hopper             hopper;
   private final Climber            climber;
-  
-
 
   private int     periodicCounter;
   private boolean driveSlow;

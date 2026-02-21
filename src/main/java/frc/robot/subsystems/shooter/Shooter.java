@@ -225,8 +225,8 @@ public class Shooter extends SubsystemBase {
           break;
 
         case Unjamming:
-           setKickerVelocity(-(ShooterConstants.Kicker.SHOOTING_KICKER_RPM));
-           break;
+          setKickerVelocity(-(ShooterConstants.Kicker.SHOOTING_KICKER_RPM));
+          break;
       }
 
       if (Constants.unusedCode) {
