@@ -359,6 +359,9 @@ public static class ShooterConstants {
       public static final double SHOOTING_KICKER_RPM = 100;
       public static final double STALL_CURRENT_THRESHOLD = 20;
       public static final double PRELOADING_KICKER_RPM = 50;
+      public static final double DURATION_TO_CONFIRM_STALL = 0.1;
+      public static final double DURATION_TO_CONFIRM_UNSTALL = 0.2;
+      public static final double DURATION_TO_CONFIRM_PERSISTANT_STALL = 1;
     }
 
     public static class Interpolation {
