@@ -116,14 +116,14 @@ public class Shooter extends SubsystemBase {
   private Distance distanceFromTarget = Distance.ofRelativeUnits(100, Units.Meters);
   private boolean  isFacingTarget;
 
-  private Trigger initialStallDetected = new Trigger(() -> inputs.kickerVelocityRPM <= 50
+  private final Trigger initialStallDetected = new Trigger(() -> inputs.kickerVelocityRPM <= 50
       && inputs.kickerCurrentAmps >= ShooterConstants.Kicker.STALL_CURRENT_THRESHOLD)
       .debounce(ShooterConstants.Kicker.DURATION_TO_CONFIRM_STALL);
 
-  private Trigger stallDetected = new Trigger(() -> initialStallDetected.getAsBoolean())
+  private final Trigger stallDetected = new Trigger(() -> initialStallDetected.getAsBoolean())
       .debounce(ShooterConstants.Kicker.DURATION_TO_CONFIRM_UNSTALL, DebounceType.kFalling);
 
-  private Trigger persistantStallDetected = new Trigger(() -> kickerStallDetected())
+  private final Trigger persistantStallDetected = new Trigger(() -> kickerStallDetected())
       .debounce(ShooterConstants.Kicker.DURATION_TO_CONFIRM_PERSISTANT_STALL, DebounceType.kRising);
 
   /** Creates a new ShooterSubsystem. */
