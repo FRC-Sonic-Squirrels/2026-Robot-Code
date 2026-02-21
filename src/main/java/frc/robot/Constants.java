@@ -227,8 +227,8 @@ public final class Constants {
       public static final double ROLLER_GEARING = 10.4167;
       public static final double MOI = 0.05;
 
-      public static final double SUPPLY_CURRENT_LIMIT = 20.0;
-      public static final double STATOR_CURRENT_LIMIT = 100.0;
+      public static final double SUPPLY_CURRENT_LIMIT = 10;
+      public static final double STATOR_CURRENT_LIMIT = 10;
 
       public static final String ROLLER = "Rollers";
       public static final int SHOOTING_ROLLER_VELOCITY = 240;
@@ -333,8 +333,8 @@ public static class ShooterConstants {
 
       public static final double SIM_INITIAL_ANGLE = Math.toRadians(14.0);
 
-      public static final double SUPPLY_CURRENT_LIMIT = 40;
-      public static final double STATOR_CURRENT_LIMIT = 40;
+      public static final double SUPPLY_CURRENT_LIMIT = 5;
+      public static final double STATOR_CURRENT_LIMIT = 10;
 
       public static final double CORRECT_ANGLE_RANGE = 2;
     }
@@ -353,8 +353,8 @@ public static class ShooterConstants {
     public static class Kicker {
       public static final double MOI = 5.0;
       public static final double GEARING = 1.0;
-      public static final double SUPPLY_CURRENT_LIMIT = 40;
-      public static final double STATOR_CURRENT_LIMIT = 40;
+      public static final double SUPPLY_CURRENT_LIMIT = 10;
+      public static final double STATOR_CURRENT_LIMIT = 10;
       public static final double SENSOR_TO_MECHANISM_RATIO = 1.42;
       public static final double SHOOTING_KICKER_RPM = 100;
     }
