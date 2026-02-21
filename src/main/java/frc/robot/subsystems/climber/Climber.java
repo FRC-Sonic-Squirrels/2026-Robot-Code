@@ -12,15 +12,17 @@ public class Climber extends SubsystemBase {
   private final String ROOT_TABLE = "Climber";
 
   public enum Goal {
-    ClimbAuto, AutoDismount, L1Climb, L2Climb, L3Climb, Idle, Override
+    MountDismount, ClimbL1, ClimbL2, ClimbL3, Idle, Override, Lock
   }
 
   private enum ClimberState {
-    Idle, Override, L1Extend, L1Retract, AutoDismount, AutoRetract, L2Extend, L2Retract, L3Extend, L3Retract, Lock
+    Idle, Override, L1Retract, MountDismount, L2Extend, L2Retract, L3Extend, L3Retract, Lock
   }
 
   public static class Logs extends AutoRegisterLoggers {
-    public LoggerEntry.Decimal servoTargetAngle;
+    public LoggerEntry.EnumValue<ClimberState> state;
+    public LoggerEntry.EnumValue<Goal>         goal;
+    public LoggerEntry.Decimal                 servoTargetAngle;
   }
 
   private Servo climberServo = new Servo(ClimberConstants.SERVO_CHANNEL);
@@ -55,7 +57,43 @@ public class Climber extends SubsystemBase {
     try (var ignored = climberTiming.start()) {
       // Climber logging
 
+      logs.state.info(climberState);
+      logs.goal.info(climberGoal);
       logs.servoTargetAngle.info(servoTargetAngle);
+
+      switch (climberGoal) {
+
+        case Override:
+          climberState = ClimberState.Override;
+          break;
+
+        case Idle:
+          climberState = ClimberState.Idle;
+          break;
+
+        case Lock:
+          climberState = ClimberState.Lock;
+          break;
+
+        case MountDismount:
+          climberState = ClimberState.MountDismount;
+          break;
+
+        case ClimbL1:
+          climberState = ClimberState.L1Retract;
+          break;
+
+        case ClimbL2:
+          climberState = ClimberState.L1Retract;
+          break;
+
+        case ClimbL3:
+          climberState = ClimberState.L1Retract;
+          break;
+
+        default:
+          break;
+      }
 
       switch (climberState) {
         case Override:
@@ -70,17 +108,13 @@ public class Climber extends SubsystemBase {
           setServoAngle(ClimberConstants.SERVO_LOCK_ANGLE);
           break;
 
-        case L1Extend:
+        case MountDismount:
           setOuterTargetHeight(ClimberConstants.L1_CLIMB_HEIGHT);
-          if (isOuterClimberAtTargetHeight(ClimberConstants.L1_CLIMB_HEIGHT)) {
-            setOuterTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT);
-            climberState = ClimberState.L1Retract;
-          }
           break;
 
         case L1Retract:
+          setOuterTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT);
           if (isOuterClimberAtTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT)) {
-            setOuterTargetHeight(0);
             switch (climberGoal) {
 
               case Override:
@@ -89,11 +123,10 @@ public class Climber extends SubsystemBase {
               case Idle:
                 break;
 
-              case ClimbAuto:
+              case ClimbL1:
                 break;
 
-              case L1Climb:
-                climberState = ClimberState.Lock;
+              case Lock:
                 break;
 
               default:
@@ -103,26 +136,15 @@ public class Climber extends SubsystemBase {
           }
           break;
 
-        case AutoDismount:
-          setOuterTargetHeight(ClimberConstants.L1_CLIMB_HEIGHT);
-          break;
-
-        case AutoRetract:
-          setOuterTargetHeight(0);
-          if (isOuterClimberAtTargetHeight(0)) {
-            climberState = ClimberState.Idle;
-          }
-          break;
-
         case L2Extend:
           setInnerTargetHeight(ClimberConstants.L2_CLIMB_HEIGHT);
           if (isInnerClimberAtTargetHeight(ClimberConstants.L2_CLIMB_HEIGHT)) {
-            setInnerTargetHeight(ClimberConstants.INNER_RETRACTION_HEIGHT);
             climberState = ClimberState.L2Retract;
           }
           break;
 
         case L2Retract:
+          setInnerTargetHeight(ClimberConstants.INNER_RETRACTION_HEIGHT);
           if (isInnerClimberAtTargetHeight(ClimberConstants.INNER_RETRACTION_HEIGHT)) {
             setInnerTargetHeight(0);
             switch (climberGoal) {
@@ -133,17 +155,13 @@ public class Climber extends SubsystemBase {
               case Idle:
                 break;
 
-              case ClimbAuto:
+              case Lock:
                 break;
 
-              case AutoDismount:
+              case ClimbL1:
                 break;
 
-              case L1Climb:
-                break;
-
-              case L2Climb:
-                climberState = ClimberState.Lock;
+              case ClimbL2:
                 break;
 
               default:
@@ -156,39 +174,14 @@ public class Climber extends SubsystemBase {
         case L3Extend:
           setOuterTargetHeight(ClimberConstants.L3_CLIMB_HEIGHT);
           if (isOuterClimberAtTargetHeight(ClimberConstants.L3_CLIMB_HEIGHT)) {
-            setOuterTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT);
             climberState = ClimberState.L3Retract;
           }
           break;
 
         case L3Retract:
-          if (isOuterClimberAtTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT)) {
-            setOuterTargetHeight(0);
-            switch (climberGoal) {
+          setOuterTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT);
+          break;
 
-              case Override:
-                break;
-
-              case Idle:
-                break;
-
-              case ClimbAuto:
-                break;
-
-              case AutoDismount:
-                break;
-
-              case L1Climb:
-                break;
-
-              case L2Climb:
-                break;
-
-              case L3Climb:
-                climberState = ClimberState.Lock;
-                break;
-            }
-          }
         default:
           break;
       }
@@ -197,11 +190,8 @@ public class Climber extends SubsystemBase {
 
   // setters
 
-  public void setClimberGoal(Goal goal) {
+  public void setGoal(Goal goal) {
     climberGoal = goal;
-    if (climberState != ClimberState.Idle) {
-      return;
-    }
     switch (goal) {
 
       case Override:
@@ -212,24 +202,24 @@ public class Climber extends SubsystemBase {
         climberState = ClimberState.Idle;
         break;
 
-      case ClimbAuto:
-        climberState = ClimberState.L1Extend;
+      case Lock:
+        climberState = ClimberState.Lock;
         break;
 
-      case AutoDismount:
-        climberState = ClimberState.AutoDismount;
+      case MountDismount:
+        climberState = ClimberState.MountDismount;
         break;
 
-      case L1Climb:
-        climberState = ClimberState.L1Extend;
+      case ClimbL1:
+        climberState = ClimberState.MountDismount;
         break;
 
-      case L2Climb:
-        climberState = ClimberState.L1Extend;
+      case ClimbL2:
+        climberState = ClimberState.MountDismount;
         break;
 
-      case L3Climb:
-        climberState = ClimberState.L1Extend;
+      case ClimbL3:
+        climberState = ClimberState.MountDismount;
         break;
 
       default:

@@ -45,7 +45,6 @@ import frc.robot.subsystems.LED;
 import frc.robot.subsystems.LED.BaseRobotState;
 import frc.robot.subsystems.LED.RobotState;
 import frc.robot.subsystems.climber.*;
-import frc.robot.subsystems.climber.Climber.Goal;
 import frc.robot.subsystems.hopper.Hopper;
 import frc.robot.subsystems.hopper.HopperIO;
 import frc.robot.subsystems.hopper.HopperIOReal;
@@ -424,7 +423,7 @@ public class RobotContainer {
     zeroSensorsButtonTrigger.onTrue(new RunsWhenDisabledInstantCommand(() -> {
       leftIntake.resetPivotSensorToHomePosition();
       rightIntake.resetPivotSensorToHomePosition();
-      climber.setClimberGoal(Goal.Idle);
+      climber.setGoal(Climber.Goal.Idle);
       led.setRobotState(RobotState.ZERO_SUBSYSTEMS);
 
       zeroButtonTriggered = true;
