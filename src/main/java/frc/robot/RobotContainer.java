@@ -548,7 +548,6 @@ public class RobotContainer {
   }
 
   public void enterAutonomous() {
-    robotStates.setRobotGoal(RobotGoal.Auto);
 
     // TODO: add setting all motors into break mode if they aren't already
     vision.useMaxDistanceAwayFromExistingEstimate(true);

@@ -1,11 +1,8 @@
 package frc.robot;
 
-import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import frc.lib.team2930.*;
 import frc.robot.Constants.FieldConstants;
-import frc.robot.commands.drive.DriveToPoseHelper;
 import frc.robot.commands.drive.RotateToFaceHelper;
 import frc.robot.commands.drive.RotateToFaceHelper.RotateToFaceState;
 import frc.robot.subsystems.climber.Climber;
@@ -34,13 +31,11 @@ public class RobotStates {
   public enum RobotGoal {
     // @formatter:off
     None     (false, false),
-    Auto     (false, false),
     Score    ( true, false),
     Pass     ( true, false),
     ClimbL1  (false,  true),
     ClimbL2  (false,  true),
-    ClimbL3  (false,  true),
-    ClimbAuto(false,  true);
+    ClimbL3  (false,  true);
     // @formatter:on
 
     public final boolean shooterActive;
@@ -90,7 +85,6 @@ public class RobotStates {
   private final DrivetrainWrapper  drivetrain;
   private final Shooter            shooter;
   private final RotateToFaceHelper rotateToFaceHelper;
-  private final DriveToPoseHelper  driveToPoseHelpter;
   private final Hopper             hopper;
   private final Climber            climber;
 
@@ -105,7 +99,6 @@ public class RobotStates {
     this.drivetrain    = drivetrain;
     this.shooter       = shooter;
     this.hopper        = hopper;
-    driveToPoseHelpter = new DriveToPoseHelper(() -> driveSlow);
     rotateToFaceHelper = new RotateToFaceHelper();
   }
 
@@ -132,9 +125,6 @@ public class RobotStates {
           hopper.setGoal(Hopper.Goal.Idle);
         }
         break;
-      case Auto:
-        // TODO: run the auto state machine
-        break;
       case Score:
         setRotateToFaceTarget(FieldConstants.HUB_CENTER_POSE.get());
         shooter.setGoal(Shooter.Goal.Scoring);
@@ -150,26 +140,15 @@ public class RobotStates {
       case ClimbL1:
         // TODO: set proper tower positon
         climber.setClimberGoal(Climber.Goal.L1Climb);
-        setDriveToPoseTarget(Pose2d.kZero);
         break;
       case ClimbL2:
         climber.setClimberGoal(Climber.Goal.L2Climb);
-        setDriveToPoseTarget(Pose2d.kZero);
         break;
       case ClimbL3:
         climber.setClimberGoal(Climber.Goal.L3Climb);
-        setDriveToPoseTarget(Pose2d.kZero);
-        break;
-      case ClimbAuto:
-        climber.setClimberGoal(Climber.Goal.ClimbAuto);
-        setDriveToPoseTarget(Pose2d.kZero);
         break;
     }
 
-    if (goal.climberActive) {
-      ChassisSpeeds speeds = driveToPoseHelpter.periodic(drivetrain.getHubPoseEstimatorPose(true));
-      drivetrain.setVelocityOverride(speeds);
-    }
     if (goal.shooterActive) {
       shoot();
     }
@@ -186,13 +165,6 @@ public class RobotStates {
     boolean resetPID = rotateToFaceHelper.setTarget(target);
     if (resetPID) {
       rotateToFaceHelper.resetPID(drivetrain.getHubPoseEstimatorPose(true), drivetrain.getRobotCentricVelocities());
-    }
-  }
-
-  private void setDriveToPoseTarget(Pose2d target) {
-    boolean resetPID = driveToPoseHelpter.setTarget(target);
-    if (resetPID) {
-      driveToPoseHelpter.resetPID(drivetrain.getHubPoseEstimatorPose(true), drivetrain.getRobotCentricVelocities());
     }
   }
 
