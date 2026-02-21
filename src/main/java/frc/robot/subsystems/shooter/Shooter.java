@@ -197,6 +197,8 @@ public class Shooter extends SubsystemBase {
           setKickerVelocity(0);
           break;
 
+        case Passing:
+
         case Scoring:
           setFlywheelRPM(getFlywheelRPM(distanceFromTarget));
           setHoodPosition(getHoodAngle(distanceFromTarget));
@@ -205,9 +207,6 @@ public class Shooter extends SubsystemBase {
           } else {
             setKickerVelocity(0);
           }
-          break;
-
-        case Passing:
           break;
 
         case Stop:
@@ -291,8 +290,15 @@ public class Shooter extends SubsystemBase {
     }
   }
 
-  public static double getFlywheelRPM(Distance distance) {
-    return ShooterConstants.Interpolation.RPM_FOR_HUB_DISTANCE.get(distance.in(Units.Meters));
+  public double getFlywheelRPM(Distance distance) {
+    switch (goal) {
+      case Scoring:
+        return ShooterConstants.Interpolation.RPM_FOR_HUB_DISTANCE.get(distance.in(Units.Meters));
+      case Passing:
+        return ShooterConstants.Interpolation.RPM_FOR_ALLIANCE_ZONE_DISTANCE.get(distance.in(Units.Meters));
+      default:
+        return ShooterConstants.Flywheel.IDLE_FLYWHEEL_RPM;
+    }
   }
 
   public void setHoodClosedLoopConstants(double kP, double kD, double kG, double maxProfiledVelocity,

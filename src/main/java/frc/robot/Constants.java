@@ -363,7 +363,7 @@ public static class ShooterConstants {
       public static final InterpolatingDoubleTreeMap HOOD_ANGLE_FOR_HUB_DISTANCE;
       public static final InterpolatingDoubleTreeMap RPM_FOR_HUB_DISTANCE;
       public static final InterpolatingDoubleTreeMap HOOD_ANGLE_FOR_ALLIANCE_ZONE_DISTANCE;
-
+      public static final InterpolatingDoubleTreeMap RPM_FOR_ALLIANCE_ZONE_DISTANCE;
       static {
 
         HOOD_ANGLE_FOR_HUB_DISTANCE = new InterpolatingDoubleTreeMap();
@@ -403,6 +403,16 @@ public static class ShooterConstants {
         HOOD_ANGLE_FOR_ALLIANCE_ZONE_DISTANCE.put(5.5, 24.85);
         HOOD_ANGLE_FOR_ALLIANCE_ZONE_DISTANCE.put(6.0, 23.60);
         HOOD_ANGLE_FOR_ALLIANCE_ZONE_DISTANCE.put(6.5, 22.80);
+
+        RPM_FOR_ALLIANCE_ZONE_DISTANCE = new InterpolatingDoubleTreeMap();
+        RPM_FOR_ALLIANCE_ZONE_DISTANCE.put(1.0, 2000.0);
+        RPM_FOR_ALLIANCE_ZONE_DISTANCE.put(2.0, 3000.0);
+        RPM_FOR_ALLIANCE_ZONE_DISTANCE.put(3.0, 4500.0);
+        RPM_FOR_ALLIANCE_ZONE_DISTANCE.put(4.0, 5200.0);
+        RPM_FOR_ALLIANCE_ZONE_DISTANCE.put(7.0, 6000.0);
+        RPM_FOR_ALLIANCE_ZONE_DISTANCE.put(8.0, 6800.0);
+        RPM_FOR_ALLIANCE_ZONE_DISTANCE.put(9.5, 7200.0);
+        RPM_FOR_ALLIANCE_ZONE_DISTANCE.put(11.5, 8000.0);
       }
     }
   }
