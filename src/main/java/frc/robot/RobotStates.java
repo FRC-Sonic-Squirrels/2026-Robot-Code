@@ -129,14 +129,14 @@ public class RobotStates {
       case Score:
         setRotateToFaceTarget(FieldConstants.HUB_CENTER_POSE.get());
         shooter.setGoal(Shooter.Goal.Scoring);
-        hopper.setGoal(Hopper.Goal.PreLoading);
+        hopper.setGoal(Hopper.Goal.Shooting);
         break;
       case Pass:
         Translation2d target = GeometryUtil.getClosestTranslation(FieldConstants.PASS_AIM_POINTS,
             drivetrain.getHubPoseEstimatorPose(true));
         setRotateToFaceTarget(target);
         shooter.setGoal(Shooter.Goal.Passing);
-        hopper.setGoal(Hopper.Goal.PreLoading);
+        hopper.setGoal(Hopper.Goal.Shooting);
         break;
       case ClimbL1:
         // TODO: set proper tower positon
