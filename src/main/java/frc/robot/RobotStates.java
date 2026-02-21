@@ -30,12 +30,13 @@ public class RobotStates {
 
   public enum RobotGoal {
     // @formatter:off
-    None     (false, false),
-    Score    ( true, false),
-    Pass     ( true, false),
-    ClimbL1  (false,  true),
-    ClimbL2  (false,  true),
-    ClimbL3  (false,  true);
+    None      (false, false),
+    Score     (true,  false),
+    Pass      (true,  false),
+    ClimbL1   (false, true),
+    ClimbL2   (false, true),
+    ClimbL3   (false, true),
+    Unjamming (false, false);
     // @formatter:on
 
     public final boolean shooterActive;
@@ -146,6 +147,10 @@ public class RobotStates {
         break;
       case ClimbL3:
         climber.setClimberGoal(Climber.Goal.L3Climb);
+        break;
+      case Unjamming:
+        shooter.setGoal(Shooter.Goal.Unjamming);
+        hopper.setGoal(Hopper.Goal.Unjamming);
         break;
     }
 

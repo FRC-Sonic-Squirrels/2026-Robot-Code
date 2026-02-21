@@ -15,7 +15,7 @@ public class Hopper extends SubsystemBase {
   public final String ROOT_TABLE = "Hopper";
 
   public enum Goal {
-    Idle, Override, Shooting, PreLoading
+    Idle, Override, Shooting, PreLoading, Unjamming
   }
 
   public static class Logs extends AutoRegisterLoggers {
@@ -106,7 +106,9 @@ public class Hopper extends SubsystemBase {
         case Shooting:
           setRollerVelocity(HopperConstants.RollerConstants.SHOOTING_ROLLER_VELOCITY);
           break;
-
+        case Unjamming:
+          setRollerVelocity(-(HopperConstants.RollerConstants.SHOOTING_ROLLER_VELOCITY));
+          break;
         default:
           break;
       }
