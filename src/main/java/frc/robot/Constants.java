@@ -309,12 +309,14 @@ public final class Constants {
     public static final Rotation2d SERVO_UNLOCK_ANGLE = Rotation2d.fromDegrees(170);
 
     // in inches
-    public static final double L1_CLIMB_HEIGHT = 25;
-    public static final double L2_CLIMB_HEIGHT = 24;
-    public static final double L3_CLIMB_HEIGHT = 23;
+    public static final double L1_LEADER_CLIMB_HEIGHT = 25;
+    public static final double L2_LEADER_CLIMB_HEIGHT = 24;
+    public static final double L3_LEADER_CLIMB_HEIGHT = 23;
 
-    public static final double INNER_RETRACTION_HEIGHT = 0;
-    public static final double OUTER_RETRACTION_HEIGHT = 0;
+    public static final double FOLLOWER_EXTENDED_HEIGHT = 18;
+
+    public static final double FOLLOWER_RETRACTED_HEIGHT = 0;
+    public static final double LEADER_RETRACTED_HEIGHT = 0;
   }
 
 public static class ShooterConstants {

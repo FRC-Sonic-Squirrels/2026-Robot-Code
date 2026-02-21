@@ -16,7 +16,24 @@ public class Climber extends SubsystemBase {
   }
 
   private enum State {
-    Idle, Override, L1Retract, MountDismount, L2Extend, L2Retract, L3Extend, L3Retract, Lock
+    // Leader is the outer elevator, follower is the inner elevator.
+    // Retract is elevator going down, pulling the robot up.
+    // Extend is elevator going up, reaching for the next bar.
+    //@formatter:off
+    Idle,
+    Override,
+    LeaderMountDismount,
+    L1LeaderRetract,
+    L1FollowerExtend,
+    L1FollowerRetract,
+    L2LeaderExtend,
+    L2LeaderRetract,
+    L2FollowerExtend,
+    L2FollowerRetract,
+    L3LeaderExtend,
+    L3LeaderRetract,
+    Lock
+    //@formatter:on
   }
 
   public static class Logs extends AutoRegisterLoggers {
@@ -74,35 +91,47 @@ public class Climber extends SubsystemBase {
               break;
 
             case Idle:
-              setInnerTargetHeight(ClimberConstants.INNER_RETRACTION_HEIGHT);
-              setOuterTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT);
+              setLeaderTargetHeight(ClimberConstants.LEADER_RETRACTED_HEIGHT);
+              setFollowerTargetHeight(ClimberConstants.FOLLOWER_RETRACTED_HEIGHT);
               break;
 
             case Lock:
               break;
 
-            case MountDismount:
+            case LeaderMountDismount:
               state = State.Idle;
               break;
 
-            case L1Retract:
+            case L1LeaderRetract:
               break;
 
-            case L2Extend:
+            case L1FollowerExtend:
               break;
 
-            case L2Retract:
+            case L1FollowerRetract:
               break;
 
-            case L3Extend:
+            case L2LeaderExtend:
               break;
 
-            case L3Retract:
+            case L2LeaderRetract:
+              break;
+
+            case L2FollowerExtend:
+              break;
+
+            case L2FollowerRetract:
+              break;
+
+            case L3LeaderExtend:
+              break;
+
+            case L3LeaderRetract:
               break;
           }
           break;
 
-        case Lock:
+        case Lock:// FIXME get info about the lock and servo systems
           switch (state) {
 
             case Override:
@@ -114,27 +143,39 @@ public class Climber extends SubsystemBase {
             case Lock:
               break;
 
-            case MountDismount:
+            case LeaderMountDismount:
               break;
 
-            case L1Retract:
-              state = State.Lock;
+            case L1LeaderRetract:
+              state = State.Lock; // Generic lock code for if the lock is on the leader
               setServoAngle(ClimberConstants.SERVO_LOCK_ANGLE);
               break;
 
-            case L2Extend:
+            case L1FollowerExtend:
               break;
 
-            case L2Retract:
-              state = State.Lock;
+            case L1FollowerRetract:
+              break;
+
+            case L2LeaderExtend:
+              break;
+
+            case L2LeaderRetract:
+              state = State.Lock; // Generic lock code for if the lock is on the leader
               setServoAngle(ClimberConstants.SERVO_LOCK_ANGLE);
               break;
 
-            case L3Extend:
+            case L2FollowerExtend:
               break;
 
-            case L3Retract:
-              state = State.Lock;
+            case L2FollowerRetract:
+              break;
+
+            case L3LeaderExtend:
+              break;
+
+            case L3LeaderRetract:
+              state = State.Lock; // Generic lock code for if the lock is on the leader
               setServoAngle(ClimberConstants.SERVO_LOCK_ANGLE);
               break;
           }
@@ -147,31 +188,41 @@ public class Climber extends SubsystemBase {
               break;
 
             case Idle:
-              state = State.MountDismount;
-              setOuterTargetHeight(ClimberConstants.L1_CLIMB_HEIGHT);
+              state = State.LeaderMountDismount;
+              setLeaderTargetHeight(ClimberConstants.L1_LEADER_CLIMB_HEIGHT);
               break;
 
             case Lock:
               break;
 
-            case MountDismount:
+            case LeaderMountDismount:
               break;
 
-            case L1Retract:
-              state = State.MountDismount;
-              setOuterTargetHeight(ClimberConstants.L1_CLIMB_HEIGHT);
+            case L1LeaderRetract:
               break;
 
-            case L2Extend:
+            case L1FollowerExtend:
               break;
 
-            case L2Retract:
+            case L1FollowerRetract:
               break;
 
-            case L3Extend:
+            case L2LeaderExtend:
               break;
 
-            case L3Retract:
+            case L2LeaderRetract:
+              break;
+
+            case L2FollowerExtend:
+              break;
+
+            case L2FollowerRetract:
+              break;
+
+            case L3LeaderExtend:
+              break;
+
+            case L3LeaderRetract:
               break;
           }
           break;
@@ -188,24 +239,44 @@ public class Climber extends SubsystemBase {
             case Lock:
               break;
 
-            case MountDismount:
-              state = State.L1Retract;
-              setOuterTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT);
+            case LeaderMountDismount:
+              state = State.L1LeaderRetract;
+              setLeaderTargetHeight(ClimberConstants.LEADER_RETRACTED_HEIGHT);
               break;
 
-            case L1Retract:
+            case L1LeaderRetract:
+              if (isLeaderAtTargetHeight(ClimberConstants.LEADER_RETRACTED_HEIGHT)) {
+                state = State.L1FollowerExtend;
+                setFollowerTargetHeight(ClimberConstants.FOLLOWER_EXTENDED_HEIGHT);
+              }
               break;
 
-            case L2Extend:
+            case L1FollowerExtend:
+              if (isFollowerAtTargetHeight(ClimberConstants.FOLLOWER_EXTENDED_HEIGHT)) {
+                state = State.L1FollowerRetract;
+                setFollowerTargetHeight(ClimberConstants.FOLLOWER_RETRACTED_HEIGHT);
+              }
               break;
 
-            case L2Retract:
+            case L1FollowerRetract:
               break;
 
-            case L3Extend:
+            case L2LeaderExtend:
               break;
 
-            case L3Retract:
+            case L2LeaderRetract:
+              break;
+
+            case L2FollowerExtend:
+              break;
+
+            case L2FollowerRetract:
+              break;
+
+            case L3LeaderExtend:
+              break;
+
+            case L3LeaderRetract:
               break;
           }
           break;
@@ -222,32 +293,60 @@ public class Climber extends SubsystemBase {
             case Lock:
               break;
 
-            case MountDismount:
-              state = State.L1Retract;
-              setOuterTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT);
+            case LeaderMountDismount:
+              state = State.L1LeaderRetract;
+              setLeaderTargetHeight(ClimberConstants.LEADER_RETRACTED_HEIGHT);
               break;
 
-            case L1Retract:
-              if (isOuterClimberAtTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT)) {
-                state = State.L2Extend;
-                setInnerTargetHeight(ClimberConstants.L2_CLIMB_HEIGHT);
+            case L1LeaderRetract:
+              if (isLeaderAtTargetHeight(ClimberConstants.LEADER_RETRACTED_HEIGHT)) {
+                state = State.L1FollowerExtend;
+                setFollowerTargetHeight(ClimberConstants.FOLLOWER_EXTENDED_HEIGHT);
               }
               break;
 
-            case L2Extend:
-              if (isInnerClimberAtTargetHeight(ClimberConstants.L2_CLIMB_HEIGHT)) {
-                state = State.L2Retract;
-                setInnerTargetHeight(ClimberConstants.INNER_RETRACTION_HEIGHT);
+            case L1FollowerExtend:
+              if (isFollowerAtTargetHeight(ClimberConstants.FOLLOWER_EXTENDED_HEIGHT)) {
+                state = State.L1FollowerRetract;
+                setFollowerTargetHeight(ClimberConstants.FOLLOWER_RETRACTED_HEIGHT);
               }
               break;
 
-            case L2Retract:
+            case L1FollowerRetract:
+              if (isFollowerAtTargetHeight(ClimberConstants.FOLLOWER_RETRACTED_HEIGHT)) {
+                state = State.L2LeaderExtend;
+                setLeaderTargetHeight(ClimberConstants.L2_LEADER_CLIMB_HEIGHT);
+              }
               break;
 
-            case L3Extend:
+            case L2LeaderExtend:
+              if (isLeaderAtTargetHeight(ClimberConstants.L2_LEADER_CLIMB_HEIGHT)) {
+                state = State.L2LeaderRetract;
+                setLeaderTargetHeight(ClimberConstants.LEADER_RETRACTED_HEIGHT);
+              }
               break;
 
-            case L3Retract:
+            case L2LeaderRetract:
+              if (isLeaderAtTargetHeight(ClimberConstants.LEADER_RETRACTED_HEIGHT)) {
+                state = State.L2FollowerExtend;
+                setFollowerTargetHeight(ClimberConstants.FOLLOWER_EXTENDED_HEIGHT);
+              }
+              break;
+
+            case L2FollowerExtend:
+              if (isFollowerAtTargetHeight(ClimberConstants.FOLLOWER_EXTENDED_HEIGHT)) {
+                state = State.L2FollowerRetract;
+                setFollowerTargetHeight(ClimberConstants.FOLLOWER_RETRACTED_HEIGHT);
+              }
+              break;
+
+            case L2FollowerRetract:
+              break;
+
+            case L3LeaderExtend:
+              break;
+
+            case L3LeaderRetract:
               break;
           }
           break;
@@ -264,40 +363,68 @@ public class Climber extends SubsystemBase {
             case Lock:
               break;
 
-            case MountDismount:
-              state = State.L1Retract;
-              setOuterTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT);
+            case LeaderMountDismount:
+              state = State.L1LeaderRetract;
+              setLeaderTargetHeight(ClimberConstants.LEADER_RETRACTED_HEIGHT);
               break;
 
-            case L1Retract:
-              if (isOuterClimberAtTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT)) {
-                state = State.L2Extend;
-                setInnerTargetHeight(ClimberConstants.L2_CLIMB_HEIGHT);
+            case L1LeaderRetract:
+              if (isLeaderAtTargetHeight(ClimberConstants.LEADER_RETRACTED_HEIGHT)) {
+                state = State.L1FollowerExtend;
+                setFollowerTargetHeight(ClimberConstants.FOLLOWER_EXTENDED_HEIGHT);
               }
               break;
 
-            case L2Extend:
-              if (isInnerClimberAtTargetHeight(ClimberConstants.L2_CLIMB_HEIGHT)) {
-                state = State.L2Retract;
-                setInnerTargetHeight(ClimberConstants.INNER_RETRACTION_HEIGHT);
+            case L1FollowerExtend:
+              if (isFollowerAtTargetHeight(ClimberConstants.FOLLOWER_EXTENDED_HEIGHT)) {
+                state = State.L1FollowerRetract;
+                setFollowerTargetHeight(ClimberConstants.FOLLOWER_RETRACTED_HEIGHT);
               }
               break;
 
-            case L2Retract:
-              if (isInnerClimberAtTargetHeight(ClimberConstants.INNER_RETRACTION_HEIGHT)) {
-                state = State.L3Extend;
-                setOuterTargetHeight(ClimberConstants.L3_CLIMB_HEIGHT);
+            case L1FollowerRetract:
+              if (isFollowerAtTargetHeight(ClimberConstants.FOLLOWER_RETRACTED_HEIGHT)) {
+                state = State.L2LeaderExtend;
+                setLeaderTargetHeight(ClimberConstants.L2_LEADER_CLIMB_HEIGHT);
               }
               break;
 
-            case L3Extend:
-              if (isOuterClimberAtTargetHeight(ClimberConstants.L3_CLIMB_HEIGHT)) {
-                state = State.L3Retract;
-                setOuterTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT);
+            case L2LeaderExtend:
+              if (isFollowerAtTargetHeight(ClimberConstants.L2_LEADER_CLIMB_HEIGHT)) {
+                state = State.L2LeaderRetract;
+                setLeaderTargetHeight(ClimberConstants.LEADER_RETRACTED_HEIGHT);
               }
               break;
 
-            case L3Retract:
+            case L2LeaderRetract:
+              if (isLeaderAtTargetHeight(ClimberConstants.LEADER_RETRACTED_HEIGHT)) {
+                state = State.L2FollowerExtend;
+                setFollowerTargetHeight(ClimberConstants.FOLLOWER_EXTENDED_HEIGHT);
+              }
+              break;
+
+            case L2FollowerExtend:
+              if (isFollowerAtTargetHeight(ClimberConstants.FOLLOWER_EXTENDED_HEIGHT)) {
+                state = State.L2FollowerRetract;
+                setFollowerTargetHeight(ClimberConstants.FOLLOWER_RETRACTED_HEIGHT);
+              }
+              break;
+
+            case L2FollowerRetract:
+              if (isFollowerAtTargetHeight(ClimberConstants.FOLLOWER_RETRACTED_HEIGHT)) {
+                state = State.L3LeaderExtend;
+                setLeaderTargetHeight(ClimberConstants.L3_LEADER_CLIMB_HEIGHT);
+              }
+              break;
+
+            case L3LeaderExtend:
+              if (isLeaderAtTargetHeight(ClimberConstants.L3_LEADER_CLIMB_HEIGHT)) {
+                state = State.L3LeaderRetract;
+                setLeaderTargetHeight(ClimberConstants.LEADER_RETRACTED_HEIGHT);
+              }
+              break;
+
+            case L3LeaderRetract:
               break;
           }
           break;
@@ -314,11 +441,11 @@ public class Climber extends SubsystemBase {
     this.goal = goal;
   }
 
-  public void setInnerTargetHeight(double height) {
+  public void setFollowerTargetHeight(double height) {
     innerElevator.setTargetHeight(height);
   }
 
-  public void setOuterTargetHeight(double height) {
+  public void setLeaderTargetHeight(double height) {
     outerElevator.setTargetHeight(height);
   }
 
@@ -337,11 +464,11 @@ public class Climber extends SubsystemBase {
 
   // getters
 
-  public boolean isInnerClimberAtTargetHeight(double target) {
+  public boolean isFollowerAtTargetHeight(double target) {
     return innerElevator.isElevatorAtTargetHeight(target);
   }
 
-  public boolean isOuterClimberAtTargetHeight(double target) {
+  public boolean isLeaderAtTargetHeight(double target) {
     return outerElevator.isElevatorAtTargetHeight(target);
   }
 }
