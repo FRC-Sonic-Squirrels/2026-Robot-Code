@@ -30,12 +30,13 @@ public class RobotStates {
 
   public enum RobotGoal {
     // @formatter:off
-    None     (false, false),
-    Score    ( true, false),
-    Pass     ( true, false),
-    ClimbL1  (false,  true),
-    ClimbL2  (false,  true),
-    ClimbL3  (false,  true);
+    None      (false, false),
+    Score     (true,  false),
+    Pass      (true,  false),
+    ClimbL1   (false, true),
+    ClimbL2   (false, true),
+    ClimbL3   (false, true),
+    Unjamming (false, false);
     // @formatter:on
 
     public final boolean shooterActive;
@@ -49,6 +50,10 @@ public class RobotStates {
 
   public enum IntakeGoal {
     Stow, LeftIntake, RightIntake, LeftEject, RightEject, RightDown, LeftDown
+  }
+
+  public enum ShooterGoal {
+    Idle, Scoring, Passing, Stop, PreLoading, Unjamming
   }
 
   // Logging
@@ -77,6 +82,7 @@ public class RobotStates {
 
   private RobotGoal  goal       = RobotGoal.None;
   private IntakeGoal intakeGoal = IntakeGoal.Stow;
+  private ShooterGoal shooterGoal = ShooterGoal.Idle;
 
   // Commands
 
@@ -87,6 +93,8 @@ public class RobotStates {
   private final RotateToFaceHelper rotateToFaceHelper;
   private final Hopper             hopper;
   private final Climber            climber;
+  
+
 
   private int     periodicCounter;
   private boolean driveSlow;
@@ -146,6 +154,9 @@ public class RobotStates {
         break;
       case ClimbL3:
         climber.setClimberGoal(Climber.Goal.L3Climb);
+        break;
+      case Unjamming:
+        shooter.setGoal(Shooter.Goal.Unjamming);
         break;
     }
 
