@@ -10,7 +10,6 @@ import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.Constants.HopperConstants;
 import frc.robot.Constants.RobotMode.RobotType;
-import frc.robot.Constants.ShooterConstants;
 
 public class Hopper extends SubsystemBase {
   public final String ROOT_TABLE = "Hopper";
