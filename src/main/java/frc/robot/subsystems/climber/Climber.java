@@ -21,7 +21,6 @@ public class Climber extends SubsystemBase {
     // Extend is elevator going up, reaching for the next bar.
     //@formatter:off
     Idle,
-    Override,
     LeaderMountDismount,
     L1LeaderRetract,
     L1FollowerExtend,
@@ -81,61 +80,29 @@ public class Climber extends SubsystemBase {
       switch (goal) {
 
         case Override:
-          state = State.Override;
           break;
 
         case Idle:
           switch (state) {
-
-            case Override:
-              break;
 
             case Idle:
               setLeaderTargetHeight(ClimberConstants.LEADER_RETRACTED_HEIGHT);
               setFollowerTargetHeight(ClimberConstants.FOLLOWER_RETRACTED_HEIGHT);
               break;
 
-            case Lock:
-              break;
-
             case LeaderMountDismount:
               state = State.Idle;
+              setLeaderTargetHeight(ClimberConstants.LEADER_RETRACTED_HEIGHT);
+              setFollowerTargetHeight(ClimberConstants.FOLLOWER_RETRACTED_HEIGHT);
               break;
 
-            case L1LeaderRetract:
-              break;
-
-            case L1FollowerExtend:
-              break;
-
-            case L1FollowerRetract:
-              break;
-
-            case L2LeaderExtend:
-              break;
-
-            case L2LeaderRetract:
-              break;
-
-            case L2FollowerExtend:
-              break;
-
-            case L2FollowerRetract:
-              break;
-
-            case L3LeaderExtend:
-              break;
-
-            case L3LeaderRetract:
+            default:
               break;
           }
           break;
 
         case Lock:// FIXME get info about the lock and servo systems
           switch (state) {
-
-            case Override:
-              break;
 
             case Idle:
               break;
@@ -184,60 +151,18 @@ public class Climber extends SubsystemBase {
         case MountDismount:
           switch (state) {
 
-            case Override:
-              break;
-
             case Idle:
               state = State.LeaderMountDismount;
               setLeaderTargetHeight(ClimberConstants.L1_LEADER_CLIMB_HEIGHT);
               break;
 
-            case Lock:
-              break;
-
-            case LeaderMountDismount:
-              break;
-
-            case L1LeaderRetract:
-              break;
-
-            case L1FollowerExtend:
-              break;
-
-            case L1FollowerRetract:
-              break;
-
-            case L2LeaderExtend:
-              break;
-
-            case L2LeaderRetract:
-              break;
-
-            case L2FollowerExtend:
-              break;
-
-            case L2FollowerRetract:
-              break;
-
-            case L3LeaderExtend:
-              break;
-
-            case L3LeaderRetract:
+            default:
               break;
           }
           break;
 
         case ClimbL1:
           switch (state) {
-
-            case Override:
-              break;
-
-            case Idle:
-              break;
-
-            case Lock:
-              break;
 
             case LeaderMountDismount:
               state = State.L1LeaderRetract;
@@ -258,40 +183,13 @@ public class Climber extends SubsystemBase {
               }
               break;
 
-            case L1FollowerRetract:
-              break;
-
-            case L2LeaderExtend:
-              break;
-
-            case L2LeaderRetract:
-              break;
-
-            case L2FollowerExtend:
-              break;
-
-            case L2FollowerRetract:
-              break;
-
-            case L3LeaderExtend:
-              break;
-
-            case L3LeaderRetract:
+            default:
               break;
           }
           break;
 
         case ClimbL2:
           switch (state) {
-
-            case Override:
-              break;
-
-            case Idle:
-              break;
-
-            case Lock:
-              break;
 
             case LeaderMountDismount:
               state = State.L1LeaderRetract;
@@ -340,28 +238,13 @@ public class Climber extends SubsystemBase {
               }
               break;
 
-            case L2FollowerRetract:
-              break;
-
-            case L3LeaderExtend:
-              break;
-
-            case L3LeaderRetract:
+            default:
               break;
           }
           break;
 
         case ClimbL3:
           switch (state) {
-
-            case Override:
-              break;
-
-            case Idle:
-              break;
-
-            case Lock:
-              break;
 
             case LeaderMountDismount:
               state = State.L1LeaderRetract;
@@ -424,12 +307,9 @@ public class Climber extends SubsystemBase {
               }
               break;
 
-            case L3LeaderRetract:
+            default:
               break;
           }
-          break;
-
-        default:
           break;
       }
     }
