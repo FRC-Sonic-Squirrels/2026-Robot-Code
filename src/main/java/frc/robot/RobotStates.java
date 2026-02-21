@@ -52,10 +52,6 @@ public class RobotStates {
     Stow, LeftIntake, RightIntake, LeftEject, RightEject, RightDown, LeftDown
   }
 
-  public enum ShooterGoal {
-    Idle, Scoring, Passing, Stop, PreLoading, Unjamming
-  }
-
   // Logging
 
   public static class SubsystemsInTargetStatesLogs extends AutoRegisterLoggers {
@@ -80,9 +76,8 @@ public class RobotStates {
 
   // States
 
-  private RobotGoal   goal        = RobotGoal.None;
-  private IntakeGoal  intakeGoal  = IntakeGoal.Stow;
-  private ShooterGoal shooterGoal = ShooterGoal.Idle;
+  private RobotGoal  goal       = RobotGoal.None;
+  private IntakeGoal intakeGoal = IntakeGoal.Stow;
 
   // Commands
 
@@ -155,6 +150,7 @@ public class RobotStates {
         break;
       case Unjamming:
         shooter.setGoal(Shooter.Goal.Unjamming);
+        hopper.setGoal(Hopper.Goal.Unjamming);
         break;
     }
 

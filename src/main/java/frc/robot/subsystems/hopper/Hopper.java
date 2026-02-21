@@ -10,12 +10,13 @@ import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.Constants.HopperConstants;
 import frc.robot.Constants.RobotMode.RobotType;
+import frc.robot.Constants.ShooterConstants;
 
 public class Hopper extends SubsystemBase {
   public final String ROOT_TABLE = "Hopper";
 
   public enum Goal {
-    Idle, Override, Shooting, PreLoading
+    Idle, Override, Shooting, PreLoading, Unjamming
   }
 
   public static class Logs extends AutoRegisterLoggers {
@@ -106,7 +107,9 @@ public class Hopper extends SubsystemBase {
         case Shooting:
           setRollerVelocity(HopperConstants.RollerConstants.SHOOTING_ROLLER_VELOCITY);
           break;
-
+        case Unjamming:
+          setRollerVelocity(-(HopperConstants.RollerConstants.SHOOTING_ROLLER_VELOCITY));
+          break;
         default:
           break;
       }

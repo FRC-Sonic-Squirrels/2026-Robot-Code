@@ -416,6 +416,9 @@ public class RobotContainer {
     operatorController.registerTrigger(XboxControllerWrapper.Button.leftStick, "Left Intake Pivot Out")
         .react(robotStates.changeIntakeGoal(IntakeGoal.LeftDown, RobotStates.IntakeGoal.Stow));
 
+    operatorController.registerTrigger(XboxControllerWrapper.Button.b, "Unjamming")
+        .react(robotStates.changeRobotGoal(RobotGoal.Unjamming, RobotStates.RobotGoal.None));
+
     // ---------- ON-ROBOT CONTROLS ------------
 
     zeroSensorsButtonTrigger.onTrue(new RunsWhenDisabledInstantCommand(() -> {
