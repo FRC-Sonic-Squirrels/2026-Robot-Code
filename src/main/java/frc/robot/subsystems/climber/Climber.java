@@ -15,14 +15,14 @@ public class Climber extends SubsystemBase {
     MountDismount, ClimbL1, ClimbL2, ClimbL3, Idle, Override, Lock
   }
 
-  private enum ClimberState {
+  private enum State {
     Idle, Override, L1Retract, MountDismount, L2Extend, L2Retract, L3Extend, L3Retract, Lock
   }
 
   public static class Logs extends AutoRegisterLoggers {
-    public LoggerEntry.EnumValue<ClimberState> state;
-    public LoggerEntry.EnumValue<Goal>         goal;
-    public LoggerEntry.Decimal                 servoTargetAngle;
+    public LoggerEntry.EnumValue<State> state;
+    public LoggerEntry.EnumValue<Goal>  goal;
+    public LoggerEntry.Decimal          servoTargetAngle;
   }
 
   private Servo climberServo = new Servo(ClimberConstants.SERVO_CHANNEL);
@@ -35,8 +35,8 @@ public class Climber extends SubsystemBase {
   private final Elevator innerElevator;
   private final Elevator outerElevator;
 
-  private ClimberState climberState = ClimberState.Idle;
-  private Goal         climberGoal  = Goal.Idle;
+  private State state = State.Idle;
+  private Goal  goal  = Goal.Idle;
 
   // This also acts as its current angle because the servo cannot tell us where it
   // is
@@ -57,129 +57,249 @@ public class Climber extends SubsystemBase {
     try (var ignored = climberTiming.start()) {
       // Climber logging
 
-      logs.state.info(climberState);
-      logs.goal.info(climberGoal);
+      logs.state.info(state);
+      logs.goal.info(goal);
       logs.servoTargetAngle.info(servoTargetAngle);
 
-      switch (climberGoal) {
+      switch (goal) {
 
         case Override:
-          climberState = ClimberState.Override;
+          state = State.Override;
           break;
 
         case Idle:
-          climberState = ClimberState.Idle;
+          switch (state) {
+
+            case Override:
+              break;
+
+            case Idle:
+              setInnerTargetHeight(ClimberConstants.INNER_RETRACTION_HEIGHT);
+              setOuterTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT);
+              break;
+
+            case Lock:
+              break;
+
+            case MountDismount:
+              state = State.Idle;
+              break;
+
+            case L1Retract:
+              break;
+
+            case L2Extend:
+              break;
+
+            case L2Retract:
+              break;
+
+            case L3Extend:
+              break;
+
+            case L3Retract:
+              break;
+          }
           break;
 
         case Lock:
-          climberState = ClimberState.Lock;
+          switch (state) {
+
+            case Override:
+              break;
+
+            case Idle:
+              break;
+
+            case Lock:
+              break;
+
+            case MountDismount:
+              break;
+
+            case L1Retract:
+              state = State.Lock;
+              setServoAngle(ClimberConstants.SERVO_LOCK_ANGLE);
+              break;
+
+            case L2Extend:
+              break;
+
+            case L2Retract:
+              state = State.Lock;
+              setServoAngle(ClimberConstants.SERVO_LOCK_ANGLE);
+              break;
+
+            case L3Extend:
+              break;
+
+            case L3Retract:
+              state = State.Lock;
+              setServoAngle(ClimberConstants.SERVO_LOCK_ANGLE);
+              break;
+          }
           break;
 
         case MountDismount:
-          climberState = ClimberState.MountDismount;
+          switch (state) {
+
+            case Override:
+              break;
+
+            case Idle:
+              state = State.MountDismount;
+              setOuterTargetHeight(ClimberConstants.L1_CLIMB_HEIGHT);
+              break;
+
+            case Lock:
+              break;
+
+            case MountDismount:
+              break;
+
+            case L1Retract:
+              state = State.MountDismount;
+              setOuterTargetHeight(ClimberConstants.L1_CLIMB_HEIGHT);
+              break;
+
+            case L2Extend:
+              break;
+
+            case L2Retract:
+              break;
+
+            case L3Extend:
+              break;
+
+            case L3Retract:
+              break;
+          }
           break;
 
         case ClimbL1:
-          climberState = ClimberState.L1Retract;
+          switch (state) {
+
+            case Override:
+              break;
+
+            case Idle:
+              break;
+
+            case Lock:
+              break;
+
+            case MountDismount:
+              state = State.L1Retract;
+              setOuterTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT);
+              break;
+
+            case L1Retract:
+              break;
+
+            case L2Extend:
+              break;
+
+            case L2Retract:
+              break;
+
+            case L3Extend:
+              break;
+
+            case L3Retract:
+              break;
+          }
           break;
 
         case ClimbL2:
-          climberState = ClimberState.L1Retract;
+          switch (state) {
+
+            case Override:
+              break;
+
+            case Idle:
+              break;
+
+            case Lock:
+              break;
+
+            case MountDismount:
+              state = State.L1Retract;
+              setOuterTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT);
+              break;
+
+            case L1Retract:
+              if (isOuterClimberAtTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT)) {
+                state = State.L2Extend;
+                setInnerTargetHeight(ClimberConstants.L2_CLIMB_HEIGHT);
+              }
+              break;
+
+            case L2Extend:
+              if (isInnerClimberAtTargetHeight(ClimberConstants.L2_CLIMB_HEIGHT)) {
+                state = State.L2Retract;
+                setInnerTargetHeight(ClimberConstants.INNER_RETRACTION_HEIGHT);
+              }
+              break;
+
+            case L2Retract:
+              break;
+
+            case L3Extend:
+              break;
+
+            case L3Retract:
+              break;
+          }
           break;
 
         case ClimbL3:
-          climberState = ClimberState.L1Retract;
-          break;
+          switch (state) {
 
-        default:
-          break;
-      }
+            case Override:
+              break;
 
-      switch (climberState) {
-        case Override:
-          break;
+            case Idle:
+              break;
 
-        case Idle:
-          setInnerTargetHeight(0);
-          setOuterTargetHeight(0);
-          break;
+            case Lock:
+              break;
 
-        case Lock:
-          setServoAngle(ClimberConstants.SERVO_LOCK_ANGLE);
-          break;
+            case MountDismount:
+              state = State.L1Retract;
+              setOuterTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT);
+              break;
 
-        case MountDismount:
-          setOuterTargetHeight(ClimberConstants.L1_CLIMB_HEIGHT);
-          break;
+            case L1Retract:
+              if (isOuterClimberAtTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT)) {
+                state = State.L2Extend;
+                setInnerTargetHeight(ClimberConstants.L2_CLIMB_HEIGHT);
+              }
+              break;
 
-        case L1Retract:
-          setOuterTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT);
-          if (isOuterClimberAtTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT)) {
-            switch (climberGoal) {
+            case L2Extend:
+              if (isInnerClimberAtTargetHeight(ClimberConstants.L2_CLIMB_HEIGHT)) {
+                state = State.L2Retract;
+                setInnerTargetHeight(ClimberConstants.INNER_RETRACTION_HEIGHT);
+              }
+              break;
 
-              case Override:
-                break;
+            case L2Retract:
+              if (isInnerClimberAtTargetHeight(ClimberConstants.INNER_RETRACTION_HEIGHT)) {
+                state = State.L3Extend;
+                setOuterTargetHeight(ClimberConstants.L3_CLIMB_HEIGHT);
+              }
+              break;
 
-              case Idle:
-                break;
+            case L3Extend:
+              if (isOuterClimberAtTargetHeight(ClimberConstants.L3_CLIMB_HEIGHT)) {
+                state = State.L3Retract;
+                setOuterTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT);
+              }
+              break;
 
-              case ClimbL1:
-                break;
-
-              case Lock:
-                break;
-
-              default:
-                climberState = ClimberState.L2Extend;
-                break;
-            }
+            case L3Retract:
+              break;
           }
-          break;
-
-        case L2Extend:
-          setInnerTargetHeight(ClimberConstants.L2_CLIMB_HEIGHT);
-          if (isInnerClimberAtTargetHeight(ClimberConstants.L2_CLIMB_HEIGHT)) {
-            climberState = ClimberState.L2Retract;
-          }
-          break;
-
-        case L2Retract:
-          setInnerTargetHeight(ClimberConstants.INNER_RETRACTION_HEIGHT);
-          if (isInnerClimberAtTargetHeight(ClimberConstants.INNER_RETRACTION_HEIGHT)) {
-            setInnerTargetHeight(0);
-            switch (climberGoal) {
-
-              case Override:
-                break;
-
-              case Idle:
-                break;
-
-              case Lock:
-                break;
-
-              case ClimbL1:
-                break;
-
-              case ClimbL2:
-                break;
-
-              default:
-                climberState = ClimberState.L3Extend;
-                break;
-            }
-          }
-          break;
-
-        case L3Extend:
-          setOuterTargetHeight(ClimberConstants.L3_CLIMB_HEIGHT);
-          if (isOuterClimberAtTargetHeight(ClimberConstants.L3_CLIMB_HEIGHT)) {
-            climberState = ClimberState.L3Retract;
-          }
-          break;
-
-        case L3Retract:
-          setOuterTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT);
           break;
 
         default:
@@ -191,40 +311,7 @@ public class Climber extends SubsystemBase {
   // setters
 
   public void setGoal(Goal goal) {
-    climberGoal = goal;
-    switch (goal) {
-
-      case Override:
-        climberState = ClimberState.Override;
-        break;
-
-      case Idle:
-        climberState = ClimberState.Idle;
-        break;
-
-      case Lock:
-        climberState = ClimberState.Lock;
-        break;
-
-      case MountDismount:
-        climberState = ClimberState.MountDismount;
-        break;
-
-      case ClimbL1:
-        climberState = ClimberState.MountDismount;
-        break;
-
-      case ClimbL2:
-        climberState = ClimberState.MountDismount;
-        break;
-
-      case ClimbL3:
-        climberState = ClimberState.MountDismount;
-        break;
-
-      default:
-        break;
-    }
+    this.goal = goal;
   }
 
   public void setInnerTargetHeight(double height) {
