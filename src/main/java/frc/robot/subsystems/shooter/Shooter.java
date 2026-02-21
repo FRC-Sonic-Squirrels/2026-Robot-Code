@@ -2,6 +2,7 @@ package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.filter.LinearFilter;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
@@ -120,10 +121,10 @@ public class Shooter extends SubsystemBase {
       .debounce(ShooterConstants.Kicker.DURATION_TO_CONFIRM_STALL);
 
   private Trigger stallDetected = new Trigger(() -> initialStallDetected.getAsBoolean())
-      .debounce(ShooterConstants.Kicker.DURATION_TO_CONFIRM_UNSTALL);
+      .debounce(ShooterConstants.Kicker.DURATION_TO_CONFIRM_UNSTALL, DebounceType.kFalling);
 
   private Trigger persistantStallDetected = new Trigger(() -> kickerStallDetected())
-      .debounce(ShooterConstants.Kicker.DURATION_TO_CONFIRM_PERSISTANT_STALL);
+      .debounce(ShooterConstants.Kicker.DURATION_TO_CONFIRM_PERSISTANT_STALL, DebounceType.kRising);
 
   /** Creates a new ShooterSubsystem. */
   public Shooter(ShooterIO io) {
