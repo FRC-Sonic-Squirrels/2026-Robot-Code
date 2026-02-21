@@ -49,7 +49,7 @@ public final class Constants {
   }
 
   public static class RobotMode {
-    private static final RobotType ROBOT = RobotType.ROBOT_2026;
+    private static final RobotType ROBOT = RobotType.ROBOT_2025_RETIRED_HOLO;
 
     public static boolean isSimBot() {
       switch (getRobot()) {
@@ -255,9 +255,9 @@ public final class Constants {
     public static final int CLIMBER_OUTER_CAN_ID = 42;
 
     public static final int INTAKE_LEFT_PIVOT_CAN_ID = 19;
-    public static final int INTAKE_RIGHT_ROLLER_CAN_ID = 20;
+    public static final int INTAKE_LEFT_ROLLER_CAN_ID = 20;
     public static final int INTAKE_RIGHT_PIVOT_CAN_ID = 43;
-    public static final int INTAKE_LEFT_ROLLER_CAN_ID = 21;
+    public static final int INTAKE_RIGHT_ROLLER_CAN_ID = 21;
 
     public static final int SHOOTER_LEAD_CAN_ID = 35;
     public static final int SHOOTER_FOLLOW_CAN_ID = 36;

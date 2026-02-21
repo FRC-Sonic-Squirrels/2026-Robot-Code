@@ -89,7 +89,7 @@ public class Intake extends SubsystemBase {
     @TunableEntry(defaultValue = 500.0)
     public LoggedTunableNumber ejectingFuelVelocity;
 
-    @TunableEntry(defaultValue = 20.0)
+    @TunableEntry(defaultValue = 10)
     public LoggedTunableNumber intakingFuelPivotAngle;
   }
 
