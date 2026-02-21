@@ -358,6 +358,7 @@ public static class ShooterConstants {
       public static final double SENSOR_TO_MECHANISM_RATIO = 1.42;
       public static final double SHOOTING_KICKER_RPM = 100;
       public static final double STALL_CURRENT_THRESHOLD = 20;
+      public static final double PRELOADING_KICKER_RPM = 50;
     }
 
     public static class Interpolation {

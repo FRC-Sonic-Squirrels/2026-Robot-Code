@@ -116,13 +116,14 @@ public class Shooter extends SubsystemBase {
   private Distance distanceFromTarget = Distance.ofRelativeUnits(100, Units.Meters);
   private boolean  isFacingTarget;
 
-  private Trigger stallDetected = new Trigger(() -> inputs.kickerVelocityRPM <= 50
+  private Trigger initialStallDetected = new Trigger(() -> inputs.kickerVelocityRPM <= 50
       && inputs.kickerCurrentAmps >= Constants.ShooterConstants.Kicker.STALL_CURRENT_THRESHOLD)
-      .debounce(.1, DebounceType.kFalling);
+      .debounce(.1, DebounceType.kRising);
 
-  private Trigger persistantStallDetected = new Trigger(() -> inputs.kickerVelocityRPM <= 50
-      && inputs.kickerCurrentAmps >= Constants.ShooterConstants.Kicker.STALL_CURRENT_THRESHOLD)
-      .debounce(1, DebounceType.kRising);
+  private Trigger stallDetected = new Trigger(() -> initialStallDetected.getAsBoolean()).debounce(1,
+      DebounceType.kFalling);
+
+  private Trigger persistantStallDetected = new Trigger(() -> kickerStallDetected()).debounce(1, DebounceType.kRising);
 
   /** Creates a new ShooterSubsystem. */
   public Shooter(ShooterIO io) {
@@ -212,13 +213,7 @@ public class Shooter extends SubsystemBase {
         case Scoring:
           setFlywheelRPM(getFlywheelRPM(distanceFromTarget));
           setHoodPosition(getHoodAngle(distanceFromTarget));
-          if (kickerStallDetected() && !persistantKickerStallDetected()) {
-            setKickerVelocity(-ShooterConstants.Kicker.SHOOTING_KICKER_RPM);
-          } else if (isShooterReady()) {
-            setKickerVelocity(ShooterConstants.Kicker.SHOOTING_KICKER_RPM);
-          } else {
-            setKickerVelocity(0);
-          }
+          setKickerVelocity(getKickerRPM(isShooterReady()));
           break;
 
         case Stop:
@@ -228,13 +223,7 @@ public class Shooter extends SubsystemBase {
           break;
 
         case PreLoading:
-          if (kickerStallDetected() && !persistantKickerStallDetected()) {
-            setKickerVelocity(-ShooterConstants.Kicker.SHOOTING_KICKER_RPM);
-          } else if (!getFuelInUpperKicker()) {
-            setKickerVelocity(ShooterConstants.Kicker.SHOOTING_KICKER_RPM);
-          } else {
-            setKickerVelocity(0);
-          }
+          setKickerVelocity((getKickerRPM(!getFuelInUpperKicker())));
           break;
 
         case Unjamming:
@@ -371,6 +360,26 @@ public class Shooter extends SubsystemBase {
 
   public double getHoodVelocity() {
     return inputs.hoodVelocityRadsPerSec;
+  }
+
+  public double getKickerRPM(boolean shouldMoveUp) {
+    if (persistantKickerStallDetected()) {
+      return 0;
+    } else if (kickerStallDetected()) {
+      return -ShooterConstants.Kicker.SHOOTING_KICKER_RPM;
+    } else if (shouldMoveUp) {
+      switch (goal) {
+        case Scoring:
+        case Passing:
+          return ShooterConstants.Kicker.SHOOTING_KICKER_RPM;
+        case PreLoading:
+          return ShooterConstants.Kicker.PRELOADING_KICKER_RPM;
+        default:
+          return 0;
+      }
+    } else {
+      return 0;
+    }
   }
 
   public boolean setNeutralMode(NeutralModeValue value) {
