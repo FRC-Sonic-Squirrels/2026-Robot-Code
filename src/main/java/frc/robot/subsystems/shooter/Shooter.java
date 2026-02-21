@@ -2,11 +2,13 @@ package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.filter.LinearFilter;
+import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
@@ -114,6 +116,14 @@ public class Shooter extends SubsystemBase {
   private Distance distanceFromTarget = Distance.ofRelativeUnits(100, Units.Meters);
   private boolean  isFacingTarget;
 
+  private Trigger stallDetected = new Trigger(() -> inputs.kickerVelocityRPM <= 50
+      && inputs.kickerCurrentAmps >= Constants.ShooterConstants.Kicker.STALL_CURRENT_THRESHOLD)
+      .debounce(.1, DebounceType.kFalling);
+
+  private Trigger persistantStallDetected = new Trigger(() -> inputs.kickerVelocityRPM <= 50
+      && inputs.kickerCurrentAmps >= Constants.ShooterConstants.Kicker.STALL_CURRENT_THRESHOLD)
+      .debounce(1, DebounceType.kRising);
+
   /** Creates a new ShooterSubsystem. */
   public Shooter(ShooterIO io) {
     this.io = io;
@@ -202,7 +212,9 @@ public class Shooter extends SubsystemBase {
         case Scoring:
           setFlywheelRPM(getFlywheelRPM(distanceFromTarget));
           setHoodPosition(getHoodAngle(distanceFromTarget));
-          if (isShooterReady()) {
+          if (kickerStallDetected() && !persistantKickerStallDetected()) {
+            setKickerVelocity(-ShooterConstants.Kicker.SHOOTING_KICKER_RPM);
+          } else if (isShooterReady()) {
             setKickerVelocity(ShooterConstants.Kicker.SHOOTING_KICKER_RPM);
           } else {
             setKickerVelocity(0);
@@ -216,7 +228,9 @@ public class Shooter extends SubsystemBase {
           break;
 
         case PreLoading:
-          if (!getFuelInUpperKicker()) {
+          if (kickerStallDetected() && !persistantKickerStallDetected()) {
+            setKickerVelocity(-ShooterConstants.Kicker.SHOOTING_KICKER_RPM);
+          } else if (!getFuelInUpperKicker()) {
             setKickerVelocity(ShooterConstants.Kicker.SHOOTING_KICKER_RPM);
           } else {
             setKickerVelocity(0);
@@ -391,6 +405,14 @@ public class Shooter extends SubsystemBase {
 
   public boolean getFuelInUpperKicker() {
     return inputs.fuelInUpperKicker;
+  }
+
+  public boolean kickerStallDetected() {
+    return stallDetected.getAsBoolean();
+  }
+
+  public boolean persistantKickerStallDetected() {
+    return persistantStallDetected.getAsBoolean();
   }
 
   public void setGoal(Goal goal) {
