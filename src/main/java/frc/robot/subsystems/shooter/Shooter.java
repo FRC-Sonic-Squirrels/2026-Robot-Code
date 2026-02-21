@@ -2,7 +2,6 @@ package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.filter.LinearFilter;
-import edu.wpi.first.math.filter.Debouncer.DebounceType;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
@@ -118,13 +117,13 @@ public class Shooter extends SubsystemBase {
 
   private Trigger initialStallDetected = new Trigger(() -> inputs.kickerVelocityRPM <= 50
       && inputs.kickerCurrentAmps >= ShooterConstants.Kicker.STALL_CURRENT_THRESHOLD)
-      .debounce(ShooterConstants.Kicker.DURATION_TO_CONFIRM_STALL, DebounceType.kRising);
+      .debounce(ShooterConstants.Kicker.DURATION_TO_CONFIRM_STALL);
 
   private Trigger stallDetected = new Trigger(() -> initialStallDetected.getAsBoolean())
-      .debounce(ShooterConstants.Kicker.DURATION_TO_CONFIRM_UNSTALL, DebounceType.kFalling);
+      .debounce(ShooterConstants.Kicker.DURATION_TO_CONFIRM_UNSTALL);
 
   private Trigger persistantStallDetected = new Trigger(() -> kickerStallDetected())
-      .debounce(ShooterConstants.Kicker.DURATION_TO_CONFIRM_PERSISTANT_STALL, DebounceType.kRising);
+      .debounce(ShooterConstants.Kicker.DURATION_TO_CONFIRM_PERSISTANT_STALL);
 
   /** Creates a new ShooterSubsystem. */
   public Shooter(ShooterIO io) {
@@ -366,9 +365,11 @@ public class Shooter extends SubsystemBase {
   public double getKickerRPM(boolean shouldMoveUp) {
     if (persistantKickerStallDetected()) {
       return 0;
-    } else if (kickerStallDetected()) {
+    }
+    if (kickerStallDetected()) {
       return -ShooterConstants.Kicker.SHOOTING_KICKER_RPM;
-    } else if (shouldMoveUp) {
+    }
+    if (shouldMoveUp) {
       switch (goal) {
         case Scoring:
         case Passing:
@@ -378,9 +379,8 @@ public class Shooter extends SubsystemBase {
         default:
           return 0;
       }
-    } else {
-      return 0;
     }
+    return 0;
   }
 
   public boolean setNeutralMode(NeutralModeValue value) {
