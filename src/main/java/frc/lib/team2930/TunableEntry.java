@@ -7,5 +7,5 @@ import java.lang.annotation.RetentionPolicy;
 public @interface TunableEntry {
   String name() default "";
 
-  double defaultValue() default 0;
+  double defaultValue() default Double.NaN;
 }

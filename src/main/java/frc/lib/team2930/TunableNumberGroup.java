@@ -10,7 +10,7 @@ public class TunableNumberGroup {
     fields.forEach((f, v) -> {
       var accessor = new Reflection.FieldAccessor(v);
 
-      double defaultValue = 0;
+      double defaultValue = Double.NaN;
       var    logName      = f.substring(0, 1).toUpperCase() + f.substring(1);
       var    anno         = v.getAnnotation(TunableEntry.class);
       if (anno != null) {
@@ -27,7 +27,11 @@ public class TunableNumberGroup {
         // noinspection unchecked
         accessor.set(instance, newAutoTunable((Class<T>) t, subPath));
       } else if (t == LoggedTunableNumber.class) {
-        accessor.set(instance, new LoggedTunableNumber(subPath, defaultValue));
+        if (Double.isNaN(defaultValue)) {
+          accessor.set(instance, new LoggedTunableNumber(subPath));
+        } else {
+          accessor.set(instance, new LoggedTunableNumber(subPath, defaultValue));
+        }
       }
     });
 
