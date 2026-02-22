@@ -225,8 +225,8 @@ public class Robot extends LoggedRobot {
       if (selectedAuto != null) {
         initialPose = selectedAuto.getInit();
 
-        logCurrentChooserValue.info(autoName);
-        logSelectedAuto.info(selectedAuto.getName());
+        logs.autoLogs.currentChooserValue.info(autoName);
+        logs.autoLogs.selectedAuto.info(selectedAuto.getName());
       } else {
         initialPose = null;
       }
@@ -276,10 +276,10 @@ public class Robot extends LoggedRobot {
   @Override
   public void autonomousInit() {
     robotContainer.enterAutonomous();
-    robotContainer.setAutoCommand(selectedAuto);
     // schedule the autonomous command (example)
     if (selectedAuto != null) {
-      robotContainer.setAutoCommand(selectedAuto);
+      autoCommand = selectedAuto.getAutoCommand();
+      CommandScheduler.getInstance().schedule(autoCommand);
     }
   }
 

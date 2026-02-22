@@ -313,7 +313,6 @@ public class RobotContainer {
     }
 
     drivetrainWrapper = new DrivetrainWrapper(drivetrain);
-    robotStates.setSubsystems(leftIntake, rightIntake, drivetrainWrapper, () -> false);
 
     flipAutoChooser.addDefaultOption("No", false);
     flipAutoChooser.addOption("Yes", true);
@@ -537,10 +536,6 @@ public class RobotContainer {
 
   public void applyToDrivetrain() {
     drivetrainWrapper.apply();
-  }
-
-  public void setAutoCommand(AutoProgram selectedAuto) {
-    robotStates.setAutoCommand(selectedAuto);
   }
 
   public void enterDisabled() {

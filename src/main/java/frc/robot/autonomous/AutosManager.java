@@ -5,26 +5,20 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.lib.team2930.AutoRegisterLoggers;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
-import frc.lib.team2930.RunStateMachineCommand;
 import frc.robot.Constants;
 import frc.robot.RobotStates;
 import frc.robot.autonomous.helpers.ChoreoHelper;
 import frc.robot.autonomous.records.ChoreoTrajectoryWithName;
 import frc.robot.autonomous.records.ChoreoVars;
-import frc.robot.autonomous.records.PickupLocation;
 import frc.robot.commands.drive.DriveToPose;
 import frc.robot.configs.RobotConfig;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
-
-import java.util.ArrayList;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -44,10 +38,10 @@ public class AutosManager {
     public LoggerEntry.EnumValue<SysIdRoutineLog.State> swervesysidstate;
   }
 
-  private final Logs            logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
+  private final Logs              logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
   private final AutosSubsystems   subsystems;
   private final RobotConfig       config;
-  private final RobotStates states;
+  private final RobotStates       states;
   private final BooleanSupplier   flipAuto;
   private final DrivetrainWrapper wrapper;
 
@@ -55,16 +49,12 @@ public class AutosManager {
 
   private boolean preloadingComplete = !false;
 
-  public record Auto(String name, Command command, Pose2d initPose) {
-  }
-
   public AutosManager(AutosSubsystems subsystems, RobotConfig config, LoggedDashboardChooser<String> chooser,
-      HashMap<String, Supplier<AutoProgram>> stringToAutoSupplierMap, BooleanSupplier flipAuto,
-      Supplier<List<PickupLocation>> customCoralStationLocations, RobotStates states) {
+      HashMap<String, Supplier<AutoProgram>> stringToAutoSupplierMap, BooleanSupplier flipAuto, RobotStates states) {
     this.subsystems = subsystems;
     this.config     = config;
     this.flipAuto   = flipAuto;
-    this.states = states;
+    this.states     = states;
     wrapper         = subsystems.drivetrain();
     // preload code
     // Command preloader;
@@ -129,14 +119,14 @@ public class AutosManager {
   }
 
   @SuppressWarnings("unused")
-  private Auto testPath(String pathName, boolean useInitialPose) {
+  private AutoProgram testPath(String pathName, boolean useInitialPose) {
     return testPath(pathName, useInitialPose, pathName);
   }
 
   // TODO: Potentially get rid of testPath? See if it's necessary.
-  private Auto testPath(String pathName, boolean useInitialPose, String autoName) {
+  private AutoProgram testPath(String pathName, boolean useInitialPose, String autoName) {
     var traj = ChoreoTrajectoryWithName.getTrajectory(pathName);
-    return new Auto(autoName, new Command() {
+    return new AutoProgram(Pair.of(new Command() {
       private final DrivetrainWrapper drivetrain = subsystems.drivetrain();
       ChoreoHelper                    helper;
       boolean                         atEndOfPath;
@@ -165,9 +155,10 @@ public class AutosManager {
       public boolean isFinished() {
         return atEndOfPath;
       }
-    }, useInitialPose ? traj.getInitialPose(true) : null);
+    }, Constants.zeroPose2d), autoName);
   }
 
+  // TODO: Finish up swerveCharacterization to reinstate it
   public AutoProgram swerveCharacterization() {
     var sysidConfig = new SysIdRoutine.Config(null, null, null, (state) -> {
       if (state != SysIdRoutineLog.State.kNone) {
@@ -186,16 +177,11 @@ public class AutosManager {
         // .andThen(Commands.waitSeconds(1.0))
         .andThen(command2)
         // .andThen(Commands.waitSeconds(1.0))
-        .andThen(command3)
-        // .andThen(Commands.waitSeconds(1.0))
-        .andThen(command4).andThen(Commands.runOnce(() -> logSwerveSysidState.info(SysIdRoutineLog.State.kNone)));
+        .andThen(command3);
+    // .andThen(Commands.waitSeconds(1.0))
+    // .andThen(command4).andThen(Commands.runOnce(() ->
+    // logSwerveSysidState.info(SysIdRoutineLog.State.kNone)));
     return new AutoProgram(createAutoPath(Autos.SWERVE_CHARACTERIZATION), "Swerve Characterization");
-    // return new Auto("swerveCharacterization", finalCommand,
-    // Constants.zeroPose2d);
-  }
-
-  private Auto stateToAuto(String name, AutoStateMachine state) {
-    return new Auto(name, state.asCommand(), state.initPose());
   }
 
   public boolean preloadingComplete() {
@@ -207,20 +193,20 @@ public class AutosManager {
     switch (auto) {
       case TEST:
         initialPose = ChoreoVars.Poses.S5;
-        return Pair.of(driveToPose(ChoreoVars.Poses.H2).andThen(driveToPose(ChoreoVars.Poses.T1))
-            .andThen(driveToPose(ChoreoVars.Poses.T2)).andThen(driveToPose(ChoreoVars.Poses.T3))
-            .andThen(driveToPose(ChoreoVars.Poses.T4)).andThen(driveToPose(ChoreoVars.Poses.H1))
-            .andThen(driveToPose(ChoreoVars.Poses.C1)), initialPose);
+        return Pair.of(driveToPose(ChoreoVars.Poses.H2)
+                      .andThen(driveToPose(ChoreoVars.Poses.T1))
+                      .andThen(driveToPose(ChoreoVars.Poses.T2))
+                      .andThen(driveToPose(ChoreoVars.Poses.T3))
+                      .andThen(driveToPose(ChoreoVars.Poses.T4))
+                      .andThen(driveToPose(ChoreoVars.Poses.H1))
+                      .andThen(driveToPose(ChoreoVars.Poses.C1)),
+                       initialPose);
       default:
         return Pair.of(new InstantCommand(), Pose2d.kZero);
     }
   }
 
   private Command driveToPose(Pose2d desiredPose) {
-    return new DriveToPose(wrapper, false, desiredPose, () -> wrapper.getHubPoseEstimatorPose(true));
-  }
-
-  private Command driveToPoseShoot(Pose2d desiredPose) {
     return new DriveToPose(wrapper, false, desiredPose, () -> wrapper.getHubPoseEstimatorPose(true));
   }
 }
