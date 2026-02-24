@@ -423,7 +423,7 @@ public class RobotContainer {
     zeroSensorsButtonTrigger.onTrue(new RunsWhenDisabledInstantCommand(() -> {
       leftIntake.resetPivotSensorToHomePosition();
       rightIntake.resetPivotSensorToHomePosition();
-      climber.setGoal(Climber.Goal.Idle);
+      climber.setGoal(Climber.Goal.Stowed);
       led.setRobotState(RobotState.ZERO_SUBSYSTEMS);
 
       zeroButtonTriggered = true;

@@ -127,7 +127,7 @@ public class RobotStates {
           shooter.setGoal(Shooter.Goal.Idle);
           hopper.setGoal(Hopper.Goal.Idle);
         }
-        climber.setGoal(Climber.Goal.Idle);
+        climber.setGoal(Climber.Goal.Stowed);
         break;
       case Unjamming:
         shooter.setGoal(Shooter.Goal.Unjamming);
