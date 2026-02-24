@@ -20,20 +20,20 @@ public class Climber extends SubsystemBase {
     // Retract is elevator going down, pulling the robot up.
     // Extend is elevator going up, reaching for the next bar.
     //@formatter:off
-    Stowed           (ClimberConstants.LEADER_RETRACTED_HEIGHT, ClimberConstants.FOLLOWER_RETRACTED_HEIGHT),
-    L1LeaderExtend   (ClimberConstants.L1_LEADER_CLIMB_HEIGHT,  ClimberConstants.FOLLOWER_RETRACTED_HEIGHT),
-    L1LeaderRetract  (ClimberConstants.LEADER_RETRACTED_HEIGHT, ClimberConstants.FOLLOWER_RETRACTED_HEIGHT),
-    L1FollowerExtend (ClimberConstants.LEADER_RETRACTED_HEIGHT, ClimberConstants.FOLLOWER_EXTENDED_HEIGHT),
-    L1FollowerRetract(ClimberConstants.LEADER_RETRACTED_HEIGHT, ClimberConstants.FOLLOWER_RETRACTED_HEIGHT),
-    L2LeaderExtend   (ClimberConstants.L2_LEADER_CLIMB_HEIGHT,  ClimberConstants.FOLLOWER_RETRACTED_HEIGHT),
-    L2LeaderRetract  (ClimberConstants.LEADER_RETRACTED_HEIGHT, ClimberConstants.FOLLOWER_RETRACTED_HEIGHT),
-    L2FollowerExtend (ClimberConstants.LEADER_RETRACTED_HEIGHT, ClimberConstants.FOLLOWER_EXTENDED_HEIGHT),
-    L2FollowerRetract(ClimberConstants.LEADER_RETRACTED_HEIGHT, ClimberConstants.FOLLOWER_RETRACTED_HEIGHT),
-    L3LeaderExtend   (ClimberConstants.L3_LEADER_CLIMB_HEIGHT,  ClimberConstants.FOLLOWER_RETRACTED_HEIGHT),
-    L3LeaderRetract  (ClimberConstants.LEADER_RETRACTED_HEIGHT, ClimberConstants.FOLLOWER_RETRACTED_HEIGHT),
-    L3FollowerExtend (ClimberConstants.LEADER_RETRACTED_HEIGHT, ClimberConstants.FOLLOWER_EXTENDED_HEIGHT),
-    L3FollowerRetract(ClimberConstants.LEADER_RETRACTED_HEIGHT, ClimberConstants.FOLLOWER_RETRACTED_HEIGHT),
-    Lock             (ClimberConstants.LEADER_RETRACTED_HEIGHT, ClimberConstants.FOLLOWER_RETRACTED_HEIGHT);
+    Stowed           (ClimberConstants.LEADER_HEIGHT_STOWED, ClimberConstants.FOLLOWER_HEIGHT_STOWED),
+    L1LeaderExtend   (ClimberConstants.LEADER_HEIGHT_CLIMBL1,  ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
+    L1LeaderRetract  (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
+    L1FollowerExtend (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_EXTENDED),
+    L1FollowerRetract(ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
+    L2LeaderExtend   (ClimberConstants.LEADER_HEIGHT_CLIMBL2,  ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
+    L2LeaderRetract  (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
+    L2FollowerExtend (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_EXTENDED),
+    L2FollowerRetract(ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
+    L3LeaderExtend   (ClimberConstants.LEADER_HEIGHT_CLIMBL3,  ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
+    L3LeaderRetract  (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
+    L3FollowerExtend (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_EXTENDED),
+    L3FollowerRetract(ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
+    Lock             (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED);
     //@formatter:on
 
     public final double leaderHeight;
@@ -53,7 +53,8 @@ public class Climber extends SubsystemBase {
 
   private Servo climberServo = new Servo(ClimberConstants.SERVO_CHANNEL);
 
-  public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
+  public final Logs logs   = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
+  public boolean    atGoal = false;
 
   // Execution timing
   private final ExecutionTiming climberTiming = new ExecutionTiming(ROOT_TABLE);
@@ -97,6 +98,7 @@ public class Climber extends SubsystemBase {
 
             case L1LeaderExtend:
               handleTransitions(State.Stowed);
+              atGoal = true;
               break;
 
             default:
@@ -119,6 +121,7 @@ public class Climber extends SubsystemBase {
             case L1LeaderRetract:
               state = State.Lock; // Generic lock code for if the lock is on the leader
               setServoAngle(ClimberConstants.SERVO_LOCK_ANGLE);
+              atGoal = true;
               break;
 
             case L1FollowerExtend:
@@ -133,6 +136,7 @@ public class Climber extends SubsystemBase {
             case L2LeaderRetract:
               state = State.Lock; // Generic lock code for if the lock is on the leader
               setServoAngle(ClimberConstants.SERVO_LOCK_ANGLE);
+              atGoal = true;
               break;
 
             case L2FollowerExtend:
@@ -147,6 +151,7 @@ public class Climber extends SubsystemBase {
             case L3LeaderRetract:
               state = State.Lock; // Generic lock code for if the lock is on the leader
               setServoAngle(ClimberConstants.SERVO_LOCK_ANGLE);
+              atGoal = true;
               break;
 
             case L3FollowerExtend:
@@ -164,6 +169,14 @@ public class Climber extends SubsystemBase {
               handleTransitions(State.L1LeaderExtend);
               break;
 
+            case L1LeaderExtend:
+              atGoal = true;
+              break;
+
+            case L1LeaderRetract:
+              handleTransitions(State.L1LeaderExtend);
+              break;
+
             default:
               break;
           }
@@ -177,11 +190,7 @@ public class Climber extends SubsystemBase {
               break;
 
             case L1LeaderRetract:
-              handleTransitions(State.L1FollowerExtend);
-              break;
-
-            case L1FollowerExtend:
-              handleTransitions(State.L1FollowerRetract);
+              atGoal = true;
               break;
 
             default:
@@ -218,6 +227,10 @@ public class Climber extends SubsystemBase {
 
             case L2FollowerExtend:
               handleTransitions(State.L2FollowerRetract);
+              break;
+
+            case L2FollowerRetract:
+              atGoal = true;
               break;
 
             default:
@@ -272,6 +285,10 @@ public class Climber extends SubsystemBase {
               handleTransitions(State.L3FollowerRetract);
               break;
 
+            case L3FollowerRetract:
+              atGoal = true;
+              break;
+
             default:
               break;
           }
@@ -295,6 +312,7 @@ public class Climber extends SubsystemBase {
   }
 
   private void handleTransitions(State desiredState) {
+    atGoal = false;
     setLeaderTargetHeight(desiredState.leaderHeight);
     setFollowerTargetHeight(desiredState.followerHeight);
     if (isLeaderAtTargetHeight(desiredState.leaderHeight) && isFollowerAtTargetHeight(desiredState.followerHeight)) {
