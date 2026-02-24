@@ -20,18 +20,18 @@ public class Climber extends SubsystemBase {
     // Retract is elevator going down, pulling the robot up.
     // Extend is elevator going up, reaching for the next bar.
     //@formatter:off
-    Stowed           (ClimberConstants.LEADER_HEIGHT_STOWED, ClimberConstants.FOLLOWER_HEIGHT_STOWED),
-    L1LeaderExtend   (ClimberConstants.LEADER_HEIGHT_CLIMBL1,  ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
+    Stowed           (ClimberConstants.LEADER_HEIGHT_STOWED   , ClimberConstants.FOLLOWER_HEIGHT_STOWED   ),
+    L1LeaderExtend   (ClimberConstants.LEADER_HEIGHT_CLIMBL1  , ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
     L1LeaderRetract  (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
-    L1FollowerExtend (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_EXTENDED),
+    L1FollowerExtend (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_EXTENDED ),
     L1FollowerRetract(ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
-    L2LeaderExtend   (ClimberConstants.LEADER_HEIGHT_CLIMBL2,  ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
+    L2LeaderExtend   (ClimberConstants.LEADER_HEIGHT_CLIMBL2  , ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
     L2LeaderRetract  (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
-    L2FollowerExtend (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_EXTENDED),
+    L2FollowerExtend (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_EXTENDED ),
     L2FollowerRetract(ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
-    L3LeaderExtend   (ClimberConstants.LEADER_HEIGHT_CLIMBL3,  ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
+    L3LeaderExtend   (ClimberConstants.LEADER_HEIGHT_CLIMBL3  , ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
     L3LeaderRetract  (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
-    L3FollowerExtend (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_EXTENDED),
+    L3FollowerExtend (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_EXTENDED ),
     L3FollowerRetract(ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
     Lock             (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED);
     //@formatter:on
@@ -87,250 +87,207 @@ public class Climber extends SubsystemBase {
       logs.state.info(state);
       logs.goal.info(goal);
       logs.servoTargetAngle.info(servoTargetAngle);
-      boolean atGoal;
+      boolean atGoalNext;
       switch (goal) {
-
         case Override:
+          atGoalNext = true;
           break;
 
         case Stowed:
           switch (state) {
-
             case L1LeaderExtend:
               handleTransitions(State.Stowed);
-              atGoal = true;
+              atGoalNext = false;
+              break;
+
+            case Stowed:
+              atGoalNext = true;
               break;
 
             default:
-              atGoal = false;
+              atGoalNext = false;
               break;
           }
           break;
 
         case Lock:// FIXME get info about the lock and servo systems
           switch (state) {
-
-            case Stowed:
-              atGoal = false;
-              break;
-
             case Lock:
-              atGoal = true;
-              break;
-
-            case L1LeaderExtend:
-              atGoal = false;
+              atGoalNext = true;
               break;
 
             case L1LeaderRetract:
-              state = State.Lock; // Generic lock code for if the lock is on the leader
-              setServoAngle(ClimberConstants.SERVO_LOCK_ANGLE);
-              atGoal = true;
-              break;
-
-            case L1FollowerExtend:
-              atGoal = false;
-              break;
-
-            case L1FollowerRetract:
-              atGoal = false;
-              break;
-
-            case L2LeaderExtend:
-              atGoal = false;
-              break;
-
             case L2LeaderRetract:
-              state = State.Lock; // Generic lock code for if the lock is on the leader
-              setServoAngle(ClimberConstants.SERVO_LOCK_ANGLE);
-              atGoal = true;
-              break;
-
-            case L2FollowerExtend:
-              atGoal = false;
-              break;
-
-            case L2FollowerRetract:
-              atGoal = false;
-              break;
-
-            case L3LeaderExtend:
-              atGoal = false;
-              break;
-
             case L3LeaderRetract:
               state = State.Lock; // Generic lock code for if the lock is on the leader
               setServoAngle(ClimberConstants.SERVO_LOCK_ANGLE);
-              atGoal = true;
+              atGoalNext = true;
               break;
 
-            case L3FollowerExtend:
-              atGoal = false;
-              break;
-
-            case L3FollowerRetract:
-              atGoal = false;
+            default:
+              atGoalNext = false;
               break;
           }
           break;
 
         case MountDismount:
           switch (state) {
-
             case Stowed:
               handleTransitions(State.L1LeaderExtend);
-              atGoal = false;
+              atGoalNext = false;
               break;
 
             case L1LeaderExtend:
-              atGoal = true;
+              atGoalNext = true;
               break;
 
             case L1LeaderRetract:
               handleTransitions(State.L1LeaderExtend);
-              atGoal = false;
+              atGoalNext = false;
               break;
 
             default:
-              atGoal = false;
+              atGoalNext = false;
               break;
           }
           break;
 
         case ClimbL1:
           switch (state) {
-
             case L1LeaderExtend:
               handleTransitions(State.L1LeaderRetract);
-              atGoal = false;
+              atGoalNext = false;
               break;
 
             case L1LeaderRetract:
-              atGoal = true;
+              atGoalNext = true;
               break;
 
             default:
-              atGoal = false;
+              atGoalNext = false;
               break;
           }
           break;
 
         case ClimbL2:
           switch (state) {
-
             case L1LeaderExtend:
               handleTransitions(State.L1LeaderRetract);
-              atGoal = false;
+              atGoalNext = false;
               break;
 
             case L1LeaderRetract:
               handleTransitions(State.L1FollowerExtend);
-              atGoal = false;
+              atGoalNext = false;
               break;
 
             case L1FollowerExtend:
               handleTransitions(State.L1FollowerRetract);
-              atGoal = false;
+              atGoalNext = false;
               break;
 
             case L1FollowerRetract:
               handleTransitions(State.L2LeaderExtend);
-              atGoal = false;
+              atGoalNext = false;
               break;
 
             case L2LeaderExtend:
               handleTransitions(State.L2LeaderRetract);
-              atGoal = false;
+              atGoalNext = false;
               break;
 
             case L2LeaderRetract:
               handleTransitions(State.L2FollowerExtend);
-              atGoal = false;
+              atGoalNext = false;
               break;
 
             case L2FollowerExtend:
               handleTransitions(State.L2FollowerRetract);
-              atGoal = false;
+              atGoalNext = false;
               break;
 
             case L2FollowerRetract:
-              atGoal = true;
+              atGoalNext = true;
               break;
 
             default:
-              atGoal = false;
+              atGoalNext = false;
               break;
           }
           break;
 
         case ClimbL3:
           switch (state) {
-
             case L1LeaderExtend:
               handleTransitions(State.L1LeaderRetract);
-              atGoal = false;
+              atGoalNext = false;
               break;
 
             case L1LeaderRetract:
               handleTransitions(State.L1FollowerExtend);
-              atGoal = false;
+              atGoalNext = false;
               break;
 
             case L1FollowerExtend:
               handleTransitions(State.L1FollowerRetract);
-              atGoal = false;
+              atGoalNext = false;
               break;
 
             case L1FollowerRetract:
               handleTransitions(State.L2LeaderExtend);
-              atGoal = false;
+              atGoalNext = false;
               break;
 
             case L2LeaderExtend:
               handleTransitions(State.L2LeaderRetract);
-              atGoal = false;
+              atGoalNext = false;
               break;
 
             case L2LeaderRetract:
               handleTransitions(State.L2FollowerExtend);
-              atGoal = false;
+              atGoalNext = false;
               break;
 
             case L2FollowerExtend:
               handleTransitions(State.L2FollowerRetract);
-              atGoal = false;
+              atGoalNext = false;
               break;
 
             case L2FollowerRetract:
               handleTransitions(State.L3LeaderExtend);
-              atGoal = false;
+              atGoalNext = false;
               break;
 
             case L3LeaderExtend:
               handleTransitions(State.L3LeaderRetract);
-              atGoal = false;
+              atGoalNext = false;
               break;
 
             case L3LeaderRetract:
               handleTransitions(State.L3FollowerExtend);
-              atGoal = false;
+              atGoalNext = false;
               break;
 
             case L3FollowerExtend:
               handleTransitions(State.L3FollowerRetract);
-              atGoal = false;
+              atGoalNext = false;
               break;
 
             case L3FollowerRetract:
-              atGoal = true;
+              atGoalNext = true;
               break;
 
             default:
-              atGoal = false;
+              atGoalNext = false;
               break;
           }
           break;
+
+        default:
+          atGoalNext = false;
+          break;
       }
+      this.atGoal = atGoalNext;
     }
   }
 
