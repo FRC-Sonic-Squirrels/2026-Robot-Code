@@ -416,6 +416,12 @@ public class RobotContainer {
     driverController.registerTrigger(XboxControllerWrapper.Button.povRight, "Lock")
         .react(robotStates.changeRobotGoal(RobotGoal.Lock, RobotGoal.Lock));
 
+    driverController.registerTrigger(XboxControllerWrapper.Button.povLeft, "ClimbL2")
+        .react(robotStates.changeRobotGoal(RobotGoal.ClimbL2, RobotGoal.None));
+
+    driverController.registerTrigger(XboxControllerWrapper.Button.povUp, "ClimbL3")
+        .react(robotStates.changeRobotGoal(RobotGoal.ClimbL3, RobotGoal.None));
+
     // ---------- OPERATOR CONTROLS -----------
 
     // Eject

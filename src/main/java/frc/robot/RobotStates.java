@@ -39,6 +39,9 @@ public class RobotStates {
     Shoot        (true,  false),
     StowClimber  (false,  true),
     MountDismount(false,  true),
+    Shoot        (true,  false),
+    StowClimber  (false,  true),
+    MountDismount(false,  true),
     ClimbL1      (false,  true),
     ClimbL2      (false,  true),
     ClimbL3      (false,  true),
@@ -142,14 +145,11 @@ public class RobotStates {
         score();
         break;
       case Pass:
-        pass();
-        break;
-      case Shoot:
-        if (isInAllianceZone) {
-          score();
-        } else {
-          pass();
-        }
+        Translation2d target = GeometryUtil.getClosestTranslation(FieldConstants.PASS_AIM_POINTS,
+            drivetrain.getHubPoseEstimatorPose(true));
+        setRotateToFaceTarget(target);
+        shooter.setGoal(Shooter.Goal.Passing);
+        hopper.setGoal(Hopper.Goal.Shooting);
         break;
       case StowClimber:
         climber.setGoal(Climber.Goal.Stowed);
