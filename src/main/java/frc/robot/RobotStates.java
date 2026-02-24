@@ -30,13 +30,15 @@ public class RobotStates {
 
   public enum RobotGoal {
     // @formatter:off
-    None      (false, false),
-    Score     (true,  false),
-    Pass      (true,  false),
-    ClimbL1   (false, true),
-    ClimbL2   (false, true),
-    ClimbL3   (false, true),
-    Unjamming (false, false);
+    None         (false, false),
+    Unjamming    (false, false),
+    Score        (true,  false),
+    Pass         (true,  false),
+    DismountTower(false,  true),
+    ClimbL1      (false,  true),
+    ClimbL2      (false,  true),
+    ClimbL3      (false,  true),
+    Lock         (false,  true);
     // @formatter:on
 
     public final boolean shooterActive;
@@ -125,6 +127,11 @@ public class RobotStates {
           shooter.setGoal(Shooter.Goal.Idle);
           hopper.setGoal(Hopper.Goal.Idle);
         }
+        climber.setGoal(Climber.Goal.Stowed);
+        break;
+      case Unjamming:
+        shooter.setGoal(Shooter.Goal.Unjamming);
+        hopper.setGoal(Hopper.Goal.Unjamming);
         break;
       case Score:
         setRotateToFaceTarget(FieldConstants.HUB_CENTER_POSE.get());
@@ -138,19 +145,20 @@ public class RobotStates {
         shooter.setGoal(Shooter.Goal.Passing);
         hopper.setGoal(Hopper.Goal.Shooting);
         break;
+      case DismountTower:
+        climber.setGoal(Climber.Goal.MountDismount);
+        break;
       case ClimbL1:
-        // TODO: set proper tower positon
-        climber.setClimberGoal(Climber.Goal.L1Climb);
+        climber.setGoal(Climber.Goal.ClimbL1);
         break;
       case ClimbL2:
-        climber.setClimberGoal(Climber.Goal.L2Climb);
+        climber.setGoal(Climber.Goal.ClimbL2);
         break;
       case ClimbL3:
-        climber.setClimberGoal(Climber.Goal.L3Climb);
+        climber.setGoal(Climber.Goal.ClimbL3);
         break;
-      case Unjamming:
-        shooter.setGoal(Shooter.Goal.Unjamming);
-        hopper.setGoal(Hopper.Goal.Unjamming);
+      case Lock:
+        climber.setGoal(Climber.Goal.Lock);
         break;
     }
 

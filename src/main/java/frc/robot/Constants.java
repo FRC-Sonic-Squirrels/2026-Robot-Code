@@ -285,6 +285,7 @@ public final class Constants {
   }
 
   public static class ClimberConstants {
+    //TODO make all climber constants accurate
     public static final double SUPPLY_CURRENT_LIMIT = 60.0;
     public static final double STATOR_CURRENT_LIMIT = 90.0;
 
@@ -309,12 +310,17 @@ public final class Constants {
     public static final Rotation2d SERVO_UNLOCK_ANGLE = Rotation2d.fromDegrees(170);
 
     // in inches
-    public static final double L1_CLIMB_HEIGHT = 25;
-    public static final double L2_CLIMB_HEIGHT = 24;
-    public static final double L3_CLIMB_HEIGHT = 23;
+    public static final double LEADER_HEIGHT_CLIMBL1 = 25;
+    public static final double LEADER_HEIGHT_CLIMBL2 = 24;
+    public static final double LEADER_HEIGHT_CLIMBL3 = 23;
 
-    public static final double INNER_RETRACTION_HEIGHT = 0;
-    public static final double OUTER_RETRACTION_HEIGHT = 0;
+    public static final double FOLLOWER_HEIGHT_EXTENDED = 18;
+
+    public static final double LEADER_HEIGHT_RETRACTED = 5;
+    public static final double FOLLOWER_HEIGHT_RETRACTED = 5;
+
+    public static final double LEADER_HEIGHT_STOWED = 0;
+    public static final double FOLLOWER_HEIGHT_STOWED = 0;
   }
 
 public static class ShooterConstants {
