@@ -146,6 +146,24 @@ public class Climber extends SubsystemBase {
               atGoalNext = false;
               break;
 
+            case L1LeaderExtend:
+              atGoal = true;
+              break;
+
+            case L1LeaderRetract:
+              handleTransitions(State.L1LeaderExtend);
+              atGoalNext = false;
+              break;
+
+            case L1LeaderExtend:
+              atGoalNext = true;
+              break;
+
+            case L1LeaderRetract:
+              handleTransitions(State.L1LeaderExtend);
+              atGoalNext = false;
+              break;
+
             default:
               atGoalNext = false;
               break;
@@ -286,6 +304,7 @@ public class Climber extends SubsystemBase {
   }
 
   private void handleTransitions(State desiredState) {
+    atGoal = false;
     setLeaderTargetHeight(desiredState.leaderHeight);
     setFollowerTargetHeight(desiredState.followerHeight);
     if (isLeaderAtTargetHeight(desiredState.leaderHeight) && isFollowerAtTargetHeight(desiredState.followerHeight)) {
