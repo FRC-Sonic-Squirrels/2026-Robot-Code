@@ -387,8 +387,17 @@ public class RobotContainer {
     driverController.registerTrigger(XboxControllerWrapper.Button.rightBumper, "Right Intake")
         .react(robotStates.changeIntakeGoal(IntakeGoal.RightIntake, RobotStates.IntakeGoal.Stow));
 
-    driverController.registerTrigger(XboxControllerWrapper.Button.povDown, "Climb")
+    driverController.registerTrigger(XboxControllerWrapper.Button.x, "Mount/Dismount Climb")
+        .react(robotStates.changeRobotGoal(RobotGoal.MountDismount, RobotGoal.StowClimber));
+
+    driverController.registerTrigger(XboxControllerWrapper.Button.povDown, "ClimbL1")
         .react(robotStates.changeRobotGoal(RobotGoal.ClimbL1, RobotGoal.None));
+
+    driverController.registerTrigger(XboxControllerWrapper.Button.povLeft, "ClimbL2")
+        .react(robotStates.changeRobotGoal(RobotGoal.ClimbL2, RobotGoal.None));
+
+    driverController.registerTrigger(XboxControllerWrapper.Button.povUp, "ClimbL3")
+        .react(robotStates.changeRobotGoal(RobotGoal.ClimbL3, RobotGoal.None));
 
     // ---------- OPERATOR CONTROLS -----------
 
