@@ -355,7 +355,6 @@ public static class ShooterConstants {
       public static final double GEARING = 3.33333;
       public static final double SUPPLY_CURRENT_LIMIT = 10;
       public static final double STATOR_CURRENT_LIMIT = 10;
-      public static final double SENSOR_TO_MECHANISM_RATIO = 1.42;
       public static final double SHOOTING_KICKER_RPM = 100;
       public static final double STALL_CURRENT_THRESHOLD = 20;
       public static final double PRELOADING_KICKER_RPM = 50;
