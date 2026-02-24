@@ -221,11 +221,11 @@ public class Intake extends SubsystemBase {
       // Intake state machine
       switch (goal) {
         case Stow:
-          setPivotAngle(PivotConstants.HOME_POSITION);
+          setPivotAngle(PivotConstants.HOME_POSITION, 0);
           setRollerVelocity(0);
           break;
         case Down:
-          setPivotAngle(computeDownAngle());
+          setPivotAngle(computeDownAngle(), 1);
           setRollerVelocity(0);
           break;
         case Eject:
@@ -233,7 +233,7 @@ public class Intake extends SubsystemBase {
           break;
         case Intake:
           setRollerVelocity(tunables.intakingFuelVelocity.get());
-          setPivotAngle(computeDownAngle());
+          setPivotAngle(computeDownAngle(), 1);
           break;
         default:
           break;
@@ -270,12 +270,12 @@ public class Intake extends SubsystemBase {
         pivot.KG1.get(), configs);
   }
 
-  public void setPivotAngle(Rotation2d angle) {
+  public void setPivotAngle(Rotation2d angle, int slotId) {
     Rotation2d targetAngle = Rotation2d.fromRadians(MathUtil.clamp(angle.getRadians(),
         PivotConstants.MIN_PIVOT_ANGLE.getRadians(), PivotConstants.MAX_PIVOT_ANGLE.getRadians()));
 
     pivotTargetAngle = targetAngle;
-    io.setPivotClosedLoopPosition(targetAngle);
+    io.setPivotClosedLoopPosition(targetAngle, slotId);
     logs.pivot.targetAngleDegrees.info(targetAngle);
   }
 

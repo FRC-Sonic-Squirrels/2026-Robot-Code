@@ -48,7 +48,7 @@ public interface IntakeIO {
   public default void resetPivotSensorPosition(Rotation2d angle) {
   }
 
-  public default void setPivotClosedLoopPosition(Rotation2d angle) {
+  public default void setPivotClosedLoopPosition(Rotation2d angle, int slotId) {
   }
 
   public default void setPivotClosedLoopConstants(double kP0, double kD0, double kG0, double kP1, double kD1,

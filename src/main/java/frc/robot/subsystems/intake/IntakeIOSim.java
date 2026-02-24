@@ -67,7 +67,8 @@ public class IntakeIOSim implements IntakeIO {
   }
 
   @Override
-  public void setPivotClosedLoopPosition(Rotation2d angle) {
+  public void setPivotClosedLoopPosition(Rotation2d angle, int slotId) {
+    pivotClosedLoopControl.withSlot(slotId);
     pivotSim.setControl(pivotClosedLoopControl.withPosition(angle.getRotations()));
   }
 
