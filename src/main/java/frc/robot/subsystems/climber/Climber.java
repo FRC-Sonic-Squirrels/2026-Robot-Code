@@ -304,7 +304,6 @@ public class Climber extends SubsystemBase {
   }
 
   private void handleTransitions(State desiredState) {
-    atGoal = false;
     setLeaderTargetHeight(desiredState.leaderHeight);
     setFollowerTargetHeight(desiredState.followerHeight);
     if (isLeaderAtTargetHeight(desiredState.leaderHeight) && isFollowerAtTargetHeight(desiredState.followerHeight)) {
