@@ -185,7 +185,7 @@ public final class Constants {
   public static class IntakeConstants {
     public static class RollerConstants {
 
-      public static final double ROLLER_GEARING = 10.4167;
+      public static final double ROLLER_GEARING = 1.6;
       public static final double MOI = 0.05;
 
       public static final double SUPPLY_CURRENT_LIMIT = 20.0;
@@ -198,7 +198,7 @@ public final class Constants {
       public static final double SUPPLY_CURRENT_LIMIT = 20.0;
       public static final double STATOR_CURRENT_LIMIT = 100.0;
 
-      public static final double GEAR_RATIO = 57.9586;
+      public static final double GEAR_RATIO = 25.0043;
 
       public static final double MOI = .00001;
 
@@ -224,7 +224,7 @@ public final class Constants {
   public static class HopperConstants {
     public static class RollerConstants {
 
-      public static final double ROLLER_GEARING = 10.4167;
+      public static final double ROLLER_GEARING = 1.11111;
       public static final double MOI = 0.05;
 
       public static final double SUPPLY_CURRENT_LIMIT = 10;
@@ -288,8 +288,8 @@ public final class Constants {
     public static final double SUPPLY_CURRENT_LIMIT = 60.0;
     public static final double STATOR_CURRENT_LIMIT = 90.0;
 
-    public static final double INNER_CLIMBER_GEAR_RATIO = (50.0 / 12.0) * (50.0 / 20.0) * (42.0 / 18.0);
-    public static final double OUTER_CLIMBER_GEAR_RATIO = (50.0 / 12.0) * (50.0 / 20.0) * (42.0 / 18.0);
+    public static final double INNER_CLIMBER_GEAR_RATIO = 22.75;
+    public static final double OUTER_CLIMBER_GEAR_RATIO = 22.75;
 
     public static final double CLIMBER_MOI = 0.15;
 
@@ -325,7 +325,7 @@ public static class ShooterConstants {
 
       public static final double MOI = 5.0;
 
-      public static final double GEARING = 125.0;
+      public static final double GEARING = 8.33333;
 
       public static final Rotation2d MIN_ANGLE_RAD = Rotation2d.fromDegrees(12.0);
       public static final Rotation2d MAX_ANGLE_RAD = Rotation2d.fromDegrees(59);
@@ -341,7 +341,7 @@ public static class ShooterConstants {
 
     public static class Flywheel {
       public static final double MOI = 5.0;
-      public static final double GEARING = (18.0 / 30.0);
+      public static final double GEARING = 0.6667;
       public static final double SUPPLY_CURRENT_LIMIT = 40;
       public static final double STATOR_CURRENT_LIMIT = 40;
       public static final double PEAK_REVERSE_VOLTAGE = 0;
@@ -352,7 +352,7 @@ public static class ShooterConstants {
 
     public static class Kicker {
       public static final double MOI = 5.0;
-      public static final double GEARING = 1.0;
+      public static final double GEARING = 3.33333;
       public static final double SUPPLY_CURRENT_LIMIT = 10;
       public static final double STATOR_CURRENT_LIMIT = 10;
       public static final double SENSOR_TO_MECHANISM_RATIO = 1.42;
