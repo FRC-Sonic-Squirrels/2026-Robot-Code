@@ -2,6 +2,7 @@ package frc.robot.subsystems.intake;
 
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
@@ -71,15 +72,22 @@ public class IntakeIOSim implements IntakeIO {
   }
 
   @Override
-  public void setPivotClosedLoopConstants(double kP, double kD, double kG, MotionMagicConfigs mmConfigs) {
+  public void setPivotClosedLoopConstants(double kP0, double kD0, double kG0, double kP1, double kD1, double kG1,
+      MotionMagicConfigs mmConfigs) {
     TalonFXConfiguration config       = new TalonFXConfiguration();
     Slot0Configs         slot0Configs = new Slot0Configs();
+    Slot1Configs         slot1Configs = new Slot1Configs();
 
-    slot0Configs.kP = kP;
-    slot0Configs.kD = kD;
-    slot0Configs.kG = kG;
+    slot0Configs.kP = kP0;
+    slot0Configs.kD = kD0;
+    slot0Configs.kG = kG0;
+
+    slot1Configs.kP = kP1;
+    slot1Configs.kD = kD1;
+    slot1Configs.kG = kG1;
 
     config.Slot0       = slot0Configs;
+    config.Slot1       = slot1Configs;
     config.MotionMagic = mmConfigs;
 
     pivotSim.setConfig(config);
