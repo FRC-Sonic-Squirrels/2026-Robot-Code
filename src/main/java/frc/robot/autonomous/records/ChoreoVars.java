@@ -24,11 +24,11 @@ public final class ChoreoVars {
     public static final Pose2d S8  = new Pose2d(13.1, 5.7, Rotation2d.fromRadians(2.356));
     public static final Pose2d ST  = new Pose2d(10.5, 5.65, Rotation2d.fromRadians(2.356));
     public static final Pose2d ST2 = new Pose2d(14.25, 5.4, Rotation2d.fromRadians(0.785));
+    public static final Pose2d ST3 = new Pose2d(13.25, 5.4, Rotation2d.fromRadians(0.96));
     public static final Pose2d T1  = new Pose2d(10, 2.6, Rotation2d.fromRadians(1.571));
     public static final Pose2d T2  = new Pose2d(8.7, 2.6, Rotation2d.fromRadians(1.571));
     public static final Pose2d T3  = new Pose2d(8.7, 2.6, Rotation2d.kZero);
     public static final Pose2d T4  = new Pose2d(8.7, 5.8, Rotation2d.kZero);
-    public static final Pose2d ST3 = new Pose2d(13.25, 5.4, Rotation2d.fromRadians(0.96));
 
     private Poses() {
     }

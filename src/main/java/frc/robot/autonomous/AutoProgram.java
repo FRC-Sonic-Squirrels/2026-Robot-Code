@@ -1,16 +1,17 @@
 package frc.robot.autonomous;
 
-import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class AutoProgram {
-  private final String                name;
-  private final Pair<Command, Pose2d> autoPlan;
+  private final String  name;
+  private final Command command;
+  private final Pose2d  initialPose;
 
-  public AutoProgram(Pair<Command, Pose2d> autoPlan, String name) {
-    this.autoPlan = autoPlan;
-    this.name     = name;
+  public AutoProgram(Command command, Pose2d initialPose, String name) {
+    this.command     = command;
+    this.name        = name;
+    this.initialPose = initialPose;
   }
 
   public String getName() {
@@ -18,10 +19,10 @@ public class AutoProgram {
   }
 
   public Command getAutoCommand() {
-    return autoPlan.getFirst();
+    return command;
   }
 
   public Pose2d getInit() {
-    return autoPlan.getSecond();
+    return initialPose;
   }
 }

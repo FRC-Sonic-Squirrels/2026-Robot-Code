@@ -2,21 +2,14 @@ package frc.robot.autonomous;
 
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
-import edu.wpi.first.wpilibj2.command.Command;
-import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.lib.team2930.AutoRegisterLoggers;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
-import frc.robot.Constants;
 import frc.robot.RobotStates;
-import frc.robot.autonomous.helpers.ChoreoHelper;
-import frc.robot.autonomous.records.ChoreoTrajectoryWithName;
 import frc.robot.autonomous.records.ChoreoVars;
-import frc.robot.commands.drive.DriveToPose;
 import frc.robot.configs.RobotConfig;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
 
@@ -30,6 +23,13 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 public class AutosManager {
   public enum Autos {
     NOTHING, TEST, SWERVE_CHARACTERIZATION;
+  }
+
+  public enum AutoGoals {
+    NOTHING, DRIVE, INTAKEWHILEDRIVE, SCORE, CLIMB;
+  }
+
+  public record Waypoint(Pose2d waypointPose, AutoGoals goal) {
   }
 
   private String ROOT_TABLE = "Sysid";
@@ -111,52 +111,60 @@ public class AutosManager {
   }
 
   public AutoProgram doNothing() {
-    return new AutoProgram(createAutoPath(Autos.NOTHING), "Do Nothing");
+    return new AutoProgram(null, Pose2d.kZero, "Do Nothing");
   }
 
   public AutoProgram firstTest() {
-    return new AutoProgram(createAutoPath(Autos.TEST), "Test");
+    Pair<ArrayList<Waypoint>, Pose2d> autoPoints = createAutoPoints(Autos.TEST);
+    var                               state      = new AutoStateMachine(subsystems, autoPoints.getFirst(),
+        autoPoints.getSecond());
+    return stateToAutoProgram(state, autoPoints.getSecond(), "TEST");
   }
 
-  @SuppressWarnings("unused")
-  private AutoProgram testPath(String pathName, boolean useInitialPose) {
-    return testPath(pathName, useInitialPose, pathName);
-  }
+  // @SuppressWarnings("unused")
+  // private AutoProgram testPath(String pathName, boolean useInitialPose) {
+  // return testPath(pathName, useInitialPose, pathName);
+  // }
 
   // TODO: Potentially get rid of testPath? See if it's necessary.
-  private AutoProgram testPath(String pathName, boolean useInitialPose, String autoName) {
-    var traj = ChoreoTrajectoryWithName.getTrajectory(pathName);
-    return new AutoProgram(Pair.of(new Command() {
-      private final DrivetrainWrapper drivetrain = subsystems.drivetrain();
-      ChoreoHelper                    helper;
-      boolean                         atEndOfPath;
+  // private AutoProgram testPath(String pathName, boolean useInitialPose, String
+  // autoName) {
+  // var traj = ChoreoTrajectoryWithName.getTrajectory(pathName);
+  // return new AutoProgram(Pair.of(new Command() {
+  // private final DrivetrainWrapper drivetrain = subsystems.drivetrain();
+  // ChoreoHelper helper;
+  // boolean atEndOfPath;
 
-      @Override
-      public void initialize() {
-        drivetrain.setPose(Constants.zeroPose2d);
-        helper = new ChoreoHelper(Timer.getFPGATimestamp(), drivetrain.getHubPoseEstimatorPose(true), traj,
-            config.getDriveBaseRadius() / 2, config.getAutoTranslationPidController(),
-            config.getAutoTranslationPidController(), config.getAutoThetaPidController());
-      }
+  // @Override
+  // public void initialize() {
+  // drivetrain.setPose(Constants.zeroPose2d);
+  // helper = new ChoreoHelper(Timer.getFPGATimestamp(),
+  // drivetrain.getHubPoseEstimatorPose(true), traj,
+  // config.getDriveBaseRadius() / 2, config.getAutoTranslationPidController(),
+  // config.getAutoTranslationPidController(),
+  // config.getAutoThetaPidController());
+  // }
 
-      @Override
-      public void execute() {
-        var result = helper.calculateChassisSpeeds(drivetrain.getHubPoseEstimatorPose(true), Timer.getFPGATimestamp());
-        drivetrain.setVelocityOverride(result.chassisSpeeds());
-        atEndOfPath = result.atEndOfPath();
-      }
+  // @Override
+  // public void execute() {
+  // var result =
+  // helper.calculateChassisSpeeds(drivetrain.getHubPoseEstimatorPose(true),
+  // Timer.getFPGATimestamp());
+  // drivetrain.setVelocityOverride(result.chassisSpeeds());
+  // atEndOfPath = result.atEndOfPath();
+  // }
 
-      @Override
-      public void end(boolean interrupted) {
-        drivetrain.resetVelocityOverride();
-      }
+  // @Override
+  // public void end(boolean interrupted) {
+  // drivetrain.resetVelocityOverride();
+  // }
 
-      @Override
-      public boolean isFinished() {
-        return atEndOfPath;
-      }
-    }, Constants.zeroPose2d), autoName);
-  }
+  // @Override
+  // public boolean isFinished() {
+  // return atEndOfPath;
+  // }
+  // }, Constants.zeroPose2d), autoName);
+  // }
 
   // TODO: Finish up swerveCharacterization to reinstate it
   public AutoProgram swerveCharacterization() {
@@ -181,32 +189,33 @@ public class AutosManager {
     // .andThen(Commands.waitSeconds(1.0))
     // .andThen(command4).andThen(Commands.runOnce(() ->
     // logSwerveSysidState.info(SysIdRoutineLog.State.kNone)));
-    return new AutoProgram(createAutoPath(Autos.SWERVE_CHARACTERIZATION), "Swerve Characterization");
+    return new AutoProgram(null, Pose2d.kZero, "Swerve Characterization");
   }
 
   public boolean preloadingComplete() {
     return preloadingComplete;
   }
 
-  private Pair<Command, Pose2d> createAutoPath(Autos auto) {
-    Pose2d initialPose;
+  private Pair<ArrayList<Waypoint>, Pose2d> createAutoPoints(Autos auto) {
+    ArrayList<Waypoint> waypoints = new ArrayList<Waypoint>();
+    Pose2d              initialPose;
     switch (auto) {
       case TEST:
         initialPose = ChoreoVars.Poses.S5;
-        return Pair.of(driveToPose(ChoreoVars.Poses.H2)
-                      .andThen(driveToPose(ChoreoVars.Poses.T1))
-                      .andThen(driveToPose(ChoreoVars.Poses.T2))
-                      .andThen(driveToPose(ChoreoVars.Poses.T3))
-                      .andThen(driveToPose(ChoreoVars.Poses.T4))
-                      .andThen(driveToPose(ChoreoVars.Poses.H1))
-                      .andThen(driveToPose(ChoreoVars.Poses.C1)),
-                       initialPose);
+        waypoints.add(new Waypoint(ChoreoVars.Poses.ST3, AutoGoals.DRIVE));
+        waypoints.add(new Waypoint(ChoreoVars.Poses.T1, AutoGoals.DRIVE));
+        waypoints.add(new Waypoint(ChoreoVars.Poses.T2, AutoGoals.DRIVE));
+        waypoints.add(new Waypoint(ChoreoVars.Poses.T3, AutoGoals.DRIVE));
+        waypoints.add(new Waypoint(ChoreoVars.Poses.T4, AutoGoals.DRIVE));
+        waypoints.add(new Waypoint(ChoreoVars.Poses.H1, AutoGoals.DRIVE));
+        waypoints.add(new Waypoint(ChoreoVars.Poses.C1, AutoGoals.CLIMB));
+        return Pair.of(waypoints, initialPose);
       default:
-        return Pair.of(new InstantCommand(), Pose2d.kZero);
+        return Pair.of(new ArrayList<>(), Pose2d.kZero);
     }
   }
 
-  private Command driveToPose(Pose2d desiredPose) {
-    return new DriveToPose(wrapper, false, desiredPose, () -> wrapper.getHubPoseEstimatorPose(true));
+  private AutoProgram stateToAutoProgram(AutoStateMachine state, Pose2d initialPose, String name) {
+    return new AutoProgram(state.asCommand(), initialPose, name);
   }
 }
