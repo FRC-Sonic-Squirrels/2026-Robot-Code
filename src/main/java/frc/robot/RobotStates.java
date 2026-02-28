@@ -1,6 +1,8 @@
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.Units;
 import frc.lib.team2930.*;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.commands.drive.RotateToFaceHelper;
@@ -31,9 +33,10 @@ public class RobotStates {
   public enum RobotGoal {
     // @formatter:off
     None         (false, false),
-    Unjamming    (false, false),
+    Unjam        (false, false),
     Score        (true,  false),
     Pass         (true,  false),
+    Shoot        (true, false),
     DismountTower(false,  true),
     ClimbL1      (false,  true),
     ClimbL2      (false,  true),
@@ -129,21 +132,22 @@ public class RobotStates {
         }
         climber.setGoal(Climber.Goal.Stowed);
         break;
-      case Unjamming:
+      case Unjam:
         shooter.setGoal(Shooter.Goal.Unjamming);
         hopper.setGoal(Hopper.Goal.Unjamming);
         break;
       case Score:
-        setRotateToFaceTarget(FieldConstants.HUB_CENTER_POSE.get());
-        shooter.setGoal(Shooter.Goal.Scoring);
-        hopper.setGoal(Hopper.Goal.Shooting);
+        score();
         break;
       case Pass:
-        Translation2d target = GeometryUtil.getClosestTranslation(FieldConstants.PASS_AIM_POINTS,
-            drivetrain.getHubPoseEstimatorPose(true));
-        setRotateToFaceTarget(target);
-        shooter.setGoal(Shooter.Goal.Passing);
-        hopper.setGoal(Hopper.Goal.Shooting);
+        pass();
+        break;
+      case Shoot:
+        if (isInAllianceZone(drivetrain.getHubPoseEstimatorPose(true))) {
+          score();
+        } else {
+          pass();
+        }
         break;
       case DismountTower:
         climber.setGoal(Climber.Goal.MountDismount);
@@ -310,5 +314,26 @@ public class RobotStates {
       return true;
     }
     return false;
+  }
+
+  public boolean isInAllianceZone(Pose2d pose) {
+    Translation2d position  = new AllianceAwareTranslation2d(pose.getTranslation()).get();
+    double        positionX = position.getX();
+    double        length    = FieldConstants.ALLIANCE_ZONE_LENGTH.in(Units.Meters);
+    return positionX <= length;
+  }
+
+  public void score() {
+    setRotateToFaceTarget(FieldConstants.HUB_CENTER_POSE.get());
+    shooter.setGoal(Shooter.Goal.Scoring);
+    hopper.setGoal(Hopper.Goal.Shooting);
+  }
+
+  public void pass() {
+    Translation2d target = GeometryUtil.getClosestTranslation(FieldConstants.PASS_AIM_POINTS,
+        drivetrain.getHubPoseEstimatorPose(true));
+    setRotateToFaceTarget(target);
+    shooter.setGoal(Shooter.Goal.Passing);
+    hopper.setGoal(Hopper.Goal.Shooting);
   }
 }
