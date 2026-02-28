@@ -1,18 +1,19 @@
 package frc.robot.subsystems.climber;
 
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.measure.Distance;
 import frc.lib.team2930.LoggerGroup;
 import frc.robot.subsystems.BaseInputs;
 
 public interface ElevatorIO {
 
   class Inputs extends BaseInputs {
-    public double position;
+    public double heightInches;
+    public double velocityInchesPerSecond;
     public double appliedVolts;
     public double currentAmps;
     public double tempCelsius;
-    public double velocityDegreesPerSecond;
 
     public Inputs(LoggerGroup logInputs) {
       super(logInputs);
@@ -20,19 +21,22 @@ public interface ElevatorIO {
   }
 
   /** Updates the set of loggable inputs. */
-  public default void updateElevatorInputs(Inputs inputs) {
+  public default void updateInputs(Inputs inputs) {
   }
 
-  public default void resetElevatorSensorPosition(Rotation2d angle) {
+  public default void setVoltage(double volts) {
   }
 
-  public default void setElevatorClosedLoopPosition(double inches) {
+  public default void setHeight(Distance height) {
   }
 
-  public default void setElevatorClosedLoopConstants(double kP, double kD, double kG) {
+  public default void setClosedLoopConstants(double kP, double kD, double kG, MotionMagicConfigs mmConfigs) {
   }
 
-  public default boolean setElevatorNeutralMode(NeutralModeValue value) {
+  public default void setSensorPosition(Distance position) {
+  }
+
+  public default boolean setNeutralMode(NeutralModeValue value) {
     return false;
   }
 }

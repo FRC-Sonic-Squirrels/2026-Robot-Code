@@ -77,7 +77,6 @@ public class DriveToPose extends Command {
   private final Supplier<Pose2d>  currentRobotPose;
   private final boolean           finish;
   private final Supplier<Boolean> move;
-  private final double            driveToleranceValue;
   private final Trigger           withinTolerance;
 
   private final ProfiledPIDController driveController = new ProfiledPIDController(0.0, 0.0, 0.0,
@@ -96,13 +95,12 @@ public class DriveToPose extends Command {
   /** Drives to the specified pose under full software control. */
   public DriveToPose(DrivetrainWrapper drive, boolean slowMode, Supplier<Pose2d> poseSupplier,
       Supplier<Pose2d> currentRobotPose, boolean finish, Supplier<Boolean> move) {
-    this.drive               = drive;
-    this.slowMode            = slowMode;
-    this.poseSupplier        = poseSupplier;
-    this.currentRobotPose    = currentRobotPose;
-    this.finish              = finish;
-    this.move                = move;
-    this.driveToleranceValue = tunables.driveTolerance.get();
+    this.drive            = drive;
+    this.slowMode         = slowMode;
+    this.poseSupplier     = poseSupplier;
+    this.currentRobotPose = currentRobotPose;
+    this.finish           = finish;
+    this.move             = move;
 
     tunables.driveMaxVelocity.initDefault(5);
     tunables.driveMaxVelocitySlow.initDefault(Units.Inches.of(50.0).in(Units.Meters));
@@ -143,7 +141,7 @@ public class DriveToPose extends Command {
         tunables.driveMaxAcceleration.get()));
     driveController.setTolerance(
         // slowMode ? driveToleranceSlow.get() : driveTolerance.get()
-        driveToleranceValue);
+        tunables.driveTolerance.get());
     thetaController.setP(tunables.thetaKP.get());
     thetaController.setD(tunables.thetaKD.get());
     thetaController.setConstraints(new TrapezoidProfile.Constraints(

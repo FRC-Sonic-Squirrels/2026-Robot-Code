@@ -72,7 +72,8 @@ public class DriveToPoseHelper {
   private final Supplier<Boolean> slowMode;
   private final double            driveToleranceValue;
 
-  private Pose2d targetPose;
+  private Pose2d  targetPose;
+  private boolean atTarget;
 
   private final ProfiledPIDController driveController = new ProfiledPIDController(0.0, 0.0, 0.0,
       new TrapezoidProfile.Constraints(0.0, 0.0));
@@ -92,8 +93,8 @@ public class DriveToPoseHelper {
     tunables.thetaMaxVelocity.initDefault(Math.toRadians(360.0));
     tunables.thetaMaxVelocitySlow.initDefault(Math.toRadians(90.0));
     tunables.thetaMaxAcceleration.initDefault(Math.toRadians(720.0));
-    tunables.driveTolerance.initDefault(0.02);
-    tunables.driveToleranceSlow.initDefault(0.05);
+    tunables.driveTolerance.initDefault(0.08);
+    tunables.driveToleranceSlow.initDefault(0.08);
     tunables.thetaTolerance.initDefault(0.01);
     tunables.thetaToleranceSlow.initDefault(Math.toRadians(3.0));
     tunables.ffMinRadius.initDefault(0.0);
@@ -170,7 +171,8 @@ public class DriveToPoseHelper {
     logs.goal.info(targetPose);
     logs.driveControllerIsAtGoal.info(driveController.atGoal());
     logs.thetaControllerIsAtGoal.info(thetaController.atGoal());
-    logs.isAtGoal.info(withinTolerance(tunables.driveTolerance.get(), new Rotation2d(tunables.thetaTolerance.get())));
+    atTarget = withinTolerance(tunables.driveTolerance.get(), new Rotation2d(tunables.thetaTolerance.get()));
+    logs.isAtGoal.info(atTarget);
     return ChassisSpeeds.fromFieldRelativeSpeeds(driveVelocity.getX(), driveVelocity.getY(), thetaVelocity,
         currentPose.getRotation());
   }
@@ -179,6 +181,10 @@ public class DriveToPoseHelper {
     boolean reset = !Objects.equals(this.targetPose, target);
     this.targetPose = target;
     return reset;
+  }
+
+  public boolean isAtTarget() {
+    return atTarget;
   }
 
   /**

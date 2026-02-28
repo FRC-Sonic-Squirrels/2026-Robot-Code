@@ -1,6 +1,8 @@
 package frc.robot;
 
+import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.units.Units;
 import frc.lib.team2930.*;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.commands.drive.RotateToFaceHelper;
@@ -30,13 +32,17 @@ public class RobotStates {
 
   public enum RobotGoal {
     // @formatter:off
-    None      (false, false),
-    Score     (true,  false),
-    Pass      (true,  false),
-    ClimbL1   (false, true),
-    ClimbL2   (false, true),
-    ClimbL3   (false, true),
-    Unjamming (false, false);
+    None         (false, false),
+    Unjam        (false, false),
+    Score        (true,  false),
+    Pass         (true,  false),
+    Shoot        (true,  false),
+    StowClimber  (false,  true),
+    MountDismount(false,  true),
+    ClimbL1      (false,  true),
+    ClimbL2      (false,  true),
+    ClimbL3      (false,  true),
+    Lock         (false,  true);
     // @formatter:on
 
     public final boolean shooterActive;
@@ -57,7 +63,7 @@ public class RobotStates {
   public static class SubsystemsInTargetStatesLogs extends AutoRegisterLoggers {
     public LoggerEntry.Text goal;
     public LoggerEntry.Text intakeGoal;
-
+    public LoggerEntry.Bool inAllianceZone;
   }
 
   public static class SubsystemsInUseLogs extends AutoRegisterLoggers {
@@ -109,6 +115,7 @@ public class RobotStates {
 
     var currentIntakeGoal = intakeGoal;
     var currentGoal       = goal;
+    var isInAllianceZone  = isInAllianceZone(drivetrain.getHubPoseEstimatorPose(true));
 
     if (goal.climberActive) {
       // Force intakes in.
@@ -125,32 +132,42 @@ public class RobotStates {
           shooter.setGoal(Shooter.Goal.Idle);
           hopper.setGoal(Hopper.Goal.Idle);
         }
+        climber.setGoal(Climber.Goal.Stowed);
         break;
-      case Score:
-        setRotateToFaceTarget(FieldConstants.HUB_CENTER_POSE.get());
-        shooter.setGoal(Shooter.Goal.Scoring);
-        hopper.setGoal(Hopper.Goal.Shooting);
-        break;
-      case Pass:
-        Translation2d target = GeometryUtil.getClosestTranslation(FieldConstants.PASS_AIM_POINTS,
-            drivetrain.getHubPoseEstimatorPose(true));
-        setRotateToFaceTarget(target);
-        shooter.setGoal(Shooter.Goal.Passing);
-        hopper.setGoal(Hopper.Goal.Shooting);
-        break;
-      case ClimbL1:
-        // TODO: set proper tower positon
-        climber.setClimberGoal(Climber.Goal.L1Climb);
-        break;
-      case ClimbL2:
-        climber.setClimberGoal(Climber.Goal.L2Climb);
-        break;
-      case ClimbL3:
-        climber.setClimberGoal(Climber.Goal.L3Climb);
-        break;
-      case Unjamming:
+      case Unjam:
         shooter.setGoal(Shooter.Goal.Unjamming);
         hopper.setGoal(Hopper.Goal.Unjamming);
+        break;
+      case Score:
+        score();
+        break;
+      case Pass:
+        pass();
+        break;
+      case Shoot:
+        if (isInAllianceZone) {
+          score();
+        } else {
+          pass();
+        }
+        break;
+      case StowClimber:
+        climber.setGoal(Climber.Goal.Stowed);
+        break;
+      case MountDismount:
+        climber.setGoal(Climber.Goal.MountDismount);
+        break;
+      case ClimbL1:
+        climber.setGoal(Climber.Goal.ClimbL1);
+        break;
+      case ClimbL2:
+        climber.setGoal(Climber.Goal.ClimbL2);
+        break;
+      case ClimbL3:
+        climber.setGoal(Climber.Goal.ClimbL3);
+        break;
+      case Lock:
+        climber.setGoal(Climber.Goal.Lock);
         break;
     }
 
@@ -164,6 +181,7 @@ public class RobotStates {
 
     logs.subsystemsInTargetStates.goal.info(goal.name());
     logs.subsystemsInTargetStates.intakeGoal.info(intakeGoal.name());
+    logs.subsystemsInTargetStates.inAllianceZone.info(isInAllianceZone);
   }
 
   private void setRotateToFaceTarget(Translation2d target) {
@@ -302,5 +320,30 @@ public class RobotStates {
       return true;
     }
     return false;
+  }
+
+  public boolean isInAllianceZone(Pose2d pose) {
+    double positionX          = pose.getTranslation().getX();
+    double fieldLength        = FieldConstants.FIELD_LENGTH.in(Units.Meters);
+    double allianceZoneLength = FieldConstants.ALLIANCE_ZONE_LENGTH.in(Units.Meters);
+    if (Constants.isRedAlliance()) {
+      return positionX >= fieldLength - allianceZoneLength;
+    } else {
+      return positionX <= allianceZoneLength;
+    }
+  }
+
+  public void score() {
+    setRotateToFaceTarget(FieldConstants.HUB_CENTER_POSE.get());
+    shooter.setGoal(Shooter.Goal.Scoring);
+    hopper.setGoal(Hopper.Goal.Shooting);
+  }
+
+  public void pass() {
+    Translation2d target = GeometryUtil.getClosestTranslation(FieldConstants.PASS_AIM_POINTS,
+        drivetrain.getHubPoseEstimatorPose(true));
+    setRotateToFaceTarget(target);
+    shooter.setGoal(Shooter.Goal.Passing);
+    hopper.setGoal(Hopper.Goal.Shooting);
   }
 }

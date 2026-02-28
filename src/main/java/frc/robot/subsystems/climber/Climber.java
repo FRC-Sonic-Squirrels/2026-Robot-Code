@@ -2,6 +2,7 @@ package frc.robot.subsystems.climber;
 
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.Servo;
 import frc.lib.team2930.*;
@@ -12,241 +13,291 @@ public class Climber extends SubsystemBase {
   private final String ROOT_TABLE = "Climber";
 
   public enum Goal {
-    ClimbAuto, AutoDismount, L1Climb, L2Climb, L3Climb, Idle, Override
+    MountDismount, ClimbL1, ClimbL2, ClimbL3, Stowed, Override, Lock
   }
 
-  private enum ClimberState {
-    Idle, Override, L1Extend, L1Retract, AutoDismount, AutoRetract, L2Extend, L2Retract, L3Extend, L3Retract, Lock
+  private enum State {
+    // Leader is the outer elevator, follower is the inner elevator.
+    // Retract is elevator going down, pulling the robot up.
+    // Extend is elevator going up, reaching for the next bar.
+    //@formatter:off
+    Stowed           (ClimberConstants.LEADER_HEIGHT_STOWED   , ClimberConstants.FOLLOWER_HEIGHT_STOWED   ),
+    L1LeaderExtend   (ClimberConstants.LEADER_HEIGHT_CLIMBL1  , ClimberConstants.FOLLOWER_HEIGHT_STOWED   ),
+    L1LeaderRetract  (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_STOWED   ),
+    L1FollowerExtend (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_EXTENDED ),
+    L1FollowerRetract(ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
+    L2LeaderExtend   (ClimberConstants.LEADER_HEIGHT_CLIMBL2  , ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
+    L2LeaderRetract  (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
+    L2FollowerExtend (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_EXTENDED ),
+    L2FollowerRetract(ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
+    L3LeaderExtend   (ClimberConstants.LEADER_HEIGHT_CLIMBL3  , ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
+    L3LeaderRetract  (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
+    Lock             (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED);
+    //@formatter:on
+
+    public final Distance leaderHeight;
+    public final Distance followerHeight;
+
+    State(Distance leaderHeight, Distance followerHeight) {
+      this.leaderHeight   = leaderHeight;
+      this.followerHeight = followerHeight;
+    }
   }
 
   public static class Logs extends AutoRegisterLoggers {
-    public LoggerEntry.Decimal servoTargetAngle;
+    public LoggerEntry.EnumValue<State> state;
+    public LoggerEntry.EnumValue<Goal>  goal;
+    public LoggerEntry.Decimal          servoTargetAngle;
   }
 
   private Servo climberServo = new Servo(ClimberConstants.SERVO_CHANNEL);
 
-  public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
+  public final Logs logs   = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
+  public boolean    atGoal = false;
 
   // Execution timing
   private final ExecutionTiming climberTiming = new ExecutionTiming(ROOT_TABLE);
 
-  private final Elevator innerElevator;
-  private final Elevator outerElevator;
+  private final Elevator leader;
+  private final Elevator follower;
 
-  private ClimberState climberState = ClimberState.Idle;
-  private Goal         climberGoal  = Goal.Idle;
+  private State state = State.Stowed;
+  private Goal  goal  = Goal.Stowed;
 
   // This also acts as its current angle because the servo cannot tell us where it
   // is
   private Rotation2d servoTargetAngle = Constants.ClimberConstants.SERVO_LOCK_ANGLE;
 
   /** Creates a new ClimberSubsystem. */
-  public Climber(ElevatorIO innerIO, ElevatorIO outerIO) {
-    this.innerElevator = new Elevator(logs.group.subgroup("Inner"), innerIO);
-    this.outerElevator = new Elevator(logs.group.subgroup("Outer"), outerIO);
+  public Climber(ElevatorIO leaderIO, ElevatorIO followerIO) {
+    this.leader   = new Elevator(logs.group.subgroup("Leader"), leaderIO);
+    this.follower = new Elevator(logs.group.subgroup("Follower"), followerIO);
 
     setServoAngle(ClimberConstants.SERVO_UNLOCK_ANGLE);
   }
 
   @Override
   public void periodic() {
-    innerElevator.periodic();
-    outerElevator.periodic();
+    leader.periodic();
+    follower.periodic();
     try (var ignored = climberTiming.start()) {
       // Climber logging
 
+      logs.state.info(state);
+      logs.goal.info(goal);
       logs.servoTargetAngle.info(servoTargetAngle);
-
-      switch (climberState) {
+      boolean atGoalNext;
+      switch (goal) {
         case Override:
+          atGoalNext = true;
           break;
 
-        case Idle:
-          setInnerTargetHeight(0);
-          setOuterTargetHeight(0);
-          break;
+        case Stowed:
+          switch (state) {
+            case L1LeaderExtend:
+              handleTransitions(State.Stowed);
+              atGoalNext = false;
+              break;
 
-        case Lock:
-          setServoAngle(ClimberConstants.SERVO_LOCK_ANGLE);
-          break;
+            case Stowed:
+              handleTransitions(State.Stowed);
+              atGoalNext = true;
+              break;
 
-        case L1Extend:
-          setOuterTargetHeight(ClimberConstants.L1_CLIMB_HEIGHT);
-          if (isOuterClimberAtTargetHeight(ClimberConstants.L1_CLIMB_HEIGHT)) {
-            setOuterTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT);
-            climberState = ClimberState.L1Retract;
+            default:
+              atGoalNext = false;
+              break;
           }
           break;
 
-        case L1Retract:
-          if (isOuterClimberAtTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT)) {
-            setOuterTargetHeight(0);
-            switch (climberGoal) {
+        case Lock:// FIXME get info about the lock and servo systems
+          switch (state) {
+            case Lock:
+              atGoalNext = true;
+              break;
 
-              case Override:
-                break;
+            case L1LeaderRetract:
+            case L2LeaderRetract:
+            case L3LeaderRetract:
+              state = State.Lock; // Generic lock code for if the lock is on the leader
+              setServoAngle(ClimberConstants.SERVO_LOCK_ANGLE);
+              atGoalNext = true;
+              break;
 
-              case Idle:
-                break;
-
-              case ClimbAuto:
-                break;
-
-              case L1Climb:
-                climberState = ClimberState.Lock;
-                break;
-
-              default:
-                climberState = ClimberState.L2Extend;
-                break;
-            }
+            default:
+              atGoalNext = false;
+              break;
           }
           break;
 
-        case AutoDismount:
-          setOuterTargetHeight(ClimberConstants.L1_CLIMB_HEIGHT);
-          break;
+        case MountDismount:
+          switch (state) {
+            case Stowed:
+              handleTransitions(State.L1LeaderExtend);
+              atGoalNext = false;
+              break;
 
-        case AutoRetract:
-          setOuterTargetHeight(0);
-          if (isOuterClimberAtTargetHeight(0)) {
-            climberState = ClimberState.Idle;
+            case L1LeaderExtend:
+              atGoalNext = true;
+              break;
+
+            case L1LeaderRetract:
+              handleTransitions(State.L1LeaderExtend);
+              atGoalNext = false;
+              break;
+
+            default:
+              atGoalNext = false;
+              break;
           }
           break;
 
-        case L2Extend:
-          setInnerTargetHeight(ClimberConstants.L2_CLIMB_HEIGHT);
-          if (isInnerClimberAtTargetHeight(ClimberConstants.L2_CLIMB_HEIGHT)) {
-            setInnerTargetHeight(ClimberConstants.INNER_RETRACTION_HEIGHT);
-            climberState = ClimberState.L2Retract;
+        case ClimbL1:
+          switch (state) {
+            case L1LeaderExtend:
+              handleTransitions(State.L1LeaderRetract);
+              atGoalNext = false;
+              break;
+
+            case L1LeaderRetract:
+              atGoalNext = true;
+              break;
+
+            default:
+              atGoalNext = false;
+              break;
           }
           break;
 
-        case L2Retract:
-          if (isInnerClimberAtTargetHeight(ClimberConstants.INNER_RETRACTION_HEIGHT)) {
-            setInnerTargetHeight(0);
-            switch (climberGoal) {
+        case ClimbL2:
+          switch (state) {
+            case L1LeaderExtend:
+              handleTransitions(State.L1LeaderRetract);
+              atGoalNext = false;
+              break;
 
-              case Override:
-                break;
+            case L1LeaderRetract:
+              handleTransitions(State.L1FollowerExtend);
+              atGoalNext = false;
+              break;
 
-              case Idle:
-                break;
+            case L1FollowerExtend:
+              handleTransitions(State.L1FollowerRetract);
+              atGoalNext = false;
+              break;
 
-              case ClimbAuto:
-                break;
+            case L1FollowerRetract:
+              handleTransitions(State.L2LeaderExtend);
+              atGoalNext = false;
+              break;
 
-              case AutoDismount:
-                break;
+            case L2LeaderExtend:
+              handleTransitions(State.L2LeaderRetract);
+              atGoalNext = false;
+              break;
 
-              case L1Climb:
-                break;
+            case L2LeaderRetract:
+              atGoalNext = true;
+              break;
 
-              case L2Climb:
-                climberState = ClimberState.Lock;
-                break;
-
-              default:
-                climberState = ClimberState.L3Extend;
-                break;
-            }
+            default:
+              atGoalNext = false;
+              break;
           }
           break;
 
-        case L3Extend:
-          setOuterTargetHeight(ClimberConstants.L3_CLIMB_HEIGHT);
-          if (isOuterClimberAtTargetHeight(ClimberConstants.L3_CLIMB_HEIGHT)) {
-            setOuterTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT);
-            climberState = ClimberState.L3Retract;
+        case ClimbL3:
+          switch (state) {
+            case L1LeaderExtend:
+              handleTransitions(State.L1LeaderRetract);
+              atGoalNext = false;
+              break;
+
+            case L1LeaderRetract:
+              handleTransitions(State.L1FollowerExtend);
+              atGoalNext = false;
+              break;
+
+            case L1FollowerExtend:
+              handleTransitions(State.L1FollowerRetract);
+              atGoalNext = false;
+              break;
+
+            case L1FollowerRetract:
+              handleTransitions(State.L2LeaderExtend);
+              atGoalNext = false;
+              break;
+
+            case L2LeaderExtend:
+              handleTransitions(State.L2LeaderRetract);
+              atGoalNext = false;
+              break;
+
+            case L2LeaderRetract:
+              handleTransitions(State.L2FollowerExtend);
+              atGoalNext = false;
+              break;
+
+            case L2FollowerExtend:
+              handleTransitions(State.L2FollowerRetract);
+              atGoalNext = false;
+              break;
+
+            case L2FollowerRetract:
+              handleTransitions(State.L3LeaderExtend);
+              atGoalNext = false;
+              break;
+
+            case L3LeaderExtend:
+              handleTransitions(State.L3LeaderRetract);
+              atGoalNext = false;
+              break;
+
+            case L3LeaderRetract:
+              atGoalNext = true;
+              break;
+
+            default:
+              atGoalNext = false;
+              break;
           }
           break;
 
-        case L3Retract:
-          if (isOuterClimberAtTargetHeight(ClimberConstants.OUTER_RETRACTION_HEIGHT)) {
-            setOuterTargetHeight(0);
-            switch (climberGoal) {
-
-              case Override:
-                break;
-
-              case Idle:
-                break;
-
-              case ClimbAuto:
-                break;
-
-              case AutoDismount:
-                break;
-
-              case L1Climb:
-                break;
-
-              case L2Climb:
-                break;
-
-              case L3Climb:
-                climberState = ClimberState.Lock;
-                break;
-            }
-          }
         default:
+          atGoalNext = false;
           break;
       }
+      this.atGoal = atGoalNext;
     }
   }
 
   // setters
 
-  public void setClimberGoal(Goal goal) {
-    climberGoal = goal;
-    if (climberState != ClimberState.Idle) {
-      return;
-    }
-    switch (goal) {
-
-      case Override:
-        climberState = ClimberState.Override;
-        break;
-
-      case Idle:
-        climberState = ClimberState.Idle;
-        break;
-
-      case ClimbAuto:
-        climberState = ClimberState.L1Extend;
-        break;
-
-      case AutoDismount:
-        climberState = ClimberState.AutoDismount;
-        break;
-
-      case L1Climb:
-        climberState = ClimberState.L1Extend;
-        break;
-
-      case L2Climb:
-        climberState = ClimberState.L1Extend;
-        break;
-
-      case L3Climb:
-        climberState = ClimberState.L1Extend;
-        break;
-
-      default:
-        break;
-    }
+  public void setGoal(Goal goal) {
+    this.goal = goal;
   }
 
-  public void setInnerTargetHeight(double height) {
-    innerElevator.setTargetHeight(height);
+  public void setFollowerTargetHeight(Distance height) {
+    follower.setHeight(height);
   }
 
-  public void setOuterTargetHeight(double height) {
-    outerElevator.setTargetHeight(height);
+  public void setLeaderTargetHeight(Distance height) {
+    leader.setHeight(height);
+  }
+
+  private void handleTransitions(State desiredState) {
+    setLeaderTargetHeight(desiredState.leaderHeight);
+    setFollowerTargetHeight(desiredState.followerHeight);
+    if (isLeaderAtTargetHeight(desiredState.leaderHeight) && isFollowerAtTargetHeight(desiredState.followerHeight)) {
+      state = desiredState;
+    }
   }
 
   public boolean setClimberNeutralMode(NeutralModeValue value) {
-    return innerElevator.setElevatorNeutralMode(value) && outerElevator.setElevatorNeutralMode(value);
+    if (goal == Goal.Override) {
+      return false;
+    }
+    return leader.setNeutralMode(value) && follower.setNeutralMode(value);
   }
 
   public void setServoAngle(Rotation2d angle) {
@@ -260,11 +311,11 @@ public class Climber extends SubsystemBase {
 
   // getters
 
-  public boolean isInnerClimberAtTargetHeight(double target) {
-    return innerElevator.isElevatorAtTargetHeight(target);
+  public boolean isFollowerAtTargetHeight(Distance target) {
+    return follower.isAtTarget(target);
   }
 
-  public boolean isOuterClimberAtTargetHeight(double target) {
-    return outerElevator.isElevatorAtTargetHeight(target);
+  public boolean isLeaderAtTargetHeight(Distance target) {
+    return leader.isAtTarget(target);
   }
 }
