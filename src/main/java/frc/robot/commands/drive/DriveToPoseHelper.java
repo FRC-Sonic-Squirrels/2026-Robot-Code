@@ -72,7 +72,8 @@ public class DriveToPoseHelper {
   private final Supplier<Boolean> slowMode;
   private final double            driveToleranceValue;
 
-  private Pose2d targetPose;
+  private Pose2d  targetPose;
+  private boolean atTarget;
 
   private final ProfiledPIDController driveController = new ProfiledPIDController(0.0, 0.0, 0.0,
       new TrapezoidProfile.Constraints(0.0, 0.0));
@@ -170,7 +171,8 @@ public class DriveToPoseHelper {
     logs.goal.info(targetPose);
     logs.driveControllerIsAtGoal.info(driveController.atGoal());
     logs.thetaControllerIsAtGoal.info(thetaController.atGoal());
-    logs.isAtGoal.info(withinTolerance(tunables.driveTolerance.get(), new Rotation2d(tunables.thetaTolerance.get())));
+    atTarget = withinTolerance(tunables.driveTolerance.get(), new Rotation2d(tunables.thetaTolerance.get()));
+    logs.isAtGoal.info(atTarget);
     return ChassisSpeeds.fromFieldRelativeSpeeds(driveVelocity.getX(), driveVelocity.getY(), thetaVelocity,
         currentPose.getRotation());
   }
@@ -179,6 +181,10 @@ public class DriveToPoseHelper {
     boolean reset = !Objects.equals(this.targetPose, target);
     this.targetPose = target;
     return reset;
+  }
+
+  public boolean isAtTarget() {
+    return atTarget;
   }
 
   /**
