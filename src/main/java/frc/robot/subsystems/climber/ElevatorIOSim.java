@@ -17,14 +17,12 @@ public class ElevatorIOSim implements ElevatorIO {
   private VoltageOut         openLoopControl   = new VoltageOut(0);
   private MotionMagicVoltage closedLoopControl = new MotionMagicVoltage(0);
 
-  private ElevatorIOConfig config;
+  private final TalonFXElevatorSim sim;
 
   public ElevatorIOSim(ElevatorIOConfig config) {
-    this.config = config;
+    this.sim = new TalonFXElevatorSim(new ElevatorSim(DCMotor.getKrakenX60Foc(1), config.gearRatio(),
+        config.carriageMass(), config.pulleyDiameter() / 2.0, 0.0, config.maxHeight(), false, 0));
   }
-
-  private final TalonFXElevatorSim sim = new TalonFXElevatorSim(new ElevatorSim(DCMotor.getKrakenX60Foc(1),
-      config.gearRatio(), config.carriageMass(), config.pulleyDiameter() / 2.0, 0.0, config.maxHeight(), false, 0));
 
   @Override
   public void updateInputs(Inputs inputs) {
