@@ -11,7 +11,6 @@ import frc.lib.team2930.LoggerGroup;
 import frc.robot.RobotStates;
 import frc.robot.autonomous.records.ChoreoVars;
 import frc.robot.configs.RobotConfig;
-import frc.robot.subsystems.swerve.DrivetrainWrapper;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -43,7 +42,6 @@ public class AutosManager {
   private final RobotConfig       config;
   private final RobotStates       states;
   private final BooleanSupplier   flipAuto;
-  private final DrivetrainWrapper wrapper;
 
   public final boolean includeDebugPaths = false;
 
@@ -55,7 +53,6 @@ public class AutosManager {
     this.config     = config;
     this.flipAuto   = flipAuto;
     this.states     = states;
-    wrapper         = subsystems.drivetrain();
     // preload code
     // Command preloader;
     fillChooserAndMap(chooser, stringToAutoSupplierMap);
