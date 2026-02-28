@@ -181,9 +181,8 @@ public class IntakeIOReal implements IntakeIO {
   }
 
   @Override
-  public void setPivotClosedLoopPosition(Rotation2d angle, int slotId) {
+  public void setPivotClosedLoopPosition(Rotation2d angle) {
     pivotClosedLoopControl.withPosition(angle.getRotations());
-    pivotClosedLoopControl.withSlot(slotId);
     pivotMotor.setControl(pivotClosedLoopControl);
   }
 

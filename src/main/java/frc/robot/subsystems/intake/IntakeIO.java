@@ -48,10 +48,10 @@ public interface IntakeIO {
   public default void resetPivotSensorPosition(Rotation2d angle) {
   }
 
-  public default void setPivotClosedLoopPosition(Rotation2d angle, int slotId) {
+  public default void setPivotClosedLoopPosition(Rotation2d angle) {
   }
 
-  public default void setPivotClosedLoopConstants(double kP0, double kD0, double kG0, MotionMagicConfigs mmConfigs) {
+  public default void setPivotClosedLoopConstants(double kP, double kD, double kG, MotionMagicConfigs mmConfigs) {
   }
 
   public default boolean setPivotNeutralMode(NeutralModeValue value) {

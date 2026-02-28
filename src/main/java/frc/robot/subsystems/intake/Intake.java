@@ -213,7 +213,7 @@ public class Intake extends SubsystemBase {
       switch (goal) {
         case Stow:
           setPivotUpCurrentLimit();
-          setPivotAngle(PivotConstants.HOME_POSITION, 0);
+          setPivotAngle(PivotConstants.HOME_POSITION);
           setRollerVelocity(0);
           break;
         case Down:
@@ -276,12 +276,12 @@ public class Intake extends SubsystemBase {
     io.setPivotCurrentLimits(PivotConstants.HIGH_SUPPLY_CURRENT_LIMIT, PivotConstants.HIGH_STATOR_CURRENT_LIMIT);
   }
 
-  public void setPivotAngle(Rotation2d angle, int slotId) {
+  public void setPivotAngle(Rotation2d angle) {
     Rotation2d targetAngle = Rotation2d.fromRadians(MathUtil.clamp(angle.getRadians(),
         PivotConstants.MIN_PIVOT_ANGLE.getRadians(), PivotConstants.MAX_PIVOT_ANGLE.getRadians()));
 
     pivotTargetAngle = targetAngle;
-    io.setPivotClosedLoopPosition(targetAngle, slotId);
+    io.setPivotClosedLoopPosition(targetAngle);
     logs.pivot.targetAngleDegrees.info(targetAngle);
   }
 

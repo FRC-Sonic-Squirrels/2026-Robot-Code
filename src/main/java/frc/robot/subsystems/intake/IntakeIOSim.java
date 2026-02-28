@@ -66,19 +66,18 @@ public class IntakeIOSim implements IntakeIO {
   }
 
   @Override
-  public void setPivotClosedLoopPosition(Rotation2d angle, int slotId) {
-    pivotClosedLoopControl.withSlot(slotId);
+  public void setPivotClosedLoopPosition(Rotation2d angle) {
     pivotSim.setControl(pivotClosedLoopControl.withPosition(angle.getRotations()));
   }
 
   @Override
-  public void setPivotClosedLoopConstants(double kP0, double kD0, double kG0, MotionMagicConfigs mmConfigs) {
+  public void setPivotClosedLoopConstants(double kP, double kD, double kG, MotionMagicConfigs mmConfigs) {
     TalonFXConfiguration config       = new TalonFXConfiguration();
     Slot0Configs         slot0Configs = new Slot0Configs();
 
-    slot0Configs.kP = kP0;
-    slot0Configs.kD = kD0;
-    slot0Configs.kG = kG0;
+    slot0Configs.kP = kP;
+    slot0Configs.kD = kD;
+    slot0Configs.kG = kG;
 
     config.Slot0       = slot0Configs;
     config.MotionMagic = mmConfigs;
