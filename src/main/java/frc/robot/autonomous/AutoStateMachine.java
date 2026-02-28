@@ -16,17 +16,17 @@ public class AutoStateMachine extends StateMachine {
 
   public AutoStateMachine(AutosSubsystems subsystems, ArrayList<Waypoint> waypoints, Pose2d initialPose) {
     super("Auto");
-    this.wrapper       = subsystems.drivetrain();
-    this.waypoints     = waypoints;
-    driveHelper        = new DriveToPoseHelper(() -> false);
-    waypointCounter    = 0;
+    this.wrapper    = subsystems.drivetrain();
+    this.waypoints  = waypoints;
+    driveHelper     = new DriveToPoseHelper(() -> false);
+    waypointCounter = 0;
 
     driveHelper.resetPID(initialPose, wrapper.getFieldRelativeVelocities());
     setInitialState(this::nextState);
   }
 
   private StateHandler driveToPose() {
-    
+
     wrapper.setVelocityOverride(driveHelper.periodic(wrapper.getHubPoseEstimatorPose(true)));
 
     if (!driveHelper.isAtTarget()) {
@@ -40,7 +40,7 @@ public class AutoStateMachine extends StateMachine {
     if (waypointCounter >= waypoints.size()) {
       return setDone();
     }
-    
+
     Waypoint nextWaypoint = waypoints.get(waypointCounter);
     driveHelper.setTarget(nextWaypoint.waypointPose());
     waypointCounter++;
@@ -54,12 +54,12 @@ public class AutoStateMachine extends StateMachine {
       case INTAKEWHILEDRIVE:
         break;
       case SCORE:
-break;
+        break;
       default:
         break;
     }
-        
-        return stateWithName("DriveToPose", this::driveToPose);
+
+    return stateWithName("DriveToPose", this::driveToPose);
   }
 
 }
