@@ -34,8 +34,8 @@ import frc.robot.Constants.RobotMode.Mode;
 import frc.robot.Constants.RobotMode.RobotType;
 import frc.robot.RobotStates.IntakeGoal;
 import frc.robot.RobotStates.RobotGoal;
+import frc.robot.autonomous.AutoProgram;
 import frc.robot.autonomous.AutosManager;
-import frc.robot.autonomous.AutosManager.Auto;
 import frc.robot.autonomous.AutosSubsystems;
 import frc.robot.commands.drive.DriveToPose;
 import frc.robot.commands.drive.DrivetrainDefaultTeleopDrive;
@@ -103,8 +103,8 @@ public class RobotContainer {
   private final LoggedDashboardChooser<String>  autoChooser     = new LoggedDashboardChooser<>("Auto Routine");
   private final LoggedDashboardChooser<Boolean> flipAutoChooser = new LoggedDashboardChooser<>("Flip Auto?");
 
-  private final HashMap<String, Supplier<Auto>> stringToAutoSupplierMap = new HashMap<>();
-  private final AutosManager                    autoManager;
+  private final HashMap<String, Supplier<AutoProgram>> stringToAutoSupplierMap = new HashMap<>();
+  private final AutosManager                           autoManager;
   // Buttons
 
   public DigitalInput brakeModeButton   = new DigitalInput(0);
@@ -515,6 +515,10 @@ public class RobotContainer {
    */
   public LoggedDashboardChooser<String> getAutonomousChooser() {
     return autoChooser;
+  }
+
+  public Supplier<AutoProgram> getAutoSupplierForString(String string) {
+    return stringToAutoSupplierMap.getOrDefault(string, autoManager::doNothing);
   }
 
   public boolean autoFlipped() {

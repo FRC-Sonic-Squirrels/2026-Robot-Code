@@ -23,7 +23,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import frc.lib.team2930.*;
 import frc.lib.team2930.commands.RunsWhenDisabledInstantCommand;
-import frc.robot.autonomous.AutosManager.Auto;
+import frc.robot.autonomous.AutoProgram;
 import org.littletonrobotics.junction.LogFileUtil;
 import org.littletonrobotics.junction.LoggedRobot;
 import org.littletonrobotics.junction.Logger;
@@ -78,7 +78,7 @@ public class Robot extends LoggedRobot {
   private RobotContainer robotContainer;
 
   private LoggedDashboardChooser<String> autonomousChooser         = null;
-  private Auto                           selectedAuto;
+  private AutoProgram                    selectedAuto;
   private String                         selectedAutoName;
   private boolean                        selectedAutoFlipped;
   private Command                        autoCommand;
@@ -217,7 +217,24 @@ public class Robot extends LoggedRobot {
       autonomousChooser = robotContainer.getAutonomousChooser();
     }
 
-    var autoName = autonomousChooser.get();
+    var autoName    = autonomousChooser.get();
+    var autoFlipped = robotContainer.autoFlipped();
+    if (autoName != null && (!autoName.equals(selectedAutoName) || autoFlipped != selectedAutoFlipped)) {
+      Pose2d initialPose;
+      selectedAuto = robotContainer.getAutoSupplierForString(autoName).get();
+      if (selectedAuto != null) {
+        initialPose = selectedAuto.getInit();
+
+        logs.autoLogs.currentChooserValue.info(autoName);
+        logs.autoLogs.selectedAuto.info(selectedAuto.getName());
+      } else {
+        initialPose = null;
+      }
+
+      desiredInitialPose  = initialPose;
+      selectedAutoName    = autoName;
+      selectedAutoFlipped = autoFlipped;
+    }
 
     if (desiredInitialPose != null && !desiredInitialPose.equals(selectedInitialPose)) {
       boolean shouldResetPose = false;
@@ -259,11 +276,9 @@ public class Robot extends LoggedRobot {
   @Override
   public void autonomousInit() {
     robotContainer.enterAutonomous();
-
     // schedule the autonomous command (example)
     if (selectedAuto != null) {
-      autoCommand = selectedAuto.command();
-
+      autoCommand = selectedAuto.getAutoCommand();
       CommandScheduler.getInstance().schedule(autoCommand);
     }
   }
