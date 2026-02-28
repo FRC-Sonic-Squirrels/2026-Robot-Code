@@ -11,11 +11,9 @@ import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
-import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.*;
-import frc.robot.Constants;
 import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.MotorConstants.KrakenConstants;
 
@@ -26,6 +24,8 @@ public class ElevatorIOReal implements ElevatorIO {
 
   private final VoltageOut openLoopControl = new VoltageOut(0.0).withEnableFOC(true);
 
+  private final double sensorToMechanismRatio;
+
   private StatusSignal<Angle>           rotorPosition;
   private StatusSignal<AngularVelocity> rotorVelocity;
   private StatusSignal<Voltage>         appliedVoltage;
@@ -35,7 +35,8 @@ public class ElevatorIOReal implements ElevatorIO {
   private final BaseStatusSignal[] refreshSet;
 
   public ElevatorIOReal(ElevatorIOConfig config) {
-    this.motor = new TalonFX(config.motorCANID());
+    this.motor                  = new TalonFX(config.motorCANID());
+    this.sensorToMechanismRatio = config.sensorToMechanismRatio();
 
     // Elevator motor config
     TalonFXConfiguration configFx = new TalonFXConfiguration();
@@ -45,16 +46,14 @@ public class ElevatorIOReal implements ElevatorIO {
     configFx.CurrentLimits.StatorCurrentLimit              = ClimberConstants.STATOR_CURRENT_LIMIT;
     configFx.CurrentLimits.StatorCurrentLimitEnable        = true;
     configFx.MotorOutput.NeutralMode                       = NeutralModeValue.Brake;
-    configFx.MotorOutput.Inverted                          = InvertedValue.Clockwise_Positive;
+    configFx.MotorOutput.Inverted                          = config.invertedValue();
     configFx.SoftwareLimitSwitch.ForwardSoftLimitEnable    = true;
     configFx.SoftwareLimitSwitch.ReverseSoftLimitEnable    = true;
-    configFx.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Constants.ClimberConstants.MAX_FOLLOWER_CLIMBER_HEIGHT
-        * ClimberConstants.FOLLOWER_CLIMBER_GEAR_RATIO;
-    configFx.SoftwareLimitSwitch.ReverseSoftLimitThreshold = Constants.ClimberConstants.MIN_FOLLOWER_CLIMBER_HEIGHT
-        * ClimberConstants.FOLLOWER_CLIMBER_GEAR_RATIO;
+    configFx.SoftwareLimitSwitch.ForwardSoftLimitThreshold = config.maxHeight() * sensorToMechanismRatio;
+    configFx.SoftwareLimitSwitch.ReverseSoftLimitThreshold = config.minHeight() * sensorToMechanismRatio;
 
-    configFx.Feedback.SensorToMechanismRatio   = ClimberConstants.FOLLOWER_CLIMBER_GEAR_RATIO;
-    configFx.Slot0.GravityType                 = GravityTypeValue.Arm_Cosine;
+    configFx.Feedback.SensorToMechanismRatio   = sensorToMechanismRatio;
+    configFx.Slot0.GravityType                 = GravityTypeValue.Elevator_Static;
     configFx.Voltage.SupplyVoltageTimeConstant = KrakenConstants.SUPPLY_VOLTAGE_TIME;
 
     motor.getConfigurator().apply(configFx);
@@ -87,9 +86,8 @@ public class ElevatorIOReal implements ElevatorIO {
   public void updateInputs(Inputs inputs) {
     inputs.refreshAll(refreshSet);
 
-    inputs.heightInches            = rotorPosition.getValue().in(Units.Rotations)
-        / ClimberConstants.INCHES_TO_MOTOR_ROT;
-    inputs.velocityInchesPerSecond = rotorVelocity.getValue().in(Units.RPM) / ClimberConstants.INCHES_TO_MOTOR_ROT;
+    inputs.heightInches            = rotorPosition.getValue().in(Units.Rotations) / sensorToMechanismRatio;
+    inputs.velocityInchesPerSecond = rotorVelocity.getValue().in(Units.RPM) / sensorToMechanismRatio;
     inputs.appliedVolts            = appliedVoltage.getValue().in(Units.Volts);
     inputs.currentAmps             = current.getValue().in(Units.Amps);
     inputs.tempCelsius             = temp.getValue().in(Units.Celsius);
@@ -102,12 +100,12 @@ public class ElevatorIOReal implements ElevatorIO {
 
   @Override
   public void setHeight(Distance height) {
-    motor.setControl(closedLoopControl.withPosition(height.in(Units.Inches) * ClimberConstants.INCHES_TO_MOTOR_ROT));
+    motor.setControl(closedLoopControl.withPosition(height.in(Units.Inches) * sensorToMechanismRatio));
   }
 
   @Override
   public void setSensorPosition(Distance position) {
-    motor.setPosition(position.in(Units.Inches) * ClimberConstants.INCHES_TO_MOTOR_ROT);
+    motor.setPosition(position.in(Units.Inches) * sensorToMechanismRatio);
   }
 
   @Override

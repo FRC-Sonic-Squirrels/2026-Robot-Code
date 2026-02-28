@@ -20,8 +20,9 @@ public class ElevatorIOSim implements ElevatorIO {
   private final TalonFXElevatorSim sim;
 
   public ElevatorIOSim(ElevatorIOConfig config) {
-    this.sim = new TalonFXElevatorSim(new ElevatorSim(DCMotor.getKrakenX60Foc(1), config.gearRatio(),
-        config.carriageMass(), config.pulleyDiameter() / 2.0, 0.0, config.maxHeight(), false, 0));
+    this.sim = new TalonFXElevatorSim(
+        new ElevatorSim(DCMotor.getKrakenX60Foc(1), config.gearRatio(), config.carriageMass(),
+            config.pulleyDiameter() / 2.0, config.minHeight(), config.maxHeight(), false, config.minHeight()));
   }
 
   @Override
