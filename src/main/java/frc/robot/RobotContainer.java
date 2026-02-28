@@ -212,9 +212,16 @@ public class RobotContainer {
             vision.logs.configTagAmount.info(config.getAprilTagFieldLayout().getTags().size());
           }
 
+          ElevatorIOConfig leaderConfig = new ElevatorIOConfig(Constants.CanIDs.CLIMBER_LEADER_CAN_ID, false,
+              ClimberConstants.LEADER_CLIMBER_GEAR_RATIO, ClimberConstants.LEADER_CARRIAGE_MASS,
+              ClimberConstants.LEADER_PULLEY_DIAMETER.in(Units.Inches), ClimberConstants.MAX_LEADER_CLIMBER_HEIGHT);
+          ElevatorIOConfig followerConfig = new ElevatorIOConfig(Constants.CanIDs.CLIMBER_FOLLOWER_CAN_ID, false,
+              ClimberConstants.FOLLOWER_CLIMBER_GEAR_RATIO, ClimberConstants.FOLLOWER_CARRIAGE_MASS,
+              ClimberConstants.FOLLOWER_PULLEY_DIAMETER.in(Units.Inches), ClimberConstants.MAX_FOLLOWER_CLIMBER_HEIGHT);
+
           leftIntake = new Intake(leftIntakeRoot, new IntakeIOSim());
           rightIntake = new Intake(rightIntakeRoot, new IntakeIOSim());
-          climber = new Climber(new ElevatorIOSim(), new ElevatorIOSim());
+          climber = new Climber(new ElevatorIOSim(leaderConfig), new ElevatorIOSim(followerConfig));
           hopper = new Hopper(new HopperIOSim());
           shooter = new Shooter(new ShooterIOSim());
           led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
@@ -261,11 +268,18 @@ public class RobotContainer {
                 InvertedValue.Clockwise_Positive);
             leftIntake  = new Intake(leftIntakeRoot, new IntakeIOReal(leftIntakeIOConfig));
             rightIntake = new Intake(rightIntakeRoot, new IntakeIOReal(rightIntakeIOConfig));
-            ElevatorIOConfig innerElevatorIOConfig = new ElevatorIOConfig(Constants.CanIDs.CLIMBER_INNER_CAN_ID, false,
-                ClimberConstants.INNER_CLIMBER_GEAR_RATIO);
-            ElevatorIOConfig outerElevatorIOConfig = new ElevatorIOConfig(Constants.CanIDs.CLIMBER_OUTER_CAN_ID, false,
-                ClimberConstants.OUTER_CLIMBER_GEAR_RATIO);
-            climber = new Climber(new ElevatorIOReal(innerElevatorIOConfig), new ElevatorIOReal(outerElevatorIOConfig));
+
+            ElevatorIOConfig leaderElevatorIOConfig = new ElevatorIOConfig(Constants.CanIDs.CLIMBER_LEADER_CAN_ID,
+                false, ClimberConstants.LEADER_CLIMBER_GEAR_RATIO, ClimberConstants.LEADER_CARRIAGE_MASS,
+                ClimberConstants.LEADER_PULLEY_DIAMETER.in(Units.Inches), ClimberConstants.MAX_LEADER_CLIMBER_HEIGHT);
+
+            ElevatorIOConfig followerElevatorIOConfig = new ElevatorIOConfig(Constants.CanIDs.CLIMBER_FOLLOWER_CAN_ID,
+                false, ClimberConstants.FOLLOWER_CLIMBER_GEAR_RATIO, ClimberConstants.FOLLOWER_CARRIAGE_MASS,
+                ClimberConstants.FOLLOWER_PULLEY_DIAMETER.in(Units.Inches),
+                ClimberConstants.MAX_FOLLOWER_CLIMBER_HEIGHT);
+
+            climber = new Climber(new ElevatorIOReal(leaderElevatorIOConfig),
+                new ElevatorIOReal(followerElevatorIOConfig));
 
             shooter = new Shooter(new ShooterIOReal());
           } else {
@@ -387,8 +401,20 @@ public class RobotContainer {
     driverController.registerTrigger(XboxControllerWrapper.Button.rightBumper, "Right Intake")
         .react(robotStates.changeIntakeGoal(IntakeGoal.RightIntake, RobotStates.IntakeGoal.Stow));
 
-    driverController.registerTrigger(XboxControllerWrapper.Button.povDown, "Climb")
-        .react(robotStates.changeRobotGoal(RobotGoal.ClimbL1, RobotGoal.None));
+    driverController.registerTrigger(XboxControllerWrapper.Button.x, "Mount/Dismount Climb")
+        .react(robotStates.changeRobotGoal(RobotGoal.MountDismount, RobotGoal.StowClimber));
+
+    driverController.registerTrigger(XboxControllerWrapper.Button.povDown, "ClimbL1")
+        .react(robotStates.changeRobotGoal(RobotGoal.ClimbL1, RobotGoal.ClimbL1));
+
+    driverController.registerTrigger(XboxControllerWrapper.Button.povLeft, "ClimbL2")
+        .react(robotStates.changeRobotGoal(RobotGoal.ClimbL2, RobotGoal.ClimbL2));
+
+    driverController.registerTrigger(XboxControllerWrapper.Button.povUp, "ClimbL3")
+        .react(robotStates.changeRobotGoal(RobotGoal.ClimbL3, RobotGoal.ClimbL3));
+
+    driverController.registerTrigger(XboxControllerWrapper.Button.povRight, "Lock")
+        .react(robotStates.changeRobotGoal(RobotGoal.Lock, RobotGoal.Lock));
 
     // ---------- OPERATOR CONTROLS -----------
 

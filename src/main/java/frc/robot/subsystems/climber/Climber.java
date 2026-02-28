@@ -2,6 +2,7 @@ package frc.robot.subsystems.climber;
 
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.Servo;
 import frc.lib.team2930.*;
@@ -21,8 +22,8 @@ public class Climber extends SubsystemBase {
     // Extend is elevator going up, reaching for the next bar.
     //@formatter:off
     Stowed           (ClimberConstants.LEADER_HEIGHT_STOWED   , ClimberConstants.FOLLOWER_HEIGHT_STOWED   ),
-    L1LeaderExtend   (ClimberConstants.LEADER_HEIGHT_CLIMBL1  , ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
-    L1LeaderRetract  (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
+    L1LeaderExtend   (ClimberConstants.LEADER_HEIGHT_CLIMBL1  , ClimberConstants.FOLLOWER_HEIGHT_STOWED   ),
+    L1LeaderRetract  (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_STOWED   ),
     L1FollowerExtend (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_EXTENDED ),
     L1FollowerRetract(ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
     L2LeaderExtend   (ClimberConstants.LEADER_HEIGHT_CLIMBL2  , ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
@@ -31,15 +32,13 @@ public class Climber extends SubsystemBase {
     L2FollowerRetract(ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
     L3LeaderExtend   (ClimberConstants.LEADER_HEIGHT_CLIMBL3  , ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
     L3LeaderRetract  (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
-    L3FollowerExtend (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_EXTENDED ),
-    L3FollowerRetract(ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
     Lock             (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED);
     //@formatter:on
 
-    public final double leaderHeight;
-    public final double followerHeight;
+    public final Distance leaderHeight;
+    public final Distance followerHeight;
 
-    State(double leaderHeight, double followerHeight) {
+    State(Distance leaderHeight, Distance followerHeight) {
       this.leaderHeight   = leaderHeight;
       this.followerHeight = followerHeight;
     }
@@ -59,8 +58,8 @@ public class Climber extends SubsystemBase {
   // Execution timing
   private final ExecutionTiming climberTiming = new ExecutionTiming(ROOT_TABLE);
 
-  private final Elevator innerElevator;
-  private final Elevator outerElevator;
+  private final Elevator leader;
+  private final Elevator follower;
 
   private State state = State.Stowed;
   private Goal  goal  = Goal.Stowed;
@@ -70,17 +69,17 @@ public class Climber extends SubsystemBase {
   private Rotation2d servoTargetAngle = Constants.ClimberConstants.SERVO_LOCK_ANGLE;
 
   /** Creates a new ClimberSubsystem. */
-  public Climber(ElevatorIO innerIO, ElevatorIO outerIO) {
-    this.innerElevator = new Elevator(logs.group.subgroup("Inner"), innerIO);
-    this.outerElevator = new Elevator(logs.group.subgroup("Outer"), outerIO);
+  public Climber(ElevatorIO leaderIO, ElevatorIO followerIO) {
+    this.leader   = new Elevator(logs.group.subgroup("Leader"), leaderIO);
+    this.follower = new Elevator(logs.group.subgroup("Follower"), followerIO);
 
     setServoAngle(ClimberConstants.SERVO_UNLOCK_ANGLE);
   }
 
   @Override
   public void periodic() {
-    innerElevator.periodic();
-    outerElevator.periodic();
+    leader.periodic();
+    follower.periodic();
     try (var ignored = climberTiming.start()) {
       // Climber logging
 
@@ -101,6 +100,7 @@ public class Climber extends SubsystemBase {
               break;
 
             case Stowed:
+              handleTransitions(State.Stowed);
               atGoalNext = true;
               break;
 
@@ -197,16 +197,6 @@ public class Climber extends SubsystemBase {
               break;
 
             case L2LeaderRetract:
-              handleTransitions(State.L2FollowerExtend);
-              atGoalNext = false;
-              break;
-
-            case L2FollowerExtend:
-              handleTransitions(State.L2FollowerRetract);
-              atGoalNext = false;
-              break;
-
-            case L2FollowerRetract:
               atGoalNext = true;
               break;
 
@@ -264,16 +254,6 @@ public class Climber extends SubsystemBase {
               break;
 
             case L3LeaderRetract:
-              handleTransitions(State.L3FollowerExtend);
-              atGoalNext = false;
-              break;
-
-            case L3FollowerExtend:
-              handleTransitions(State.L3FollowerRetract);
-              atGoalNext = false;
-              break;
-
-            case L3FollowerRetract:
               atGoalNext = true;
               break;
 
@@ -297,12 +277,12 @@ public class Climber extends SubsystemBase {
     this.goal = goal;
   }
 
-  public void setFollowerTargetHeight(double height) {
-    innerElevator.setTargetHeight(height);
+  public void setFollowerTargetHeight(Distance height) {
+    follower.setHeight(height);
   }
 
-  public void setLeaderTargetHeight(double height) {
-    outerElevator.setTargetHeight(height);
+  public void setLeaderTargetHeight(Distance height) {
+    leader.setHeight(height);
   }
 
   private void handleTransitions(State desiredState) {
@@ -317,7 +297,7 @@ public class Climber extends SubsystemBase {
     if (goal == Goal.Override) {
       return false;
     }
-    return innerElevator.setElevatorNeutralMode(value) && outerElevator.setElevatorNeutralMode(value);
+    return leader.setNeutralMode(value) && follower.setNeutralMode(value);
   }
 
   public void setServoAngle(Rotation2d angle) {
@@ -331,11 +311,11 @@ public class Climber extends SubsystemBase {
 
   // getters
 
-  public boolean isFollowerAtTargetHeight(double target) {
-    return innerElevator.isElevatorAtTargetHeight(target);
+  public boolean isFollowerAtTargetHeight(Distance target) {
+    return follower.isAtTarget(target);
   }
 
-  public boolean isLeaderAtTargetHeight(double target) {
-    return outerElevator.isElevatorAtTargetHeight(target);
+  public boolean isLeaderAtTargetHeight(Distance target) {
+    return leader.isAtTarget(target);
   }
 }
