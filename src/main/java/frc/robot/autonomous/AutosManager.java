@@ -37,11 +37,11 @@ public class AutosManager {
     public LoggerEntry.EnumValue<SysIdRoutineLog.State> swervesysidstate;
   }
 
-  private final Logs              logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
-  private final AutosSubsystems   subsystems;
-  private final RobotConfig       config;
-  private final RobotStates       states;
-  private final BooleanSupplier   flipAuto;
+  private final Logs            logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
+  private final AutosSubsystems subsystems;
+  private final RobotConfig     config;
+  private final RobotStates     states;
+  private final BooleanSupplier flipAuto;
 
   public final boolean includeDebugPaths = false;
 
