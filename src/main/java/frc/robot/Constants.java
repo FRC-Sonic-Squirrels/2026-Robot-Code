@@ -174,7 +174,7 @@ public final class Constants {
   public static class IntakeConstants {
     public static class RollerConstants {
 
-      public static final double ROLLER_GEARING = 1.6;
+      public static final double ROLLER_GEARING = 1.0;
       public static final double MOI            = 0.05;
 
       public static final double SUPPLY_CURRENT_LIMIT = 20.0;
