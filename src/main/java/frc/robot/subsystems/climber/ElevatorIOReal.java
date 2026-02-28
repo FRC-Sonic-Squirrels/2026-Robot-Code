@@ -48,12 +48,12 @@ public class ElevatorIOReal implements ElevatorIO {
     configFx.MotorOutput.Inverted                          = InvertedValue.Clockwise_Positive;
     configFx.SoftwareLimitSwitch.ForwardSoftLimitEnable    = true;
     configFx.SoftwareLimitSwitch.ReverseSoftLimitEnable    = true;
-    configFx.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Constants.ClimberConstants.MAX_INNER_CLIMBER_HEIGHT
-        * ClimberConstants.INNER_CLIMBER_GEAR_RATIO;
-    configFx.SoftwareLimitSwitch.ReverseSoftLimitThreshold = Constants.ClimberConstants.MIN_INNER_CLIMBER_HEIGHT
-        * ClimberConstants.INNER_CLIMBER_GEAR_RATIO;
+    configFx.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Constants.ClimberConstants.MAX_FOLLOWER_CLIMBER_HEIGHT
+        * ClimberConstants.FOLLOWER_CLIMBER_GEAR_RATIO;
+    configFx.SoftwareLimitSwitch.ReverseSoftLimitThreshold = Constants.ClimberConstants.MIN_FOLLOWER_CLIMBER_HEIGHT
+        * ClimberConstants.FOLLOWER_CLIMBER_GEAR_RATIO;
 
-    configFx.Feedback.SensorToMechanismRatio   = ClimberConstants.INNER_CLIMBER_GEAR_RATIO;
+    configFx.Feedback.SensorToMechanismRatio   = ClimberConstants.FOLLOWER_CLIMBER_GEAR_RATIO;
     configFx.Slot0.GravityType                 = GravityTypeValue.Arm_Cosine;
     configFx.Voltage.SupplyVoltageTimeConstant = KrakenConstants.SUPPLY_VOLTAGE_TIME;
 
