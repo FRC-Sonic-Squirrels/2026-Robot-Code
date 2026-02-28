@@ -279,6 +279,7 @@ public class Intake extends SubsystemBase {
   public void setPivotAngle(Rotation2d angle) {
     Rotation2d targetAngle = Rotation2d.fromRadians(MathUtil.clamp(angle.getRadians(),
         PivotConstants.MIN_PIVOT_ANGLE.getRadians(), PivotConstants.MAX_PIVOT_ANGLE.getRadians()));
+        pivotControlMode = ControlMode.CLOSED_LOOP;
 
     pivotTargetAngle = targetAngle;
     io.setPivotClosedLoopPosition(targetAngle);
