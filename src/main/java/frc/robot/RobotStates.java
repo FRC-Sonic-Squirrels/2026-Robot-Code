@@ -36,8 +36,9 @@ public class RobotStates {
     Unjam        (false, false),
     Score        (true,  false),
     Pass         (true,  false),
-    Shoot        (true, false),
-    DismountTower(false,  true),
+    Shoot        (true,  false),
+    StowClimber  (false,  true),
+    MountDismount(false,  true),
     ClimbL1      (false,  true),
     ClimbL2      (false,  true),
     ClimbL3      (false,  true),
@@ -150,7 +151,10 @@ public class RobotStates {
           pass();
         }
         break;
-      case DismountTower:
+      case StowClimber:
+        climber.setGoal(Climber.Goal.Stowed);
+        break;
+      case MountDismount:
         climber.setGoal(Climber.Goal.MountDismount);
         break;
       case ClimbL1:
@@ -320,8 +324,8 @@ public class RobotStates {
 
   public boolean isInAllianceZone(Pose2d pose) {
     double positionX          = pose.getTranslation().getX();
-    double allianceZoneLength = FieldConstants.ALLIANCE_ZONE_LENGTH.in(Units.Meters);
     double fieldLength        = FieldConstants.FIELD_LENGTH.in(Units.Meters);
+    double allianceZoneLength = FieldConstants.ALLIANCE_ZONE_LENGTH.in(Units.Meters);
     if (Constants.isRedAlliance()) {
       return positionX >= fieldLength - allianceZoneLength;
     } else {

@@ -1,40 +1,56 @@
 package frc.robot.subsystems.climber;
 
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
-import edu.wpi.first.math.geometry.Rotation2d;
+import com.ctre.phoenix6.controls.VoltageOut;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.Units;
-import frc.lib.team2930.TalonFXSim;
+import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.wpilibj.simulation.ElevatorSim;
+import frc.lib.team2930.TalonFXElevatorSim;
 import frc.robot.Constants;
 
-// anything commented out is arm code that we are not using yet
 public class ElevatorIOSim implements ElevatorIO {
-  private TalonFXSim elevatorSim = new TalonFXSim(DCMotor.getKrakenX60Foc(1),
-      Constants.ClimberConstants.INNER_CLIMBER_GEAR_RATIO, Constants.ClimberConstants.CLIMBER_MOI);
 
-  private MotionMagicVoltage climberClosedLoopControl = new MotionMagicVoltage(0);
+  private VoltageOut         openLoopControl   = new VoltageOut(0);
+  private MotionMagicVoltage closedLoopControl = new MotionMagicVoltage(0);
 
-  public ElevatorIOSim() {
+  private ElevatorIOConfig config;
+
+  public ElevatorIOSim(ElevatorIOConfig config) {
+    this.config = config;
+  }
+
+  private final TalonFXElevatorSim sim = new TalonFXElevatorSim(new ElevatorSim(DCMotor.getKrakenX60Foc(1),
+      config.gearRatio(), config.carriageMass(), config.pulleyDiameter() / 2.0, 0.0, config.maxHeight(), false, 0));
+
+  @Override
+  public void updateInputs(Inputs inputs) {
+    sim.update(Constants.kDefaultPeriod);
+    inputs.appliedVolts            = sim.getVoltage();
+    inputs.velocityInchesPerSecond = sim.getVelocity().in(Units.InchesPerSecond);
+    inputs.heightInches            = sim.getPosition().in(Units.Inches);
   }
 
   @Override
-  public void updateElevatorInputs(Inputs inputs) {
-    elevatorSim.update(Constants.kDefaultPeriod);
-
-    inputs.position                 = elevatorSim.getPosition().in(Units.Degree);
-    inputs.appliedVolts             = elevatorSim.getVoltage();
-    inputs.velocityDegreesPerSecond = elevatorSim.getVelocity().in(Units.DegreesPerSecond);
+  public void setVoltage(double volts) {
+    sim.setControl(openLoopControl.withOutput(volts));
   }
 
   @Override
-  public void setElevatorClosedLoopPosition(double inches) {
-    elevatorSim.setControl(climberClosedLoopControl.withPosition(inches));
+  public void setHeight(Distance height) {
+    sim.setControl(closedLoopControl.withPosition(height.in(Units.Inch)));
   }
 
   @Override
-  public void setElevatorClosedLoopConstants(double kP, double kD, double kG) {
+  public void setSensorPosition(Distance position) {
+    sim.setSensorPosition(position.in(Units.Inches));
+  }
+
+  @Override
+  public void setClosedLoopConstants(double kP, double kD, double kG, MotionMagicConfigs mmConfigs) {
     TalonFXConfiguration config       = new TalonFXConfiguration();
     Slot0Configs         slot0Configs = new Slot0Configs();
 
@@ -42,13 +58,9 @@ public class ElevatorIOSim implements ElevatorIO {
     slot0Configs.kD = kD;
     slot0Configs.kG = kG;
 
-    config.Slot0 = slot0Configs;
+    config.Slot0       = slot0Configs;
+    config.MotionMagic = mmConfigs;
 
-    elevatorSim.setConfig(config);
-  }
-
-  @Override
-  public void resetElevatorSensorPosition(Rotation2d angle) {
-    elevatorSim.setState(angle.getRadians(), 0.0);
+    sim.setConfig(config);
   }
 }
