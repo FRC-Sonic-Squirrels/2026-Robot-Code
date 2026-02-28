@@ -2,6 +2,7 @@ package frc.robot.subsystems.climber;
 
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.Servo;
 import frc.lib.team2930.*;
@@ -36,10 +37,10 @@ public class Climber extends SubsystemBase {
     Lock             (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED);
     //@formatter:on
 
-    public final double leaderHeight;
-    public final double followerHeight;
+    public final Distance leaderHeight;
+    public final Distance followerHeight;
 
-    State(double leaderHeight, double followerHeight) {
+    State(Distance leaderHeight, Distance followerHeight) {
       this.leaderHeight   = leaderHeight;
       this.followerHeight = followerHeight;
     }
@@ -297,17 +298,17 @@ public class Climber extends SubsystemBase {
     this.goal = goal;
   }
 
-  public void setFollowerTargetHeight(Rotation2d height) {
-    innerElevator.setTargetHeight(height);
+  public void setFollowerTargetHeight(Distance height) {
+    innerElevator.setHeight(height);
   }
 
-  public void setLeaderTargetHeight(Rotation2d height) {
-    outerElevator.setTargetHeight(height);
+  public void setLeaderTargetHeight(Distance height) {
+    outerElevator.setHeight(height);
   }
 
   private void handleTransitions(State desiredState) {
-    setLeaderTargetHeight(Rotation2d.fromRotations(desiredState.leaderHeight));
-    setFollowerTargetHeight(Rotation2d.fromRotations(desiredState.followerHeight));
+    setLeaderTargetHeight(desiredState.leaderHeight);
+    setFollowerTargetHeight(desiredState.followerHeight);
     if (isLeaderAtTargetHeight(desiredState.leaderHeight) && isFollowerAtTargetHeight(desiredState.followerHeight)) {
       state = desiredState;
     }
@@ -317,7 +318,7 @@ public class Climber extends SubsystemBase {
     if (goal == Goal.Override) {
       return false;
     }
-    return innerElevator.setElevatorNeutralMode(value) && outerElevator.setElevatorNeutralMode(value);
+    return innerElevator.setNeutralMode(value) && outerElevator.setNeutralMode(value);
   }
 
   public void setServoAngle(Rotation2d angle) {
@@ -331,11 +332,11 @@ public class Climber extends SubsystemBase {
 
   // getters
 
-  public boolean isFollowerAtTargetHeight(double target) {
-    return innerElevator.isElevatorAtTargetHeight(target);
+  public boolean isFollowerAtTargetHeight(Distance target) {
+    return innerElevator.isAtTarget(target);
   }
 
-  public boolean isLeaderAtTargetHeight(double target) {
-    return outerElevator.isElevatorAtTargetHeight(target);
+  public boolean isLeaderAtTargetHeight(Distance target) {
+    return outerElevator.isAtTarget(target);
   }
 }

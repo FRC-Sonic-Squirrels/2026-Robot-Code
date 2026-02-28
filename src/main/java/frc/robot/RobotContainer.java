@@ -61,9 +61,6 @@ import frc.robot.subsystems.swerve.gyro.GyroIOPigeon2;
 import frc.robot.subsystems.vision.Vision;
 import frc.robot.subsystems.vision.VisionModuleConfiguration;
 import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
-import frc.lib.team2930.TalonFXElevatorSim;
-import edu.wpi.first.wpilibj.simulation.ElevatorSim;
-import edu.wpi.first.math.system.plant.DCMotor;
 
 import java.util.HashMap;
 import java.util.function.Supplier;
@@ -217,15 +214,16 @@ public class RobotContainer {
 
           leftIntake = new Intake(leftIntakeRoot, new IntakeIOSim());
           rightIntake = new Intake(rightIntakeRoot, new IntakeIOSim());
-          climber = new Climber(
-              new ElevatorIOSim(new TalonFXElevatorSim(new ElevatorSim(DCMotor.getKrakenX60Foc(1),
-                  Constants.ClimberConstants.INNER_CLIMBER_GEAR_RATIO, Constants.ClimberConstants.INNER_CARRIAGE_MASS,
-                  Constants.ClimberConstants.INNER_PULLEY_DIAMETER.in(Units.Inches) / 2.0, 0.0,
-                  Constants.ClimberConstants.MAX_INNER_CLIMBER_HEIGHT, true, 0))),
-              new ElevatorIOSim(new TalonFXElevatorSim(new ElevatorSim(DCMotor.getKrakenX60Foc(1),
-                  Constants.ClimberConstants.OUTER_CLIMBER_GEAR_RATIO, Constants.ClimberConstants.OUTER_CARRIAGE_MASS,
-                  Constants.ClimberConstants.OUTER_PULLEY_DIAMETER.in(Units.Inches) / 2.0, 0.0,
-                  Constants.ClimberConstants.MAX_OUTER_CLIMBER_HEIGHT, true, 0))));
+          climber = new Climber(new ElevatorIOSim(), new ElevatorIOSim());
+//          climber = new Climber(
+//              new ElevatorIOSim(new TalonFXElevatorSim(new ElevatorSim(DCMotor.getKrakenX60Foc(1),
+//                  Constants.ClimberConstants.INNER_CLIMBER_GEAR_RATIO, Constants.ClimberConstants.INNER_CARRIAGE_MASS,
+//                  Constants.ClimberConstants.INNER_PULLEY_DIAMETER.in(Units.Inches) / 2.0, 0.0,
+//                  Constants.ClimberConstants.MAX_INNER_CLIMBER_HEIGHT, true, 0))),
+//              new ElevatorIOSim(new TalonFXElevatorSim(new ElevatorSim(DCMotor.getKrakenX60Foc(1),
+//                  Constants.ClimberConstants.OUTER_CLIMBER_GEAR_RATIO, Constants.ClimberConstants.OUTER_CARRIAGE_MASS,
+//                  Constants.ClimberConstants.OUTER_PULLEY_DIAMETER.in(Units.Inches) / 2.0, 0.0,
+//                  Constants.ClimberConstants.MAX_OUTER_CLIMBER_HEIGHT, true, 0))));
           hopper = new Hopper(new HopperIOSim());
           shooter = new Shooter(new ShooterIOSim());
           led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
