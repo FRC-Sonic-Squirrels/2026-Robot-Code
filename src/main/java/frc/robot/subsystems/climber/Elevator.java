@@ -51,8 +51,7 @@ public class Elevator extends SubsystemBase {
   private final ElevatorIO        io;
   private final ElevatorIO.Inputs inputs;
 
-  private Distance    targetHeight = Units.Meters.zero();
-  private ControlMode controlMode  = ControlMode.OPEN_LOOP;
+  private Distance targetHeight = Units.Meters.zero();
 
   /** Creates a new ElevatorSubsystem. */
   public Elevator(LoggerGroup group, ElevatorIO io) {
@@ -111,7 +110,6 @@ public class Elevator extends SubsystemBase {
 
   public void setPercentOut(double percent) {
     io.setVoltage(percent);
-    controlMode = ControlMode.OPEN_LOOP;
   }
 
   public void setHeight(Distance height) {
@@ -143,7 +141,6 @@ public class Elevator extends SubsystemBase {
     io.setHeight(height);
     targetHeight = height;
     logs.targetHeightInches.info(targetHeight.in(Units.Inches));
-    controlMode = ControlMode.CLOSED_LOOP;
   }
 
   public void resetSensorToHomePosition() {
