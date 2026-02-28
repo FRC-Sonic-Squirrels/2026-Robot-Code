@@ -162,7 +162,7 @@ public class Elevator extends SubsystemBase {
     MotionMagicConfigs mmConfigs = new MotionMagicConfigs();
     mmConfigs.MotionMagicAcceleration   = tunables.targetAccelerationConfig.get();
     mmConfigs.MotionMagicCruiseVelocity = tunables.maxVelocityConfig.get();
-    setAccel                            = tunables.maxVelocityConfig.get();
+    setAccel                            = tunables.targetAccelerationConfig.get();
     io.setClosedLoopConstants(kP, kD, kG, mmConfigs);
   }
 
