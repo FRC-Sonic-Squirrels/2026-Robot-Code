@@ -14,16 +14,17 @@ import frc.robot.Constants;
 
 public class ElevatorIOSim implements ElevatorIO {
 
-  private final TalonFXElevatorSim sim = new TalonFXElevatorSim(
-      new ElevatorSim(DCMotor.getKrakenX60Foc(1), Constants.ClimberConstants.GEAR_RATIO,
-          Constants.ClimberConstants.CARRIAGE_MASS, Constants.ClimberConstants.PULLEY_DIAMETER.in(Units.Meters) / 2.0,
-          0.0, Constants.ClimberConstants.MAX_HEIGHT.in(Units.Meter), false, 0));
-
   private VoltageOut         openLoopControl   = new VoltageOut(0);
   private MotionMagicVoltage closedLoopControl = new MotionMagicVoltage(0);
 
-  public ElevatorIOSim() {
+  private ElevatorIOConfig config;
+
+  public ElevatorIOSim(ElevatorIOConfig config) {
+    this.config = config;
   }
+
+  private final TalonFXElevatorSim sim = new TalonFXElevatorSim(new ElevatorSim(DCMotor.getKrakenX60Foc(1),
+      config.gearRatio(), config.carriageMass(), config.pulleyDiameter() / 2.0, 0.0, config.maxHeight(), false, 0));
 
   @Override
   public void updateInputs(Inputs inputs) {

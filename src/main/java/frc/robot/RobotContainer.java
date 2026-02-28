@@ -212,18 +212,16 @@ public class RobotContainer {
             vision.logs.configTagAmount.info(config.getAprilTagFieldLayout().getTags().size());
           }
 
+          ElevatorIOConfig followerConfig = new ElevatorIOConfig(Constants.CanIDs.CLIMBER_FOLLOWER_CAN_ID, false,
+              ClimberConstants.FOLLOWER_CLIMBER_GEAR_RATIO, ClimberConstants.FOLLOWER_CARRIAGE_MASS,
+              ClimberConstants.FOLLOWER_PULLEY_DIAMETER.in(Units.Inches), ClimberConstants.MAX_FOLLOWER_CLIMBER_HEIGHT);
+          ElevatorIOConfig leaderConfig = new ElevatorIOConfig(Constants.CanIDs.CLIMBER_LEADER_CAN_ID, false,
+              ClimberConstants.LEADER_CLIMBER_GEAR_RATIO, ClimberConstants.LEADER_CARRIAGE_MASS,
+              ClimberConstants.LEADER_PULLEY_DIAMETER.in(Units.Inches), ClimberConstants.MAX_LEADER_CLIMBER_HEIGHT);
+
           leftIntake = new Intake(leftIntakeRoot, new IntakeIOSim());
           rightIntake = new Intake(rightIntakeRoot, new IntakeIOSim());
-          climber = new Climber(new ElevatorIOSim(), new ElevatorIOSim());
-//          climber = new Climber(
-//              new ElevatorIOSim(new TalonFXElevatorSim(new ElevatorSim(DCMotor.getKrakenX60Foc(1),
-//                  Constants.ClimberConstants.FOLLOWER_CLIMBER_GEAR_RATIO, Constants.ClimberConstants.FOLLOWER_CARRIAGE_MASS,
-//                  Constants.ClimberConstants.FOLLOWER_PULLEY_DIAMETER.in(Units.Inches) / 2.0, 0.0,
-//                  Constants.ClimberConstants.MAX_FOLLOWER_CLIMBER_HEIGHT, true, 0))),
-//              new ElevatorIOSim(new TalonFXElevatorSim(new ElevatorSim(DCMotor.getKrakenX60Foc(1),
-//                  Constants.ClimberConstants.LEADER_CLIMBER_GEAR_RATIO, Constants.ClimberConstants.LEADER_CARRIAGE_MASS,
-//                  Constants.ClimberConstants.LEADER_PULLEY_DIAMETER.in(Units.Inches) / 2.0, 0.0,
-//                  Constants.ClimberConstants.MAX_LEADER_CLIMBER_HEIGHT, true, 0))));
+          climber = new Climber(new ElevatorIOSim(followerConfig), new ElevatorIOSim(leaderConfig));
           hopper = new Hopper(new HopperIOSim());
           shooter = new Shooter(new ShooterIOSim());
           led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
@@ -270,10 +268,16 @@ public class RobotContainer {
                 InvertedValue.Clockwise_Positive);
             leftIntake  = new Intake(leftIntakeRoot, new IntakeIOReal(leftIntakeIOConfig));
             rightIntake = new Intake(rightIntakeRoot, new IntakeIOReal(rightIntakeIOConfig));
+
             ElevatorIOConfig followerElevatorIOConfig = new ElevatorIOConfig(Constants.CanIDs.CLIMBER_FOLLOWER_CAN_ID,
-                false, ClimberConstants.FOLLOWER_CLIMBER_GEAR_RATIO);
-            ElevatorIOConfig leaderElevatorIOConfig   = new ElevatorIOConfig(Constants.CanIDs.CLIMBER_LEADER_CAN_ID,
-                false, ClimberConstants.LEADER_CLIMBER_GEAR_RATIO);
+                false, ClimberConstants.FOLLOWER_CLIMBER_GEAR_RATIO, ClimberConstants.FOLLOWER_CARRIAGE_MASS,
+                ClimberConstants.FOLLOWER_PULLEY_DIAMETER.in(Units.Inches),
+                ClimberConstants.MAX_FOLLOWER_CLIMBER_HEIGHT);
+
+            ElevatorIOConfig leaderElevatorIOConfig = new ElevatorIOConfig(Constants.CanIDs.CLIMBER_LEADER_CAN_ID,
+                false, ClimberConstants.LEADER_CLIMBER_GEAR_RATIO, ClimberConstants.LEADER_CARRIAGE_MASS,
+                ClimberConstants.LEADER_PULLEY_DIAMETER.in(Units.Inches), ClimberConstants.MAX_LEADER_CLIMBER_HEIGHT);
+
             climber = new Climber(new ElevatorIOReal(followerElevatorIOConfig),
                 new ElevatorIOReal(leaderElevatorIOConfig));
 
