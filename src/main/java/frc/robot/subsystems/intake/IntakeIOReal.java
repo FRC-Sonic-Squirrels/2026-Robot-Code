@@ -7,10 +7,9 @@ import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.Slot1Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.controls.DynamicMotionMagicVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
@@ -43,8 +42,7 @@ public class IntakeIOReal implements IntakeIO {
   private final StatusSignal<Temperature>     pivotTemp;
   private final StatusSignal<AngularVelocity> pivotVelocity;
 
-  private final DynamicMotionMagicVoltage pivotClosedLoopControl = new DynamicMotionMagicVoltage(0.0, 0.0, 0.0)
-      .withEnableFOC(true);
+  private final MotionMagicVoltage pivotClosedLoopControl = new MotionMagicVoltage(0.0).withEnableFOC(true);
 
   private final TalonFX pivotMotor;
 
@@ -190,18 +188,16 @@ public class IntakeIOReal implements IntakeIO {
   }
 
   @Override
-  public void setPivotClosedLoopConstants(double kP0, double kD0, double kG0, MotionMagicConfigs mmConfigs) {
+  public void setPivotClosedLoopConstants(double kP, double kD, double kG, MotionMagicConfigs mmConfigs) {
     var slot0Configs = new Slot0Configs();
-    var slot1Configs = new Slot1Configs();
 
     pivotMotor.getConfigurator().refresh(slot0Configs);
 
-    slot0Configs.kP = kP0;
-    slot0Configs.kD = kD0;
-    slot0Configs.kG = kG0;
+    slot0Configs.kP = kP;
+    slot0Configs.kD = kD;
+    slot0Configs.kG = kG;
 
     pivotMotor.getConfigurator().apply(slot0Configs);
-    pivotMotor.getConfigurator().apply(slot1Configs);
     pivotMotor.getConfigurator().apply(mmConfigs);
   }
 

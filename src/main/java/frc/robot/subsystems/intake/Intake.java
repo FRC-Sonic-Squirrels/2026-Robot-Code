@@ -54,9 +54,9 @@ public class Intake extends SubsystemBase {
   }
 
   public static class PivotTunables extends AutoRegisterTunables {
-    public LoggedTunableNumber KP0;
-    public LoggedTunableNumber KD0;
-    public LoggedTunableNumber KG0;
+    public LoggedTunableNumber KP;
+    public LoggedTunableNumber KD;
+    public LoggedTunableNumber KG;
 
     public LoggedTunableNumber maxVelocityConfig;
     public LoggedTunableNumber targetAccelerationConfig;
@@ -65,7 +65,8 @@ public class Intake extends SubsystemBase {
     public LoggedTunableNumber toleranceDegrees;
 
     private boolean hasChanged() {
-      return KP0.hasChanged() || KD0.hasChanged() || KG0.hasChanged() || maxVelocityConfig.hasChanged() || targetAccelerationConfig.hasChanged();
+      return KP.hasChanged() || KD.hasChanged() || KG.hasChanged() || maxVelocityConfig.hasChanged()
+          || targetAccelerationConfig.hasChanged();
     }
   }
 
@@ -137,10 +138,10 @@ public class Intake extends SubsystemBase {
       tunables.roller.KV.initDefault(0.13);
       tunables.roller.targetAccelerationConfig.initDefault(200);
 
-      tunables.pivot.KP0.initDefault(60);
-      tunables.pivot.KD0.initDefault(0.3);
-      tunables.pivot.KG0.initDefault(0.4);
-  
+      tunables.pivot.KP.initDefault(60);
+      tunables.pivot.KD.initDefault(0.3);
+      tunables.pivot.KG.initDefault(0.4);
+
       tunables.pivot.maxVelocityConfig.initDefault(200);
       tunables.pivot.targetAccelerationConfig.initDefault(1500);
     } else if (Constants.RobotMode.isSimBot()) {
@@ -149,9 +150,9 @@ public class Intake extends SubsystemBase {
       tunables.roller.KV.initDefault(0.0002);
       tunables.roller.targetAccelerationConfig.initDefault(0.0);
 
-      tunables.pivot.KP0.initDefault(120);
-      tunables.pivot.KD0.initDefault(0);
-      tunables.pivot.KG0.initDefault(0.0);
+      tunables.pivot.KP.initDefault(120);
+      tunables.pivot.KD.initDefault(0);
+      tunables.pivot.KG.initDefault(0.0);
 
       tunables.pivot.maxVelocityConfig.initDefault(40);
       tunables.pivot.targetAccelerationConfig.initDefault(80);
@@ -161,10 +162,9 @@ public class Intake extends SubsystemBase {
       tunables.roller.KV.initDefault(0.13);
       tunables.roller.targetAccelerationConfig.initDefault(200);
 
-      // Slot 0 is for moving up
-      tunables.pivot.KP0.initDefault(60);
-      tunables.pivot.KD0.initDefault(0.3);
-      tunables.pivot.KG0.initDefault(0.4);
+      tunables.pivot.KP.initDefault(60);
+      tunables.pivot.KD.initDefault(0.3);
+      tunables.pivot.KG.initDefault(0.4);
 
       tunables.pivot.maxVelocityConfig.initDefault(200);
       tunables.pivot.targetAccelerationConfig.initDefault(1500);
@@ -260,7 +260,7 @@ public class Intake extends SubsystemBase {
     configs.MotionMagicCruiseVelocity = pivot.maxVelocityConfig.get();
     configs.MotionMagicAcceleration   = pivot.targetAccelerationConfig.get();
 
-    io.setPivotClosedLoopConstants(pivot.KP0.get(), pivot.KD0.get(), pivot.KG0.get(), configs);
+    io.setPivotClosedLoopConstants(pivot.KP.get(), pivot.KD.get(), pivot.KG.get(), configs);
   }
 
   public void setPivotVoltage(double percent) {

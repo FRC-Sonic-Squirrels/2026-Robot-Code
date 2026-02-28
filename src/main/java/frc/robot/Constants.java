@@ -51,7 +51,7 @@ public final class Constants {
   }
 
   public static class RobotMode {
-    private static final RobotType ROBOT = RobotType.ROBOT_2026 ;
+    private static final RobotType ROBOT = RobotType.ROBOT_2026;
 
     public static boolean isSimBot() {
       switch (getRobot()) {
@@ -177,17 +177,17 @@ public final class Constants {
       public static final double ROLLER_GEARING = 1.6;
       public static final double MOI            = 0.05;
 
-      public static final double SUPPLY_CURRENT_LIMIT = 20;
-      public static final double STATOR_CURRENT_LIMIT = 100;
+      public static final double SUPPLY_CURRENT_LIMIT = 20.0;
+      public static final double STATOR_CURRENT_LIMIT = 100.0;
 
       public static final String ROOT_TABLE = "Rollers";
     }
 
     public static class PivotConstants {
-      public static final double HIGH_SUPPLY_CURRENT_LIMIT = 20;
-      public static final double HIGH_STATOR_CURRENT_LIMIT = 30;
-      public static final double LOW_SUPPLY_CURRENT_LIMIT = 10;
-      public static final double LOW_STATOR_CURRENT_LIMIT = 10;
+      public static final double HIGH_SUPPLY_CURRENT_LIMIT = 20.0;
+      public static final double HIGH_STATOR_CURRENT_LIMIT = 30.0;
+      public static final double LOW_SUPPLY_CURRENT_LIMIT  = 10.0;
+      public static final double LOW_STATOR_CURRENT_LIMIT  = 10.0;
 
       public static final double GEAR_RATIO = 25.0043;
 
@@ -245,9 +245,9 @@ public final class Constants {
     public static final int CLIMBER_FOLLOWER_CAN_ID = 40;
     public static final int CLIMBER_LEADER_CAN_ID   = 42;
 
-    public static final int INTAKE_LEFT_PIVOT_CAN_ID = 19;
-    public static final int INTAKE_LEFT_ROLLER_CAN_ID = 20;
-    public static final int INTAKE_RIGHT_PIVOT_CAN_ID = 43;
+    public static final int INTAKE_LEFT_PIVOT_CAN_ID   = 19;
+    public static final int INTAKE_LEFT_ROLLER_CAN_ID  = 20;
+    public static final int INTAKE_RIGHT_PIVOT_CAN_ID  = 43;
     public static final int INTAKE_RIGHT_ROLLER_CAN_ID = 21;
 
     public static final int SHOOTER_LEAD_CAN_ID   = 35;
