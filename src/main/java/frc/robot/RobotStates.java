@@ -62,7 +62,7 @@ public class RobotStates {
   public static class SubsystemsInTargetStatesLogs extends AutoRegisterLoggers {
     public LoggerEntry.Text goal;
     public LoggerEntry.Text intakeGoal;
-
+    public LoggerEntry.Bool inAllianceZone;
   }
 
   public static class SubsystemsInUseLogs extends AutoRegisterLoggers {
@@ -176,6 +176,7 @@ public class RobotStates {
 
     logs.subsystemsInTargetStates.goal.info(goal.name());
     logs.subsystemsInTargetStates.intakeGoal.info(intakeGoal.name());
+    logs.subsystemsInTargetStates.inAllianceZone.info(isInAllianceZone(drivetrain.getHubPoseEstimatorPose(true)));
   }
 
   private void setRotateToFaceTarget(Translation2d target) {
