@@ -97,14 +97,12 @@ public class ElevatorIOReal implements ElevatorIO {
 
   @Override
   public void setVoltage(double volts) {
-    openLoopControl.withOutput(volts);
-    motor.setControl(openLoopControl);
+    motor.setControl(openLoopControl.withOutput(volts));
   }
 
   @Override
   public void setHeight(Distance height) {
-    closedLoopControl.withPosition(height.in(Units.Inches) * ClimberConstants.INCHES_TO_MOTOR_ROT);
-    motor.setControl(closedLoopControl);
+    motor.setControl(closedLoopControl.withPosition(height.in(Units.Inches) * ClimberConstants.INCHES_TO_MOTOR_ROT));
   }
 
   @Override
