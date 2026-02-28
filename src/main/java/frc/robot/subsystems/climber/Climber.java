@@ -22,8 +22,8 @@ public class Climber extends SubsystemBase {
     // Extend is elevator going up, reaching for the next bar.
     //@formatter:off
     Stowed           (ClimberConstants.LEADER_HEIGHT_STOWED   , ClimberConstants.FOLLOWER_HEIGHT_STOWED   ),
-    L1LeaderExtend   (ClimberConstants.LEADER_HEIGHT_CLIMBL1  , ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
-    L1LeaderRetract  (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
+    L1LeaderExtend   (ClimberConstants.LEADER_HEIGHT_CLIMBL1  , ClimberConstants.FOLLOWER_HEIGHT_STOWED   ),
+    L1LeaderRetract  (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_STOWED   ),
     L1FollowerExtend (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_EXTENDED ),
     L1FollowerRetract(ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
     L2LeaderExtend   (ClimberConstants.LEADER_HEIGHT_CLIMBL2  , ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
@@ -32,8 +32,6 @@ public class Climber extends SubsystemBase {
     L2FollowerRetract(ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
     L3LeaderExtend   (ClimberConstants.LEADER_HEIGHT_CLIMBL3  , ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
     L3LeaderRetract  (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
-    L3FollowerExtend (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_EXTENDED ),
-    L3FollowerRetract(ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
     Lock             (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED);
     //@formatter:on
 
@@ -60,8 +58,8 @@ public class Climber extends SubsystemBase {
   // Execution timing
   private final ExecutionTiming climberTiming = new ExecutionTiming(ROOT_TABLE);
 
-  private final Elevator innerElevator;
-  private final Elevator outerElevator;
+  private final Elevator follower;
+  private final Elevator leader;
 
   private State state = State.Stowed;
   private Goal  goal  = Goal.Stowed;
@@ -71,17 +69,17 @@ public class Climber extends SubsystemBase {
   private Rotation2d servoTargetAngle = Constants.ClimberConstants.SERVO_LOCK_ANGLE;
 
   /** Creates a new ClimberSubsystem. */
-  public Climber(ElevatorIO innerIO, ElevatorIO outerIO) {
-    this.innerElevator = new Elevator(logs.group.subgroup("Inner"), innerIO);
-    this.outerElevator = new Elevator(logs.group.subgroup("Outer"), outerIO);
+  public Climber(ElevatorIO followerIO, ElevatorIO leaderIO) {
+    this.follower = new Elevator(logs.group.subgroup("Follower"), followerIO);
+    this.leader   = new Elevator(logs.group.subgroup("Leader"), leaderIO);
 
     setServoAngle(ClimberConstants.SERVO_UNLOCK_ANGLE);
   }
 
   @Override
   public void periodic() {
-    innerElevator.periodic();
-    outerElevator.periodic();
+    follower.periodic();
+    leader.periodic();
     try (var ignored = climberTiming.start()) {
       // Climber logging
 
@@ -102,6 +100,7 @@ public class Climber extends SubsystemBase {
               break;
 
             case Stowed:
+              handleTransitions(State.Stowed);
               atGoalNext = true;
               break;
 
@@ -198,16 +197,6 @@ public class Climber extends SubsystemBase {
               break;
 
             case L2LeaderRetract:
-              handleTransitions(State.L2FollowerExtend);
-              atGoalNext = false;
-              break;
-
-            case L2FollowerExtend:
-              handleTransitions(State.L2FollowerRetract);
-              atGoalNext = false;
-              break;
-
-            case L2FollowerRetract:
               atGoalNext = true;
               break;
 
@@ -265,16 +254,6 @@ public class Climber extends SubsystemBase {
               break;
 
             case L3LeaderRetract:
-              handleTransitions(State.L3FollowerExtend);
-              atGoalNext = false;
-              break;
-
-            case L3FollowerExtend:
-              handleTransitions(State.L3FollowerRetract);
-              atGoalNext = false;
-              break;
-
-            case L3FollowerRetract:
               atGoalNext = true;
               break;
 
@@ -299,11 +278,11 @@ public class Climber extends SubsystemBase {
   }
 
   public void setFollowerTargetHeight(Distance height) {
-    innerElevator.setHeight(height);
+    follower.setHeight(height);
   }
 
   public void setLeaderTargetHeight(Distance height) {
-    outerElevator.setHeight(height);
+    leader.setHeight(height);
   }
 
   private void handleTransitions(State desiredState) {
@@ -318,7 +297,7 @@ public class Climber extends SubsystemBase {
     if (goal == Goal.Override) {
       return false;
     }
-    return innerElevator.setNeutralMode(value) && outerElevator.setNeutralMode(value);
+    return follower.setNeutralMode(value) && leader.setNeutralMode(value);
   }
 
   public void setServoAngle(Rotation2d angle) {
@@ -333,10 +312,10 @@ public class Climber extends SubsystemBase {
   // getters
 
   public boolean isFollowerAtTargetHeight(Distance target) {
-    return innerElevator.isAtTarget(target);
+    return follower.isAtTarget(target);
   }
 
   public boolean isLeaderAtTargetHeight(Distance target) {
-    return outerElevator.isAtTarget(target);
+    return leader.isAtTarget(target);
   }
 }

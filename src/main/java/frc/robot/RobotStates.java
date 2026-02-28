@@ -321,8 +321,8 @@ public class RobotStates {
 
   public boolean isInAllianceZone(Pose2d pose) {
     double positionX          = pose.getTranslation().getX();
-    double allianceZoneLength = FieldConstants.ALLIANCE_ZONE_LENGTH.in(Units.Meters);
     double fieldLength        = FieldConstants.FIELD_LENGTH.in(Units.Meters);
+    double allianceZoneLength = FieldConstants.ALLIANCE_ZONE_LENGTH.in(Units.Meters);
     if (Constants.isRedAlliance()) {
       return positionX >= fieldLength - allianceZoneLength;
     } else {
