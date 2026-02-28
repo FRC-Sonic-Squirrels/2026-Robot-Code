@@ -145,11 +145,14 @@ public class RobotStates {
         score();
         break;
       case Pass:
-        Translation2d target = GeometryUtil.getClosestTranslation(FieldConstants.PASS_AIM_POINTS,
-            drivetrain.getHubPoseEstimatorPose(true));
-        setRotateToFaceTarget(target);
-        shooter.setGoal(Shooter.Goal.Passing);
-        hopper.setGoal(Hopper.Goal.Shooting);
+        pass();
+        break;
+      case Shoot:
+        if (isInAllianceZone) {
+          score();
+        } else {
+          pass();
+        }
         break;
       case StowClimber:
         climber.setGoal(Climber.Goal.Stowed);
