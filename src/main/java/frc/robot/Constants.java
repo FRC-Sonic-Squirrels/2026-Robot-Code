@@ -132,17 +132,19 @@ public final class Constants {
 
   public static class FieldConstants {
     // Official Field dimensions from field dimensions manual
-    public static Distance FIELD_LENGTH = Units.Inches.of(650.12);
-    public static Distance FIELD_WIDTH = Units.Inches.of(316.64);
+    public static Distance FIELD_LENGTH = Units.Inches.of(651.22);
+    public static Distance FIELD_WIDTH = Units.Inches.of(317.69);
     public static double FIELD_LENGTH_METERS = FIELD_LENGTH.in(Units.Meters);
     public static double FIELD_WIDTH_METERS = FIELD_WIDTH.in(Units.Meters);
 
-    public static Distance HUB_DIST_FROM_WALL = Units.Inches.of(158.06);
+    public static Distance HUB_DIST_FROM_WALL = Units.Inches.of(156.61);
 
     public static Distance HUB_WIDTH = Units.Inches.of(41.73);
     public static Distance HUB_LENGTH = Units.Inches.of(47.00);
 
     public static Distance HUB_DIAGONAL_WIDTH = HUB_WIDTH.times(2.0 / Math.sqrt(3));
+
+    public static Distance ALLIANCE_ZONE_LENGTH = Units.Inches.of(182.11);
 
     public static AllianceAwareTranslation2d HUB_CENTER_POSE =
         new AllianceAwareTranslation2d(new Translation2d(HUB_DIST_FROM_WALL.plus(HUB_WIDTH.div(2.0)), FIELD_WIDTH.div(2.0)));

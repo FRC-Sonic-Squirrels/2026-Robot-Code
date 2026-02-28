@@ -375,16 +375,16 @@ public class RobotContainer {
                 Units.Inches.of(60).in(Units.Meters), Units.Inches.of(15).in(Units.Meters), Rotation2d.kZero)),
             () -> drivetrainWrapper.getHubPoseEstimatorPose(true)));
 
-    driverController.registerTrigger(XboxControllerWrapper.Button.leftBumper, "Score")
-        .react(robotStates.changeRobotGoal(RobotStates.RobotGoal.Score, RobotStates.RobotGoal.None));
+    driverController.registerTrigger(XboxControllerWrapper.Button.leftTrigger, "Shoot")
+        .react(robotStates.changeRobotGoal(RobotStates.RobotGoal.Shoot, RobotStates.RobotGoal.None));
 
-    driverController.registerTrigger(XboxControllerWrapper.Button.rightBumper, "Pass")
-        .react(robotStates.changeRobotGoal(RobotStates.RobotGoal.Pass, RobotStates.RobotGoal.None));
+    driverController.registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Shoot")
+        .react(robotStates.changeRobotGoal(RobotStates.RobotGoal.Shoot, RobotStates.RobotGoal.None));
 
-    driverController.registerTrigger(XboxControllerWrapper.Button.leftTrigger, "Left Intake")
+    driverController.registerTrigger(XboxControllerWrapper.Button.leftBumper, "Left Intake")
         .react(robotStates.changeIntakeGoal(RobotStates.IntakeGoal.LeftIntake, RobotStates.IntakeGoal.Stow));
 
-    driverController.registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Right Intake")
+    driverController.registerTrigger(XboxControllerWrapper.Button.rightBumper, "Right Intake")
         .react(robotStates.changeIntakeGoal(IntakeGoal.RightIntake, RobotStates.IntakeGoal.Stow));
 
     driverController.registerTrigger(XboxControllerWrapper.Button.povDown, "Climb")
@@ -416,7 +416,7 @@ public class RobotContainer {
         .react(robotStates.changeIntakeGoal(IntakeGoal.LeftDown, RobotStates.IntakeGoal.Stow));
 
     operatorController.registerTrigger(XboxControllerWrapper.Button.b, "Unjamming")
-        .react(robotStates.changeRobotGoal(RobotGoal.Unjamming, RobotStates.RobotGoal.None));
+        .react(robotStates.changeRobotGoal(RobotGoal.Unjam, RobotStates.RobotGoal.None));
 
     // ---------- ON-ROBOT CONTROLS ------------
 
