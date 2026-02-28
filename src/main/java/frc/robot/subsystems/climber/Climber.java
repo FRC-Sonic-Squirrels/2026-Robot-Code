@@ -53,7 +53,7 @@ public class Climber extends SubsystemBase {
   private Servo climberServo = new Servo(ClimberConstants.SERVO_CHANNEL);
 
   public final Logs logs   = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
-  public boolean    atGoal = false;
+  private boolean   atGoal = false;
 
   // Execution timing
   private final ExecutionTiming climberTiming = new ExecutionTiming(ROOT_TABLE);
@@ -310,6 +310,10 @@ public class Climber extends SubsystemBase {
   }
 
   // getters
+
+  public boolean isAtGoal() {
+    return atGoal;
+  }
 
   public boolean isFollowerAtTargetHeight(Distance target) {
     return follower.isAtTarget(target);
