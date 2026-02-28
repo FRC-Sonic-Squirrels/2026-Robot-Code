@@ -11,6 +11,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.team2930.*;
@@ -42,6 +43,7 @@ public class Intake extends SubsystemBase {
     public LoggerEntry.EnumValue<ControlMode> controlMode;
     public LoggerEntry.Decimal                targetAngleDegrees;
     public LoggerEntry.Decimal                targetAngle;
+    public LoggerEntry.EnumValue<ControlMode> pivotControlMode;
   }
 
   public static class Logs extends AutoRegisterLoggers {
@@ -58,6 +60,7 @@ public class Intake extends SubsystemBase {
     public LoggedTunableNumber KP1;
     public LoggedTunableNumber KD1;
     public LoggedTunableNumber KG1;
+    public LoggedTunableNumber KV1;
 
     public LoggedTunableNumber maxVelocityConfig;
     public LoggedTunableNumber targetAccelerationConfig;
@@ -97,6 +100,8 @@ public class Intake extends SubsystemBase {
   }
 
   public final Logs logs;
+
+  private ControlMode pivotControlMode = ControlMode.OPEN_LOOP;
 
   // Execution timing
   private final ExecutionTiming timing;
@@ -143,6 +148,7 @@ public class Intake extends SubsystemBase {
       tunables.pivot.KP1.initDefault(60);
       tunables.pivot.KD1.initDefault(0.3);
       tunables.pivot.KG1.initDefault(0.4);
+      tunables.pivot.KV1.initDefault(10);
 
       tunables.pivot.maxVelocityConfig.initDefault(200);
       tunables.pivot.targetAccelerationConfig.initDefault(1500);
@@ -158,6 +164,7 @@ public class Intake extends SubsystemBase {
       tunables.pivot.KP1.initDefault(120);
       tunables.pivot.KD1.initDefault(0);
       tunables.pivot.KG1.initDefault(0.0);
+      tunables.pivot.KV1.initDefault(10);
 
       tunables.pivot.maxVelocityConfig.initDefault(40);
       tunables.pivot.targetAccelerationConfig.initDefault(80);
@@ -172,9 +179,10 @@ public class Intake extends SubsystemBase {
       tunables.pivot.KD0.initDefault(0.3);
       tunables.pivot.KG0.initDefault(0.4);
       // Slot 1 is for moving down
-      tunables.pivot.KP1.initDefault(10);
+      tunables.pivot.KP1.initDefault(5);
       tunables.pivot.KD1.initDefault(0);
       tunables.pivot.KG1.initDefault(0.1);
+      tunables.pivot.KV1.initDefault(10);
 
       tunables.pivot.maxVelocityConfig.initDefault(200);
       tunables.pivot.targetAccelerationConfig.initDefault(1500);
@@ -206,6 +214,7 @@ public class Intake extends SubsystemBase {
       logs.pivot.tempCelsius.info(inputs.pivotTempCelsius);
       logs.pivot.velocityDegreesPerSecond.info(inputs.pivotVelocityDegreesPerSecond);
       logs.pivot.targetAngle.info(pivotTargetAngle);
+      logs.pivot.controlMode.info(pivotControlMode);
 
       logs.goal.info(goal);
 
@@ -221,19 +230,22 @@ public class Intake extends SubsystemBase {
       // Intake state machine
       switch (goal) {
         case Stow:
+          setPivotUpCurrentLimit();
           setPivotAngle(PivotConstants.HOME_POSITION, 0);
           setRollerVelocity(0);
           break;
         case Down:
-          setPivotAngle(computeDownAngle(), 1);
+          setPivotDownCurrentLimit();
+          setPivotVoltage(-2);
           setRollerVelocity(0);
           break;
         case Eject:
           setRollerVelocity(tunables.ejectingFuelVelocity.get() * -1);
           break;
         case Intake:
+          setPivotDownCurrentLimit();
           setRollerVelocity(tunables.intakingFuelVelocity.get());
-          setPivotAngle(computeDownAngle(), 1);
+          setPivotVoltage(-2);
           break;
         default:
           break;
@@ -267,7 +279,20 @@ public class Intake extends SubsystemBase {
     configs.MotionMagicAcceleration   = pivot.targetAccelerationConfig.get();
 
     io.setPivotClosedLoopConstants(pivot.KP0.get(), pivot.KD0.get(), pivot.KG0.get(), pivot.KP1.get(), pivot.KD1.get(),
-        pivot.KG1.get(), configs);
+        pivot.KG1.get(), pivot.KV1.get(), configs);
+  }
+
+  public void setPivotVoltage(double percent) {
+    pivotControlMode = ControlMode.OPEN_LOOP;
+    io.setPivotVoltage(percent);
+  }
+
+  public void setPivotDownCurrentLimit() {
+    io.setPivotCurrentLimits(PivotConstants.LOW_SUPPLY_CURRENT_LIMIT, PivotConstants.LOW_STATOR_CURRENT_LIMIT);
+  }
+
+  public void setPivotUpCurrentLimit() {
+    io.setPivotCurrentLimits(PivotConstants.HIGH_SUPPLY_CURRENT_LIMIT, PivotConstants.HIGH_STATOR_CURRENT_LIMIT);
   }
 
   public void setPivotAngle(Rotation2d angle, int slotId) {
@@ -308,6 +333,10 @@ public class Intake extends SubsystemBase {
 
   public AngularVelocity getPivotVelocity() {
     return Units.DegreesPerSecond.of(inputs.pivotVelocityDegreesPerSecond);
+  }
+
+  public Voltage getPivotVoltage() {
+    return Units.Volts.of(inputs.pivotAppliedVolts);
   }
 
   public boolean rollerStallDetected() {

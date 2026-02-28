@@ -188,15 +188,17 @@ public final class Constants {
       public static final double ROLLER_GEARING = 10.4167;
       public static final double MOI = 0.05;
 
-      public static final double SUPPLY_CURRENT_LIMIT = 20.0;
-      public static final double STATOR_CURRENT_LIMIT = 100.0;
+      public static final double SUPPLY_CURRENT_LIMIT = 1.0;
+      public static final double STATOR_CURRENT_LIMIT = 1.0;
 
       public static final String ROOT_TABLE = "Rollers";
     }
 
     public static class PivotConstants {
-      public static final double SUPPLY_CURRENT_LIMIT = 20.0;
-      public static final double STATOR_CURRENT_LIMIT = 100.0;
+      public static final double HIGH_SUPPLY_CURRENT_LIMIT = 20;
+      public static final double HIGH_STATOR_CURRENT_LIMIT = 30;
+      public static final double LOW_SUPPLY_CURRENT_LIMIT = 10;
+      public static final double LOW_STATOR_CURRENT_LIMIT = 10;
 
       public static final double GEAR_RATIO = 57.9586;
 

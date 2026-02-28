@@ -74,7 +74,7 @@ public class IntakeIOSim implements IntakeIO {
 
   @Override
   public void setPivotClosedLoopConstants(double kP0, double kD0, double kG0, double kP1, double kD1, double kG1,
-      MotionMagicConfigs mmConfigs) {
+      double kV1, MotionMagicConfigs mmConfigs) {
     TalonFXConfiguration config       = new TalonFXConfiguration();
     Slot0Configs         slot0Configs = new Slot0Configs();
     Slot1Configs         slot1Configs = new Slot1Configs();
