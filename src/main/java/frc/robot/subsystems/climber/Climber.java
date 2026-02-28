@@ -58,8 +58,8 @@ public class Climber extends SubsystemBase {
   // Execution timing
   private final ExecutionTiming climberTiming = new ExecutionTiming(ROOT_TABLE);
 
-  private final Elevator follower;
   private final Elevator leader;
+  private final Elevator follower;
 
   private State state = State.Stowed;
   private Goal  goal  = Goal.Stowed;
@@ -69,17 +69,17 @@ public class Climber extends SubsystemBase {
   private Rotation2d servoTargetAngle = Constants.ClimberConstants.SERVO_LOCK_ANGLE;
 
   /** Creates a new ClimberSubsystem. */
-  public Climber(ElevatorIO followerIO, ElevatorIO leaderIO) {
-    this.follower = new Elevator(logs.group.subgroup("Follower"), followerIO);
+  public Climber(ElevatorIO leaderIO, ElevatorIO followerIO) {
     this.leader   = new Elevator(logs.group.subgroup("Leader"), leaderIO);
+    this.follower = new Elevator(logs.group.subgroup("Follower"), followerIO);
 
     setServoAngle(ClimberConstants.SERVO_UNLOCK_ANGLE);
   }
 
   @Override
   public void periodic() {
-    follower.periodic();
     leader.periodic();
+    follower.periodic();
     try (var ignored = climberTiming.start()) {
       // Climber logging
 
@@ -297,7 +297,7 @@ public class Climber extends SubsystemBase {
     if (goal == Goal.Override) {
       return false;
     }
-    return follower.setNeutralMode(value) && leader.setNeutralMode(value);
+    return leader.setNeutralMode(value) && follower.setNeutralMode(value);
   }
 
   public void setServoAngle(Rotation2d angle) {
