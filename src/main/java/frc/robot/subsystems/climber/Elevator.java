@@ -1,10 +1,10 @@
 package frc.robot.subsystems.climber;
 
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.measure.LinearVelocity;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.team2930.*;
@@ -15,12 +15,12 @@ import frc.robot.Constants.RobotMode.RobotType;
 public class Elevator extends SubsystemBase {
 
   public static class Logs extends AutoRegisterLoggers {
-    public LoggerEntry.Decimal targetHeightInches;
-    public LoggerEntry.Decimal heightInches;
-    public LoggerEntry.Decimal velocityInchesPerSecond;
     public LoggerEntry.Decimal appliedVolts;
     public LoggerEntry.Decimal currentAmps;
     public LoggerEntry.Decimal tempCelsius;
+    public LoggerEntry.Decimal velocityInchesPerSecond;
+    public LoggerEntry.Decimal targetHeightInches;
+    public LoggerEntry.Decimal heightInches;
   }
 
   public final Logs logs;
@@ -34,7 +34,7 @@ public class Elevator extends SubsystemBase {
     public LoggedTunableNumber elevatorKG;
 
     public LoggedTunableNumber maxVelocityConfig;
-    public LoggedTunableNumber targetAccelerationConfig;
+    public LoggedTunableNumber elevatorTargetAccelerationConfig;
 
     @TunableEntry(defaultValue = 1)
     public LoggedTunableNumber toleranceHeight;
@@ -46,13 +46,10 @@ public class Elevator extends SubsystemBase {
 
   private final Tunables tunables;
 
-  private double setAccel;
-
   private final ElevatorIO        io;
   private final ElevatorIO.Inputs inputs;
 
-  private Distance    targetHeight = Units.Meters.zero();
-  private ControlMode controlMode  = ControlMode.OPEN_LOOP;
+  private double elevatorHeight;
 
   /** Creates a new ElevatorSubsystem. */
   public Elevator(LoggerGroup group, ElevatorIO io) {
@@ -62,23 +59,21 @@ public class Elevator extends SubsystemBase {
     this.inputs   = new ElevatorIO.Inputs(logs.group);
     this.tunables = TunableNumberGroup.newAutoTunable(Tunables.class, group.toString());
 
-    setAccel = tunables.targetAccelerationConfig.get();
-
     if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_RETIRED_HOLO) {
       tunables.elevatorKP.initDefault(4);
       tunables.elevatorKD.initDefault(0);
       tunables.elevatorKG.initDefault(0.0);
 
       tunables.maxVelocityConfig.initDefault(10);
-      tunables.targetAccelerationConfig.initDefault(10);
+      tunables.elevatorTargetAccelerationConfig.initDefault(10);
 
     } else if (Constants.RobotMode.getRobot() == RobotType.ROBOT_SIMBOT) {
-      tunables.elevatorKP.initDefault(.2);
+      tunables.elevatorKP.initDefault(.02);
       tunables.elevatorKD.initDefault(0);
       tunables.elevatorKG.initDefault(0.0);
 
       tunables.maxVelocityConfig.initDefault(40);
-      tunables.targetAccelerationConfig.initDefault(80);
+      tunables.elevatorTargetAccelerationConfig.initDefault(80);
     } else {
       tunables.elevatorKP.initDefault(4);
       tunables.elevatorKD.initDefault(0);
@@ -92,13 +87,13 @@ public class Elevator extends SubsystemBase {
   public void periodic() {
     try (var ignored = timing.start()) {
       // Elevator logging
-      io.updateInputs(inputs);
+      io.updateElevatorInputs(inputs);
 
-      logs.heightInches.info(inputs.heightInches);
-      logs.velocityInchesPerSecond.info(inputs.velocityInchesPerSecond);
       logs.appliedVolts.info(inputs.appliedVolts);
       logs.currentAmps.info(inputs.currentAmps);
       logs.tempCelsius.info(inputs.tempCelsius);
+      logs.velocityInchesPerSecond.info(inputs.velocityInchesPerSecond);
+      logs.heightInches.info(inputs.elevatorHeight);
 
       // Updating tunable numbers
       if (tunables.hasChanged()) {
@@ -107,88 +102,39 @@ public class Elevator extends SubsystemBase {
     }
   }
 
-  // Setters
-
-  public void setPercentOut(double percent) {
-    io.setVoltage(percent);
-    controlMode = ControlMode.OPEN_LOOP;
-  }
-
-  public void setHeight(Distance height) {
-    setHeight(height, tunables.targetAccelerationConfig.get());
-  }
-
-  /**
-   * Sets height and elevator acceleration
-   *
-   * @param height
-   * @param accel
-   */
-  public void setHeight(Distance height, double accel) {
-
-    if (accel != setAccel) {
-      MotionMagicConfigs mmConfigs = new MotionMagicConfigs();
-
-      mmConfigs.MotionMagicAcceleration   = accel;
-      mmConfigs.MotionMagicCruiseVelocity = tunables.maxVelocityConfig.get();
-
-      double kP = tunables.elevatorKP.get();
-      double kD = tunables.elevatorKD.get();
-      double kG = tunables.elevatorKG.get();
-
-      io.setClosedLoopConstants(kP, kD, kG, mmConfigs);
-      setAccel = accel;
-    }
-
-    io.setHeight(height);
-    targetHeight = height;
-    logs.targetHeightInches.info(targetHeight.in(Units.Inches));
-    controlMode = ControlMode.CLOSED_LOOP;
-  }
-
-  public void resetSensorToHomePosition() {
-    io.setSensorPosition(Constants.ClimberConstants.LEADER_HEIGHT_STOWED);
-  }
-
-  public boolean setNeutralMode(NeutralModeValue value) {
-    return io.setNeutralMode(value);
-  }
+  // setters
 
   private void setConstants() {
     double kP = tunables.elevatorKP.get();
     double kD = tunables.elevatorKD.get();
     double kG = tunables.elevatorKG.get();
-
-    MotionMagicConfigs mmConfigs = new MotionMagicConfigs();
-    mmConfigs.MotionMagicAcceleration   = tunables.targetAccelerationConfig.get();
-    mmConfigs.MotionMagicCruiseVelocity = tunables.maxVelocityConfig.get();
-    setAccel                            = tunables.maxVelocityConfig.get();
-    io.setClosedLoopConstants(kP, kD, kG, mmConfigs);
+    io.setElevatorClosedLoopConstants(kP, kD, kG);
   }
 
-  public void setElevatorManualControl(double percent) {
-    setPercentOut(2 * percent + tunables.elevatorKG.get());
+  public void setTargetHeight(Rotation2d height) {
+    io.setElevatorClosedLoopPosition(height);
   }
 
-  // Getters
-
-  public boolean isAtTarget() {
-    return Math.abs(targetHeight.in(Units.Inches) - inputs.heightInches) <= tunables.toleranceHeight.get();
+  public boolean setElevatorNeutralMode(NeutralModeValue value) {
+    return io.setElevatorNeutralMode(value);
   }
 
-  public boolean isAtTarget(Distance height) {
-    return Math.abs(height.in(Units.Inches) - inputs.heightInches) <= tunables.toleranceHeight.get();
+  // getters
+
+  public boolean isElevatorAtTargetHeight(double target) {
+    var error = inputs.elevatorHeight - target;
+    return Math.abs(error) <= tunables.toleranceHeight.get();
   }
 
-  public Distance getHeight() {
-    return Units.Inches.of(inputs.heightInches);
+  public double getElevatorHeight() {
+    return elevatorHeight;
   }
 
-  public Voltage getVoltage() {
+  public Voltage getElevatorVoltage() {
     return Units.Volts.of(inputs.appliedVolts);
   }
 
-  public LinearVelocity getVelocity() {
-    return Units.InchesPerSecond.of(inputs.velocityInchesPerSecond);
+  public AngularVelocity getElevatorVelocity() {
+    return Units.DegreesPerSecond.of(inputs.velocityInchesPerSecond);
   }
 }
