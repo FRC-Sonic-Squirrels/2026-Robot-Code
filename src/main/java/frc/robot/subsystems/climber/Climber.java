@@ -297,17 +297,17 @@ public class Climber extends SubsystemBase {
     this.goal = goal;
   }
 
-  public void setFollowerTargetHeight(double height) {
+  public void setFollowerTargetHeight(Rotation2d height) {
     innerElevator.setTargetHeight(height);
   }
 
-  public void setLeaderTargetHeight(double height) {
+  public void setLeaderTargetHeight(Rotation2d height) {
     outerElevator.setTargetHeight(height);
   }
 
   private void handleTransitions(State desiredState) {
-    setLeaderTargetHeight(desiredState.leaderHeight);
-    setFollowerTargetHeight(desiredState.followerHeight);
+    setLeaderTargetHeight(Rotation2d.fromRotations(desiredState.leaderHeight));
+    setFollowerTargetHeight(Rotation2d.fromRotations(desiredState.followerHeight));
     if (isLeaderAtTargetHeight(desiredState.leaderHeight) && isFollowerAtTargetHeight(desiredState.followerHeight)) {
       state = desiredState;
     }

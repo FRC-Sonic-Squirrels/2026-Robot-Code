@@ -291,19 +291,22 @@ public final class Constants {
     public static final double SUPPLY_CURRENT_LIMIT = 60.0;
     public static final double STATOR_CURRENT_LIMIT = 90.0;
 
-    public static final double INNER_CLIMBER_GEAR_RATIO = 22.75;
-    public static final double OUTER_CLIMBER_GEAR_RATIO = 22.75;
+    public static final double INNER_CLIMBER_GEAR_RATIO = 100;
+    public static final double OUTER_CLIMBER_GEAR_RATIO = 100;
 
     public static final double CLIMBER_MOI = 0.15;
 
-    public static final double MAX_INNER_CLIMBER_HEIGHT = 27;
-    public static final double MAX_OUTER_CLIMBER_HEIGHT = 27;
+    //in meters, but converted to inches in the sim
+    public static final double MAX_INNER_CLIMBER_HEIGHT = 0.6858;
+    public static final double MAX_OUTER_CLIMBER_HEIGHT = 0.6858;
     public static final double MIN_INNER_CLIMBER_HEIGHT = 0;
     public static final double MIN_OUTER_CLIMBER_HEIGHT = 0;
-    public static final double INNER_HOME_POSITION = MAX_INNER_CLIMBER_HEIGHT;
-    public static final double OUTER_HOME_POSITION = MAX_OUTER_CLIMBER_HEIGHT;
 
     public static final Distance CLIMBER_LENGTH = Units.Inches.of(14);
+    public static final Distance INNER_PULLEY_DIAMETER = Units.Inches.of(1.0);
+    public static final Distance OUTER_PULLEY_DIAMETER = Units.Inches.of(1.0);
+    public static final double INNER_CARRIAGE_MASS = 50.0;
+    public static final double OUTER_CARRIAGE_MASS = 50.0;
 
     public static final int SERVO_CHANNEL = 8;
 

@@ -1,6 +1,8 @@
 package frc.robot.subsystems.climber;
 
 import com.ctre.phoenix6.signals.NeutralModeValue;
+
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Voltage;
@@ -16,8 +18,9 @@ public class Elevator extends SubsystemBase {
     public LoggerEntry.Decimal appliedVolts;
     public LoggerEntry.Decimal currentAmps;
     public LoggerEntry.Decimal tempCelsius;
-    public LoggerEntry.Decimal velocityDegreesPerSecond;
+    public LoggerEntry.Decimal velocityInchesPerSecond;
     public LoggerEntry.Decimal targetHeightInches;
+    public LoggerEntry.Decimal heightInches;
   }
 
   public final Logs logs;
@@ -33,15 +36,11 @@ public class Elevator extends SubsystemBase {
     public LoggedTunableNumber maxVelocityConfig;
     public LoggedTunableNumber elevatorTargetAccelerationConfig;
 
-    @TunableEntry(defaultValue = 40.0)
-    public LoggedTunableNumber toleranceDegrees;
-
-    @TunableEntry(defaultValue = 1.0)
+    @TunableEntry(defaultValue = 1)
     public LoggedTunableNumber toleranceHeight;
 
     public boolean hasChanged() {
       return elevatorKP.hasChanged() || elevatorKD.hasChanged() || elevatorKG.hasChanged();
-
     }
   }
 
@@ -93,8 +92,8 @@ public class Elevator extends SubsystemBase {
       logs.appliedVolts.info(inputs.appliedVolts);
       logs.currentAmps.info(inputs.currentAmps);
       logs.tempCelsius.info(inputs.tempCelsius);
-      logs.velocityDegreesPerSecond.info(inputs.velocityDegreesPerSecond);
-      logs.targetHeightInches.info(elevatorHeight);
+      logs.velocityInchesPerSecond.info(inputs.velocityInchesPerSecond);
+      logs.heightInches.info(inputs.elevatorHeight);
 
       // Updating tunable numbers
       if (tunables.hasChanged()) {
@@ -112,7 +111,7 @@ public class Elevator extends SubsystemBase {
     io.setElevatorClosedLoopConstants(kP, kD, kG);
   }
 
-  public void setTargetHeight(double height) {
+  public void setTargetHeight(Rotation2d height) {
     io.setElevatorClosedLoopPosition(height);
   }
 
@@ -123,8 +122,8 @@ public class Elevator extends SubsystemBase {
   // getters
 
   public boolean isElevatorAtTargetHeight(double target) {
-    var error = inputs.position - target;
-    return error <= tunables.toleranceHeight.get();
+    var error = inputs.elevatorHeight - target;
+    return Math.abs(error) <= tunables.toleranceHeight.get();
   }
 
   public double getElevatorHeight() {
@@ -136,6 +135,6 @@ public class Elevator extends SubsystemBase {
   }
 
   public AngularVelocity getElevatorVelocity() {
-    return Units.DegreesPerSecond.of(inputs.velocityDegreesPerSecond);
+    return Units.DegreesPerSecond.of(inputs.velocityInchesPerSecond);
   }
 }

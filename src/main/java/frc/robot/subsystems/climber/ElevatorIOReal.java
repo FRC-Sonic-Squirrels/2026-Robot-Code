@@ -29,7 +29,7 @@ public class ElevatorIOReal implements ElevatorIO {
   public StatusSignal<Current>         currentAmps;
   public StatusSignal<Temperature>     tempCelsius;
   public StatusSignal<AngularVelocity> velocityDegreesPerSecond;
-  public StatusSignal<Angle>           targetHeightInches;
+  public StatusSignal<Angle>           currentHeightInches;
 
   private final BaseStatusSignal[] refreshSet;
 
@@ -61,13 +61,13 @@ public class ElevatorIOReal implements ElevatorIO {
     motor.getConfigurator().apply(configFx);
     // Status signals
     appliedVoltage           = motor.getMotorVoltage();
-    targetHeightInches       = motor.getPosition();
+    currentHeightInches      = motor.getPosition();
     currentAmps              = motor.getStatorCurrent();
     tempCelsius              = motor.getDeviceTemp();
     velocityDegreesPerSecond = motor.getVelocity();
     // Update status signals
 
-    BaseStatusSignal.setUpdateFrequencyForAll(50, appliedVoltage, targetHeightInches, velocityDegreesPerSecond);
+    BaseStatusSignal.setUpdateFrequencyForAll(50, appliedVoltage, currentHeightInches, velocityDegreesPerSecond);
     BaseStatusSignal.setUpdateFrequencyForAll(50, currentAmps);
     BaseStatusSignal.setUpdateFrequencyForAll(1, tempCelsius);
 
@@ -75,7 +75,7 @@ public class ElevatorIOReal implements ElevatorIO {
 
     refreshSet = new BaseStatusSignal[] {
         appliedVoltage,
-        targetHeightInches,
+        currentHeightInches,
         currentAmps,
         tempCelsius,
         velocityDegreesPerSecond
@@ -86,18 +86,18 @@ public class ElevatorIOReal implements ElevatorIO {
   public void updateElevatorInputs(Inputs inputs) {
     inputs.refreshAll(refreshSet);
 
-    inputs.position                 = targetHeightInches.getValue().in(Units.Degrees);
-    inputs.appliedVolts             = appliedVoltage.getValue().in(Units.Volts);
-    inputs.currentAmps              = currentAmps.getValue().in(Units.Amps);
-    inputs.tempCelsius              = tempCelsius.getValue().in(Units.Celsius);
-    inputs.velocityDegreesPerSecond = velocityDegreesPerSecond.getValue().in(Units.DegreesPerSecond);
+    inputs.elevatorTargetHeight    = currentHeightInches.getValue().in(Units.Degrees);
+    inputs.appliedVolts            = appliedVoltage.getValue().in(Units.Volts);
+    inputs.currentAmps             = currentAmps.getValue().in(Units.Amps);
+    inputs.tempCelsius             = tempCelsius.getValue().in(Units.Celsius);
+    inputs.velocityInchesPerSecond = velocityDegreesPerSecond.getValue().in(Units.DegreesPerSecond);
   }
 
   // Climber
 
   @Override
-  public void setElevatorClosedLoopPosition(double inches) {
-    closedLoopControl.withPosition(inches);
+  public void setElevatorClosedLoopPosition(Rotation2d position) {
+    closedLoopControl.withPosition(position.getRotations());
     motor.setControl(closedLoopControl);
   }
 

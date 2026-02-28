@@ -8,11 +8,12 @@ import frc.robot.subsystems.BaseInputs;
 public interface ElevatorIO {
 
   class Inputs extends BaseInputs {
-    public double position;
     public double appliedVolts;
     public double currentAmps;
     public double tempCelsius;
-    public double velocityDegreesPerSecond;
+    public double velocityInchesPerSecond;
+    public double elevatorTargetHeight;
+    public double elevatorHeight;
 
     public Inputs(LoggerGroup logInputs) {
       super(logInputs);
@@ -26,7 +27,7 @@ public interface ElevatorIO {
   public default void resetElevatorSensorPosition(Rotation2d angle) {
   }
 
-  public default void setElevatorClosedLoopPosition(double inches) {
+  public default void setElevatorClosedLoopPosition(Rotation2d position) {
   }
 
   public default void setElevatorClosedLoopConstants(double kP, double kD, double kG) {

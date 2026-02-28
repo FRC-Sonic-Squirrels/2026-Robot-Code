@@ -4,33 +4,31 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.Units;
-import frc.lib.team2930.TalonFXSim;
+import frc.lib.team2930.TalonFXElevatorSim;
 import frc.robot.Constants;
 
-// anything commented out is arm code that we are not using yet
 public class ElevatorIOSim implements ElevatorIO {
-  private TalonFXSim elevatorSim = new TalonFXSim(DCMotor.getKrakenX60Foc(1),
-      Constants.ClimberConstants.INNER_CLIMBER_GEAR_RATIO, Constants.ClimberConstants.CLIMBER_MOI);
+  private TalonFXElevatorSim elevatorSim;
 
   private MotionMagicVoltage climberClosedLoopControl = new MotionMagicVoltage(0);
 
-  public ElevatorIOSim() {
+  public ElevatorIOSim(TalonFXElevatorSim sim) {
+    elevatorSim = sim;
   }
 
   @Override
   public void updateElevatorInputs(Inputs inputs) {
     elevatorSim.update(Constants.kDefaultPeriod);
 
-    inputs.position                 = elevatorSim.getPosition().in(Units.Degree);
-    inputs.appliedVolts             = elevatorSim.getVoltage();
-    inputs.velocityDegreesPerSecond = elevatorSim.getVelocity().in(Units.DegreesPerSecond);
+    inputs.appliedVolts            = elevatorSim.getVoltage();
+    inputs.velocityInchesPerSecond = elevatorSim.getVelocity().in(Units.InchesPerSecond);
+    inputs.elevatorHeight          = elevatorSim.getPosition().in(Units.Inches);
   }
 
   @Override
-  public void setElevatorClosedLoopPosition(double inches) {
-    elevatorSim.setControl(climberClosedLoopControl.withPosition(inches));
+  public void setElevatorClosedLoopPosition(Rotation2d position) {
+    elevatorSim.setControl(climberClosedLoopControl.withPosition(position.getDegrees()));
   }
 
   @Override
