@@ -114,6 +114,7 @@ public class RobotStates {
 
     var currentIntakeGoal = intakeGoal;
     var currentGoal       = goal;
+    var isInAllianceZone  = isInAllianceZone(drivetrain.getHubPoseEstimatorPose(true));
 
     if (goal.climberActive) {
       // Force intakes in.
@@ -143,7 +144,7 @@ public class RobotStates {
         pass();
         break;
       case Shoot:
-        if (isInAllianceZone(drivetrain.getHubPoseEstimatorPose(true))) {
+        if (isInAllianceZone) {
           score();
         } else {
           pass();
@@ -176,7 +177,7 @@ public class RobotStates {
 
     logs.subsystemsInTargetStates.goal.info(goal.name());
     logs.subsystemsInTargetStates.intakeGoal.info(intakeGoal.name());
-    logs.subsystemsInTargetStates.inAllianceZone.info(isInAllianceZone(drivetrain.getHubPoseEstimatorPose(true)));
+    logs.subsystemsInTargetStates.inAllianceZone.info(isInAllianceZone);
   }
 
   private void setRotateToFaceTarget(Translation2d target) {
@@ -318,10 +319,14 @@ public class RobotStates {
   }
 
   public boolean isInAllianceZone(Pose2d pose) {
-    Translation2d position  = new AllianceAwareTranslation2d(pose.getTranslation()).get();
-    double        positionX = position.getX();
-    double        length    = FieldConstants.ALLIANCE_ZONE_LENGTH.in(Units.Meters);
-    return positionX <= length;
+    double positionX          = pose.getTranslation().getX();
+    double allianceZoneLength = FieldConstants.ALLIANCE_ZONE_LENGTH.in(Units.Meters);
+    double fieldLength        = FieldConstants.FIELD_LENGTH.in(Units.Meters);
+    if (Constants.isRedAlliance()) {
+      return positionX >= fieldLength - allianceZoneLength;
+    } else {
+      return positionX <= allianceZoneLength;
+    }
   }
 
   public void score() {
