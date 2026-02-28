@@ -302,6 +302,13 @@ public final class Constants {
     public static final double MIN_INNER_CLIMBER_HEIGHT = 0;
     public static final double MIN_OUTER_CLIMBER_HEIGHT = 0;
 
+    public static final double GEAR_RATIO = 6.4935;
+    public static final Distance PULLEY_DIAMETER = Units.Inches.of(2.35);
+    public static final double CARRIAGE_MASS = 2.0; // arbitrary
+
+    public static final double INCHES_TO_MOTOR_ROT =
+        GEAR_RATIO / (Math.PI * PULLEY_DIAMETER.in(Units.Inches));
+
     public static final Distance CLIMBER_LENGTH = Units.Inches.of(14);
     public static final Distance INNER_PULLEY_DIAMETER = Units.Inches.of(1.0);
     public static final Distance OUTER_PULLEY_DIAMETER = Units.Inches.of(1.0);
@@ -314,18 +321,19 @@ public final class Constants {
 
     public static final Rotation2d SERVO_UNLOCK_ANGLE = Rotation2d.fromDegrees(170);
 
-    // in inches
-    public static final double LEADER_HEIGHT_CLIMBL1 = 25;
-    public static final double LEADER_HEIGHT_CLIMBL2 = 24;
-    public static final double LEADER_HEIGHT_CLIMBL3 = 23;
+    public static final Distance MAX_HEIGHT = Units.Inches.of(27);
 
-    public static final double FOLLOWER_HEIGHT_EXTENDED = 18;
+    public static final Distance LEADER_HEIGHT_CLIMBL1 = Units.Inches.of(25);
+    public static final Distance LEADER_HEIGHT_CLIMBL2 = Units.Inches.of(24);
+    public static final Distance LEADER_HEIGHT_CLIMBL3 = Units.Inches.of(23);
 
-    public static final double LEADER_HEIGHT_RETRACTED = 5;
-    public static final double FOLLOWER_HEIGHT_RETRACTED = 5;
+    public static final Distance FOLLOWER_HEIGHT_EXTENDED = Units.Inches.of(18);
 
-    public static final double LEADER_HEIGHT_STOWED = 0;
-    public static final double FOLLOWER_HEIGHT_STOWED = 0;
+    public static final Distance LEADER_HEIGHT_RETRACTED = Units.Inches.of(5);
+    public static final Distance FOLLOWER_HEIGHT_RETRACTED = Units.Inches.of(5);
+
+    public static final Distance LEADER_HEIGHT_STOWED = Units.Inches.of(0);
+    public static final Distance FOLLOWER_HEIGHT_STOWED = Units.Inches.of(0);
   }
 
 public static class ShooterConstants {
