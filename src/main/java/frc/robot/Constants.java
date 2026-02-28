@@ -51,7 +51,7 @@ public final class Constants {
   }
 
   public static class RobotMode {
-    private static final RobotType ROBOT = RobotType.ROBOT_2025_RETIRED_HOLO;
+    private static final RobotType ROBOT = RobotType.ROBOT_2026 ;
 
     public static boolean isSimBot() {
       switch (getRobot()) {
@@ -177,8 +177,8 @@ public final class Constants {
       public static final double ROLLER_GEARING = 1.6;
       public static final double MOI            = 0.05;
 
-      public static final double SUPPLY_CURRENT_LIMIT = 1.0;
-      public static final double STATOR_CURRENT_LIMIT = 1.0;
+      public static final double SUPPLY_CURRENT_LIMIT = 20;
+      public static final double STATOR_CURRENT_LIMIT = 100;
 
       public static final String ROOT_TABLE = "Rollers";
     }

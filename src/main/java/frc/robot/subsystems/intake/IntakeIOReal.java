@@ -190,8 +190,7 @@ public class IntakeIOReal implements IntakeIO {
   }
 
   @Override
-  public void setPivotClosedLoopConstants(double kP0, double kD0, double kG0, double kP1, double kD1, double kG1,
-      double kV1, MotionMagicConfigs mmConfigs) {
+  public void setPivotClosedLoopConstants(double kP0, double kD0, double kG0, MotionMagicConfigs mmConfigs) {
     var slot0Configs = new Slot0Configs();
     var slot1Configs = new Slot1Configs();
 
@@ -200,9 +199,6 @@ public class IntakeIOReal implements IntakeIO {
     slot0Configs.kP = kP0;
     slot0Configs.kD = kD0;
     slot0Configs.kG = kG0;
-    slot1Configs.kP = kP1;
-    slot1Configs.kD = kD1;
-    slot1Configs.kG = kG1;
 
     pivotMotor.getConfigurator().apply(slot0Configs);
     pivotMotor.getConfigurator().apply(slot1Configs);
