@@ -13,6 +13,7 @@
 
 package frc.robot;
 
+import com.ctre.phoenix6.Utils;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.PowerDistribution;
@@ -56,6 +57,7 @@ public class Robot extends LoggedRobot {
     public LoggerEntry.Decimal voltage;
     public LoggerEntry.Decimal totalCurrent;
     public LoggerEntry.Decimal totalPower;
+    public LoggerEntry.Decimal cumulativeEnergy;
   }
 
   public static class Logs extends AutoRegisterLoggers {
@@ -86,6 +88,8 @@ public class Robot extends LoggedRobot {
   private Pose2d                         desiredInitialPose;
   private boolean                        hasEnteredTeleAtSomePoint = false;
   private boolean                        hasEnteredAutoAtSomePoint = false;
+  private double                         cumulativeEnergy;
+  private double                         cumulativeEnergyTimestamp = Double.NaN;
 
   private boolean teleopPrepped = false;
 
@@ -125,7 +129,9 @@ public class Robot extends LoggedRobot {
       case REAL:
         // Running on a real robot, log to a USB stick
         Logger.addDataReceiver(new LoggerGroup.Redirector());
-        LoggerGroup.setDataLog("/media/sda1");
+        if (Constants.RobotMode.getRobot() == Constants.RobotMode.RobotType.ROBOT_2026) {
+          LoggerGroup.setDataLog("/media/sda1");
+        }
         break;
 
       case SIM:
@@ -189,9 +195,18 @@ public class Robot extends LoggedRobot {
 
     double voltage = powerDistribution.getVoltage();
     double current = powerDistribution.getTotalCurrent();
+    double power   = voltage * current;
+
+    var now = Utils.getCurrentTimeSeconds();
+    if (!Double.isNaN(cumulativeEnergyTimestamp)) {
+      cumulativeEnergy += power * (now - cumulativeEnergyTimestamp) / 3600.0; // In Wh.
+    }
+    cumulativeEnergyTimestamp = now;
+
     logs.powerDistributionLogs.voltage.info(voltage);
     logs.powerDistributionLogs.totalCurrent.info(current);
-    logs.powerDistributionLogs.totalPower.info(voltage * current);
+    logs.powerDistributionLogs.totalPower.info(power);
+    logs.powerDistributionLogs.cumulativeEnergy.info(cumulativeEnergy);
 
     var alliance = DriverStation.getAlliance();
     if (alliance.isPresent()) {
@@ -297,8 +312,9 @@ public class Robot extends LoggedRobot {
   /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {
-    if (!teleopPrepped)
+    if (!teleopPrepped) {
       prepForTeleop();
+    }
     hasEnteredTeleAtSomePoint = true;
   }
 
