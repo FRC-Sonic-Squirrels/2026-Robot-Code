@@ -184,8 +184,10 @@ public final class Constants {
     }
 
     public static class PivotConstants {
-      public static final double SUPPLY_CURRENT_LIMIT = 20.0;
-      public static final double STATOR_CURRENT_LIMIT = 100.0;
+      public static final double HIGH_SUPPLY_CURRENT_LIMIT = 20.0;
+      public static final double HIGH_STATOR_CURRENT_LIMIT = 30.0;
+      public static final double LOW_SUPPLY_CURRENT_LIMIT  = 10.0;
+      public static final double LOW_STATOR_CURRENT_LIMIT  = 10.0;
 
       public static final double GEAR_RATIO = 25.0043;
 
@@ -244,9 +246,9 @@ public final class Constants {
     public static final int CLIMBER_LEADER_CAN_ID   = 42;
 
     public static final int INTAKE_LEFT_PIVOT_CAN_ID   = 19;
-    public static final int INTAKE_RIGHT_ROLLER_CAN_ID = 20;
+    public static final int INTAKE_LEFT_ROLLER_CAN_ID  = 20;
     public static final int INTAKE_RIGHT_PIVOT_CAN_ID  = 43;
-    public static final int INTAKE_LEFT_ROLLER_CAN_ID  = 21;
+    public static final int INTAKE_RIGHT_ROLLER_CAN_ID = 21;
 
     public static final int SHOOTER_LEAD_CAN_ID   = 35;
     public static final int SHOOTER_FOLLOW_CAN_ID = 36;

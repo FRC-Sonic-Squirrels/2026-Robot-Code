@@ -233,8 +233,10 @@ public class RobotContainer {
           } catch (InterruptedException e) {
             System.out.println("sleep interrupted");
           }
-          leftIntake = new Intake(leftIntakeRoot, new IntakeIO() {
-          });
+          IntakeIOConfig holoLeftIntakeIOConfig = new IntakeIOConfig(Constants.CanIDs.INTAKE_LEFT_PIVOT_CAN_ID,
+              Constants.CanIDs.INTAKE_LEFT_ROLLER_CAN_ID, InvertedValue.Clockwise_Positive,
+              InvertedValue.Clockwise_Positive);
+          leftIntake = new Intake(leftIntakeRoot, new IntakeIOReal(holoLeftIntakeIOConfig));
           rightIntake = new Intake(rightIntakeRoot, new IntakeIO() {
           });
           climber = new Climber(new ElevatorIO() {
@@ -435,10 +437,10 @@ public class RobotContainer {
     operatorController.registerTrigger(XboxControllerWrapper.Button.a, "Stow")
         .react(robotStates.changeIntakeGoal(IntakeGoal.Stow, RobotStates.IntakeGoal.Stow));
 
-    operatorController.registerTrigger(XboxControllerWrapper.Button.rightStick, "Right Intake Pivot Out")
+    operatorController.registerTrigger(XboxControllerWrapper.Button.y, "Right Intake Pivot Out")
         .react(robotStates.changeIntakeGoal(IntakeGoal.RightDown, RobotStates.IntakeGoal.Stow));
 
-    operatorController.registerTrigger(XboxControllerWrapper.Button.leftStick, "Left Intake Pivot Out")
+    operatorController.registerTrigger(XboxControllerWrapper.Button.x, "Left Intake Pivot Out")
         .react(robotStates.changeIntakeGoal(IntakeGoal.LeftDown, RobotStates.IntakeGoal.Stow));
 
     operatorController.registerTrigger(XboxControllerWrapper.Button.b, "Unjamming")

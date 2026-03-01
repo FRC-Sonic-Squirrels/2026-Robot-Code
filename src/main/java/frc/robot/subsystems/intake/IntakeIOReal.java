@@ -10,6 +10,7 @@ import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -46,6 +47,8 @@ public class IntakeIOReal implements IntakeIO {
   private final TalonFX pivotMotor;
 
   private final BaseStatusSignal[] refreshSet;
+
+  private final VoltageOut pivotOpenLoopControl = new VoltageOut(0.0).withEnableFOC(true);
 
   public IntakeIOReal(IntakeIOConfig config) {
     pivotMotor  = new TalonFX(config.pivotMotorCANID());
@@ -85,9 +88,9 @@ public class IntakeIOReal implements IntakeIO {
 
     TalonFXConfiguration pivotConfig = new TalonFXConfiguration();
 
-    pivotConfig.CurrentLimits.SupplyCurrentLimit       = PivotConstants.SUPPLY_CURRENT_LIMIT;
+    pivotConfig.CurrentLimits.SupplyCurrentLimit       = PivotConstants.HIGH_SUPPLY_CURRENT_LIMIT;
     pivotConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-    pivotConfig.CurrentLimits.StatorCurrentLimit       = PivotConstants.STATOR_CURRENT_LIMIT;
+    pivotConfig.CurrentLimits.StatorCurrentLimit       = PivotConstants.HIGH_STATOR_CURRENT_LIMIT;
     pivotConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
 
     pivotConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
@@ -195,6 +198,21 @@ public class IntakeIOReal implements IntakeIO {
 
     pivotMotor.getConfigurator().apply(slot0Configs);
     pivotMotor.getConfigurator().apply(mmConfigs);
+  }
+
+  @Override
+  public void setPivotVoltage(double volts) {
+    pivotMotor.setControl(pivotOpenLoopControl.withOutput(volts));
+  }
+
+  @Override
+  public void setPivotCurrentLimits(double supplyCurrentLimit, double statorCurrentLimit) {
+    CurrentLimitsConfigs limitConfigs = new CurrentLimitsConfigs();
+
+    limitConfigs.SupplyCurrentLimit = supplyCurrentLimit;
+    limitConfigs.StatorCurrentLimit = statorCurrentLimit;
+
+    pivotMotor.getConfigurator().apply(limitConfigs);
   }
 
   @Override

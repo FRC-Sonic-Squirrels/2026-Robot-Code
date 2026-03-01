@@ -15,7 +15,7 @@ public interface IntakeIO {
     public double rollerTempCelsius;
     public double rollerAppliedVolts;
 
-    public Rotation2d pivotPosition = Constants.zeroRotation2d;
+    public Rotation2d pivotPosition = Constants.IntakeConstants.PivotConstants.HOME_POSITION;
     public double     pivotAppliedVolts;
     public double     pivotCurrentAmps;
     public double     pivotTempCelsius;
@@ -56,5 +56,8 @@ public interface IntakeIO {
 
   public default boolean setPivotNeutralMode(NeutralModeValue value) {
     return false;
+  }
+
+  public default void setPivotCurrentLimits(double supplyCurrentLimit, double statorCurrentLimit) {
   }
 }
