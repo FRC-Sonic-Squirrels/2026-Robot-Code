@@ -150,7 +150,7 @@ public class Shooter extends SubsystemBase {
       kicker.KV.initDefault(0.18);
       kicker.closedLoopMaxAccelerationConstraint.initDefault(300.0);
     } else if (Constants.RobotMode.isSimBot()) {
-      hood.KP.initDefault(15.0);
+      hood.KP.initDefault(1.0);
       hood.KD.initDefault(0.0);
       hood.KG.initDefault(0.0);
       hood.closedLoopMaxVelocityConstraint.initDefault(10.0);
@@ -158,11 +158,11 @@ public class Shooter extends SubsystemBase {
 
       flywheel.KS.initDefault(0.0);
       flywheel.KP.initDefault(0.5);
-      flywheel.KV.initDefault(0.13);
+      flywheel.KV.initDefault(1);
       flywheel.closedLoopMaxAccelerationConstraint.initDefault(10.0);
 
-      kicker.KP.initDefault(0.0);
-      kicker.KV.initDefault(0.0);
+      kicker.KP.initDefault(0.5);
+      kicker.KV.initDefault(0.13);
       kicker.closedLoopMaxAccelerationConstraint.initDefault(0.0);
     }
 
@@ -327,12 +327,8 @@ public class Shooter extends SubsystemBase {
     return inputs.flywheelRPM[0];
   }
 
-  public boolean isAtTargetRPM() {
-    return isAtTargetRPM(targetFlywheelRPM);
-  }
-
-  public boolean isAtTargetRPM(double rpm) {
-    return inputs.flywheelRPM[0] > rpm - tunables.flywheel.toleranceRPM.get();
+  public boolean isAtTargetFlywheelRPM(double desiredRPM) {
+    return Math.abs(inputs.flywheelRPM[0] - desiredRPM) < tunables.flywheel.toleranceRPM.get();
   }
 
   public double getHoodPIDLatency() {
@@ -402,7 +398,7 @@ public class Shooter extends SubsystemBase {
 
   public boolean isFlywheelReady() {
     double desiredFlywheelRPM = getFlywheelRPM(distanceFromTarget);
-    return Math.abs(inputs.flywheelRPM[0] - desiredFlywheelRPM) < ShooterConstants.Flywheel.CORRECT_RPM_RANGE;
+    return isAtTargetFlywheelRPM(desiredFlywheelRPM);
   }
 
   public boolean isHoodReady() {

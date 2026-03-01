@@ -40,7 +40,8 @@ public class ShooterIOSim implements ShooterIO {
   private double              hoodControlEffort         = 0.0;
   private double              kickerVolts               = 0.0;
 
-  private double targetRPM = 0.0;
+  private double targetFlywheelRPM = 0.0;
+  private double targetKickerRPM   = 0.0;
 
   private MotionMagicVoltage hoodClosedLoopControl = new MotionMagicVoltage(0);
 
@@ -60,8 +61,9 @@ public class ShooterIOSim implements ShooterIO {
     pivotFeedback.setTolerance(1.0);
 
     inputs.hoodPosition       = new Rotation2d(hoodArmSim.getPosition());
-    inputs.flywheelRPM[0]     = targetRPM;
-    inputs.kickerAppliedVolts = kickerVolts;
+    inputs.flywheelRPM[0]     = flywheelMotorSim.getVelocity().in(Units.RadiansPerSecond) * 60.0;
+    inputs.kickerVelocityRPM  = kickerMotorSim.getVelocity().in(Units.RadiansPerSecond) * 60.0;
+    inputs.kickerAppliedVolts = kickerMotorSim.getVoltage();
   }
 
   @Override
@@ -75,11 +77,12 @@ public class ShooterIOSim implements ShooterIO {
 
     config.Slot0 = slot0Configs;
 
-    hoodArmSim.setConfig(config);
+    kickerMotorSim.setConfig(config);
   }
 
   @Override
   public void setKickerVelocity(double revPerMin) {
+    this.targetKickerRPM = revPerMin;
     kickerMotorSim.setControl(kickerClosedLoopControl.withVelocity(revPerMin / 60));
   }
 
@@ -115,11 +118,12 @@ public class ShooterIOSim implements ShooterIO {
 
     config.Slot0 = slot0Configs;
 
-    hoodArmSim.setConfig(config);
+    flywheelMotorSim.setConfig(config);
   }
 
   @Override
   public void setFlywheelRPM(double revPerMin) {
+    this.targetFlywheelRPM = revPerMin;
     flywheelMotorSim.setControl(flywheelClosedLoopControl.withVelocity(revPerMin / 60));
   }
 
