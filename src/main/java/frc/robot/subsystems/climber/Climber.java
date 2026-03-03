@@ -70,10 +70,12 @@ public class Climber extends SubsystemBase {
 
   /** Creates a new ClimberSubsystem. */
   public Climber(ElevatorIO leaderIO, ElevatorIO followerIO) {
-    this.leader   = null;                                                     // new
-                                                                              // Elevator(logs.group.subgroup("Leader"),
-                                                                              // leaderIO);
-    this.follower = new Elevator(logs.group.subgroup("Follower"), followerIO);
+    this.leader = new Elevator(logs.group.subgroup("Leader"), leaderIO);
+    if (ClimberConstants.HAS_FOLLOWER_CLIMBER) {
+      this.follower = new Elevator(logs.group.subgroup("Follower"), followerIO);
+    } else {
+      this.follower = null;
+    }
 
     setServoAngle(ClimberConstants.SERVO_UNLOCK_ANGLE);
   }
@@ -297,7 +299,9 @@ public class Climber extends SubsystemBase {
 
   private void handleTransitions(State desiredState) {
     setLeaderTargetHeight(desiredState.leaderHeight);
-    setFollowerTargetHeight(desiredState.followerHeight);
+    if (ClimberConstants.HAS_FOLLOWER_CLIMBER) {
+      setFollowerTargetHeight(desiredState.followerHeight);
+    }
     if (isLeaderAtTargetHeight(desiredState.leaderHeight) && isFollowerAtTargetHeight(desiredState.followerHeight)) {
       state = desiredState;
     }
