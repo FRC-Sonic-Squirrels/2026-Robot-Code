@@ -71,7 +71,7 @@ public class Climber extends SubsystemBase {
   /** Creates a new ClimberSubsystem. */
   public Climber(ElevatorIO leaderIO, ElevatorIO followerIO) {
     this.leader = new Elevator(logs.group.subgroup("Leader"), leaderIO);
-    if (ClimberConstants.HAS_FOLLOWER_CLIMBER) {
+    if (followerIO != null) {
       this.follower = new Elevator(logs.group.subgroup("Follower"), followerIO);
     } else {
       this.follower = null;
@@ -83,7 +83,9 @@ public class Climber extends SubsystemBase {
   @Override
   public void periodic() {
     leader.periodic();
-    follower.periodic();
+    if (follower != null) {
+      follower.periodic();
+    }
     try (var ignored = climberTiming.start()) {
       // Climber logging
 
@@ -290,7 +292,9 @@ public class Climber extends SubsystemBase {
   }
 
   public void setFollowerTargetHeight(Distance height) {
-    follower.setHeight(height);
+    if (ClimberConstants.HAS_FOLLOWER_CLIMBER) {
+      follower.setHeight(height);
+    }
   }
 
   public void setLeaderTargetHeight(Distance height) {
@@ -299,9 +303,7 @@ public class Climber extends SubsystemBase {
 
   private void handleTransitions(State desiredState) {
     setLeaderTargetHeight(desiredState.leaderHeight);
-    if (ClimberConstants.HAS_FOLLOWER_CLIMBER) {
-      setFollowerTargetHeight(desiredState.followerHeight);
-    }
+    setFollowerTargetHeight(desiredState.followerHeight);
     if (isLeaderAtTargetHeight(desiredState.leaderHeight) && isFollowerAtTargetHeight(desiredState.followerHeight)) {
       state = desiredState;
     }
@@ -326,7 +328,7 @@ public class Climber extends SubsystemBase {
   // getters
 
   public boolean isFollowerAtTargetHeight(Distance target) {
-    return follower.isAtTarget(target);
+    return follower == null || follower.isAtTarget(target);
   }
 
   public boolean isLeaderAtTargetHeight(Distance target) {
