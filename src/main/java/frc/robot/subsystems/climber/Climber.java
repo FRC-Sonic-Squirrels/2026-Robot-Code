@@ -292,7 +292,7 @@ public class Climber extends SubsystemBase {
   }
 
   public void setFollowerTargetHeight(Distance height) {
-    if (ClimberConstants.HAS_FOLLOWER_CLIMBER) {
+    if (follower != null) {
       follower.setHeight(height);
     }
   }
