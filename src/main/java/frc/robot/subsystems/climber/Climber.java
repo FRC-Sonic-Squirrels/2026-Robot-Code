@@ -70,8 +70,12 @@ public class Climber extends SubsystemBase {
 
   /** Creates a new ClimberSubsystem. */
   public Climber(ElevatorIO leaderIO, ElevatorIO followerIO) {
-    this.leader   = new Elevator(logs.group.subgroup("Leader"), leaderIO);
-    this.follower = new Elevator(logs.group.subgroup("Follower"), followerIO);
+    this.leader = new Elevator(logs.group.subgroup("Leader"), leaderIO);
+    if (followerIO != null) {
+      this.follower = new Elevator(logs.group.subgroup("Follower"), followerIO);
+    } else {
+      this.follower = null;
+    }
 
     setServoAngle(ClimberConstants.SERVO_UNLOCK_ANGLE);
   }
@@ -79,7 +83,9 @@ public class Climber extends SubsystemBase {
   @Override
   public void periodic() {
     leader.periodic();
-    follower.periodic();
+    if (follower != null) {
+      follower.periodic();
+    }
     try (var ignored = climberTiming.start()) {
       // Climber logging
 
@@ -110,7 +116,7 @@ public class Climber extends SubsystemBase {
           }
           break;
 
-        case Lock:// FIXME get info about the lock and servo systems
+        case Lock:
           switch (state) {
             case Lock:
               atGoalNext = true;
@@ -170,6 +176,10 @@ public class Climber extends SubsystemBase {
           break;
 
         case ClimbL2:
+          if (follower == null) {
+            atGoalNext = false;
+            break;
+          }
           switch (state) {
             case L1LeaderExtend:
               handleTransitions(State.L1LeaderRetract);
@@ -207,6 +217,10 @@ public class Climber extends SubsystemBase {
           break;
 
         case ClimbL3:
+          if (follower == null) {
+            atGoalNext = false;
+            break;
+          }
           switch (state) {
             case L1LeaderExtend:
               handleTransitions(State.L1LeaderRetract);
@@ -278,7 +292,9 @@ public class Climber extends SubsystemBase {
   }
 
   public void setFollowerTargetHeight(Distance height) {
-    follower.setHeight(height);
+    if (follower != null) {
+      follower.setHeight(height);
+    }
   }
 
   public void setLeaderTargetHeight(Distance height) {
@@ -312,7 +328,7 @@ public class Climber extends SubsystemBase {
   // getters
 
   public boolean isFollowerAtTargetHeight(Distance target) {
-    return follower.isAtTarget(target);
+    return follower == null || follower.isAtTarget(target);
   }
 
   public boolean isLeaderAtTargetHeight(Distance target) {

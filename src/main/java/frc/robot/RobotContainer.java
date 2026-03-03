@@ -279,9 +279,13 @@ public class RobotContainer {
                 false, ClimberConstants.FOLLOWER_CLIMBER_GEAR_RATIO, ClimberConstants.FOLLOWER_CARRIAGE_MASS,
                 ClimberConstants.FOLLOWER_PULLEY_DIAMETER.in(Units.Inches),
                 ClimberConstants.MAX_FOLLOWER_CLIMBER_HEIGHT);
-
-            climber = new Climber(new ElevatorIOReal(leaderElevatorIOConfig),
-                new ElevatorIOReal(followerElevatorIOConfig));
+            ElevatorIOReal   followerIO;
+            if (ClimberConstants.HAS_FOLLOWER_CLIMBER) {
+              followerIO = new ElevatorIOReal(followerElevatorIOConfig);
+            } else {
+              followerIO = null;
+            }
+            climber = new Climber(new ElevatorIOReal(leaderElevatorIOConfig), followerIO);
 
             shooter = new Shooter(new ShooterIOReal());
           } else {
@@ -403,20 +407,17 @@ public class RobotContainer {
     driverController.registerTrigger(XboxControllerWrapper.Button.rightBumper, "Right Intake")
         .react(robotStates.changeIntakeGoal(IntakeGoal.RightIntake, RobotStates.IntakeGoal.Stow));
 
-    driverController.registerTrigger(XboxControllerWrapper.Button.x, "Mount/Dismount Climb")
-        .react(robotStates.changeRobotGoal(RobotGoal.MountDismount, RobotGoal.StowClimber));
-
     driverController.registerTrigger(XboxControllerWrapper.Button.povDown, "ClimbL1")
-        .react(robotStates.changeRobotGoal(RobotGoal.ClimbL1, RobotGoal.ClimbL1));
+        .react(robotStates.changeRobotGoal(RobotGoal.ClimbL1, RobotGoal.None));
 
-    driverController.registerTrigger(XboxControllerWrapper.Button.povLeft, "ClimbL2")
-        .react(robotStates.changeRobotGoal(RobotGoal.ClimbL2, RobotGoal.ClimbL2));
+    driverController.registerTrigger(XboxControllerWrapper.Button.povUp, "ClimbL2")
+        .react(robotStates.changeRobotGoal(RobotGoal.ClimbL2, RobotGoal.None));
 
-    driverController.registerTrigger(XboxControllerWrapper.Button.povUp, "ClimbL3")
-        .react(robotStates.changeRobotGoal(RobotGoal.ClimbL3, RobotGoal.ClimbL3));
+    driverController.registerTrigger(XboxControllerWrapper.Button.povRight, "ClimbL3")
+        .react(robotStates.changeRobotGoal(RobotGoal.ClimbL3, RobotGoal.None));
 
-    driverController.registerTrigger(XboxControllerWrapper.Button.povRight, "Lock")
-        .react(robotStates.changeRobotGoal(RobotGoal.Lock, RobotGoal.Lock));
+    driverController.registerTrigger(XboxControllerWrapper.Button.povLeft, "Lock")
+        .react(robotStates.changeRobotGoal(RobotGoal.Lock, RobotGoal.None));
 
     // ---------- OPERATOR CONTROLS -----------
 

@@ -281,6 +281,8 @@ public final class Constants {
 
     public static final double CLIMBER_MOI = 0.15;
 
+    public static final boolean HAS_FOLLOWER_CLIMBER = false;
+
     // in meters, but converted to inches in the sim
     public static final double MAX_FOLLOWER_CLIMBER_HEIGHT = 0.6858;
     public static final double MAX_LEADER_CLIMBER_HEIGHT   = 0.6858;
