@@ -402,21 +402,22 @@ public class RobotContainer {
 
     driverController.registerTrigger(XboxControllerWrapper.Button.rightBumper, "Right Intake")
         .react(robotStates.changeIntakeGoal(IntakeGoal.RightIntake, RobotStates.IntakeGoal.Stow));
-
-    driverController.registerTrigger(XboxControllerWrapper.Button.x, "Mount/Dismount Climb")
-        .react(robotStates.changeRobotGoal(RobotGoal.MountDismount, RobotGoal.StowClimber));
-
-    driverController.registerTrigger(XboxControllerWrapper.Button.povDown, "ClimbL1")
-        .react(robotStates.changeRobotGoal(RobotGoal.ClimbL1, RobotGoal.ClimbL1));
-
-    driverController.registerTrigger(XboxControllerWrapper.Button.povLeft, "ClimbL2")
-        .react(robotStates.changeRobotGoal(RobotGoal.ClimbL2, RobotGoal.ClimbL2));
-
-    driverController.registerTrigger(XboxControllerWrapper.Button.povUp, "ClimbL3")
-        .react(robotStates.changeRobotGoal(RobotGoal.ClimbL3, RobotGoal.ClimbL3));
-
-    driverController.registerTrigger(XboxControllerWrapper.Button.povRight, "Lock")
-        .react(robotStates.changeRobotGoal(RobotGoal.Lock, RobotGoal.Lock));
+    /*
+     * Code for climbing L2 and L3 disabled until inner elevator is added back in.
+     * driverController.registerTrigger(XboxControllerWrapper.Button.povDown,
+     * "ClimbL1") .react(robotStates.changeRobotGoal(RobotGoal.ClimbL1,
+     * RobotGoal.None));
+     *
+     * driverController.registerTrigger(XboxControllerWrapper.Button.povUp,
+     * "ClimbL2") .react(robotStates.changeRobotGoal(RobotGoal.ClimbL2,
+     * RobotGoal.None));
+     *
+     * driverController.registerTrigger(XboxControllerWrapper.Button.povRight,
+     * "ClimbL3") .react(robotStates.changeRobotGoal(RobotGoal.ClimbL3,
+     * RobotGoal.None));
+     */
+    driverController.registerTrigger(XboxControllerWrapper.Button.povLeft, "Lock")
+        .react(robotStates.changeRobotGoal(RobotGoal.Lock, RobotGoal.None));
 
     // ---------- OPERATOR CONTROLS -----------
 

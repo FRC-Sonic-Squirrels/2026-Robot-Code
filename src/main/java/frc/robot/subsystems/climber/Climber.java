@@ -70,7 +70,9 @@ public class Climber extends SubsystemBase {
 
   /** Creates a new ClimberSubsystem. */
   public Climber(ElevatorIO leaderIO, ElevatorIO followerIO) {
-    this.leader   = new Elevator(logs.group.subgroup("Leader"), leaderIO);
+    this.leader   = null;                                                     // new
+                                                                              // Elevator(logs.group.subgroup("Leader"),
+                                                                              // leaderIO);
     this.follower = new Elevator(logs.group.subgroup("Follower"), followerIO);
 
     setServoAngle(ClimberConstants.SERVO_UNLOCK_ANGLE);
@@ -110,7 +112,7 @@ public class Climber extends SubsystemBase {
           }
           break;
 
-        case Lock:// FIXME get info about the lock and servo systems
+        case Lock:
           switch (state) {
             case Lock:
               atGoalNext = true;
@@ -170,6 +172,10 @@ public class Climber extends SubsystemBase {
           break;
 
         case ClimbL2:
+          if (follower == null) {
+            atGoalNext = false;
+            break;
+          }
           switch (state) {
             case L1LeaderExtend:
               handleTransitions(State.L1LeaderRetract);
@@ -207,6 +213,10 @@ public class Climber extends SubsystemBase {
           break;
 
         case ClimbL3:
+          if (follower == null) {
+            atGoalNext = false;
+            break;
+          }
           switch (state) {
             case L1LeaderExtend:
               handleTransitions(State.L1LeaderRetract);
