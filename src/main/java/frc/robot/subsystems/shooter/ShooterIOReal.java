@@ -14,22 +14,17 @@ import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.Units;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import edu.wpi.first.units.measure.Current;
-import edu.wpi.first.units.measure.Temperature;
-import edu.wpi.first.units.measure.Voltage;
-import frc.robot.Constants;
-import frc.robot.Constants.ShooterConstants;
+import edu.wpi.first.units.measure.*;
 import edu.wpi.first.wpilibj.DigitalInput;
+import frc.robot.Constants;
 import frc.robot.Constants.DIOPorts;
+import frc.robot.Constants.ShooterConstants;
 
 public class ShooterIOReal implements ShooterIO {
-
-  private final TalonFX flywheelLead     = new TalonFX(Constants.CanIDs.SHOOTER_LEAD_CAN_ID);
-  private final TalonFX flywheelFollower = new TalonFX(Constants.CanIDs.SHOOTER_FOLLOW_CAN_ID);
-  private final TalonFX hood             = new TalonFX(Constants.CanIDs.SHOOTER_HOOD_CAN_ID);
-  private final TalonFX kicker           = new TalonFX(Constants.CanIDs.SHOOTER_KICKER_CAN_ID);
+  private final TalonFX flywheelLead;
+  private final TalonFX flywheelFollower;
+  private final TalonFX hood;
+  private final TalonFX kicker;
 
   private final DigitalInput kickerBeamBreak = new DigitalInput(DIOPorts.SHOOTER_BEAM_BREAKER_DOI_ID);
 
@@ -62,7 +57,12 @@ public class ShooterIOReal implements ShooterIO {
 
   private final MotionMagicVelocityVoltage kickerClosedLoop = new MotionMagicVelocityVoltage(0).withEnableFOC(true);
 
-  public ShooterIOReal() {
+  public ShooterIOReal(TalonFX flywheelLead, TalonFX flywheelFollow, TalonFX hood, TalonFX kicker) {
+    this.flywheelLead     = flywheelLead;
+    this.flywheelFollower = flywheelFollow;
+    this.hood             = hood;
+    this.kicker           = kicker;
+
     // --- flywheel config ---
     TalonFXConfiguration flywheelConfig = new TalonFXConfiguration();
 
@@ -280,8 +280,9 @@ public class ShooterIOReal implements ShooterIO {
 
     var status = hood.getConfigurator().refresh(config);
 
-    if (status != StatusCode.OK)
+    if (status != StatusCode.OK) {
       return false;
+    }
 
     config.NeutralMode = value;
 

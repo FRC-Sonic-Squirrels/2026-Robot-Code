@@ -2,6 +2,9 @@ package frc.robot.configs;
 
 import com.ctre.phoenix6.CANBus;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.Pigeon2;
+import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Translation2d;
@@ -13,6 +16,10 @@ import frc.robot.subsystems.swerve.SwerveModules;
 import frc.robot.subsystems.vision.VisionModuleConfiguration;
 
 public abstract class RobotConfig {
+  public enum CANSpeed {
+    ROBORIO, CANIVORE
+  }
+
   protected String ROOT_TABLE() {
     return "RobotConfig";
   }
@@ -39,13 +46,35 @@ public abstract class RobotConfig {
   // individual swerve module configs
   public abstract IndividualSwerveModuleConfig[] getIndividualModuleConfigurations();
 
-  public abstract int getGyroCANID();
-
   public abstract double getGyroMountingPitch();
 
   public abstract double getGyroMountingRoll();
 
   public abstract double getGyroMountingYaw();
+
+  public TalonFX newMotor(int id, CANSpeed bus) {
+    if (bus == CANSpeed.CANIVORE) {
+      return new TalonFX(id, getCANBus());
+    }
+
+    return new TalonFX(id);
+  }
+
+  public CANcoder newCancoder(int id, CANSpeed bus) {
+    if (bus == CANSpeed.CANIVORE) {
+      return new CANcoder(id, getCANBus());
+    }
+
+    return new CANcoder(id);
+  }
+
+  public Pigeon2 newGyro(int id, CANSpeed bus) {
+    if (bus == CANSpeed.CANIVORE) {
+      return new Pigeon2(id, getCANBus());
+    }
+
+    return new Pigeon2(id);
+  }
 
   public abstract CANBus getCANBus();
 

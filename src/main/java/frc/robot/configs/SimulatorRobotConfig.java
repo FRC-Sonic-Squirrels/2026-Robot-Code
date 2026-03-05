@@ -219,11 +219,6 @@ public class SimulatorRobotConfig extends RobotConfig {
   }
 
   @Override
-  public int getGyroCANID() {
-    throw new RuntimeException("Unsupported action for SIM BOT");
-  }
-
-  @Override
   public Distance getTrackWidth_Y() {
     return TRACK_WIDTH_Y;
   }

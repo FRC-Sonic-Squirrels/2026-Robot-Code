@@ -35,6 +35,7 @@ import edu.wpi.first.units.measure.Voltage;
 import edu.wpi.first.wpilibj.DriverStation;
 import frc.robot.configs.IndividualSwerveModuleConfig;
 import frc.robot.configs.RobotConfig;
+
 import java.util.List;
 
 /**
@@ -126,9 +127,9 @@ public class SwerveModuleIOTalonFX implements SwerveModuleIO {
     steerMotorCurrentLimitConfig = globalConfig.getSteerTalonCurrentLimitConfig();
     // --- define constants ---
 
-    driveTalon = new TalonFX(driveMotorCANID, globalConfig.getCANBus());
-    turnTalon  = new TalonFX(steerMotorCANID, globalConfig.getCANBus());
-    cancoder   = new CANcoder(cancoderCANID, globalConfig.getCANBus());
+    driveTalon = globalConfig.newMotor(driveMotorCANID, RobotConfig.CANSpeed.CANIVORE);
+    turnTalon  = globalConfig.newMotor(steerMotorCANID, RobotConfig.CANSpeed.CANIVORE);
+    cancoder   = globalConfig.newCancoder(cancoderCANID, RobotConfig.CANSpeed.CANIVORE);
 
     // -- DRIVE
     var driveTalonConfig = new TalonFXConfiguration();
@@ -240,8 +241,9 @@ public class SwerveModuleIOTalonFX implements SwerveModuleIO {
       return null;
     }
 
-    if (DriverStation.isDisabled())
+    if (DriverStation.isDisabled()) {
       turnRelativeOffset = inputs.turnAbsolutePosition.minus(inputs.turnPosition);
+    }
 
     inputs.angle = angleRelative.plus(turnRelativeOffset);
 
@@ -277,8 +279,9 @@ public class SwerveModuleIOTalonFX implements SwerveModuleIO {
     var        config = new MotorOutputConfigs();
     StatusCode code   = driveTalon.getConfigurator().refresh(config);
 
-    if (code != StatusCode.OK)
+    if (code != StatusCode.OK) {
       return;
+    }
 
     config.NeutralMode = enable ? NeutralModeValue.Brake : NeutralModeValue.Coast;
     driveTalon.getConfigurator().apply(config);
@@ -321,8 +324,9 @@ public class SwerveModuleIOTalonFX implements SwerveModuleIO {
     var        config = new MotorOutputConfigs();
     StatusCode code   = turnTalon.getConfigurator().refresh(config);
 
-    if (code != StatusCode.OK)
+    if (code != StatusCode.OK) {
       return;
+    }
 
     config.NeutralMode = enable ? NeutralModeValue.Brake : NeutralModeValue.Coast;
     turnTalon.getConfigurator().apply(config);

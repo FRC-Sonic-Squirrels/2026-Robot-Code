@@ -24,6 +24,7 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.LinearAcceleration;
 import frc.robot.configs.RobotConfig;
 import frc.robot.subsystems.swerve.SwerveModule;
+
 import java.util.List;
 
 /** IO implementation for Pigeon2 */
@@ -38,15 +39,14 @@ public class GyroIOPigeon2 implements GyroIO {
 
   private final BaseStatusSignal[] refreshSet;
 
-  public GyroIOPigeon2(RobotConfig config, int canID) {
+  public GyroIOPigeon2(RobotConfig config, Pigeon2 gyro) {
     // Pigeon config
     Pigeon2Configuration pigeonConfig = new Pigeon2Configuration();
     pigeonConfig.MountPose.MountPosePitch = config.getGyroMountingPitch();
     pigeonConfig.MountPose.MountPoseRoll  = config.getGyroMountingRoll();
     pigeonConfig.MountPose.MountPoseYaw   = config.getGyroMountingYaw();
 
-    pigeon = new Pigeon2(canID, config.getCANBus());
-
+    pigeon = gyro;
     pigeon.getConfigurator().apply(pigeonConfig);
 
     // Status signals

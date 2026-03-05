@@ -15,12 +15,11 @@ import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
-import frc.robot.Constants;
 import frc.robot.Constants.IntakeConstants.RollerConstants;
 import frc.robot.Constants.MotorConstants.KrakenConstants;
 
 public class HopperIOReal implements HopperIO {
-  private final TalonFX rollerMotor = new TalonFX(Constants.CanIDs.HOPPER_ROLLER_CAN_ID);
+  private final TalonFX rollerMotor;
 
   private final StatusSignal<Current>         rollerCurrent;
   private final StatusSignal<Temperature>     rollerDeviceTemp;
@@ -30,7 +29,9 @@ public class HopperIOReal implements HopperIO {
   private final MotionMagicVelocityVoltage rollerClosedLoopControl = new MotionMagicVelocityVoltage(0)
       .withEnableFOC(true);
 
-  public HopperIOReal() {
+  public HopperIOReal(TalonFX roller) {
+    rollerMotor = roller;
+
     // Motor config
     TalonFXConfiguration rollerConfig             = new TalonFXConfiguration();
     CurrentLimitsConfigs rollerCurrentLimitConfig = new CurrentLimitsConfigs();

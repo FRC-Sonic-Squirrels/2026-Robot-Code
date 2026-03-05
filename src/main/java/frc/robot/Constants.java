@@ -232,32 +232,6 @@ public final class Constants {
     public static final int LED_BUFFER     = 36;
   }
 
-  public static class CanIDs {
-    // READ ME: CAN ID's THAT ARE NOT VALID TO USE
-    // 1, 11, 21, 31
-    // 2, 12, 22, 32
-    // 3, 13, 23, 33
-    // 4, 14, 24, 34
-    // all these CAN ID's are reserved for the Drivetrain
-
-    public static final int GYRO_2_CAN_ID = 41;
-
-    public static final int CLIMBER_FOLLOWER_CAN_ID = 40;
-    public static final int CLIMBER_LEADER_CAN_ID   = 42;
-
-    public static final int INTAKE_LEFT_PIVOT_CAN_ID   = 19;
-    public static final int INTAKE_LEFT_ROLLER_CAN_ID  = 20;
-    public static final int INTAKE_RIGHT_PIVOT_CAN_ID  = 43;
-    public static final int INTAKE_RIGHT_ROLLER_CAN_ID = 21;
-
-    public static final int SHOOTER_LEAD_CAN_ID   = 35;
-    public static final int SHOOTER_FOLLOW_CAN_ID = 36;
-    public static final int SHOOTER_HOOD_CAN_ID   = 37;
-    public static final int SHOOTER_KICKER_CAN_ID = 38;
-
-    public static final int HOPPER_ROLLER_CAN_ID = 26;
-  }
-
   public static class DIOPorts {
     public static final int SHOOTER_BEAM_BREAKER_DOI_ID = 0;
   }

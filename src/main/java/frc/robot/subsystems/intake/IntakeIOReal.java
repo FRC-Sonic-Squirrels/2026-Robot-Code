@@ -51,8 +51,8 @@ public class IntakeIOReal implements IntakeIO {
   private final VoltageOut pivotOpenLoopControl = new VoltageOut(0.0).withEnableFOC(true);
 
   public IntakeIOReal(IntakeIOConfig config) {
-    pivotMotor  = new TalonFX(config.pivotMotorCANID());
-    rollerMotor = new TalonFX(config.rollerMotorCANID());
+    pivotMotor  = config.pivotMotor();
+    rollerMotor = config.rollerMotor();
     // Motor config
     TalonFXConfiguration rollerConfig             = new TalonFXConfiguration();
     CurrentLimitsConfigs rollerCurrentLimitConfig = new CurrentLimitsConfigs();

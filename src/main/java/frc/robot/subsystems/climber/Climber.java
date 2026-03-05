@@ -7,7 +7,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj.Servo;
 import frc.lib.team2930.*;
 import frc.robot.Constants;
-import frc.robot.Constants.ClimberConstants;
 
 public class Climber extends SubsystemBase {
   private final String ROOT_TABLE = "Climber";
@@ -16,23 +15,23 @@ public class Climber extends SubsystemBase {
     MountDismount, ClimbL1, ClimbL2, ClimbL3, Stowed, Override, Lock
   }
 
-  private enum State {
+  public enum State {
     // Leader is the outer elevator, follower is the inner elevator.
     // Retract is elevator going down, pulling the robot up.
     // Extend is elevator going up, reaching for the next bar.
     //@formatter:off
-    Stowed           (ClimberConstants.LEADER_HEIGHT_STOWED   , ClimberConstants.FOLLOWER_HEIGHT_STOWED   ),
-    L1LeaderExtend   (ClimberConstants.LEADER_HEIGHT_CLIMBL1  , ClimberConstants.FOLLOWER_HEIGHT_STOWED   ),
-    L1LeaderRetract  (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_STOWED   ),
-    L1FollowerExtend (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_EXTENDED ),
-    L1FollowerRetract(ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
-    L2LeaderExtend   (ClimberConstants.LEADER_HEIGHT_CLIMBL2  , ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
-    L2LeaderRetract  (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
-    L2FollowerExtend (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_EXTENDED ),
-    L2FollowerRetract(ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
-    L3LeaderExtend   (ClimberConstants.LEADER_HEIGHT_CLIMBL3  , ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
-    L3LeaderRetract  (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
-    Lock             (ClimberConstants.LEADER_HEIGHT_RETRACTED, ClimberConstants.FOLLOWER_HEIGHT_RETRACTED);
+    Stowed           (Constants.ClimberConstants.LEADER_HEIGHT_STOWED   , Constants.ClimberConstants.FOLLOWER_HEIGHT_STOWED   ),
+    L1LeaderExtend   (Constants.ClimberConstants.LEADER_HEIGHT_CLIMBL1  , Constants.ClimberConstants.FOLLOWER_HEIGHT_STOWED   ),
+    L1LeaderRetract  (Constants.ClimberConstants.LEADER_HEIGHT_RETRACTED, Constants.ClimberConstants.FOLLOWER_HEIGHT_STOWED   ),
+    L1FollowerExtend (Constants.ClimberConstants.LEADER_HEIGHT_RETRACTED, Constants.ClimberConstants.FOLLOWER_HEIGHT_EXTENDED ),
+    L1FollowerRetract(Constants.ClimberConstants.LEADER_HEIGHT_RETRACTED, Constants.ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
+    L2LeaderExtend   (Constants.ClimberConstants.LEADER_HEIGHT_CLIMBL2  , Constants.ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
+    L2LeaderRetract  (Constants.ClimberConstants.LEADER_HEIGHT_RETRACTED, Constants.ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
+    L2FollowerExtend (Constants.ClimberConstants.LEADER_HEIGHT_RETRACTED, Constants.ClimberConstants.FOLLOWER_HEIGHT_EXTENDED ),
+    L2FollowerRetract(Constants.ClimberConstants.LEADER_HEIGHT_RETRACTED, Constants.ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
+    L3LeaderExtend   (Constants.ClimberConstants.LEADER_HEIGHT_CLIMBL3  , Constants.ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
+    L3LeaderRetract  (Constants.ClimberConstants.LEADER_HEIGHT_RETRACTED, Constants.ClimberConstants.FOLLOWER_HEIGHT_RETRACTED),
+    Lock             (Constants.ClimberConstants.LEADER_HEIGHT_RETRACTED, Constants.ClimberConstants.FOLLOWER_HEIGHT_RETRACTED);
     //@formatter:on
 
     public final Distance leaderHeight;
@@ -50,7 +49,9 @@ public class Climber extends SubsystemBase {
     public LoggerEntry.Decimal          servoTargetAngle;
   }
 
-  private Servo climberServo = new Servo(ClimberConstants.SERVO_CHANNEL);
+  private final Servo      climberServo;
+  private final Rotation2d lockServoAngle;
+  private final Rotation2d unlockServoAngle;
 
   public final Logs logs   = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
   public boolean    atGoal = false;
@@ -66,10 +67,12 @@ public class Climber extends SubsystemBase {
 
   // This also acts as its current angle because the servo cannot tell us where it
   // is
-  private Rotation2d servoTargetAngle = Constants.ClimberConstants.SERVO_LOCK_ANGLE;
+  private Rotation2d servoTargetAngle;
 
   /** Creates a new ClimberSubsystem. */
-  public Climber(ElevatorIO leaderIO, ElevatorIO followerIO) {
+  public Climber(ElevatorIO leaderIO, ElevatorIO followerIO, int servoChannel, Rotation2d lockServoAngle,
+      Rotation2d unlockServoAngle) {
+
     this.leader = new Elevator(logs.group.subgroup("Leader"), leaderIO);
     if (followerIO != null) {
       this.follower = new Elevator(logs.group.subgroup("Follower"), followerIO);
@@ -77,7 +80,10 @@ public class Climber extends SubsystemBase {
       this.follower = null;
     }
 
-    setServoAngle(ClimberConstants.SERVO_UNLOCK_ANGLE);
+    climberServo          = new Servo(servoChannel);
+    this.lockServoAngle   = lockServoAngle;
+    this.unlockServoAngle = unlockServoAngle;
+    setServoAngle(unlockServoAngle);
   }
 
   @Override
@@ -126,7 +132,7 @@ public class Climber extends SubsystemBase {
             case L2LeaderRetract:
             case L3LeaderRetract:
               state = State.Lock; // Generic lock code for if the lock is on the leader
-              setServoAngle(ClimberConstants.SERVO_LOCK_ANGLE);
+              setServoAngle(lockServoAngle);
               atGoalNext = true;
               break;
 

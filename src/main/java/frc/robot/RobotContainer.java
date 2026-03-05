@@ -29,7 +29,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.team2930.*;
 import frc.lib.team2930.commands.RunsWhenDisabledInstantCommand;
 import frc.lib.team6328.LoggedTunableNumber;
-import frc.robot.Constants.ClimberConstants;
 import frc.robot.Constants.RobotMode.Mode;
 import frc.robot.Constants.RobotMode.RobotType;
 import frc.robot.RobotStates.IntakeGoal;
@@ -40,6 +39,9 @@ import frc.robot.autonomous.AutosSubsystems;
 import frc.robot.commands.drive.DriveToPose;
 import frc.robot.commands.drive.DrivetrainDefaultTeleopDrive;
 import frc.robot.commands.drive.WheelRadiusCharacterization;
+import frc.robot.configs.RobotConfig;
+import frc.robot.configs.RobotConfig2025;
+import frc.robot.configs.RobotConfig2026;
 import frc.robot.configs.SimulatorRobotConfig;
 import frc.robot.subsystems.LED;
 import frc.robot.subsystems.LED.BaseRobotState;
@@ -163,6 +165,15 @@ public class RobotContainer {
     String leftIntakeRoot  = "Intake/Left";
     String rightIntakeRoot = "Intake/Right";
 
+    var fakeElevatorIO = new ElevatorIO() {
+                       };
+    var fakeHopperIO   = new HopperIO() {
+                       };
+    var fakeShooterIO  = new ShooterIO() {
+                       };
+    var fakeIntakeIO   = new IntakeIO() {
+                       };
+
     if (mode == Mode.REPLAY) {
       drivetrain = new Drivetrain(config, new GyroIO.Fake(), new GyroIO.Fake(), config.getReplaySwerveModuleObjects(),
           () -> is_autonomous);
@@ -174,14 +185,10 @@ public class RobotContainer {
                   });
       rightIntake = new Intake(rightIntakeRoot, new IntakeIO() {
                   });
-      climber     = new Climber(new ElevatorIO() {
-                  }, new ElevatorIO() {
-                  });
 
-      hopper  = new Hopper(new HopperIO() {
-              });
-      shooter = new Shooter(new ShooterIO() {
-              });
+      climber = new Climber(fakeElevatorIO, fakeElevatorIO, 0, Rotation2d.kZero, Rotation2d.kZero);
+      hopper  = new Hopper(fakeHopperIO);
+      shooter = new Shooter(fakeShooterIO);
 
       led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
     } else { // REAL and SIM robots HERE
@@ -212,121 +219,116 @@ public class RobotContainer {
             vision.logs.configTagAmount.info(config.getAprilTagFieldLayout().getTags().size());
           }
 
-          ElevatorIOConfig leaderConfig = new ElevatorIOConfig(Constants.CanIDs.CLIMBER_LEADER_CAN_ID, false,
-              ClimberConstants.LEADER_CLIMBER_GEAR_RATIO, ClimberConstants.LEADER_CARRIAGE_MASS,
-              ClimberConstants.LEADER_PULLEY_DIAMETER.in(Units.Inches), ClimberConstants.MAX_LEADER_CLIMBER_HEIGHT);
-          ElevatorIOConfig followerConfig = new ElevatorIOConfig(Constants.CanIDs.CLIMBER_FOLLOWER_CAN_ID, false,
-              ClimberConstants.FOLLOWER_CLIMBER_GEAR_RATIO, ClimberConstants.FOLLOWER_CARRIAGE_MASS,
-              ClimberConstants.FOLLOWER_PULLEY_DIAMETER.in(Units.Inches), ClimberConstants.MAX_FOLLOWER_CLIMBER_HEIGHT);
+          ElevatorIOConfig leaderConfig = new ElevatorIOConfig(null, false,
+              Constants.ClimberConstants.LEADER_CLIMBER_GEAR_RATIO, Constants.ClimberConstants.LEADER_CARRIAGE_MASS,
+              Constants.ClimberConstants.LEADER_PULLEY_DIAMETER.in(Units.Inches),
+              Constants.ClimberConstants.MAX_LEADER_CLIMBER_HEIGHT);
+          ElevatorIOConfig followerConfig = new ElevatorIOConfig(null, false,
+              Constants.ClimberConstants.FOLLOWER_CLIMBER_GEAR_RATIO, Constants.ClimberConstants.FOLLOWER_CARRIAGE_MASS,
+              Constants.ClimberConstants.FOLLOWER_PULLEY_DIAMETER.in(Units.Inches),
+              Constants.ClimberConstants.MAX_FOLLOWER_CLIMBER_HEIGHT);
 
           leftIntake = new Intake(leftIntakeRoot, new IntakeIOSim());
           rightIntake = new Intake(rightIntakeRoot, new IntakeIOSim());
-          climber = new Climber(new ElevatorIOSim(leaderConfig), new ElevatorIOSim(followerConfig));
+          climber = new Climber(new ElevatorIOSim(leaderConfig), new ElevatorIOSim(followerConfig), 0, Rotation2d.kZero,
+              Rotation2d.kZero);
           hopper = new Hopper(new HopperIOSim());
           shooter = new Shooter(new ShooterIOSim());
           led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
           break;
 
-        case ROBOT_2025_RETIRED_HOLO:
+        case ROBOT_2025_RETIRED_HOLO: {
           try {
             Thread.sleep(1000);
           } catch (InterruptedException e) {
             System.out.println("sleep interrupted");
           }
-          IntakeIOConfig holoLeftIntakeIOConfig = new IntakeIOConfig(Constants.CanIDs.INTAKE_LEFT_PIVOT_CAN_ID,
-              Constants.CanIDs.INTAKE_LEFT_ROLLER_CAN_ID, InvertedValue.Clockwise_Positive,
+          IntakeIOConfig holoLeftIntakeIOConfig = new IntakeIOConfig(
+              config.newMotor(RobotConfig2025.CanIDs.INTAKE_LEFT_PIVOT_CAN_ID, RobotConfig.CANSpeed.ROBORIO),
+              InvertedValue.Clockwise_Positive,
+              config.newMotor(RobotConfig2025.CanIDs.INTAKE_LEFT_ROLLER_CAN_ID, RobotConfig.CANSpeed.ROBORIO),
               InvertedValue.Clockwise_Positive);
-          leftIntake = new Intake(leftIntakeRoot, new IntakeIOReal(holoLeftIntakeIOConfig));
+          leftIntake  = new Intake(leftIntakeRoot, new IntakeIOReal(holoLeftIntakeIOConfig));
           rightIntake = new Intake(rightIntakeRoot, new IntakeIO() {
-          });
-          climber = new Climber(new ElevatorIO() {
-          }, new ElevatorIO() {
-          });
-          drivetrain = new Drivetrain(config, new GyroIOPigeon2(config, config.getGyroCANID()), new GyroIO.Fake(),
+                      });
+          climber     = new Climber(fakeElevatorIO, fakeElevatorIO, 0, Rotation2d.kZero, Rotation2d.kZero);
+
+          var gyro = config.newGyro(RobotConfig2025.CanIDs.GYRO_CAN_ID, RobotConfig.CANSpeed.CANIVORE);
+          drivetrain = new Drivetrain(config, new GyroIOPigeon2(config, gyro), new GyroIO.Fake(),
               config.getSwerveModuleObjects(), () -> is_autonomous);
-          hopper = new Hopper(new HopperIO() {
-          });
-          shooter = new Shooter(new ShooterIO() {
-          });
+          hopper     = new Hopper(fakeHopperIO);
+          shooter    = new Shooter(fakeShooterIO);
+          vision     = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
+              drivetrain::addVisionEstimate, config.getVisionModuleObjects());
+
+          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
+        }
+          break;
+
+        case ROBOT_2026: {
+          IntakeIOConfig leftIntakeIOConfig  = new IntakeIOConfig(
+              config.newMotor(RobotConfig2026.CanIDs.INTAKE_LEFT_PIVOT_CAN_ID, RobotConfig.CANSpeed.ROBORIO),
+              InvertedValue.Clockwise_Positive,
+              config.newMotor(RobotConfig2026.CanIDs.INTAKE_LEFT_ROLLER_CAN_ID, RobotConfig.CANSpeed.ROBORIO),
+              InvertedValue.Clockwise_Positive);
+          IntakeIOConfig rightIntakeIOConfig = new IntakeIOConfig(
+              config.newMotor(RobotConfig2026.CanIDs.INTAKE_RIGHT_PIVOT_CAN_ID, RobotConfig.CANSpeed.ROBORIO),
+              InvertedValue.Clockwise_Positive,
+              config.newMotor(RobotConfig2026.CanIDs.INTAKE_RIGHT_ROLLER_CAN_ID, RobotConfig.CANSpeed.ROBORIO),
+              InvertedValue.Clockwise_Positive);
+          leftIntake  = new Intake(leftIntakeRoot, new IntakeIOReal(leftIntakeIOConfig));
+          rightIntake = new Intake(rightIntakeRoot, new IntakeIOReal(rightIntakeIOConfig));
+
+          ElevatorIOConfig leaderElevatorIOConfig = new ElevatorIOConfig(
+              config.newMotor(RobotConfig2026.CanIDs.CLIMBER_LEADER_CAN_ID, RobotConfig.CANSpeed.ROBORIO), false,
+              Constants.ClimberConstants.LEADER_CLIMBER_GEAR_RATIO, Constants.ClimberConstants.LEADER_CARRIAGE_MASS,
+              Constants.ClimberConstants.LEADER_PULLEY_DIAMETER.in(Units.Inches),
+              Constants.ClimberConstants.MAX_LEADER_CLIMBER_HEIGHT);
+
+          ElevatorIOConfig followerElevatorIOConfig = new ElevatorIOConfig(
+              config.newMotor(RobotConfig2026.CanIDs.CLIMBER_FOLLOWER_CAN_ID, RobotConfig.CANSpeed.ROBORIO), false,
+              Constants.ClimberConstants.FOLLOWER_CLIMBER_GEAR_RATIO, Constants.ClimberConstants.FOLLOWER_CARRIAGE_MASS,
+              Constants.ClimberConstants.FOLLOWER_PULLEY_DIAMETER.in(Units.Inches),
+              Constants.ClimberConstants.MAX_FOLLOWER_CLIMBER_HEIGHT);
+
+          climber = new Climber(new ElevatorIOReal(leaderElevatorIOConfig),
+              Constants.ClimberConstants.HAS_FOLLOWER_CLIMBER ? new ElevatorIOReal(followerElevatorIOConfig) : null,
+              Constants.ClimberConstants.SERVO_CHANNEL, Constants.ClimberConstants.SERVO_LOCK_ANGLE,
+              Constants.ClimberConstants.SERVO_UNLOCK_ANGLE);
+
+          shooter = new Shooter(new ShooterIOReal(
+              config.newMotor(RobotConfig2026.CanIDs.SHOOTER_LEAD_CAN_ID, RobotConfig.CANSpeed.CANIVORE),
+              config.newMotor(RobotConfig2026.CanIDs.SHOOTER_FOLLOW_CAN_ID, RobotConfig.CANSpeed.CANIVORE),
+              config.newMotor(RobotConfig2026.CanIDs.SHOOTER_HOOD_CAN_ID, RobotConfig.CANSpeed.CANIVORE),
+              config.newMotor(RobotConfig2026.CanIDs.SHOOTER_KICKER_CAN_ID, RobotConfig.CANSpeed.CANIVORE)));
+
+          hopper = new Hopper(new HopperIOReal(
+              config.newMotor(RobotConfig2026.CanIDs.HOPPER_ROLLER_CAN_ID, RobotConfig.CANSpeed.CANIVORE)));
+
+          var gyro = config.newGyro(RobotConfig2026.CanIDs.GYRO_CAN_ID, RobotConfig.CANSpeed.CANIVORE);
+          drivetrain = new Drivetrain(config, new GyroIOPigeon2(config, gyro), new GyroIO.Fake(),
+              config.getSwerveModuleObjects(), () -> is_autonomous);
+
           vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
               drivetrain::addVisionEstimate, config.getVisionModuleObjects());
 
           led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
-
+        }
           break;
 
-        case ROBOT_2026:
-          try {
-            Thread.sleep(1000);
-          } catch (InterruptedException e) {
-            System.out.println("sleep interrupted");
-          }
-          if (Constants.unusedCode) {
-            IntakeIOConfig leftIntakeIOConfig  = new IntakeIOConfig(Constants.CanIDs.INTAKE_LEFT_PIVOT_CAN_ID,
-                Constants.CanIDs.INTAKE_LEFT_ROLLER_CAN_ID, InvertedValue.Clockwise_Positive,
-                InvertedValue.Clockwise_Positive);
-            IntakeIOConfig rightIntakeIOConfig = new IntakeIOConfig(Constants.CanIDs.INTAKE_RIGHT_PIVOT_CAN_ID,
-                Constants.CanIDs.INTAKE_RIGHT_ROLLER_CAN_ID, InvertedValue.Clockwise_Positive,
-                InvertedValue.Clockwise_Positive);
-            leftIntake  = new Intake(leftIntakeRoot, new IntakeIOReal(leftIntakeIOConfig));
-            rightIntake = new Intake(rightIntakeRoot, new IntakeIOReal(rightIntakeIOConfig));
-
-            ElevatorIOConfig leaderElevatorIOConfig = new ElevatorIOConfig(Constants.CanIDs.CLIMBER_LEADER_CAN_ID,
-                false, ClimberConstants.LEADER_CLIMBER_GEAR_RATIO, ClimberConstants.LEADER_CARRIAGE_MASS,
-                ClimberConstants.LEADER_PULLEY_DIAMETER.in(Units.Inches), ClimberConstants.MAX_LEADER_CLIMBER_HEIGHT);
-
-            ElevatorIOConfig followerElevatorIOConfig = new ElevatorIOConfig(Constants.CanIDs.CLIMBER_FOLLOWER_CAN_ID,
-                false, ClimberConstants.FOLLOWER_CLIMBER_GEAR_RATIO, ClimberConstants.FOLLOWER_CARRIAGE_MASS,
-                ClimberConstants.FOLLOWER_PULLEY_DIAMETER.in(Units.Inches),
-                ClimberConstants.MAX_FOLLOWER_CLIMBER_HEIGHT);
-            ElevatorIOReal   followerIO;
-            if (ClimberConstants.HAS_FOLLOWER_CLIMBER) {
-              followerIO = new ElevatorIOReal(followerElevatorIOConfig);
-            } else {
-              followerIO = null;
-            }
-            climber = new Climber(new ElevatorIOReal(leaderElevatorIOConfig), followerIO);
-
-            shooter = new Shooter(new ShooterIOReal());
-          } else {
-            leftIntake  = new Intake(leftIntakeRoot, new IntakeIO() {
-                        });
-            rightIntake = new Intake(rightIntakeRoot, new IntakeIO() {
-                        });
-            climber     = new Climber(new ElevatorIO() {
-                        }, new ElevatorIO() {
-                        });
-            shooter     = new Shooter(new ShooterIO() {
-                        });
-          }
-          drivetrain = new Drivetrain(config, new GyroIOPigeon2(config, config.getGyroCANID()), new GyroIO.Fake(),
-              config.getSwerveModuleObjects(), () -> is_autonomous);
-          hopper = new Hopper(new HopperIOReal() {
-          });
-          vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
-              drivetrain::addVisionEstimate, config.getVisionModuleObjects());
-
-          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
-          break;
-
-        default:
-          drivetrain = new Drivetrain(config, new GyroIO.Fake(), new GyroIO.Fake(),
+        default: {
+          drivetrain  = new Drivetrain(config, new GyroIO.Fake(), new GyroIO.Fake(),
               config.getReplaySwerveModuleObjects(), () -> is_autonomous);
-          vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
+          vision      = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
               drivetrain::addVisionEstimate, config.getReplayVisionModules());
-          leftIntake = new Intake(leftIntakeRoot, new IntakeIO() {
-          });
-          rightIntake = new Intake(rightIntakeRoot, new IntakeIO() {
-          });
-          climber = new Climber(new ElevatorIO() {
-          }, new ElevatorIO() {
-          });
-          hopper = new Hopper(new HopperIO() {
-          });
-          shooter = new Shooter(new ShooterIO() {
-          });
+          leftIntake  = new Intake(leftIntakeRoot, fakeIntakeIO);
+          rightIntake = new Intake(rightIntakeRoot, fakeIntakeIO);
+          climber     = new Climber(fakeElevatorIO, fakeElevatorIO, 0, Rotation2d.kZero, Rotation2d.kZero);
+          hopper      = new Hopper(fakeHopperIO);
+          shooter     = new Shooter(fakeShooterIO);
 
           led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
+        }
           break;
       }
     }
@@ -511,7 +513,7 @@ public class RobotContainer {
     }));
 
     SmartDashboard.putData("Zero Servo",
-        new RunsWhenDisabledInstantCommand(() -> climber.setServoAngle(ClimberConstants.SERVO_LOCK_ANGLE)));
+        new RunsWhenDisabledInstantCommand(() -> climber.setServoAngle(Constants.ClimberConstants.SERVO_LOCK_ANGLE)));
 
     SmartDashboard.putData("Zero Robot Angle", Commands.runOnce(() -> {
       Pose2d pose = drivetrain.getHubPoseEstimatorPose();
@@ -595,7 +597,7 @@ public class RobotContainer {
   public void enterTeleop() {
     robotStates.setRobotGoal(RobotGoal.None);
 
-    climber.setServoAngle(ClimberConstants.SERVO_UNLOCK_ANGLE);
+    climber.setServoAngle(Constants.ClimberConstants.SERVO_UNLOCK_ANGLE);
     resetDrivetrainResetOverrides();
     vision.useMaxDistanceAwayFromExistingEstimate(true);
     vision.useGyroBasedFilteringForVision(true);

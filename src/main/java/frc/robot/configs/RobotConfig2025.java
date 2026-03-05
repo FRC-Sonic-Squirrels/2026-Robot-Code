@@ -87,26 +87,55 @@ public class RobotConfig2025 extends RobotConfig {
 
   private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE());
 
+  public static class CanIDs {
+    public static final int FRONT_LEFT_MODULE_ID__DRIVE   = 1;
+    public static final int FRONT_LEFT_MODULE_ID__STEER   = 11;
+    public static final int FRONT_LEFT_MODULE_ID__ENCODER = 21;
+
+    public static final int FRONT_RIGHT_MODULE_ID__DRIVE   = 2;
+    public static final int FRONT_RIGHT_MODULE_ID__STEER   = 12;
+    public static final int FRONT_RIGHT_MODULE_ID__ENCODER = 22;
+
+    public static final int BACK_LEFT_MODULE_ID__DRIVE   = 3;
+    public static final int BACK_LEFT_MODULE_ID__STEER   = 13;
+    public static final int BACK_LEFT_MODULE_ID__ENCODER = 23;
+
+    public static final int BACK_RIGHT_MODULE_ID__DRIVE   = 4;
+    public static final int BACK_RIGHT_MODULE_ID__STEER   = 14;
+    public static final int BACK_RIGHT_MODULE_ID__ENCODER = 24;
+
+    // -------- GYRO CAN ID ---------
+    public static final int GYRO_CAN_ID   = 5;
+    public static final int GYRO_2_CAN_ID = 41;
+
+    public static final int INTAKE_LEFT_PIVOT_CAN_ID  = 19;
+    public static final int INTAKE_LEFT_ROLLER_CAN_ID = 20;
+  }
+
   // ------------ SWERVE ---------------------
   private final Distance WHEEL_RADIUS = Units.Inches.of(1.957);
 
   // ------ SWERVE MODULE CONFIGURATIONS: CANID + OFFSET + INVERTS --------------
   // 0
-  private final IndividualSwerveModuleConfig FRONT_LEFT_MODULE_CONFIG = new IndividualSwerveModuleConfig(1, 11, 21,
-      Rotation2d.fromDegrees(67.939), InvertedValue.CounterClockwise_Positive, InvertedValue.Clockwise_Positive,
-      InvertedValue.Clockwise_Positive);
+  private final IndividualSwerveModuleConfig FRONT_LEFT_MODULE_CONFIG = new IndividualSwerveModuleConfig(
+      CanIDs.FRONT_LEFT_MODULE_ID__DRIVE, CanIDs.FRONT_LEFT_MODULE_ID__STEER, CanIDs.FRONT_LEFT_MODULE_ID__ENCODER,
+      Rotation2d.fromRotations(-69.608 / 360), InvertedValue.CounterClockwise_Positive,
+      InvertedValue.CounterClockwise_Positive, InvertedValue.Clockwise_Positive);
   // 1
-  private final IndividualSwerveModuleConfig FRONT_RIGHT_MODULE_CONFIG = new IndividualSwerveModuleConfig(2, 12, 22,
-      Rotation2d.fromDegrees(-56.514), InvertedValue.CounterClockwise_Positive, InvertedValue.Clockwise_Positive,
+  private final IndividualSwerveModuleConfig FRONT_RIGHT_MODULE_CONFIG = new IndividualSwerveModuleConfig(
+      CanIDs.FRONT_RIGHT_MODULE_ID__DRIVE, CanIDs.FRONT_RIGHT_MODULE_ID__STEER, CanIDs.FRONT_RIGHT_MODULE_ID__ENCODER,
+      Rotation2d.fromRotations(-22.5 / 360), InvertedValue.Clockwise_Positive, InvertedValue.CounterClockwise_Positive,
       InvertedValue.Clockwise_Positive);
   // 2
-  private final IndividualSwerveModuleConfig BACK_LEFT_MODULE_CONFIG = new IndividualSwerveModuleConfig(3, 13, 23,
-      Rotation2d.fromDegrees(130.43), InvertedValue.CounterClockwise_Positive, InvertedValue.Clockwise_Positive,
-      InvertedValue.Clockwise_Positive);
+  private final IndividualSwerveModuleConfig BACK_LEFT_MODULE_CONFIG = new IndividualSwerveModuleConfig(
+      CanIDs.BACK_LEFT_MODULE_ID__DRIVE, CanIDs.BACK_LEFT_MODULE_ID__STEER, CanIDs.BACK_LEFT_MODULE_ID__ENCODER,
+      Rotation2d.fromRotations(-132.803 / 360), InvertedValue.CounterClockwise_Positive,
+      InvertedValue.CounterClockwise_Positive, InvertedValue.Clockwise_Positive);
   // 3
-  private final IndividualSwerveModuleConfig BACK_RIGHT_MODULE_CONFIG = new IndividualSwerveModuleConfig(4, 14, 24,
-      Rotation2d.fromDegrees(-84.199), InvertedValue.CounterClockwise_Positive, InvertedValue.Clockwise_Positive,
-      InvertedValue.Clockwise_Positive);
+  private final IndividualSwerveModuleConfig BACK_RIGHT_MODULE_CONFIG = new IndividualSwerveModuleConfig(
+      CanIDs.BACK_RIGHT_MODULE_ID__DRIVE, CanIDs.BACK_RIGHT_MODULE_ID__STEER, CanIDs.BACK_RIGHT_MODULE_ID__ENCODER,
+      Rotation2d.fromRotations(0.615 / 360), InvertedValue.Clockwise_Positive, InvertedValue.CounterClockwise_Positive,
+      InvertedValue.CounterClockwise_Positive);
 
   // -------- SWERVE CURRENT LIMITS ---------
   private final CurrentLimitsConfigs DRIVE_TALON_CURRENT_LIMIT_CONFIGS = new CurrentLimitsConfigs()
@@ -120,9 +149,6 @@ public class RobotConfig2025 extends RobotConfig {
   // --------- SWERVE GEAR RATIO ---------
   public final double SWERVE_DRIVE_GEAR_RATIO = SwerveModuleConstants.MK4n.LEVEL_2_GEARING_DRIVE_GEAR_RATIO_PLUS_SPEED_KIT;
   public final double SWERVE_STEER_GEAR_RATIO = SwerveModuleConstants.MK4n.GEARING_TURN_GEAR_RATIO;
-
-  // -------- GYRO CAN ID ---------
-  private final int GYRO_CAN_ID = 5;
 
   // -------- GYRO OFFSETS --------
 
@@ -243,11 +269,6 @@ public class RobotConfig2025 extends RobotConfig {
         BACK_LEFT_MODULE_CONFIG,
         BACK_RIGHT_MODULE_CONFIG
     };
-  }
-
-  @Override
-  public int getGyroCANID() {
-    return GYRO_CAN_ID;
   }
 
   @Override
