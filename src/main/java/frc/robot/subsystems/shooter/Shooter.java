@@ -454,7 +454,8 @@ public class Shooter extends SubsystemBase {
   }
 
   public void setDistanceFromTarget(Distance updatedDistanceFromTarget) {
-    distanceFromTarget = updatedDistanceFromTarget;
+    distanceFromTarget = Distance.ofRelativeUnits(1, Units.Meters);
+    // distanceFromTarget = updatedDistanceFromTarget;
   }
 
   public void setFacingTarget(boolean updatedIsFacingTarget) {
@@ -472,7 +473,8 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean isShooterReady() {
-    return isFacingTarget && isFlywheelReady() && isHoodReady();
+    return isFlywheelReady();
+//    return isFacingTarget && isFlywheelReady() && isHoodReady();
   }
 
   public boolean getFuelInUpperKicker() {
@@ -480,11 +482,13 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean kickerStallDetected() {
-    return stallDetected.getAsBoolean();
+    return false;
+//    return stallDetected.getAsBoolean();
   }
 
   public boolean persistantKickerStallDetected() {
-    return persistantStallDetected.getAsBoolean();
+    return false;
+//    return persistantStallDetected.getAsBoolean();
   }
 
   public void setGoal(Goal goal) {
