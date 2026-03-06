@@ -193,9 +193,9 @@ public final class Constants {
 
       public static final double MOI = .00001;
 
-      public static final Rotation2d MAX_PIVOT_ANGLE = Rotation2d.fromDegrees(129);
+      public static final Rotation2d MAX_PIVOT_ANGLE = Rotation2d.fromDegrees(58);
       public static final Rotation2d MIN_PIVOT_ANGLE = Rotation2d.fromDegrees(0);
-      public static final Rotation2d HOME_POSITION   = Rotation2d.fromDegrees(124.19);
+      public static final Rotation2d HOME_POSITION   = Rotation2d.fromDegrees(0);
 
       public static final Rotation2d PASSOFF_PIVOT_ANGLE = Rotation2d.fromDegrees(92.5);
 
@@ -222,7 +222,7 @@ public final class Constants {
       public static final double STATOR_CURRENT_LIMIT = 10;
 
       public static final String ROLLER                   = "Rollers";
-      public static final int    SHOOTING_ROLLER_VELOCITY = 240;
+      public static final int    SHOOTING_ROLLER_VELOCITY = 1000;
     }
   }
 
@@ -332,11 +332,11 @@ public final class Constants {
     public static class Kicker {
       public static final double MOI                                  = 5.0;
       public static final double GEARING                              = 3.33333;
-      public static final double SUPPLY_CURRENT_LIMIT                 = 10;
-      public static final double STATOR_CURRENT_LIMIT                 = 10;
-      public static final double SHOOTING_KICKER_RPM                  = 100;
+      public static final double SUPPLY_CURRENT_LIMIT                 = 40;
+      public static final double STATOR_CURRENT_LIMIT                 = 40;
+      public static final double SHOOTING_KICKER_RPM                  = 1600;
       public static final double STALL_CURRENT_THRESHOLD              = 20;
-      public static final double PRELOADING_KICKER_RPM                = 50;
+      public static final double PRELOADING_KICKER_RPM                = 20;
       public static final double DURATION_TO_CONFIRM_STALL            = 0.1;
       public static final double DURATION_TO_CONFIRM_UNSTALL          = 0.2;
       public static final double DURATION_TO_CONFIRM_PERSISTANT_STALL = 1;

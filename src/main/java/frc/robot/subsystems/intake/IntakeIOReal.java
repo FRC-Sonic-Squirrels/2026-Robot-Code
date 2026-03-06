@@ -91,7 +91,7 @@ public class IntakeIOReal implements IntakeIO {
     pivotConfig.CurrentLimits.SupplyCurrentLimit       = PivotConstants.HIGH_SUPPLY_CURRENT_LIMIT;
     pivotConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
     pivotConfig.CurrentLimits.StatorCurrentLimit       = PivotConstants.HIGH_STATOR_CURRENT_LIMIT;
-    pivotConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
+    pivotConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
     pivotConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     pivotConfig.MotorOutput.Inverted    = config.pivotMotorInverted();

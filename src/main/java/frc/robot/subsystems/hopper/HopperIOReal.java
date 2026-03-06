@@ -26,6 +26,8 @@ public class HopperIOReal implements HopperIO {
   private final StatusSignal<Voltage>         rollerAppliedVoltage;
   private final StatusSignal<AngularVelocity> rollerVelocity;
 
+  private final BaseStatusSignal[] refreshSet;
+
   private final MotionMagicVelocityVoltage rollerClosedLoopControl = new MotionMagicVelocityVoltage(0)
       .withEnableFOC(true);
 
@@ -64,10 +66,19 @@ public class HopperIOReal implements HopperIO {
     BaseStatusSignal.setUpdateFrequencyForAll(1, rollerDeviceTemp);
 
     rollerMotor.optimizeBusUtilization();
+
+    refreshSet = new BaseStatusSignal[] {
+        rollerCurrent,
+        rollerDeviceTemp,
+        rollerAppliedVoltage,
+        rollerVelocity,
+    };
   }
 
   @Override
   public void updateInputs(Inputs inputs) {
+    inputs.refreshAll(refreshSet);
+
     inputs.rollerCurrentAmps  = rollerCurrent.getValue().in(Units.Amps);
     inputs.rollerTempCelsius  = rollerDeviceTemp.getValue().in(Units.Celsius);
     inputs.rollerAppliedVolts = rollerAppliedVoltage.getValue().in(Units.Volts);

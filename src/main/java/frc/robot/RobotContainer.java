@@ -268,14 +268,14 @@ public class RobotContainer {
         case ROBOT_2026: {
           IntakeIOConfig leftIntakeIOConfig  = new IntakeIOConfig(
               config.newMotor(RobotConfig2026.CanIDs.INTAKE_LEFT_PIVOT_CAN_ID, RobotConfig.CANSpeed.ROBORIO),
-              InvertedValue.Clockwise_Positive,
+              InvertedValue.CounterClockwise_Positive,
               config.newMotor(RobotConfig2026.CanIDs.INTAKE_LEFT_ROLLER_CAN_ID, RobotConfig.CANSpeed.ROBORIO),
               InvertedValue.Clockwise_Positive);
           IntakeIOConfig rightIntakeIOConfig = new IntakeIOConfig(
               config.newMotor(RobotConfig2026.CanIDs.INTAKE_RIGHT_PIVOT_CAN_ID, RobotConfig.CANSpeed.ROBORIO),
               InvertedValue.Clockwise_Positive,
               config.newMotor(RobotConfig2026.CanIDs.INTAKE_RIGHT_ROLLER_CAN_ID, RobotConfig.CANSpeed.ROBORIO),
-              InvertedValue.Clockwise_Positive);
+              InvertedValue.CounterClockwise_Positive);
           leftIntake  = new Intake(leftIntakeRoot, new IntakeIOReal(leftIntakeIOConfig));
           rightIntake = new Intake(rightIntakeRoot, new IntakeIOReal(rightIntakeIOConfig));
 

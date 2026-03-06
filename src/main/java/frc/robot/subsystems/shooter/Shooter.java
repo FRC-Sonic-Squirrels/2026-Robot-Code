@@ -1,8 +1,8 @@
 package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
@@ -33,6 +33,7 @@ public class Shooter extends SubsystemBase {
     public LoggerEntry.Decimal pitchDegrees;
     public LoggerEntry.Decimal targetPitchDegrees;
     public LoggerEntry.Decimal hoodPIDLatency;
+    public LoggerEntry.Decimal flywheelTargetRPM;
     public LoggerEntry.Decimal flywheelRollersDifference;
     public LoggerEntry.Decimal targetDistance;
     public LoggerEntry.Bool    facingTarget;
@@ -54,6 +55,7 @@ public class Shooter extends SubsystemBase {
     public LoggerEntry.Decimal      kickerAppliedVolts;
     public LoggerEntry.Decimal      kickerCurrentAmps;
     public LoggerEntry.Decimal      kickerVelocityRPM;
+    public LoggerEntry.Decimal      kickerTargetRPM;
     public LoggerEntry.DecimalArray tempsCelcius;
   }
 
@@ -77,6 +79,8 @@ public class Shooter extends SubsystemBase {
     public LoggedTunableNumber KV;
     public LoggedTunableNumber closedLoopMaxAccelerationConstraint;
 
+    public LoggedTunableNumber overrideRPM;
+
     @TunableEntry(defaultValue = 150)
     public LoggedTunableNumber toleranceRPM;
   }
@@ -85,6 +89,8 @@ public class Shooter extends SubsystemBase {
     public LoggedTunableNumber KP;
     public LoggedTunableNumber KV;
     public LoggedTunableNumber closedLoopMaxAccelerationConstraint;
+
+    public LoggedTunableNumber overrideRPM;
   }
 
   public static class Tunables extends AutoRegisterTunables {
@@ -111,7 +117,7 @@ public class Shooter extends SubsystemBase {
   private double hoodPidLatency = 0.0;
 
   private Rotation2d targetHoodPosition = Constants.zeroRotation2d;
-  private double     targetFlywheelRPM  = 0.0;
+  private double     flywheelTargetRPM  = 0.0;
 
   private Distance distanceFromTarget = Distance.ofRelativeUnits(100, Units.Meters);
   private boolean  isFacingTarget;
@@ -145,10 +151,12 @@ public class Shooter extends SubsystemBase {
       flywheel.KP.initDefault(0.4);
       flywheel.KV.initDefault(0.072);
       flywheel.closedLoopMaxAccelerationConstraint.initDefault(1000.0);
+      flywheel.overrideRPM.initDefault(0.0);
 
       kicker.KP.initDefault(0.6);
       kicker.KV.initDefault(0.18);
       kicker.closedLoopMaxAccelerationConstraint.initDefault(300.0);
+      kicker.overrideRPM.initDefault(0.0);
     } else if (Constants.RobotMode.isSimBot()) {
       hood.KP.initDefault(15.0);
       hood.KD.initDefault(0.0);
@@ -160,10 +168,12 @@ public class Shooter extends SubsystemBase {
       flywheel.KP.initDefault(0.5);
       flywheel.KV.initDefault(0.13);
       flywheel.closedLoopMaxAccelerationConstraint.initDefault(10.0);
+      flywheel.overrideRPM.initDefault(0.0);
 
       kicker.KP.initDefault(0.0);
       kicker.KV.initDefault(0.0);
       kicker.closedLoopMaxAccelerationConstraint.initDefault(0.0);
+      kicker.overrideRPM.initDefault(0.0);
     }
 
     io.setFlywheelClosedLoopConstants(flywheel.KP.get(), flywheel.KV.get(), flywheel.KS.get(),
@@ -190,10 +200,12 @@ public class Shooter extends SubsystemBase {
       logs.inputs.kickerAppliedVolts.info(inputs.kickerAppliedVolts);
       logs.inputs.kickerCurrentAmps.info(inputs.kickerCurrentAmps);
       logs.inputs.kickerVelocityRPM.info(inputs.kickerVelocityRPM);
+      logs.inputs.kickerTargetRPM.info(inputs.kickerTargetRPM);
       logs.inputs.tempsCelcius.info(inputs.tempsCelcius);
 
       logs.pitchDegrees.info(inputs.hoodPosition);
       logs.targetPitchDegrees.info(targetHoodPosition);
+      logs.flywheelTargetRPM.info(flywheelTargetRPM);
       logs.flywheelRollersDifference.info(inputs.flywheelRPM[1] - inputs.flywheelRPM[0]);
       logs.state.info(goal);
       logs.targetDistance.info(distanceFromTarget.in(Units.Meters));
@@ -319,8 +331,12 @@ public class Shooter extends SubsystemBase {
   }
 
   public void setFlywheelRPM(double revPerMin) {
+    var overrideRPM = tunables.flywheel.overrideRPM.get();
+    if (overrideRPM != 0.0) {
+      revPerMin = overrideRPM;
+    }
     io.setFlywheelRPM(revPerMin);
-    targetFlywheelRPM = revPerMin;
+    flywheelTargetRPM = revPerMin;
   }
 
   public double getRPM() {
@@ -328,7 +344,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean isAtTargetRPM() {
-    return isAtTargetRPM(targetFlywheelRPM);
+    return isAtTargetRPM(flywheelTargetRPM);
   }
 
   public boolean isAtTargetRPM(double rpm) {
@@ -389,6 +405,11 @@ public class Shooter extends SubsystemBase {
   }
 
   public void setKickerVelocity(double revPerMin) {
+    var overrideRPM = tunables.kicker.overrideRPM.get();
+    if (overrideRPM != 0.0) {
+      revPerMin = overrideRPM;
+    }
+
     io.setKickerVelocity(revPerMin);
   }
 
