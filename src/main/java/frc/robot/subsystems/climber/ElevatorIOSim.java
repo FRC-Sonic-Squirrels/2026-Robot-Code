@@ -48,13 +48,17 @@ public class ElevatorIOSim implements ElevatorIO {
   }
 
   @Override
-  public void setClosedLoopConstants(double kP, double kD, double kG, MotionMagicConfigs mmConfigs) {
+  public void setClosedLoopConstants(double kP, double kD, double kG, double acceleration, double cruiseVelocity) {
     TalonFXConfiguration config       = new TalonFXConfiguration();
     Slot0Configs         slot0Configs = new Slot0Configs();
 
     slot0Configs.kP = kP;
     slot0Configs.kD = kD;
     slot0Configs.kG = kG;
+
+    MotionMagicConfigs mmConfigs = new MotionMagicConfigs();
+    mmConfigs.MotionMagicAcceleration   = acceleration;
+    mmConfigs.MotionMagicCruiseVelocity = cruiseVelocity;
 
     config.Slot0       = slot0Configs;
     config.MotionMagic = mmConfigs;

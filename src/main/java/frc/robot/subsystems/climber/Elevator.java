@@ -1,6 +1,5 @@
 package frc.robot.subsystems.climber;
 
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
@@ -127,17 +126,13 @@ public class Elevator extends SubsystemBase {
   public void setHeight(Distance height, double accel) {
 
     if (accel != setAccel) {
-      MotionMagicConfigs mmConfigs = new MotionMagicConfigs();
-
-      mmConfigs.MotionMagicAcceleration   = accel;
-      mmConfigs.MotionMagicCruiseVelocity = tunables.maxVelocityConfig.get();
-
-      double kP = tunables.elevatorKP.get();
-      double kD = tunables.elevatorKD.get();
-      double kG = tunables.elevatorKG.get();
-
-      io.setClosedLoopConstants(kP, kD, kG, mmConfigs);
       setAccel = accel;
+
+      double kP             = tunables.elevatorKP.get();
+      double kD             = tunables.elevatorKD.get();
+      double kG             = tunables.elevatorKG.get();
+      double cruiseVelocity = tunables.maxVelocityConfig.get();
+      io.setClosedLoopConstants(kP, kD, kG, accel, cruiseVelocity);
     }
 
     io.setHeight(height);
@@ -150,8 +145,8 @@ public class Elevator extends SubsystemBase {
     io.setSensorPosition(Constants.ClimberConstants.LEADER_HEIGHT_STOWED);
   }
 
-  public boolean setNeutralMode(NeutralModeValue value) {
-    return io.setNeutralMode(value);
+  public void setNeutralMode(NeutralModeValue value) {
+    io.setNeutralMode(value);
   }
 
   private void setConstants() {
@@ -159,11 +154,10 @@ public class Elevator extends SubsystemBase {
     double kD = tunables.elevatorKD.get();
     double kG = tunables.elevatorKG.get();
 
-    MotionMagicConfigs mmConfigs = new MotionMagicConfigs();
-    mmConfigs.MotionMagicAcceleration   = tunables.targetAccelerationConfig.get();
-    mmConfigs.MotionMagicCruiseVelocity = tunables.maxVelocityConfig.get();
-    setAccel                            = tunables.maxVelocityConfig.get();
-    io.setClosedLoopConstants(kP, kD, kG, mmConfigs);
+    var acceleration   = tunables.targetAccelerationConfig.get();
+    var cruiseVelocity = tunables.maxVelocityConfig.get();
+    io.setClosedLoopConstants(kP, kD, kG, acceleration, cruiseVelocity);
+    setAccel = acceleration;
   }
 
   public void setElevatorManualControl(double percent) {

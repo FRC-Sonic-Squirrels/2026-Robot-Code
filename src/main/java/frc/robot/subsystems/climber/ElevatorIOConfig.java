@@ -1,7 +1,7 @@
 package frc.robot.subsystems.climber;
 
-import com.ctre.phoenix6.hardware.TalonFX;
+import frc.robot.subsystems.TalonFXWrapper;
 
-public record ElevatorIOConfig(TalonFX motor, Boolean motorInverted, double gearRatio, double carriageMass,
+public record ElevatorIOConfig(TalonFXWrapper motor, Boolean motorInverted, double gearRatio, double carriageMass,
     double pulleyDiameter, double maxHeight) {
 }

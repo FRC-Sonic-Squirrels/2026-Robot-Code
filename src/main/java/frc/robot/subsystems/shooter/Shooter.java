@@ -406,8 +406,8 @@ public class Shooter extends SubsystemBase {
     return 0;
   }
 
-  public boolean setNeutralMode(NeutralModeValue value) {
-    return io.setNeutralMode(value);
+  public void setNeutralMode(NeutralModeValue value) {
+    io.setNeutralMode(value);
   }
 
   public void setKickerVelocity(double revPerMin) {

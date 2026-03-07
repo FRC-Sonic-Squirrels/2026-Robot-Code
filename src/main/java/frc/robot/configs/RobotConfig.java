@@ -12,6 +12,7 @@ import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
 import frc.lib.team6328.LoggedTunableNumber;
+import frc.robot.subsystems.TalonFXWrapper;
 import frc.robot.subsystems.swerve.SwerveModules;
 import frc.robot.subsystems.vision.VisionModuleConfiguration;
 
@@ -52,12 +53,16 @@ public abstract class RobotConfig {
 
   public abstract double getGyroMountingYaw();
 
-  public TalonFX newMotor(int id, CANSpeed bus) {
+  public TalonFXWrapper newMotor(int id, CANSpeed bus) {
+    TalonFX motor;
+
     if (bus == CANSpeed.CANIVORE) {
-      return new TalonFX(id, getCANBus());
+      motor = new TalonFX(id, getCANBus());
+    } else {
+      motor = new TalonFX(id);
     }
 
-    return new TalonFX(id);
+    return new TalonFXWrapper(motor);
   }
 
   public CANcoder newCancoder(int id, CANSpeed bus) {

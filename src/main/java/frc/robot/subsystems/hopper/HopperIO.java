@@ -21,8 +21,7 @@ public interface HopperIO {
   public default void updateInputs(Inputs inputs) {
   }
 
-  public default boolean setNeutralMode(NeutralModeValue value) {
-    return false;
+  public default void setNeutralMode(NeutralModeValue value) {
   }
 
   public default void setRollerVelocity(double revPerMin) {

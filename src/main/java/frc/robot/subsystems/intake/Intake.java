@@ -292,8 +292,8 @@ public class Intake extends SubsystemBase {
     io.resetPivotSensorPosition(PivotConstants.HOME_POSITION);
   }
 
-  public boolean setPivotNeutralMode(NeutralModeValue value) {
-    return io.setPivotNeutralMode(value);
+  public void setPivotNeutralMode(NeutralModeValue value) {
+    io.setPivotNeutralMode(value);
   }
 
   // Getters

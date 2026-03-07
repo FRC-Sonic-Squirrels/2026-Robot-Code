@@ -129,7 +129,6 @@ public class ShooterIOSim implements ShooterIO {
   }
 
   @Override
-  public boolean setNeutralMode(NeutralModeValue value) {
-    return false;
+  public void setNeutralMode(NeutralModeValue value) {
   }
 }

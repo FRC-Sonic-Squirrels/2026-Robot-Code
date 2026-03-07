@@ -1,15 +1,9 @@
 package frc.robot.subsystems.hopper;
 
 import com.ctre.phoenix6.BaseStatusSignal;
-import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
-import com.ctre.phoenix6.configs.MotorOutputConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
-import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.Units;
@@ -19,9 +13,10 @@ import edu.wpi.first.units.measure.Temperature;
 import edu.wpi.first.units.measure.Voltage;
 import frc.robot.Constants.IntakeConstants.RollerConstants;
 import frc.robot.Constants.MotorConstants.KrakenConstants;
+import frc.robot.subsystems.TalonFXWrapper;
 
 public class HopperIOReal implements HopperIO {
-  private final TalonFX rollerMotor;
+  private final TalonFXWrapper rollerMotor;
 
   private final StatusSignal<Current>         rollerCurrent;
   private final StatusSignal<Temperature>     rollerDeviceTemp;
@@ -33,41 +28,39 @@ public class HopperIOReal implements HopperIO {
   private final MotionMagicVelocityVoltage rollerClosedLoopControl = new MotionMagicVelocityVoltage(0)
       .withEnableFOC(true);
 
-  public HopperIOReal(TalonFX roller) {
+  public HopperIOReal(TalonFXWrapper roller) {
     rollerMotor = roller;
 
-    // Motor config
-    TalonFXConfiguration rollerConfig             = new TalonFXConfiguration();
-    CurrentLimitsConfigs rollerCurrentLimitConfig = new CurrentLimitsConfigs();
+    rollerMotor.talonFXConfiguration.change((rollerConfig) -> {
+      CurrentLimitsConfigs rollerCurrentLimitConfig = new CurrentLimitsConfigs();
 
-    rollerCurrentLimitConfig.SupplyCurrentLimit       = RollerConstants.SUPPLY_CURRENT_LIMIT;
-    rollerCurrentLimitConfig.SupplyCurrentLimitEnable = true;
-    rollerCurrentLimitConfig.StatorCurrentLimit       = RollerConstants.STATOR_CURRENT_LIMIT;
-    rollerCurrentLimitConfig.StatorCurrentLimitEnable = true;
+      rollerCurrentLimitConfig.SupplyCurrentLimit       = RollerConstants.SUPPLY_CURRENT_LIMIT;
+      rollerCurrentLimitConfig.SupplyCurrentLimitEnable = true;
+      rollerCurrentLimitConfig.StatorCurrentLimit       = RollerConstants.STATOR_CURRENT_LIMIT;
+      rollerCurrentLimitConfig.StatorCurrentLimitEnable = true;
 
-    rollerConfig.CurrentLimits = rollerCurrentLimitConfig;
+      rollerConfig.CurrentLimits = rollerCurrentLimitConfig;
 
-    rollerConfig.Feedback.SensorToMechanismRatio = RollerConstants.ROLLER_GEARING;
-    rollerConfig.MotorOutput.Inverted            = InvertedValue.Clockwise_Positive;
-    rollerConfig.MotorOutput.NeutralMode         = NeutralModeValue.Coast;
+      rollerConfig.Feedback.SensorToMechanismRatio = RollerConstants.ROLLER_GEARING;
+      rollerConfig.MotorOutput.Inverted            = InvertedValue.Clockwise_Positive;
+      rollerConfig.MotorOutput.NeutralMode         = NeutralModeValue.Coast;
 
-    rollerConfig.Voltage.SupplyVoltageTimeConstant = KrakenConstants.SUPPLY_VOLTAGE_TIME;
-
-    rollerMotor.getConfigurator().apply(rollerConfig);
+      rollerConfig.Voltage.SupplyVoltageTimeConstant = KrakenConstants.SUPPLY_VOLTAGE_TIME;
+    });
 
     // Status signals
 
-    rollerCurrent        = rollerMotor.getStatorCurrent();
-    rollerDeviceTemp     = rollerMotor.getDeviceTemp();
-    rollerAppliedVoltage = rollerMotor.getMotorVoltage();
-    rollerVelocity       = rollerMotor.getVelocity();
+    rollerCurrent        = rollerMotor.io.getStatorCurrent();
+    rollerDeviceTemp     = rollerMotor.io.getDeviceTemp();
+    rollerAppliedVoltage = rollerMotor.io.getMotorVoltage();
+    rollerVelocity       = rollerMotor.io.getVelocity();
 
     // Update status signals
 
     BaseStatusSignal.setUpdateFrequencyForAll(50, rollerAppliedVoltage, rollerCurrent, rollerVelocity);
     BaseStatusSignal.setUpdateFrequencyForAll(1, rollerDeviceTemp);
 
-    rollerMotor.optimizeBusUtilization();
+    rollerMotor.io.optimizeBusUtilization();
 
     refreshSet = new BaseStatusSignal[] {
         rollerCurrent,
@@ -89,41 +82,25 @@ public class HopperIOReal implements HopperIO {
 
   @Override
   public void setRollerVelocity(double revPerMin) {
-    rollerMotor.setControl(rollerClosedLoopControl.withVelocity(Units.RPM.of(revPerMin).in(Units.RotationsPerSecond)));
+    rollerMotor.io
+        .setControl(rollerClosedLoopControl.withVelocity(Units.RPM.of(revPerMin).in(Units.RotationsPerSecond)));
   }
 
   @Override
   public void setRollerClosedLoopConstants(double rKP, double rKV, double rKS, double targetAccelerationConfig) {
-    Slot0Configs       pidConfig = new Slot0Configs();
-    MotionMagicConfigs mmConfig  = new MotionMagicConfigs();
+    rollerMotor.slot0Configs.change((pidConfig) -> {
+      pidConfig.kP = rKP;
+      pidConfig.kV = rKV;
+      pidConfig.kS = rKS;
+    });
 
-    var rollerConfig = rollerMotor.getConfigurator();
-
-    rollerConfig.refresh(pidConfig);
-    rollerConfig.refresh(mmConfig);
-
-    pidConfig.kP = rKP;
-    pidConfig.kV = rKV;
-    pidConfig.kS = rKS;
-
-    mmConfig.MotionMagicAcceleration = targetAccelerationConfig;
-
-    rollerConfig.apply(pidConfig);
-    rollerConfig.apply(mmConfig);
+    rollerMotor.motionMagicConfigs.change((mmConfig) -> {
+      mmConfig.MotionMagicAcceleration = targetAccelerationConfig;
+    });
   }
 
   @Override
-  public boolean setNeutralMode(NeutralModeValue value) {
-    var config = new MotorOutputConfigs();
-
-    var status = rollerMotor.getConfigurator().refresh(config);
-
-    if (status != StatusCode.OK)
-      return false;
-
-    config.NeutralMode = value;
-
-    rollerMotor.getConfigurator().apply(config);
-    return true;
+  public void setNeutralMode(NeutralModeValue value) {
+    rollerMotor.setNeutralMode(value);
   }
 }

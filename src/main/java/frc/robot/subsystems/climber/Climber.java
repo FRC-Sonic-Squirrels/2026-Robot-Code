@@ -319,7 +319,9 @@ public class Climber extends SubsystemBase {
     if (goal == Goal.Override) {
       return false;
     }
-    return leader.setNeutralMode(value) && follower.setNeutralMode(value);
+    leader.setNeutralMode(value);
+    follower.setNeutralMode(value);
+    return true;
   }
 
   public void setServoAngle(Rotation2d angle) {

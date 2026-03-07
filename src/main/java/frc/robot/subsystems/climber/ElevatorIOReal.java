@@ -1,15 +1,9 @@
 package frc.robot.subsystems.climber;
 
 import com.ctre.phoenix6.BaseStatusSignal;
-import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
-import com.ctre.phoenix6.configs.MotorOutputConfigs;
-import com.ctre.phoenix6.configs.Slot0Configs;
-import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
-import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.GravityTypeValue;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
@@ -17,9 +11,10 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.*;
 import frc.robot.Constants;
 import frc.robot.Constants.MotorConstants.KrakenConstants;
+import frc.robot.subsystems.TalonFXWrapper;
 
 public class ElevatorIOReal implements ElevatorIO {
-  private final TalonFX motor;
+  private final TalonFXWrapper motor;
 
   private final MotionMagicVoltage closedLoopControl = new MotionMagicVoltage(0.0).withEnableFOC(true);
 
@@ -37,33 +32,33 @@ public class ElevatorIOReal implements ElevatorIO {
     this.motor = config.motor();
 
     // Elevator motor config
-    TalonFXConfiguration configFx = new TalonFXConfiguration();
+    motor.talonFXConfiguration.change((configFx) -> {
 
-    configFx.CurrentLimits.SupplyCurrentLimit              = Constants.ClimberConstants.SUPPLY_CURRENT_LIMIT;
-    configFx.CurrentLimits.SupplyCurrentLimitEnable        = true;
-    configFx.CurrentLimits.StatorCurrentLimit              = Constants.ClimberConstants.STATOR_CURRENT_LIMIT;
-    configFx.CurrentLimits.StatorCurrentLimitEnable        = true;
-    configFx.MotorOutput.NeutralMode                       = NeutralModeValue.Brake;
-    configFx.MotorOutput.Inverted                          = InvertedValue.Clockwise_Positive;
-    configFx.SoftwareLimitSwitch.ForwardSoftLimitEnable    = true;
-    configFx.SoftwareLimitSwitch.ReverseSoftLimitEnable    = true;
-    configFx.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Constants.ClimberConstants.MAX_FOLLOWER_CLIMBER_HEIGHT
-        * Constants.ClimberConstants.FOLLOWER_CLIMBER_GEAR_RATIO;
-    configFx.SoftwareLimitSwitch.ReverseSoftLimitThreshold = Constants.ClimberConstants.MIN_FOLLOWER_CLIMBER_HEIGHT
-        * Constants.ClimberConstants.FOLLOWER_CLIMBER_GEAR_RATIO;
+      configFx.CurrentLimits.SupplyCurrentLimit              = Constants.ClimberConstants.SUPPLY_CURRENT_LIMIT;
+      configFx.CurrentLimits.SupplyCurrentLimitEnable        = true;
+      configFx.CurrentLimits.StatorCurrentLimit              = Constants.ClimberConstants.STATOR_CURRENT_LIMIT;
+      configFx.CurrentLimits.StatorCurrentLimitEnable        = true;
+      configFx.MotorOutput.NeutralMode                       = NeutralModeValue.Brake;
+      configFx.MotorOutput.Inverted                          = InvertedValue.Clockwise_Positive;
+      configFx.SoftwareLimitSwitch.ForwardSoftLimitEnable    = true;
+      configFx.SoftwareLimitSwitch.ReverseSoftLimitEnable    = true;
+      configFx.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Constants.ClimberConstants.MAX_FOLLOWER_CLIMBER_HEIGHT
+          * Constants.ClimberConstants.FOLLOWER_CLIMBER_GEAR_RATIO;
+      configFx.SoftwareLimitSwitch.ReverseSoftLimitThreshold = Constants.ClimberConstants.MIN_FOLLOWER_CLIMBER_HEIGHT
+          * Constants.ClimberConstants.FOLLOWER_CLIMBER_GEAR_RATIO;
 
-    configFx.Feedback.SensorToMechanismRatio   = Constants.ClimberConstants.FOLLOWER_CLIMBER_GEAR_RATIO;
-    configFx.Slot0.GravityType                 = GravityTypeValue.Arm_Cosine;
-    configFx.Voltage.SupplyVoltageTimeConstant = KrakenConstants.SUPPLY_VOLTAGE_TIME;
-
-    motor.getConfigurator().apply(configFx);
+      configFx.Feedback.SensorToMechanismRatio   = Constants.ClimberConstants.FOLLOWER_CLIMBER_GEAR_RATIO;
+      configFx.Slot0.GravityType                 = GravityTypeValue.Arm_Cosine;
+      configFx.Voltage.SupplyVoltageTimeConstant = KrakenConstants.SUPPLY_VOLTAGE_TIME;
+    });
 
     // Status signals
-    rotorPosition  = motor.getRotorPosition();
-    rotorVelocity  = motor.getRotorVelocity();
-    appliedVoltage = motor.getMotorVoltage();
-    current        = motor.getStatorCurrent();
-    temp           = motor.getDeviceTemp();
+    var io = motor.io;
+    rotorPosition  = io.getRotorPosition();
+    rotorVelocity  = io.getRotorVelocity();
+    appliedVoltage = io.getMotorVoltage();
+    current        = io.getStatorCurrent();
+    temp           = io.getDeviceTemp();
 
     // Update status signals
 
@@ -71,7 +66,7 @@ public class ElevatorIOReal implements ElevatorIO {
     BaseStatusSignal.setUpdateFrequencyForAll(50, appliedVoltage, current);
     BaseStatusSignal.setUpdateFrequencyForAll(1, temp);
 
-    motor.optimizeBusUtilization();
+    io.optimizeBusUtilization();
 
     refreshSet = new BaseStatusSignal[] {
         rotorPosition,
@@ -98,47 +93,36 @@ public class ElevatorIOReal implements ElevatorIO {
   @Override
   public void setVoltage(double volts) {
     openLoopControl.withOutput(volts);
-    motor.setControl(openLoopControl);
+    motor.io.setControl(openLoopControl);
   }
 
   @Override
   public void setHeight(Distance height) {
     closedLoopControl.withPosition(height.in(Units.Inches) * Constants.ClimberConstants.INCHES_TO_MOTOR_ROT);
-    motor.setControl(closedLoopControl);
+    motor.io.setControl(closedLoopControl);
   }
 
   @Override
   public void setSensorPosition(Distance position) {
-    motor.setPosition(position.in(Units.Inches) * Constants.ClimberConstants.INCHES_TO_MOTOR_ROT);
+    motor.io.setPosition(position.in(Units.Inches) * Constants.ClimberConstants.INCHES_TO_MOTOR_ROT);
   }
 
   @Override
-  public void setClosedLoopConstants(double kP, double kD, double kG, MotionMagicConfigs mmConfigs) {
-    Slot0Configs pidConfig = new Slot0Configs();
+  public void setClosedLoopConstants(double kP, double kD, double kG, double acceleration, double cruiseVelocity) {
+    motor.slot0Configs.change((pidConfig) -> {
+      pidConfig.kP = kP;
+      pidConfig.kD = kD;
+      pidConfig.kG = kG;
+    });
 
-    motor.getConfigurator().refresh(pidConfig);
-
-    pidConfig.kP = kP;
-    pidConfig.kD = kD;
-    pidConfig.kG = kG;
-
-    motor.getConfigurator().apply(pidConfig);
-    motor.getConfigurator().apply(mmConfigs);
+    motor.motionMagicConfigs.change((mmConfig) -> {
+      mmConfig.MotionMagicAcceleration   = acceleration;
+      mmConfig.MotionMagicCruiseVelocity = cruiseVelocity;
+    });
   }
 
   @Override
-  public boolean setNeutralMode(NeutralModeValue value) {
-    var config = new MotorOutputConfigs();
-
-    var status = motor.getConfigurator().refresh(config);
-
-    if (status != StatusCode.OK)
-      return false;
-
-    config.NeutralMode = value;
-
-    motor.getConfigurator().apply(config);
-
-    return true;
+  public void setNeutralMode(NeutralModeValue value) {
+    motor.setNeutralMode(value);
   }
 }

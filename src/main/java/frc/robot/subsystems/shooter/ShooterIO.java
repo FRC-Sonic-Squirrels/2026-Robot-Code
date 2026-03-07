@@ -59,8 +59,7 @@ public interface ShooterIO {
 
   // Kicker
 
-  public default boolean setNeutralMode(NeutralModeValue value) {
-    return false;
+  public default void setNeutralMode(NeutralModeValue value) {
   }
 
   public default void setKickerClosedLoopConstants(double kP, double kV, double kS, double maxProfiledAcceleration) {

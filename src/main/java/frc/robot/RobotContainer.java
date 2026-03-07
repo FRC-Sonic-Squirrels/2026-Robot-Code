@@ -127,8 +127,6 @@ public class RobotContainer {
 
   private boolean is_autonomous;
 
-  private boolean brakeModeFailure = false;
-
   // Tunable numbers
 
   public static class Tunables extends AutoRegisterTunables {
@@ -466,23 +464,19 @@ public class RobotContainer {
     }));
 
     brakeModeButtonTrigger.onTrue(new ConditionalCommand(new RunsWhenDisabledInstantCommand(() -> {
-      boolean intakeLeftPivotSuccess  = leftIntake.setPivotNeutralMode(NeutralModeValue.Coast);
-      boolean intakeRightPivotSuccess = rightIntake.setPivotNeutralMode(NeutralModeValue.Coast);
-      boolean climberSuccess          = climber.setClimberNeutralMode(NeutralModeValue.Coast);
-
-      brakeModeFailure = !intakeLeftPivotSuccess || !intakeRightPivotSuccess || !climberSuccess;
+      leftIntake.setPivotNeutralMode(NeutralModeValue.Coast);
+      rightIntake.setPivotNeutralMode(NeutralModeValue.Coast);
+      climber.setClimberNeutralMode(NeutralModeValue.Coast);
 
       brakeModeTriggered = false;
-      led.setRobotState(brakeModeFailure ? RobotState.BRAKE_MODE_FAILED : RobotState.BRAKE_MODE_OFF);
+      led.setRobotState(RobotState.BRAKE_MODE_OFF);
     }), new RunsWhenDisabledInstantCommand(() -> {
-      boolean intakeLeftPivotSuccess  = leftIntake.setPivotNeutralMode(NeutralModeValue.Brake);
-      boolean intakeRightPivotSuccess = rightIntake.setPivotNeutralMode(NeutralModeValue.Brake);
-      boolean climberSuccess          = climber.setClimberNeutralMode(NeutralModeValue.Brake);
-
-      brakeModeFailure = !intakeLeftPivotSuccess || !intakeRightPivotSuccess || !climberSuccess;
+      leftIntake.setPivotNeutralMode(NeutralModeValue.Brake);
+      rightIntake.setPivotNeutralMode(NeutralModeValue.Brake);
+      climber.setClimberNeutralMode(NeutralModeValue.Brake);
 
       brakeModeTriggered = true;
-      led.setRobotState(brakeModeFailure ? RobotState.BRAKE_MODE_FAILED : RobotState.BRAKE_MODE_ON);
+      led.setRobotState(RobotState.BRAKE_MODE_ON);
     }), () -> brakeModeTriggered));
 
     // ---------- ELASTIC CONTROLS ------------

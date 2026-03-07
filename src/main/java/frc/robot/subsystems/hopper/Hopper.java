@@ -137,8 +137,8 @@ public class Hopper extends SubsystemBase {
     this.goal = goal;
   }
 
-  public boolean setNeutralMode(NeutralModeValue value) {
-    return io.setNeutralMode(value);
+  public void setNeutralMode(NeutralModeValue value) {
+    io.setNeutralMode(value);
   }
 
   // Getters

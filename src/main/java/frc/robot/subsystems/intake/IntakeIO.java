@@ -54,8 +54,7 @@ public interface IntakeIO {
   public default void setPivotClosedLoopConstants(double kP, double kD, double kG, MotionMagicConfigs mmConfigs) {
   }
 
-  public default boolean setPivotNeutralMode(NeutralModeValue value) {
-    return false;
+  public default void setPivotNeutralMode(NeutralModeValue value) {
   }
 
   public default void setPivotCurrentLimits(double supplyCurrentLimit, double statorCurrentLimit) {
