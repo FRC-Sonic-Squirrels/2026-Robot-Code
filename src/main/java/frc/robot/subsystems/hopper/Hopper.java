@@ -1,5 +1,7 @@
 package frc.robot.subsystems.hopper;
 
+import com.ctre.phoenix6.signals.NeutralModeValue;
+
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
@@ -100,14 +102,17 @@ public class Hopper extends SubsystemBase {
 
         case Idle:
           setRollerVelocity(0);
+          setNeutralMode(NeutralModeValue.Coast);
           break;
 
         case PreLoading:
         case Shooting:
           setRollerVelocity(HopperConstants.RollerConstants.SHOOTING_ROLLER_VELOCITY);
+          setNeutralMode(NeutralModeValue.Brake);
           break;
         case Unjamming:
           setRollerVelocity(-(HopperConstants.RollerConstants.SHOOTING_ROLLER_VELOCITY));
+          setNeutralMode(NeutralModeValue.Brake);
           break;
         default:
           break;
@@ -130,6 +135,10 @@ public class Hopper extends SubsystemBase {
 
   public void setState(Goal goal) {
     this.goal = goal;
+  }
+
+  public boolean setNeutralMode(NeutralModeValue value) {
+    return io.setNeutralMode(value);
   }
 
   // Getters

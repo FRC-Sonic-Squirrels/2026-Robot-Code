@@ -1,9 +1,11 @@
 package frc.robot.subsystems.hopper;
 
 import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.configs.MotionMagicConfigs;
+import com.ctre.phoenix6.configs.MotorOutputConfigs;
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
@@ -108,5 +110,20 @@ public class HopperIOReal implements HopperIO {
 
     rollerConfig.apply(pidConfig);
     rollerConfig.apply(mmConfig);
+  }
+
+  @Override
+  public boolean setNeutralMode(NeutralModeValue value) {
+    var config = new MotorOutputConfigs();
+
+    var status = rollerMotor.getConfigurator().refresh(config);
+
+    if (status != StatusCode.OK)
+      return false;
+
+    config.NeutralMode = value;
+
+    rollerMotor.getConfigurator().apply(config);
+    return true;
   }
 }

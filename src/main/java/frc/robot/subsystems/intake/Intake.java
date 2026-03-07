@@ -217,17 +217,19 @@ public class Intake extends SubsystemBase {
           setRollerVelocity(0);
           break;
         case Down:
-          setPivotDownCurrentLimit();
-          setPivotVoltage(-2);
+          setPivotAngle(PivotConstants.MAX_PIVOT_ANGLE);
+//          setPivotDownCurrentLimit();
+//          setPivotVoltage(-2);
           setRollerVelocity(0);
           break;
         case Eject:
           setRollerVelocity(tunables.ejectingFuelVelocity.get() * -1);
           break;
         case Intake:
-          setPivotDownCurrentLimit();
+          setPivotAngle(PivotConstants.MAX_PIVOT_ANGLE);
+//          setPivotDownCurrentLimit();
+//          setPivotVoltage(-2);
           setRollerVelocity(tunables.intakingFuelVelocity.get());
-          setPivotVoltage(-2);
           break;
         default:
           break;

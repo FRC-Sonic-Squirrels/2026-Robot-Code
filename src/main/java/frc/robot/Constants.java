@@ -215,7 +215,7 @@ public final class Constants {
   public static class HopperConstants {
     public static class RollerConstants {
 
-      public static final double ROLLER_GEARING = 1.11111;
+      public static final double ROLLER_GEARING = 4.44444;
       public static final double MOI            = 0.05;
 
       public static final double SUPPLY_CURRENT_LIMIT = 10;
@@ -233,7 +233,7 @@ public final class Constants {
   }
 
   public static class DIOPorts {
-    public static final int SHOOTER_BEAM_BREAKER_DOI_ID = 0;
+    public static final int SHOOTER_BEAM_BREAKER_DOI_ID = 8;
   }
 
   public enum ControlMode {
@@ -336,7 +336,7 @@ public final class Constants {
       public static final double STATOR_CURRENT_LIMIT                 = 40;
       public static final double SHOOTING_KICKER_RPM                  = 1600;
       public static final double STALL_CURRENT_THRESHOLD              = 20;
-      public static final double PRELOADING_KICKER_RPM                = 20;
+      public static final double PRELOADING_KICKER_RPM                = 800;
       public static final double DURATION_TO_CONFIRM_STALL            = 0.1;
       public static final double DURATION_TO_CONFIRM_UNSTALL          = 0.2;
       public static final double DURATION_TO_CONFIRM_PERSISTANT_STALL = 1;

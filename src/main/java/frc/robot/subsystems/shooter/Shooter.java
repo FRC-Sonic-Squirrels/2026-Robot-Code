@@ -56,6 +56,7 @@ public class Shooter extends SubsystemBase {
     public LoggerEntry.Decimal      kickerCurrentAmps;
     public LoggerEntry.Decimal      kickerVelocityRPM;
     public LoggerEntry.Decimal      kickerTargetRPM;
+    public LoggerEntry.Bool         fuelInUpperKicker;
     public LoggerEntry.DecimalArray tempsCelcius;
   }
 
@@ -201,6 +202,7 @@ public class Shooter extends SubsystemBase {
       logs.inputs.kickerCurrentAmps.info(inputs.kickerCurrentAmps);
       logs.inputs.kickerVelocityRPM.info(inputs.kickerVelocityRPM);
       logs.inputs.kickerTargetRPM.info(inputs.kickerTargetRPM);
+      logs.inputs.fuelInUpperKicker.info(inputs.fuelInUpperKicker);
       logs.inputs.tempsCelcius.info(inputs.tempsCelcius);
 
       logs.pitchDegrees.info(inputs.hoodPosition);

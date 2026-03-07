@@ -1,5 +1,7 @@
 package frc.robot.subsystems.hopper;
 
+import com.ctre.phoenix6.signals.NeutralModeValue;
+
 import frc.lib.team2930.LoggerGroup;
 import frc.robot.subsystems.BaseInputs;
 
@@ -17,6 +19,10 @@ public interface HopperIO {
   }
 
   public default void updateInputs(Inputs inputs) {
+  }
+
+  public default boolean setNeutralMode(NeutralModeValue value) {
+    return false;
   }
 
   public default void setRollerVelocity(double revPerMin) {
