@@ -105,6 +105,11 @@ public class ShooterIOSim implements ShooterIO {
   }
 
   @Override
+  public void resetHoodSensorPosition(Rotation2d angle) {
+    hoodArmSim.setState(angle.getRadians(), 0.0);
+  }
+
+  @Override
   public void setFlywheelClosedLoopConstants(double kP, double kV, double kS, double maxProfiledVelocity) {
     TalonFXConfiguration config       = new TalonFXConfiguration();
     Slot0Configs         slot0Configs = new Slot0Configs();

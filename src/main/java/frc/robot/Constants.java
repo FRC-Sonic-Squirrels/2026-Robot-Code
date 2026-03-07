@@ -184,8 +184,8 @@ public final class Constants {
     }
 
     public static class PivotConstants {
-      public static final double HIGH_SUPPLY_CURRENT_LIMIT = 20.0;
-      public static final double HIGH_STATOR_CURRENT_LIMIT = 30.0;
+      public static final double HIGH_SUPPLY_CURRENT_LIMIT = 60;  // 20.0;
+      public static final double HIGH_STATOR_CURRENT_LIMIT = 60;  // 30.0;
       public static final double LOW_SUPPLY_CURRENT_LIMIT  = 10.0;
       public static final double LOW_STATOR_CURRENT_LIMIT  = 10.0;
 
@@ -304,10 +304,10 @@ public final class Constants {
 
       public static final double MOI = 5.0;
 
-      public static final double GEARING = 8.33333;
+      public static final double GEARING = 8.3333 * 12;
 
-      public static final Rotation2d MIN_ANGLE_RAD  = Rotation2d.fromDegrees(12.0);
-      public static final Rotation2d MAX_ANGLE_RAD  = Rotation2d.fromDegrees(59);
+      public static final Rotation2d MIN_ANGLE_RAD  = Rotation2d.fromDegrees(12);
+      public static final Rotation2d MAX_ANGLE_RAD  = Rotation2d.fromDegrees(12 + 20);
       public static final Rotation2d IDLE_ANGLE_RAD = Rotation2d.fromDegrees(30);
 
       public static final double SIM_INITIAL_ANGLE = Math.toRadians(14.0);

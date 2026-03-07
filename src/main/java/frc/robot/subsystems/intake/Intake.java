@@ -138,9 +138,9 @@ public class Intake extends SubsystemBase {
       tunables.roller.KV.initDefault(0.13);
       tunables.roller.targetAccelerationConfig.initDefault(200);
 
-      tunables.pivot.KP.initDefault(60);
-      tunables.pivot.KD.initDefault(0.3);
-      tunables.pivot.KG.initDefault(0.4);
+      tunables.pivot.KG.initDefault(-2.2);
+      tunables.pivot.KD.initDefault(5);
+      tunables.pivot.KP.initDefault(50);
 
       tunables.pivot.maxVelocityConfig.initDefault(200);
       tunables.pivot.targetAccelerationConfig.initDefault(1500);

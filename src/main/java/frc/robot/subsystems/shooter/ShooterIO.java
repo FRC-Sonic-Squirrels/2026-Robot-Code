@@ -46,6 +46,9 @@ public interface ShooterIO {
       double maxProfiledAcceleration) {
   }
 
+  public default void resetHoodSensorPosition(Rotation2d angle) {
+  }
+
   // Flywheel
 
   public default void setFlywheelRPM(double revPerMin) {

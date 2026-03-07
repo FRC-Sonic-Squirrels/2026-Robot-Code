@@ -99,6 +99,7 @@ public class ShooterIOReal implements ShooterIO {
 
     hoodConfig.Feedback.SensorToMechanismRatio = Constants.ShooterConstants.Hood.GEARING;
     hoodConfig.MotorOutput.NeutralMode         = NeutralModeValue.Brake;
+    hoodConfig.MotorOutput.Inverted            = InvertedValue.Clockwise_Positive;
 
     hoodConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Constants.ShooterConstants.Hood.MAX_ANGLE_RAD
         .getRotations();
@@ -225,6 +226,11 @@ public class ShooterIOReal implements ShooterIO {
   public void setHoodPosition(Rotation2d rot) {
     hoodClosedLoopControl.withPosition(rot.getRotations());
     hood.setControl(hoodClosedLoopControl);
+  }
+
+  @Override
+  public void resetHoodSensorPosition(Rotation2d angle) {
+    hood.setPosition(angle.getRotations());
   }
 
   // Flywheel

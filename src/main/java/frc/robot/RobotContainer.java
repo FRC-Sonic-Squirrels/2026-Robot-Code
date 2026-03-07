@@ -359,6 +359,15 @@ public class RobotContainer {
     configureButtonBindings();
   }
 
+  private void zeroMech() {
+    leftIntake.resetPivotSensorToHomePosition();
+    rightIntake.resetPivotSensorToHomePosition();
+    shooter.resetHoodSensorToHomePosition();
+    climber.setGoal(Climber.Goal.Stowed);
+    led.setRobotState(RobotState.ZERO_SUBSYSTEMS);
+
+  }
+
   /**
    * Use this method to define your button->command mappings. Buttons can be
    * created by instantiating a {@link GenericHID} or one of its subclasses
@@ -452,11 +461,7 @@ public class RobotContainer {
     // ---------- ON-ROBOT CONTROLS ------------
 
     zeroSensorsButtonTrigger.onTrue(new RunsWhenDisabledInstantCommand(() -> {
-      leftIntake.resetPivotSensorToHomePosition();
-      rightIntake.resetPivotSensorToHomePosition();
-      climber.setGoal(Climber.Goal.Stowed);
-      led.setRobotState(RobotState.ZERO_SUBSYSTEMS);
-
+      zeroMech();
       zeroButtonTriggered = true;
     }));
 
@@ -507,9 +512,7 @@ public class RobotContainer {
         new WheelRadiusCharacterization(drivetrainWrapper, Constants.RobotMode.getRobot().config.get()));
 
     SmartDashboard.putData("Zero Mech", new RunsWhenDisabledInstantCommand(() -> {
-      leftIntake.resetPivotSensorToHomePosition();
-      leftIntake.resetPivotSensorToHomePosition();
-      led.setRobotState(RobotState.ZERO_SUBSYSTEMS);
+      zeroMech();
     }));
 
     SmartDashboard.putData("Zero Servo",

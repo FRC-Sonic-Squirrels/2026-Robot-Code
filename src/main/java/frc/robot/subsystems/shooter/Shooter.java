@@ -330,6 +330,10 @@ public class Shooter extends SubsystemBase {
     targetHoodPosition = rot;
   }
 
+  public void resetHoodSensorToHomePosition() {
+    io.resetHoodSensorPosition(ShooterConstants.Hood.MIN_ANGLE_RAD);
+  }
+
   public void setFlywheelRPM(double revPerMin) {
     var overrideRPM = tunables.flywheel.overrideRPM.get();
     if (overrideRPM != 0.0) {
