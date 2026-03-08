@@ -107,6 +107,11 @@ public class Shooter extends SubsystemBase {
   private final ShooterIO        io;
   private final ShooterIO.Inputs inputs = new ShooterIO.Inputs(logs.group);
 
+  private final TunableInterpolationMap flywheelRpmForHubDistanceMap;
+  private final TunableInterpolationMap flywheelRpmForAllianceZoneDistanceMap;
+  private final TunableInterpolationMap hoodAngleForHubDistanceMap;
+  private final TunableInterpolationMap hoodAngleForAllianceZoneDistanceMap;
+
   // Creates a new flat moving average filter
   // Average will be taken over the last 20 samples
   private final LinearFilter hoodPidLatencyfilter = LinearFilter.movingAverage(20);
@@ -185,6 +190,13 @@ public class Shooter extends SubsystemBase {
 
     io.setKickerClosedLoopConstants(kicker.KP.get(), kicker.KV.get(), 0.0,
         kicker.closedLoopMaxAccelerationConstraint.get());
+
+    flywheelRpmForHubDistanceMap          = ShooterConstants.Interpolation.generateFlywheelRpmForHubDistanceMap();
+    flywheelRpmForAllianceZoneDistanceMap = ShooterConstants.Interpolation
+        .generateFlywheelRpmForAllianceZoneDistanceMap();
+
+    hoodAngleForHubDistanceMap          = ShooterConstants.Interpolation.generateHoodAngleForHubDistanceMap();
+    hoodAngleForAllianceZoneDistanceMap = ShooterConstants.Interpolation.generateHoodAngleForAllianceZoneDistanceMap();
   }
 
   @Override
@@ -299,27 +311,19 @@ public class Shooter extends SubsystemBase {
   }
 
   public Rotation2d getHoodAngle(Distance distance) {
-    switch (goal) {
-      case Scoring:
-        return Rotation2d
-            .fromDegrees(ShooterConstants.Interpolation.HOOD_ANGLE_FOR_HUB_DISTANCE.get(distance.in(Units.Meters)));
-      case Passing:
-        return Rotation2d.fromDegrees(
-            ShooterConstants.Interpolation.HOOD_ANGLE_FOR_ALLIANCE_ZONE_DISTANCE.get(distance.in(Units.Meters)));
-      default:
-        return Rotation2d.kZero;
-    }
+    return switch (goal) {
+      case Scoring -> Rotation2d.fromDegrees(hoodAngleForHubDistanceMap.get(distance.in(Units.Meters)));
+      case Passing -> Rotation2d.fromDegrees(hoodAngleForAllianceZoneDistanceMap.get(distance.in(Units.Meters)));
+      default -> Rotation2d.kZero;
+    };
   }
 
   public double getFlywheelRPM(Distance distance) {
-    switch (goal) {
-      case Scoring:
-        return ShooterConstants.Interpolation.RPM_FOR_HUB_DISTANCE.get(distance.in(Units.Meters));
-      case Passing:
-        return ShooterConstants.Interpolation.RPM_FOR_ALLIANCE_ZONE_DISTANCE.get(distance.in(Units.Meters));
-      default:
-        return ShooterConstants.Flywheel.IDLE_FLYWHEEL_RPM;
-    }
+    return switch (goal) {
+      case Scoring -> flywheelRpmForHubDistanceMap.get(distance.in(Units.Meters));
+      case Passing -> flywheelRpmForAllianceZoneDistanceMap.get(distance.in(Units.Meters));
+      default -> ShooterConstants.Flywheel.IDLE_FLYWHEEL_RPM;
+    };
   }
 
   public void setHoodClosedLoopConstants(double kP, double kD, double kG, double maxProfiledVelocity,
