@@ -345,18 +345,18 @@ public final class Constants {
     public static class Interpolation {
       public static TunableInterpolationMap generateHoodAngleForHubDistanceMap() {
         var map = new HashMap<Double, Double>();
-        map.put(1.0, 61.80);
-        map.put(1.5, 51.50);
-        map.put(2.0, 42.75);
-        map.put(2.5, 36.70);
-        map.put(3.0, 34.00);
-        map.put(3.5, 31.20);
-        map.put(4.0, 29.50);
-        map.put(4.5, 27.50);
-        map.put(5.0, 26.00);
-        map.put(5.5, 24.85);
-        map.put(6.0, 23.60);
-        map.put(6.5, 22.80);
+        map.put(1.0, 12.0);
+        map.put(1.5, 12.0);
+        map.put(2.0, 12.0);
+        map.put(2.5, 12.0);
+        map.put(3.0, 12.0);
+        map.put(3.5, 12.0);
+        map.put(4.0, 12.0);
+        map.put(4.5, 12.0);
+        map.put(5.0, 12.0);
+        map.put(5.5, 12.0);
+        map.put(6.0, 12.0);
+        map.put(6.5, 12.0);
         return new TunableInterpolationMap("HOOD_ANGLE_FOR_HUB_DISTANCE", map);
       }
 
@@ -375,18 +375,18 @@ public final class Constants {
 
       public static TunableInterpolationMap generateHoodAngleForAllianceZoneDistanceMap() {
         var map = new HashMap<Double, Double>();
-        map.put(1.0, 61.80);
-        map.put(1.5, 51.50);
-        map.put(2.0, 42.75);
-        map.put(2.5, 36.70);
-        map.put(3.0, 34.00);
-        map.put(3.5, 31.20);
-        map.put(4.0, 29.50);
-        map.put(4.5, 27.50);
-        map.put(5.0, 26.00);
-        map.put(5.5, 24.85);
-        map.put(6.0, 23.60);
-        map.put(6.5, 22.80);
+        map.put(1.0, 12.0);
+        map.put(1.5, 12.0);
+        map.put(2.0, 12.0);
+        map.put(2.5, 12.0);
+        map.put(3.0, 12.0);
+        map.put(3.5, 12.0);
+        map.put(4.0, 12.0);
+        map.put(4.5, 12.0);
+        map.put(5.0, 12.0);
+        map.put(5.5, 12.0);
+        map.put(6.0, 12.0);
+        map.put(6.5, 12.0);
         return new TunableInterpolationMap("HOOD_ANGLE_FOR_ALLIANCE_ZONE_DISTANCE", map);
       }
 
