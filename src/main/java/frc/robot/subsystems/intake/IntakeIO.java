@@ -39,7 +39,7 @@ public interface IntakeIO {
   public default void setStarVoltage(double volts) {
   }
 
-  public default void setRollerClosedLoopConstants(double kP, double kV, double kS, double targetAccelerationConfig) {
+  public default void setRollerClosedLoopConstants(Intake.RollerTunables roller) {
   }
 
   public default void setPivotVoltage(double volts) {

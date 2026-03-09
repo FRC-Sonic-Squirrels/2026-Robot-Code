@@ -52,13 +52,13 @@ public class IntakeIOSim implements IntakeIO {
   }
 
   @Override
-  public void setRollerClosedLoopConstants(double kP, double kV, double kS, double maxProfiledAcceleration) {
+  public void setRollerClosedLoopConstants(Intake.RollerTunables tunables) {
     TalonFXConfiguration config       = new TalonFXConfiguration();
     Slot0Configs         slot0Configs = new Slot0Configs();
 
-    slot0Configs.kP = kP;
-    slot0Configs.kV = kV;
-    slot0Configs.kS = kS;
+    slot0Configs.kP = tunables.KP.get();
+    slot0Configs.kV = tunables.KV.get();
+    slot0Configs.kS = tunables.KS.get();
 
     config.Slot0 = slot0Configs;
 

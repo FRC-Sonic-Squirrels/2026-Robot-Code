@@ -102,17 +102,14 @@ public class Hopper extends SubsystemBase {
 
         case Idle:
           setRollerVelocity(0);
-          setNeutralMode(NeutralModeValue.Coast);
           break;
 
         case PreLoading:
         case Shooting:
           setRollerVelocity(HopperConstants.RollerConstants.SHOOTING_ROLLER_VELOCITY);
-          setNeutralMode(NeutralModeValue.Brake);
           break;
         case Unjamming:
           setRollerVelocity(-(HopperConstants.RollerConstants.SHOOTING_ROLLER_VELOCITY));
-          setNeutralMode(NeutralModeValue.Brake);
           break;
         default:
           break;

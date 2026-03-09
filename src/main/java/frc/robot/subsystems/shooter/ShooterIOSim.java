@@ -65,13 +65,13 @@ public class ShooterIOSim implements ShooterIO {
   }
 
   @Override
-  public void setKickerClosedLoopConstants(double kP, double kV, double kS, double maxProfiledVelocity) {
+  public void setKickerClosedLoopConstants(Shooter.KickerTunables tunables) {
     TalonFXConfiguration config       = new TalonFXConfiguration();
     Slot0Configs         slot0Configs = new Slot0Configs();
 
-    slot0Configs.kP = kP;
-    slot0Configs.kV = kV;
-    slot0Configs.kS = kS;
+    slot0Configs.kP = tunables.KP.get();
+    slot0Configs.kV = tunables.KV.get();
+    slot0Configs.kS = tunables.KS.get();
 
     config.Slot0 = slot0Configs;
 
@@ -110,13 +110,15 @@ public class ShooterIOSim implements ShooterIO {
   }
 
   @Override
-  public void setFlywheelClosedLoopConstants(double kP, double kV, double kS, double maxProfiledVelocity) {
+  public void setFlywheelClosedLoopConstants(Shooter.FlywheelTunables tunables) {
     TalonFXConfiguration config       = new TalonFXConfiguration();
     Slot0Configs         slot0Configs = new Slot0Configs();
 
-    slot0Configs.kP = kP;
-    slot0Configs.kV = kV;
-    slot0Configs.kS = kS;
+    slot0Configs.kP = tunables.KP.get();
+    slot0Configs.kI = tunables.KI.get();
+    slot0Configs.kD = tunables.KD.get();
+    slot0Configs.kS = tunables.KS.get();
+    slot0Configs.kV = tunables.KV.get();
 
     config.Slot0 = slot0Configs;
 

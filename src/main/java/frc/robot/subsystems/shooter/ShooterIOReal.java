@@ -2,9 +2,13 @@ package frc.robot.subsystems.shooter;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.configs.MotionMagicConfigs;
+import com.ctre.phoenix6.configs.Slot0Configs;
+import com.ctre.phoenix6.controls.Follower;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.signals.InvertedValue;
+import com.ctre.phoenix6.signals.MotorAlignmentValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.Units;
@@ -14,6 +18,9 @@ import frc.robot.Constants;
 import frc.robot.Constants.DIOPorts;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.subsystems.TalonFXWrapper;
+import frc.robot.configs.RobotConfig2026;
+
+import java.util.function.Consumer;
 
 public class ShooterIOReal implements ShooterIO {
   private final TalonFXWrapper flywheelLead;
@@ -109,6 +116,8 @@ public class ShooterIOReal implements ShooterIO {
       hoodConfig.CurrentLimits.StatorCurrentLimitEnable = true;
     });
 
+    hood.setNeutralMode(NeutralModeValue.Coast);
+
     // -- kicker config --
     kicker.talonFXConfiguration.change((kickerConfig) -> {
       kickerConfig.CurrentLimits.SupplyCurrentLimit       = ShooterConstants.Kicker.SUPPLY_CURRENT_LIMIT;
@@ -160,6 +169,8 @@ public class ShooterIOReal implements ShooterIO {
     flywheelFollowIO.optimizeBusUtilization();
     hoodIO.optimizeBusUtilization();
     kickerIO.optimizeBusUtilization();
+
+    flywheelFollowIO.setControl(new Follower(RobotConfig2026.CanIDs.SHOOTER_LEAD_CAN_ID, MotorAlignmentValue.Opposed));
 
     refreshSet = new BaseStatusSignal[] {
         hoodPosition,
@@ -221,6 +232,7 @@ public class ShooterIOReal implements ShooterIO {
 
   @Override
   public void setHoodPosition(Rotation2d rot) {
+    hood.setNeutralMode(NeutralModeValue.Brake);
     hood.io.setControl(hoodClosedLoopControl.withPosition(rot.getRotations()));
   }
 
@@ -252,26 +264,26 @@ public class ShooterIOReal implements ShooterIO {
   }
 
   @Override
-  public void setFlywheelClosedLoopConstants(double kP, double kV, double kS, double maxProfiledAcceleration) {
-    flywheelLead.slot0Configs.change((pidConfig) -> {
-      pidConfig.kP = kP;
-      pidConfig.kV = kV;
-      pidConfig.kS = kS;
-    });
+  public void setFlywheelClosedLoopConstants(Shooter.FlywheelTunables tunables) {
+    Consumer<Slot0Configs> slot0ConfigsSetter = (pidConfig) -> {
+      pidConfig.kP = tunables.KP.get();
+      pidConfig.kI = tunables.KI.get();
+      pidConfig.kD = tunables.KD.get();
+      pidConfig.kS = tunables.KS.get();
+      pidConfig.kV = tunables.KV.get();
+      pidConfig.kA = 0;
+      pidConfig.kG = 0;
+    };
 
-    flywheelLead.motionMagicConfigs.change((mmConfig) -> {
-      mmConfig.MotionMagicAcceleration = maxProfiledAcceleration;
-    });
+    Consumer<MotionMagicConfigs> motionMagicConfigsConsumerSetter = (mmConfig) -> {
+      mmConfig.MotionMagicAcceleration = tunables.closedLoopMaxAccelerationConstraint.get();
+    };
 
-    flywheelFollow.slot0Configs.change((pidConfig) -> {
-      pidConfig.kP = kP;
-      pidConfig.kV = kV;
-      pidConfig.kS = kS;
-    });
+    flywheelLead.slot0Configs.change(slot0ConfigsSetter);
+    flywheelFollow.slot0Configs.change(slot0ConfigsSetter);
 
-    flywheelFollow.motionMagicConfigs.change((mmConfig) -> {
-      mmConfig.MotionMagicAcceleration = maxProfiledAcceleration;
-    });
+    flywheelLead.motionMagicConfigs.change(motionMagicConfigsConsumerSetter);
+    flywheelFollow.motionMagicConfigs.change(motionMagicConfigsConsumerSetter);
   }
 
   @Override
@@ -280,16 +292,19 @@ public class ShooterIOReal implements ShooterIO {
   }
 
   @Override
-  public void setKickerClosedLoopConstants(double kP, double kV, double kS, double maxProfiledAcceleration) {
-
+  public void setKickerClosedLoopConstants(Shooter.KickerTunables tunables) {
     kicker.slot0Configs.change((pidConfig) -> {
-      pidConfig.kP = kP;
-      pidConfig.kV = kV;
-      pidConfig.kS = kS;
+      pidConfig.kP = tunables.KP.get();
+      pidConfig.kI = tunables.KI.get();
+      pidConfig.kD = tunables.KD.get();
+      pidConfig.kS = tunables.KS.get();
+      pidConfig.kV = tunables.KV.get();
+      pidConfig.kA = 0;
+      pidConfig.kG = 0;
     });
 
     kicker.motionMagicConfigs.change((mmConfig) -> {
-      mmConfig.MotionMagicAcceleration = maxProfiledAcceleration;
+      mmConfig.MotionMagicAcceleration = tunables.closedLoopMaxAccelerationConstraint.get();
     });
   }
 

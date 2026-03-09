@@ -106,6 +106,8 @@ public class IntakeIOReal implements IntakeIO {
       pivotConfig.Voltage.SupplyVoltageTimeConstant = KrakenConstants.SUPPLY_VOLTAGE_TIME;
     });
 
+    pivotMotor.setNeutralMode(NeutralModeValue.Brake);
+
     // Status signals
 
     var pivotIO = pivotMotor.io;
@@ -154,20 +156,28 @@ public class IntakeIOReal implements IntakeIO {
 
   @Override
   public void setRollerVelocity(double revPerMin) {
-    rollerMotor.io
-        .setControl(rollerClosedLoopControl.withVelocity(Units.RPM.of(revPerMin).in(Units.RotationsPerSecond)));
+    if (revPerMin != 0) {
+      rollerMotor.io
+          .setControl(rollerClosedLoopControl.withVelocity(Units.RPM.of(revPerMin).in(Units.RotationsPerSecond)));
+    } else {
+      rollerMotor.io.setControl(new VoltageOut(0.0));
+    }
   }
 
   @Override
-  public void setRollerClosedLoopConstants(double kP, double kV, double kS, double targetAccelerationConfig) {
+  public void setRollerClosedLoopConstants(Intake.RollerTunables tunables) {
     rollerMotor.slot0Configs.change((pidConfig) -> {
-      pidConfig.kP = kP;
-      pidConfig.kV = kV;
-      pidConfig.kS = kS;
+      pidConfig.kP = tunables.KP.get();
+      pidConfig.kI = tunables.KI.get();
+      pidConfig.kD = tunables.KD.get();
+      pidConfig.kS = tunables.KS.get();
+      pidConfig.kV = tunables.KV.get();
+      pidConfig.kA = 0;
+      pidConfig.kG = 0;
     });
 
     rollerMotor.motionMagicConfigs.change((mmConfig) -> {
-      mmConfig.MotionMagicAcceleration = targetAccelerationConfig;
+      mmConfig.MotionMagicAcceleration = tunables.closedLoopMaxAccelerationConstraint.get();
     });
   }
 
@@ -193,9 +203,14 @@ public class IntakeIOReal implements IntakeIO {
 
   @Override
   public void setPivotCurrentLimits(double supplyCurrentLimit, double statorCurrentLimit) {
-    pivotMotor.currentLimitsConfigs.change((limitConfigs) -> {
+    pivotMotor.currentLimitsConfigs.changeIfNeeded((limitConfigs) -> {
+      if (limitConfigs.SupplyCurrentLimit == supplyCurrentLimit
+          && limitConfigs.StatorCurrentLimit == statorCurrentLimit) {
+        return false;
+      }
       limitConfigs.SupplyCurrentLimit = supplyCurrentLimit;
       limitConfigs.StatorCurrentLimit = statorCurrentLimit;
+      return true;
     });
   }
 

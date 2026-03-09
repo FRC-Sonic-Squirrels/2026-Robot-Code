@@ -289,10 +289,14 @@ public class RobotContainer {
               Constants.ClimberConstants.FOLLOWER_PULLEY_DIAMETER.in(Units.Inches),
               Constants.ClimberConstants.MAX_FOLLOWER_CLIMBER_HEIGHT);
 
-          climber = new Climber(new ElevatorIOReal(leaderElevatorIOConfig),
-              Constants.ClimberConstants.HAS_FOLLOWER_CLIMBER ? new ElevatorIOReal(followerElevatorIOConfig) : null,
-              Constants.ClimberConstants.SERVO_CHANNEL, Constants.ClimberConstants.SERVO_LOCK_ANGLE,
-              Constants.ClimberConstants.SERVO_UNLOCK_ANGLE);
+          if (Constants.unusedCode) {
+            climber = new Climber(new ElevatorIOReal(leaderElevatorIOConfig),
+                Constants.ClimberConstants.HAS_FOLLOWER_CLIMBER ? new ElevatorIOReal(followerElevatorIOConfig) : null,
+                Constants.ClimberConstants.SERVO_CHANNEL, Constants.ClimberConstants.SERVO_LOCK_ANGLE,
+                Constants.ClimberConstants.SERVO_UNLOCK_ANGLE);
+          } else {
+            climber = new Climber(fakeElevatorIO, fakeElevatorIO, 0, Rotation2d.kZero, Rotation2d.kZero);
+          }
 
           shooter = new Shooter(new ShooterIOReal(
               config.newMotor(RobotConfig2026.CanIDs.SHOOTER_LEAD_CAN_ID, RobotConfig.CANSpeed.CANIVORE),

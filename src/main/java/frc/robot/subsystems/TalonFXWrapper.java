@@ -24,7 +24,7 @@ public class TalonFXWrapper {
     StatusCode set(T value);
   }
 
-  public static class State<T> {
+  public class State<T> {
     public T                   value;
     public StatusCode          status;
     public boolean             fetched;
@@ -64,6 +64,7 @@ public class TalonFXWrapper {
 
     private void apply() {
       if (value != null) {
+        System.out.printf("Apply config to %d (%s)\n", io.getDeviceID(), value.getClass().getSimpleName());
         status = setter.set(value);
       }
     }

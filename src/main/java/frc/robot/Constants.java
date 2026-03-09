@@ -178,8 +178,8 @@ public final class Constants {
       public static final double ROLLER_GEARING = 1.0;
       public static final double MOI            = 0.05;
 
-      public static final double SUPPLY_CURRENT_LIMIT = 20.0;
-      public static final double STATOR_CURRENT_LIMIT = 100.0;
+      public static final double SUPPLY_CURRENT_LIMIT = 60.0;
+      public static final double STATOR_CURRENT_LIMIT = 60.0;
 
       public static final String ROOT_TABLE = "Rollers";
     }
@@ -326,8 +326,7 @@ public final class Constants {
       public static final double STATOR_CURRENT_LIMIT = 40;
       public static final double PEAK_REVERSE_VOLTAGE = 0;
       public static final double SUPPLY_VOLTAGE_TIME  = 0.02;
-      public static final double IDLE_FLYWHEEL_RPM    = 2000;
-      public static final double CORRECT_RPM_RANGE    = 50;
+      public static final double IDLE_FLYWHEEL_RPM    = 0;     // 2000;
     }
 
     public static class Kicker {

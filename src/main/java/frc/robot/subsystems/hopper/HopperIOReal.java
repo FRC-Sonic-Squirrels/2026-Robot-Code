@@ -4,6 +4,7 @@ import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
+import com.ctre.phoenix6.controls.VoltageOut;
 import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.units.Units;
@@ -82,8 +83,13 @@ public class HopperIOReal implements HopperIO {
 
   @Override
   public void setRollerVelocity(double revPerMin) {
-    rollerMotor.io
-        .setControl(rollerClosedLoopControl.withVelocity(Units.RPM.of(revPerMin).in(Units.RotationsPerSecond)));
+    if (revPerMin != 0) {
+      rollerMotor.io
+          .setControl(rollerClosedLoopControl.withVelocity(Units.RPM.of(revPerMin).in(Units.RotationsPerSecond)));
+    } else {
+      rollerMotor.io.setControl(new VoltageOut(0.0));
+    }
+
   }
 
   @Override

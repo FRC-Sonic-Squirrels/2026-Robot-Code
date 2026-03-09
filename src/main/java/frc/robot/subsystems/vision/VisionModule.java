@@ -58,7 +58,7 @@ public class VisionModule {
     public LoggerEntry.Decimal        yawToTag;
   }
 
-  private final int TAG_ID = 15;
+  private final int TAG_ID = 10;
 
   private final Logs logs;
 

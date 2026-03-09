@@ -75,23 +75,52 @@ public class Shooter extends SubsystemBase {
   }
 
   public static class FlywheelTunables extends AutoRegisterTunables {
-    public LoggedTunableNumber KS;
     public LoggedTunableNumber KP;
+    public LoggedTunableNumber KI;
+    public LoggedTunableNumber KD;
+    public LoggedTunableNumber KS;
     public LoggedTunableNumber KV;
     public LoggedTunableNumber closedLoopMaxAccelerationConstraint;
 
+    @TunableEntry(defaultValue = 0.0)
     public LoggedTunableNumber overrideRPM;
 
     @TunableEntry(defaultValue = 150)
     public LoggedTunableNumber toleranceRPM;
+
+    public boolean hasChanged() {
+      var hasChanged = false;
+      hasChanged |= KP.hasChanged();
+      hasChanged |= KI.hasChanged();
+      hasChanged |= KD.hasChanged();
+      hasChanged |= KV.hasChanged();
+      hasChanged |= KS.hasChanged();
+      hasChanged |= closedLoopMaxAccelerationConstraint.hasChanged();
+      return hasChanged;
+    }
   }
 
   public static class KickerTunables extends AutoRegisterTunables {
     public LoggedTunableNumber KP;
+    public LoggedTunableNumber KI;
+    public LoggedTunableNumber KD;
+    public LoggedTunableNumber KS;
     public LoggedTunableNumber KV;
     public LoggedTunableNumber closedLoopMaxAccelerationConstraint;
 
+    @TunableEntry(defaultValue = 0.0)
     public LoggedTunableNumber overrideRPM;
+
+    public boolean hasChanged() {
+      var hasChanged = false;
+      hasChanged |= KP.hasChanged();
+      hasChanged |= KI.hasChanged();
+      hasChanged |= KD.hasChanged();
+      hasChanged |= KV.hasChanged();
+      hasChanged |= KS.hasChanged();
+      hasChanged |= closedLoopMaxAccelerationConstraint.hasChanged();
+      return hasChanged;
+    }
   }
 
   public static class Tunables extends AutoRegisterTunables {
@@ -153,16 +182,19 @@ public class Shooter extends SubsystemBase {
       hood.closedLoopMaxVelocityConstraint.initDefault(10.0);
       hood.closedLoopMaxAccelerationConstraint.initDefault(5.0);
 
-      flywheel.KS.initDefault(0.24);
-      flywheel.KP.initDefault(0.4);
-      flywheel.KV.initDefault(0.072);
+      flywheel.KP.initDefault(0.1);
+      flywheel.KI.initDefault(1);
+      flywheel.KD.initDefault(0.01);
+      flywheel.KV.initDefault(0.0);
+      flywheel.KS.initDefault(0.0);
       flywheel.closedLoopMaxAccelerationConstraint.initDefault(1000.0);
-      flywheel.overrideRPM.initDefault(0.0);
 
-      kicker.KP.initDefault(0.6);
-      kicker.KV.initDefault(0.18);
+      kicker.KP.initDefault(0.1);
+      kicker.KI.initDefault(4);
+      kicker.KD.initDefault(0.0);
+      kicker.KV.initDefault(0.0);
+      kicker.KS.initDefault(0.0);
       kicker.closedLoopMaxAccelerationConstraint.initDefault(300.0);
-      kicker.overrideRPM.initDefault(0.0);
     } else if (Constants.RobotMode.isSimBot()) {
       hood.KP.initDefault(15.0);
       hood.KD.initDefault(0.0);
@@ -170,26 +202,27 @@ public class Shooter extends SubsystemBase {
       hood.closedLoopMaxVelocityConstraint.initDefault(10.0);
       hood.closedLoopMaxAccelerationConstraint.initDefault(10.0);
 
+      flywheel.KP.initDefault(0.1);
+      flywheel.KD.initDefault(0.01);
+      flywheel.KI.initDefault(1);
+      flywheel.KV.initDefault(0.0);
       flywheel.KS.initDefault(0.0);
-      flywheel.KP.initDefault(0.5);
-      flywheel.KV.initDefault(0.13);
       flywheel.closedLoopMaxAccelerationConstraint.initDefault(10.0);
-      flywheel.overrideRPM.initDefault(0.0);
 
-      kicker.KP.initDefault(0.0);
+      kicker.KP.initDefault(0.1);
+      kicker.KD.initDefault(0.01);
+      kicker.KI.initDefault(1);
       kicker.KV.initDefault(0.0);
+      kicker.KS.initDefault(0.0);
       kicker.closedLoopMaxAccelerationConstraint.initDefault(0.0);
-      kicker.overrideRPM.initDefault(0.0);
     }
 
-    io.setFlywheelClosedLoopConstants(flywheel.KP.get(), flywheel.KV.get(), flywheel.KS.get(),
-        flywheel.closedLoopMaxAccelerationConstraint.get());
+    io.setFlywheelClosedLoopConstants(flywheel);
 
     io.setHoodClosedLoopConstants(hood.KP.get(), hood.KD.get(), hood.KG.get(),
         hood.closedLoopMaxVelocityConstraint.get(), hood.closedLoopMaxAccelerationConstraint.get());
 
-    io.setKickerClosedLoopConstants(kicker.KP.get(), kicker.KV.get(), 0.0,
-        kicker.closedLoopMaxAccelerationConstraint.get());
+    io.setKickerClosedLoopConstants(kicker);
 
     flywheelRpmForHubDistanceMap          = ShooterConstants.Interpolation.generateFlywheelRpmForHubDistanceMap();
     flywheelRpmForAllianceZoneDistanceMap = ShooterConstants.Interpolation
@@ -285,10 +318,8 @@ public class Shooter extends SubsystemBase {
       var flywheel = tunables.flywheel;
       var kicker   = tunables.kicker;
 
-      if (flywheel.KS.hasChanged() || flywheel.KP.hasChanged() || flywheel.KV.hasChanged()
-          || flywheel.closedLoopMaxAccelerationConstraint.hasChanged()) {
-        io.setFlywheelClosedLoopConstants(flywheel.KP.get(), flywheel.KV.get(), flywheel.KS.get(),
-            flywheel.closedLoopMaxAccelerationConstraint.get());
+      if (flywheel.hasChanged()) {
+        io.setFlywheelClosedLoopConstants(flywheel);
       }
 
       if (hood.KP.hasChanged() || hood.KD.hasChanged() || hood.KG.hasChanged()
@@ -299,9 +330,8 @@ public class Shooter extends SubsystemBase {
             hood.closedLoopMaxVelocityConstraint.get(), hood.closedLoopMaxAccelerationConstraint.get());
       }
 
-      if (kicker.KP.hasChanged() || kicker.KV.hasChanged() || kicker.closedLoopMaxAccelerationConstraint.hasChanged()) {
-        io.setKickerClosedLoopConstants(kicker.KP.get(), kicker.KV.get(), 0.0,
-            kicker.closedLoopMaxAccelerationConstraint.get());
+      if (kicker.hasChanged()) {
+        io.setKickerClosedLoopConstants(kicker);
       }
     }
   }
@@ -433,7 +463,7 @@ public class Shooter extends SubsystemBase {
 
   public boolean isFlywheelReady() {
     double desiredFlywheelRPM = getFlywheelRPM(distanceFromTarget);
-    return Math.abs(inputs.flywheelRPM[0] - desiredFlywheelRPM) < ShooterConstants.Flywheel.CORRECT_RPM_RANGE;
+    return Math.abs(inputs.flywheelRPM[0] - desiredFlywheelRPM) < tunables.flywheel.toleranceRPM.get();
   }
 
   public boolean isHoodReady() {

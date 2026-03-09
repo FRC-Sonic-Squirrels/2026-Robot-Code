@@ -54,7 +54,7 @@ public interface ShooterIO {
   public default void setFlywheelRPM(double revPerMin) {
   }
 
-  public default void setFlywheelClosedLoopConstants(double kP, double kV, double kS, double maxProfiledAcceleration) {
+  public default void setFlywheelClosedLoopConstants(Shooter.FlywheelTunables tunables) {
   }
 
   // Kicker
@@ -62,7 +62,7 @@ public interface ShooterIO {
   public default void setNeutralMode(NeutralModeValue value) {
   }
 
-  public default void setKickerClosedLoopConstants(double kP, double kV, double kS, double maxProfiledAcceleration) {
+  public default void setKickerClosedLoopConstants(Shooter.KickerTunables kicker) {
   }
 
   public default void setKickerVelocity(double revPerMin) {

@@ -18,7 +18,6 @@ import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.Constants.IntakeConstants.PivotConstants;
-import frc.robot.Constants.RobotMode.RobotType;
 
 public class Intake extends SubsystemBase {
   public enum Goal {
@@ -71,13 +70,25 @@ public class Intake extends SubsystemBase {
   }
 
   public static class RollerTunables extends AutoRegisterTunables {
-    public LoggedTunableNumber KS;
     public LoggedTunableNumber KP;
+    public LoggedTunableNumber KI;
+    public LoggedTunableNumber KD;
+    public LoggedTunableNumber KS;
     public LoggedTunableNumber KV;
-    public LoggedTunableNumber targetAccelerationConfig;
+    public LoggedTunableNumber closedLoopMaxAccelerationConstraint;
+
+    @TunableEntry(defaultValue = 0.0)
+    public LoggedTunableNumber overrideRPM;
 
     public boolean hasChanged() {
-      return KS.hasChanged() || KP.hasChanged() || KV.hasChanged() || targetAccelerationConfig.hasChanged();
+      var hasChanged = false;
+      hasChanged |= KP.hasChanged();
+      hasChanged |= KI.hasChanged();
+      hasChanged |= KD.hasChanged();
+      hasChanged |= KV.hasChanged();
+      hasChanged |= KS.hasChanged();
+      hasChanged |= closedLoopMaxAccelerationConstraint.hasChanged();
+      return hasChanged;
     }
   }
 
@@ -132,23 +143,11 @@ public class Intake extends SubsystemBase {
     stallDetected = new Trigger(() -> inputs.rollerVelocityRPM <= 50 && inputs.rollerAppliedVolts >= 0.5).debounce(.1);
 
     // Motion constants
-    if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_RETIRED_HOLO) {
-      tunables.roller.KS.initDefault(0);
-      tunables.roller.KP.initDefault(0.4);
-      tunables.roller.KV.initDefault(0.13);
-      tunables.roller.targetAccelerationConfig.initDefault(200);
-
-      tunables.pivot.KG.initDefault(-2.2);
-      tunables.pivot.KD.initDefault(5);
-      tunables.pivot.KP.initDefault(50);
-
-      tunables.pivot.maxVelocityConfig.initDefault(200);
-      tunables.pivot.targetAccelerationConfig.initDefault(1500);
-    } else if (Constants.RobotMode.isSimBot()) {
+    if (Constants.RobotMode.isSimBot()) {
       tunables.roller.KS.initDefault(0);
       tunables.roller.KP.initDefault(0.00006);
       tunables.roller.KV.initDefault(0.0002);
-      tunables.roller.targetAccelerationConfig.initDefault(0.0);
+      tunables.roller.closedLoopMaxAccelerationConstraint.initDefault(0.0);
 
       tunables.pivot.KP.initDefault(120);
       tunables.pivot.KD.initDefault(0);
@@ -157,14 +156,16 @@ public class Intake extends SubsystemBase {
       tunables.pivot.maxVelocityConfig.initDefault(40);
       tunables.pivot.targetAccelerationConfig.initDefault(80);
     } else {
-      tunables.roller.KS.initDefault(0);
-      tunables.roller.KP.initDefault(0.4);
-      tunables.roller.KV.initDefault(0.13);
-      tunables.roller.targetAccelerationConfig.initDefault(200);
+      tunables.roller.KP.initDefault(0.1);
+      tunables.roller.KI.initDefault(1);
+      tunables.roller.KD.initDefault(0.01);
+      tunables.roller.KS.initDefault(0.0);
+      tunables.roller.KV.initDefault(0.0);
+      tunables.roller.closedLoopMaxAccelerationConstraint.initDefault(200);
 
-      tunables.pivot.KP.initDefault(60);
-      tunables.pivot.KD.initDefault(0.3);
-      tunables.pivot.KG.initDefault(0.4);
+      tunables.pivot.KP.initDefault(80);
+      tunables.pivot.KD.initDefault(5);
+      tunables.pivot.KG.initDefault(-2.2);
 
       tunables.pivot.maxVelocityConfig.initDefault(200);
       tunables.pivot.targetAccelerationConfig.initDefault(1500);
@@ -244,12 +245,14 @@ public class Intake extends SubsystemBase {
   // Setters
 
   private void setRollerConstants() {
-    var roller = tunables.roller;
-    io.setRollerClosedLoopConstants(roller.KP.get(), roller.KV.get(), roller.KS.get(),
-        roller.targetAccelerationConfig.get());
+    io.setRollerClosedLoopConstants(tunables.roller);
   }
 
   public void setRollerVelocity(double revPerMin) {
+    var overrideRPM = tunables.roller.overrideRPM.get();
+    if (overrideRPM != 0.0) {
+      revPerMin = overrideRPM;
+    }
     io.setRollerVelocity(revPerMin);
     rollerTargetRPM = revPerMin;
     logs.roller.targetVelocityRPM.info(rollerTargetRPM);
