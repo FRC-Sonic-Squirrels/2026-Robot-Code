@@ -111,7 +111,7 @@ public class SwerveModule {
 
     updateConstants();
 
-    setBrakeMode(true);
+    setBrakeMode(false);
   }
 
   public void registerSignalForOdometry(List<BaseStatusSignal> signals) {

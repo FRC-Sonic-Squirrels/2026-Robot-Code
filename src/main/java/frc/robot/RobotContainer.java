@@ -575,6 +575,8 @@ public class RobotContainer {
   }
 
   public void enterDisabled() {
+    drivetrain.setBrakeMode(false);
+
     robotStates.setRobotGoal(RobotGoal.None);
 
     resetSubsystems();
@@ -591,6 +593,7 @@ public class RobotContainer {
   }
 
   public void enterAutonomous() {
+    drivetrain.setBrakeMode(true);
 
     // TODO: add setting all motors into break mode if they aren't already
     vision.useMaxDistanceAwayFromExistingEstimate(true);
@@ -601,6 +604,7 @@ public class RobotContainer {
   }
 
   public void enterTeleop() {
+    drivetrain.setBrakeMode(true);
     robotStates.setRobotGoal(RobotGoal.None);
 
     climber.setServoAngle(Constants.ClimberConstants.SERVO_UNLOCK_ANGLE);
