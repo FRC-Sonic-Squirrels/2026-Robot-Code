@@ -3,7 +3,6 @@ package frc.robot.subsystems.intake;
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.CurrentLimitsConfigs;
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.controls.MotionMagicVelocityVoltage;
 import com.ctre.phoenix6.controls.MotionMagicVoltage;
 import com.ctre.phoenix6.controls.VoltageOut;
@@ -177,7 +176,7 @@ public class IntakeIOReal implements IntakeIO {
     });
 
     rollerMotor.motionMagicConfigs.change((mmConfig) -> {
-      mmConfig.MotionMagicAcceleration = tunables.closedLoopMaxAccelerationConstraint.get();
+      mmConfig.MotionMagicAcceleration = tunables.maxAccelerationConstraint.get();
     });
   }
 
@@ -188,11 +187,20 @@ public class IntakeIOReal implements IntakeIO {
   }
 
   @Override
-  public void setPivotClosedLoopConstants(double kP, double kD, double kG, MotionMagicConfigs mmConfigs) {
+  public void setPivotClosedLoopConstants(Intake.PivotTunables tunables) {
     pivotMotor.slot0Configs.change((pidConfig) -> {
-      pidConfig.kP = kP;
-      pidConfig.kD = kD;
-      pidConfig.kG = kG;
+      pidConfig.kP = tunables.KP.get();
+      pidConfig.kI = tunables.KI.get();
+      pidConfig.kD = tunables.KD.get();
+      pidConfig.kG = tunables.KG.get();
+      pidConfig.kV = 0;
+      pidConfig.kA = 0;
+      pidConfig.kS = 0;
+    });
+
+    pivotMotor.motionMagicConfigs.change((mmConfig) -> {
+      mmConfig.MotionMagicAcceleration   = tunables.maxAccelerationConstraint.get();
+      mmConfig.MotionMagicCruiseVelocity = tunables.maxProfiledVelocity.get();
     });
   }
 

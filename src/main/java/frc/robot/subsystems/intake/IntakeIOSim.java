@@ -71,16 +71,19 @@ public class IntakeIOSim implements IntakeIO {
   }
 
   @Override
-  public void setPivotClosedLoopConstants(double kP, double kD, double kG, MotionMagicConfigs mmConfigs) {
-    TalonFXConfiguration config       = new TalonFXConfiguration();
-    Slot0Configs         slot0Configs = new Slot0Configs();
+  public void setPivotClosedLoopConstants(Intake.PivotTunables tunables) {
+    var config = new TalonFXConfiguration();
 
-    slot0Configs.kP = kP;
-    slot0Configs.kD = kD;
-    slot0Configs.kG = kG;
+    var slot0Configs = new Slot0Configs();
+    slot0Configs.kP = tunables.KP.get();
+    slot0Configs.kD = tunables.KD.get();
+    slot0Configs.kG = tunables.KG.get();
+    config.Slot0    = slot0Configs;
 
-    config.Slot0       = slot0Configs;
-    config.MotionMagic = mmConfigs;
+    var mmConfigs = new MotionMagicConfigs();
+    mmConfigs.MotionMagicAcceleration   = tunables.maxAccelerationConstraint.get();
+    mmConfigs.MotionMagicCruiseVelocity = tunables.maxProfiledVelocity.get();
+    config.MotionMagic                  = mmConfigs;
 
     pivotSim.setConfig(config);
   }

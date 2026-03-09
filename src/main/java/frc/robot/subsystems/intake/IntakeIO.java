@@ -1,6 +1,5 @@
 package frc.robot.subsystems.intake;
 
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import frc.lib.team2930.LoggerGroup;
@@ -51,7 +50,7 @@ public interface IntakeIO {
   public default void setPivotClosedLoopPosition(Rotation2d angle) {
   }
 
-  public default void setPivotClosedLoopConstants(double kP, double kD, double kG, MotionMagicConfigs mmConfigs) {
+  public default void setPivotClosedLoopConstants(Intake.PivotTunables tunables) {
   }
 
   public default void setPivotNeutralMode(NeutralModeValue value) {

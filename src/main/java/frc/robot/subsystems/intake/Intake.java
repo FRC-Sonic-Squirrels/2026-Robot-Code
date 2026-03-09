@@ -4,7 +4,6 @@
 
 package frc.robot.subsystems.intake;
 
-import com.ctre.phoenix6.configs.MotionMagicConfigs;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -54,18 +53,25 @@ public class Intake extends SubsystemBase {
 
   public static class PivotTunables extends AutoRegisterTunables {
     public LoggedTunableNumber KP;
+    public LoggedTunableNumber KI;
     public LoggedTunableNumber KD;
     public LoggedTunableNumber KG;
 
-    public LoggedTunableNumber maxVelocityConfig;
-    public LoggedTunableNumber targetAccelerationConfig;
+    public LoggedTunableNumber maxProfiledVelocity;
+    public LoggedTunableNumber maxAccelerationConstraint;
 
     @TunableEntry(defaultValue = 3.0)
     public LoggedTunableNumber toleranceDegrees;
 
     private boolean hasChanged() {
-      return KP.hasChanged() || KD.hasChanged() || KG.hasChanged() || maxVelocityConfig.hasChanged()
-          || targetAccelerationConfig.hasChanged();
+      var hasChanged = false;
+      hasChanged |= KP.hasChanged();
+      hasChanged |= KI.hasChanged();
+      hasChanged |= KD.hasChanged();
+      hasChanged |= KG.hasChanged();
+      hasChanged |= maxProfiledVelocity.hasChanged();
+      hasChanged |= maxAccelerationConstraint.hasChanged();
+      return hasChanged;
     }
   }
 
@@ -75,7 +81,7 @@ public class Intake extends SubsystemBase {
     public LoggedTunableNumber KD;
     public LoggedTunableNumber KS;
     public LoggedTunableNumber KV;
-    public LoggedTunableNumber closedLoopMaxAccelerationConstraint;
+    public LoggedTunableNumber maxAccelerationConstraint;
 
     @TunableEntry(defaultValue = 0.0)
     public LoggedTunableNumber overrideRPM;
@@ -87,7 +93,7 @@ public class Intake extends SubsystemBase {
       hasChanged |= KD.hasChanged();
       hasChanged |= KV.hasChanged();
       hasChanged |= KS.hasChanged();
-      hasChanged |= closedLoopMaxAccelerationConstraint.hasChanged();
+      hasChanged |= maxAccelerationConstraint.hasChanged();
       return hasChanged;
     }
   }
@@ -143,32 +149,35 @@ public class Intake extends SubsystemBase {
     stallDetected = new Trigger(() -> inputs.rollerVelocityRPM <= 50 && inputs.rollerAppliedVolts >= 0.5).debounce(.1);
 
     // Motion constants
+    var roller = tunables.roller;
+    var pivot  = tunables.pivot;
+
     if (Constants.RobotMode.isSimBot()) {
-      tunables.roller.KS.initDefault(0);
-      tunables.roller.KP.initDefault(0.00006);
-      tunables.roller.KV.initDefault(0.0002);
-      tunables.roller.closedLoopMaxAccelerationConstraint.initDefault(0.0);
+      roller.KS.initDefault(0);
+      roller.KP.initDefault(0.00006);
+      roller.KV.initDefault(0.0002);
+      roller.maxAccelerationConstraint.initDefault(0.0);
 
-      tunables.pivot.KP.initDefault(120);
-      tunables.pivot.KD.initDefault(0);
-      tunables.pivot.KG.initDefault(0.0);
+      pivot.KP.initDefault(120);
+      pivot.KD.initDefault(0);
+      pivot.KG.initDefault(0.0);
 
-      tunables.pivot.maxVelocityConfig.initDefault(40);
-      tunables.pivot.targetAccelerationConfig.initDefault(80);
+      pivot.maxProfiledVelocity.initDefault(40);
+      pivot.maxAccelerationConstraint.initDefault(80);
     } else {
-      tunables.roller.KP.initDefault(0.1);
-      tunables.roller.KI.initDefault(1);
-      tunables.roller.KD.initDefault(0.01);
-      tunables.roller.KS.initDefault(0.0);
-      tunables.roller.KV.initDefault(0.0);
-      tunables.roller.closedLoopMaxAccelerationConstraint.initDefault(200);
+      roller.KP.initDefault(0.1);
+      roller.KI.initDefault(1);
+      roller.KD.initDefault(0.01);
+      roller.KS.initDefault(0.0);
+      roller.KV.initDefault(0.0);
+      roller.maxAccelerationConstraint.initDefault(200);
 
-      tunables.pivot.KP.initDefault(80);
-      tunables.pivot.KD.initDefault(5);
-      tunables.pivot.KG.initDefault(-2.2);
-
-      tunables.pivot.maxVelocityConfig.initDefault(200);
-      tunables.pivot.targetAccelerationConfig.initDefault(1500);
+      pivot.KP.initDefault(80);
+      pivot.KI.initDefault(0.0);
+      pivot.KD.initDefault(5);
+      pivot.KG.initDefault(-2.2);
+      pivot.maxProfiledVelocity.initDefault(200);
+      pivot.maxAccelerationConstraint.initDefault(1500);
     }
 
     io.setPivotVoltage(0.0);
@@ -219,8 +228,8 @@ public class Intake extends SubsystemBase {
           break;
         case Down:
           setPivotAngle(PivotConstants.MAX_PIVOT_ANGLE);
-//          setPivotDownCurrentLimit();
-//          setPivotVoltage(-2);
+          // setPivotDownCurrentLimit();
+          // setPivotVoltage(-2);
           setRollerVelocity(0);
           break;
         case Eject:
@@ -231,8 +240,8 @@ public class Intake extends SubsystemBase {
           break;
         case Intake:
           setPivotAngle(PivotConstants.MAX_PIVOT_ANGLE);
-//          setPivotDownCurrentLimit();
-//          setPivotVoltage(-2);
+          // setPivotDownCurrentLimit();
+          // setPivotVoltage(-2);
           setRollerVelocity(tunables.intakingFuelVelocity.get());
           break;
         default:
@@ -262,13 +271,7 @@ public class Intake extends SubsystemBase {
   }
 
   private void setPivotConstants() {
-    var pivot = tunables.pivot;
-
-    var configs = new MotionMagicConfigs();
-    configs.MotionMagicCruiseVelocity = pivot.maxVelocityConfig.get();
-    configs.MotionMagicAcceleration   = pivot.targetAccelerationConfig.get();
-
-    io.setPivotClosedLoopConstants(pivot.KP.get(), pivot.KD.get(), pivot.KG.get(), configs);
+    io.setPivotClosedLoopConstants(tunables.pivot);
   }
 
   public void setPivotVoltage(double percent) {
