@@ -86,8 +86,11 @@ public final class Constants {
       // the first
       // object that is created. In this case ExampleRobotConfig. Suppliers solve this
       // by only creating the specific config object corresponding to the robot type
-      ROBOT_SIMBOT(SimulatorRobotConfig::new), ROBOT_SIMBOT_REAL_CAMERAS(SimulatorRobotConfig::new),
-      ROBOT_2025_RETIRED_HOLO(RobotConfig2025::new), ROBOT_2026_DOUG(RobotConfig2026::new); // Someone please name it...
+      // @formatter:off
+      ROBOT_SIMBOT(SimulatorRobotConfig::new),
+      ROBOT_SIMBOT_REAL_CAMERAS(SimulatorRobotConfig::new),
+      ROBOT_2026_DOUG(RobotConfig2026::new); // Someone please name it...
+      // @formatter:on
 
       public final Supplier<RobotConfig> config;
 

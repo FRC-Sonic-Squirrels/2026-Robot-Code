@@ -40,7 +40,6 @@ import frc.robot.commands.drive.DriveToPose;
 import frc.robot.commands.drive.DrivetrainDefaultTeleopDrive;
 import frc.robot.commands.drive.WheelRadiusCharacterization;
 import frc.robot.configs.RobotConfig;
-import frc.robot.configs.RobotConfig2025;
 import frc.robot.configs.RobotConfig2026;
 import frc.robot.configs.SimulatorRobotConfig;
 import frc.robot.subsystems.LED;
@@ -235,34 +234,6 @@ public class RobotContainer {
           led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
           break;
 
-        case ROBOT_2025_RETIRED_HOLO: {
-          try {
-            Thread.sleep(1000);
-          } catch (InterruptedException e) {
-            System.out.println("sleep interrupted");
-          }
-          IntakeIOConfig holoLeftIntakeIOConfig = new IntakeIOConfig(
-              config.newMotor(RobotConfig2025.CanIDs.INTAKE_LEFT_PIVOT_CAN_ID, RobotConfig.CANSpeed.ROBORIO),
-              InvertedValue.Clockwise_Positive,
-              config.newMotor(RobotConfig2025.CanIDs.INTAKE_LEFT_ROLLER_CAN_ID, RobotConfig.CANSpeed.ROBORIO),
-              InvertedValue.Clockwise_Positive);
-          leftIntake  = new Intake(leftIntakeRoot, new IntakeIOReal(holoLeftIntakeIOConfig));
-          rightIntake = new Intake(rightIntakeRoot, new IntakeIO() {
-                      });
-          climber     = new Climber(fakeElevatorIO, fakeElevatorIO, 0, Rotation2d.kZero, Rotation2d.kZero);
-
-          var gyro = config.newGyro(RobotConfig2025.CanIDs.GYRO_CAN_ID, RobotConfig.CANSpeed.CANIVORE);
-          drivetrain = new Drivetrain(config, new GyroIOPigeon2(config, gyro), new GyroIO.Fake(),
-              config.getSwerveModuleObjects(), () -> is_autonomous);
-          hopper     = new Hopper(fakeHopperIO);
-          shooter    = new Shooter(fakeShooterIO);
-          vision     = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
-              drivetrain::addVisionEstimate, config.getVisionModuleObjects());
-
-          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
-        }
-          break;
-
         case ROBOT_2026_DOUG: {
           IntakeIOConfig leftIntakeIOConfig  = new IntakeIOConfig(
               config.newMotor(RobotConfig2026.CanIDs.INTAKE_LEFT_PIVOT_CAN_ID, RobotConfig.CANSpeed.ROBORIO),
@@ -342,7 +313,7 @@ public class RobotContainer {
 
     var subsystems = new AutosSubsystems(drivetrainWrapper, led, leftIntake, rightIntake);
 
-    robotStates = new RobotStates(climber, leftIntake, rightIntake, shooter, drivetrainWrapper, hopper);
+    robotStates = new RobotStates(config, climber, leftIntake, rightIntake, shooter, drivetrainWrapper, hopper);
 
     autoManager = new AutosManager(subsystems, config, autoChooser, stringToAutoSupplierMap, () -> {
       var result = flipAutoChooser.get();

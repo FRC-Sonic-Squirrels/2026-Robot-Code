@@ -61,8 +61,8 @@ public class RotateToFaceHelper {
     rotationalPID.enableContinuousInput(-Math.PI, Math.PI);
   }
 
-  private static Rotation2d faceTowardsCenter(Translation2d current, Translation2d target) {
-
+  private static Rotation2d faceTowardsCenter(Translation2d current, Translation2d target,
+      boolean isRobotRotatedBackward) {
     double targetX = target.getX();
     double targetY = target.getY();
 
@@ -74,13 +74,18 @@ public class RotateToFaceHelper {
     double normalizedAngleToCenter = Math.atan2(Math.sin(angleToCenter), Math.cos(angleToCenter));
 
     Rotation2d finalRotation = new Rotation2d(normalizedAngleToCenter);
+
+    if (isRobotRotatedBackward) {
+      return finalRotation;
+    }
+
     return finalRotation.rotateBy(Rotation2d.k180deg);
   }
 
-  public RotateToFaceState periodic(Pose2d pose) {
+  public RotateToFaceState periodic(Pose2d pose, boolean isRobotRotatedBackward) {
     Translation2d currentTranslation = pose.getTranslation();
 
-    var targetangle         = RotateToFaceHelper.faceTowardsCenter(currentTranslation, target);
+    var targetangle         = RotateToFaceHelper.faceTowardsCenter(currentTranslation, target, isRobotRotatedBackward);
     var currentPoseRotation = pose.getRotation();
     var rotVel              = rotationalPID.calculate(currentPoseRotation.getRadians(), targetangle.getRadians());
 

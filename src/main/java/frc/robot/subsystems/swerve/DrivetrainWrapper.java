@@ -76,8 +76,8 @@ public class DrivetrainWrapper {
     }
 
     // Hack to make it run forward!!!!!!!!!
-    chassisSpeeds.vxMetersPerSecond     *= tunables.driveSpeedPercent.get() / -100.0;
-    chassisSpeeds.vyMetersPerSecond     *= tunables.driveSpeedPercent.get() / -100.0;
+    chassisSpeeds.vxMetersPerSecond     *= tunables.driveSpeedPercent.get() / 100.0;
+    chassisSpeeds.vyMetersPerSecond     *= tunables.driveSpeedPercent.get() / 100.0;
     chassisSpeeds.omegaRadiansPerSecond *= tunables.rotateSpeedPercent.get() / 100.0;
 
     // Run drivetrain

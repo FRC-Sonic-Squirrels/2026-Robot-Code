@@ -11,7 +11,6 @@ import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.Constants.HopperConstants;
-import frc.robot.Constants.RobotMode.RobotType;
 
 public class Hopper extends SubsystemBase {
   public final String ROOT_TABLE = "Hopper";
@@ -57,13 +56,7 @@ public class Hopper extends SubsystemBase {
   public Hopper(HopperIO io) {
     this.io = io;
 
-    if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_RETIRED_HOLO) {
-      tunables.KS.initDefault(0);
-      tunables.KP.initDefault(0.4);
-      tunables.KV.initDefault(0.13);
-      tunables.rollerTargetAccelerationConfig.initDefault(200);
-
-    } else if (Constants.RobotMode.isSimBot()) {
+    if (Constants.RobotMode.isSimBot()) {
       tunables.KS.initDefault(0);
       tunables.KP.initDefault(0.00006);
       tunables.KV.initDefault(0.0002);

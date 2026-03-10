@@ -7,6 +7,7 @@ import frc.lib.team2930.*;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.commands.drive.RotateToFaceHelper;
 import frc.robot.commands.drive.RotateToFaceHelper.RotateToFaceState;
+import frc.robot.configs.RobotConfig;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.hopper.Hopper;
 import frc.robot.subsystems.intake.Intake;
@@ -14,7 +15,7 @@ import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
 
 public class RobotStates {
-  private String ROOT_TABLE = "RobotStates";
+  private final String ROOT_TABLE = "RobotStates";
 
   // End Effector states
   public enum EndEffectorDesiredAction {
@@ -87,6 +88,7 @@ public class RobotStates {
 
   // Commands
 
+  private final RobotConfig        config;
   private final Intake             leftIntake;
   private final Intake             rightIntake;
   private final DrivetrainWrapper  drivetrain;
@@ -98,14 +100,15 @@ public class RobotStates {
   private int     periodicCounter;
   private boolean driveSlow;
 
-  public RobotStates(Climber climber, Intake leftIntake, Intake rightIntake, Shooter shooter,
+  public RobotStates(RobotConfig config, Climber climber, Intake leftIntake, Intake rightIntake, Shooter shooter,
       DrivetrainWrapper drivetrain, Hopper hopper) {
-    this.climber       = climber;
+    this.config        = config;
     this.leftIntake    = leftIntake;
     this.rightIntake   = rightIntake;
     this.drivetrain    = drivetrain;
     this.shooter       = shooter;
     this.hopper        = hopper;
+    this.climber       = climber;
     rotateToFaceHelper = new RotateToFaceHelper();
   }
 
@@ -245,7 +248,8 @@ public class RobotStates {
   }
 
   private void shoot() {
-    RotateToFaceState rotateState = rotateToFaceHelper.periodic(drivetrain.getHubPoseEstimatorPose(true));
+    RotateToFaceState rotateState = rotateToFaceHelper.periodic(drivetrain.getHubPoseEstimatorPose(true),
+        config.isRobotRotatedBackward());
 //    drivetrain.setRotationOverride(rotateState.omega());
     shooter.setFacingTarget(true);// rotateState.withinTolerance());
     shooter.setDistanceFromTarget(rotateState.distance());

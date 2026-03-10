@@ -63,15 +63,7 @@ public class Elevator extends SubsystemBase {
 
     setAccel = tunables.targetAccelerationConfig.get();
 
-    if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2025_RETIRED_HOLO) {
-      tunables.elevatorKP.initDefault(4);
-      tunables.elevatorKD.initDefault(0);
-      tunables.elevatorKG.initDefault(0.0);
-
-      tunables.maxVelocityConfig.initDefault(10);
-      tunables.targetAccelerationConfig.initDefault(10);
-
-    } else if (Constants.RobotMode.getRobot() == RobotType.ROBOT_SIMBOT) {
+    if (Constants.RobotMode.getRobot() == RobotType.ROBOT_SIMBOT) {
       tunables.elevatorKP.initDefault(.2);
       tunables.elevatorKD.initDefault(0);
       tunables.elevatorKG.initDefault(0.0);

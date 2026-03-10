@@ -8,9 +8,6 @@ import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
@@ -23,6 +20,7 @@ import frc.robot.subsystems.swerve.SwerveModule;
 import frc.robot.subsystems.swerve.SwerveModuleIO;
 import frc.robot.subsystems.swerve.SwerveModuleIOTalonFX;
 import frc.robot.subsystems.swerve.SwerveModules;
+import frc.robot.subsystems.vision.CameraConfiguration;
 import frc.robot.subsystems.vision.VisionModuleConfiguration;
 
 public class RobotConfig2026 extends RobotConfig {
@@ -204,20 +202,37 @@ public class RobotConfig2026 extends RobotConfig {
       getModuleTranslations());
 
   // ---- VISION -------
-  public final Transform3d SHOOTER_SIDE_LEFT = new Transform3d(
-      new Translation3d(Units.Inches.of(12.5).in(Units.Meters), Units.Inches.of(7.1405).in(Units.Meters),
-          Units.Inches.of(10).in(Units.Meters)),
-      new Rotation3d(Math.toRadians(0.0), Math.toRadians(-25.0), Math.toRadians(-16.5)));
-
-  public final Transform3d SHOOTER_SIDE_RIGHT = new Transform3d(
-      new Translation3d(Units.Inches.of(12.5).in(Units.Meters), Units.Inches.of(-7.1405).in(Units.Meters),
-          Units.Inches.of(10).in(Units.Meters)),
-      new Rotation3d(Math.toRadians(0.0), Math.toRadians(-25.0), Math.toRadians(16.5)));
+  public final static boolean      RobotIsRotatedBackward = true;
+  public final CameraConfiguration SHOOTER_SIDE_LEFT;
+  public final CameraConfiguration SHOOTER_SIDE_RIGHT;
 
   public final String SHOOTER_SIDE_LEFT_CAMERA_NAME  = "1_Shooter_Left_See3Cam";
   public final String SHOOTER_SIDE_RIGHT_CAMERA_NAME = "2_Shooter_Right_See3Cam";
 
   public final AprilTagFields APRIL_TAG_FIELD = AprilTagFields.k2026RebuiltWelded;
+
+  public RobotConfig2026() {
+    SHOOTER_SIDE_LEFT       = new CameraConfiguration();
+    SHOOTER_SIDE_LEFT.x     = Units.Inches.of(12.5);
+    SHOOTER_SIDE_LEFT.y     = Units.Inches.of(7.1405);
+    SHOOTER_SIDE_LEFT.z     = Units.Inches.of(10);
+    SHOOTER_SIDE_LEFT.roll  = Units.Degree.of(0.0);
+    SHOOTER_SIDE_LEFT.pitch = Units.Degree.of(-25.0);
+    SHOOTER_SIDE_LEFT.yaw   = Units.Degree.of(-16.5);
+
+    SHOOTER_SIDE_RIGHT       = new CameraConfiguration();
+    SHOOTER_SIDE_RIGHT.x     = Units.Inches.of(12.5);
+    SHOOTER_SIDE_RIGHT.y     = Units.Inches.of(-7.1405);
+    SHOOTER_SIDE_RIGHT.z     = Units.Inches.of(10);
+    SHOOTER_SIDE_RIGHT.roll  = Units.Degree.of(0.0);
+    SHOOTER_SIDE_RIGHT.pitch = Units.Degree.of(-25.0);
+    SHOOTER_SIDE_RIGHT.yaw   = Units.Degree.of(16.5);
+
+    if (RobotIsRotatedBackward) {
+      SHOOTER_SIDE_LEFT.rotate180();
+      SHOOTER_SIDE_RIGHT.rotate180();
+    }
+  }
 
   /*
    *
@@ -302,6 +317,11 @@ public class RobotConfig2026 extends RobotConfig {
   @Override
   public CANBus getCANBus() {
     return CAN_BUS_NAME;
+  }
+
+  @Override
+  public boolean isRobotRotatedBackward() {
+    return RobotIsRotatedBackward;
   }
 
   @Override

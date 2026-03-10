@@ -6,9 +6,6 @@ import com.pathplanner.lib.config.ModuleConfig;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.geometry.Rotation3d;
-import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.Distance;
@@ -21,6 +18,7 @@ import frc.robot.subsystems.swerve.SwerveModule;
 import frc.robot.subsystems.swerve.SwerveModuleIO;
 import frc.robot.subsystems.swerve.SwerveModuleIOSim;
 import frc.robot.subsystems.swerve.SwerveModules;
+import frc.robot.subsystems.vision.CameraConfiguration;
 import frc.robot.subsystems.vision.VisionModuleConfiguration;
 
 public class SimulatorRobotConfig extends RobotConfig {
@@ -120,25 +118,9 @@ public class SimulatorRobotConfig extends RobotConfig {
       .withSupplyCurrentLimit(25).withSupplyCurrentLimitEnable(true);
 
   // ---- VISION CAMERA TRANSFORM3d's -------
-  public final Transform3d SHOOTER_SIDE_LEFT = new Transform3d(
-      new Translation3d(Units.Inches.of(-0.62273).in(Units.Meters), Units.Inches.of(9.625919).in(Units.Meters),
-          Units.Inches.of(22.21467).in(Units.Meters)),
-      new Rotation3d(0.0, 0.0, Math.toRadians(225.0)));
-
-  public final Transform3d SHOOTER_SIDE_RIGHT = new Transform3d(
-      new Translation3d(Units.Inches.of(-0.62273).in(Units.Meters), Units.Inches.of(-9.625919).in(Units.Meters),
-          Units.Inches.of(22.21467).in(Units.Meters)),
-      new Rotation3d(0.0, 0.0, Math.toRadians(135.0)));
-
-  public final Transform3d INTAKE_SIDE_LEFT = new Transform3d(
-      new Translation3d(Units.Inches.of(0.64738).in(Units.Meters), Units.Inches.of(13.14840).in(Units.Meters),
-          Units.Inches.of(22.31306).in(Units.Meters)),
-      new Rotation3d(0.0, 0.0, Math.toRadians(45.0)));
-
-  public final Transform3d INTAKE_SIDE_RIGHT = new Transform3d(
-      new Translation3d(Units.Inches.of(0.64738).in(Units.Meters), Units.Inches.of(-13.14840).in(Units.Meters),
-          Units.Inches.of(22.31306).in(Units.Meters)),
-      new Rotation3d(0.0, 0.0, Math.toRadians(-45.0)));
+  public final static boolean      RobotIsRotatedBackward = true;
+  public final CameraConfiguration SHOOTER_SIDE_LEFT;
+  public final CameraConfiguration SHOOTER_SIDE_RIGHT;
 
   private final com.pathplanner.lib.config.RobotConfig PATH_PLANNER_CONFIG = new com.pathplanner.lib.config.RobotConfig(
       Units.Kilogram.of(115), Units.KilogramSquareMeters.of(5.3598424503),
@@ -147,11 +129,33 @@ public class SimulatorRobotConfig extends RobotConfig {
           Units.Amps.of(DRIVE_TALON_CURRENT_LIMIT_CONFIGS.SupplyCurrentLimit), 1),
       getModuleTranslations());
 
-  public final String OBJECT_DETECTION_CAMERA_NAME   = "0_Object_Detection_ELP";
   public final String SHOOTER_SIDE_LEFT_CAMERA_NAME  = "1_Shooter_Left_See3Cam";
   public final String SHOOTER_SIDE_RIGHT_CAMERA_NAME = "2_Shooter_Right_See3Cam";
 
   public final AprilTagFields APRIL_TAG_FIELD = AprilTagFields.k2026RebuiltWelded;
+
+  public SimulatorRobotConfig() {
+    SHOOTER_SIDE_LEFT       = new CameraConfiguration();
+    SHOOTER_SIDE_LEFT.x     = Units.Inches.of(-0.62273);
+    SHOOTER_SIDE_LEFT.y     = Units.Inches.of(9.625919);
+    SHOOTER_SIDE_LEFT.z     = Units.Inches.of(22.21467);
+    SHOOTER_SIDE_LEFT.roll  = Units.Degrees.of(0);
+    SHOOTER_SIDE_LEFT.pitch = Units.Degrees.of(0);
+    SHOOTER_SIDE_LEFT.yaw   = Units.Degrees.of(225.0);
+
+    SHOOTER_SIDE_RIGHT       = new CameraConfiguration();
+    SHOOTER_SIDE_RIGHT.x     = Units.Inches.of(-0.62273);
+    SHOOTER_SIDE_RIGHT.y     = Units.Inches.of(-9.625919);
+    SHOOTER_SIDE_RIGHT.z     = Units.Inches.of(22.21467);
+    SHOOTER_SIDE_RIGHT.roll  = Units.Degrees.of(0);
+    SHOOTER_SIDE_RIGHT.pitch = Units.Degrees.of(0);
+    SHOOTER_SIDE_RIGHT.yaw   = Units.Degrees.of(135.0);
+
+    if (RobotIsRotatedBackward) {
+      SHOOTER_SIDE_LEFT.rotate180();
+      SHOOTER_SIDE_RIGHT.rotate180();
+    }
+  }
 
   /*
    *
@@ -189,6 +193,7 @@ public class SimulatorRobotConfig extends RobotConfig {
   // CAVEAT: only call when we're testing real cameras on sim robot
   @Override
   public VisionModuleConfiguration[] getVisionModuleObjects() {
+
     return new VisionModuleConfiguration[] {
         VisionModuleConfiguration.build(SHOOTER_SIDE_LEFT_CAMERA_NAME, SHOOTER_SIDE_LEFT),
         VisionModuleConfiguration.build(SHOOTER_SIDE_RIGHT_CAMERA_NAME, SHOOTER_SIDE_RIGHT)
@@ -241,6 +246,11 @@ public class SimulatorRobotConfig extends RobotConfig {
   @Override
   public CANBus getCANBus() {
     return null;
+  }
+
+  @Override
+  public boolean isRobotRotatedBackward() {
+    return RobotIsRotatedBackward;
   }
 
   @Override
