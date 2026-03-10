@@ -154,7 +154,7 @@ public class Shooter extends SubsystemBase {
   private Rotation2d targetHoodPosition = Constants.zeroRotation2d;
   private double     flywheelTargetRPM  = 0.0;
 
-  private Distance distanceFromTarget = Distance.ofRelativeUnits(100, Units.Meters);
+  private Distance distanceFromTarget = Distance.ofRelativeUnits(1, Units.Meters);
   private boolean  isFacingTarget;
 
   private final Trigger initialStallDetected = new Trigger(() -> inputs.kickerVelocityRPM <= 50

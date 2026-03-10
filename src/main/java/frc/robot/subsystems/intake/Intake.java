@@ -173,11 +173,11 @@ public class Intake extends SubsystemBase {
       roller.maxAccelerationConstraint.initDefault(200);
 
       pivot.KP.initDefault(80);
-      pivot.KI.initDefault(0.0);
+      pivot.KI.initDefault(2);
       pivot.KD.initDefault(5);
-      pivot.KG.initDefault(-2.2);
+      pivot.KG.initDefault(0);
       pivot.maxProfiledVelocity.initDefault(200);
-      pivot.maxAccelerationConstraint.initDefault(1500);
+      pivot.maxAccelerationConstraint.initDefault(500);
     }
 
     io.setPivotVoltage(0.0);

@@ -309,7 +309,7 @@ public final class Constants {
 
       public static final Rotation2d MIN_ANGLE_RAD  = Rotation2d.fromDegrees(12);
       public static final Rotation2d MAX_ANGLE_RAD  = Rotation2d.fromDegrees(12 + 20);
-      public static final Rotation2d IDLE_ANGLE_RAD = Rotation2d.fromDegrees(30);
+      public static final Rotation2d IDLE_ANGLE_RAD = Rotation2d.fromDegrees(12);
 
       public static final double SIM_INITIAL_ANGLE = Math.toRadians(14.0);
 
