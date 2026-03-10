@@ -129,7 +129,7 @@ public class Robot extends LoggedRobot {
       case REAL:
         // Running on a real robot, log to a USB stick
         Logger.addDataReceiver(new LoggerGroup.Redirector());
-        if (Constants.RobotMode.getRobot() == Constants.RobotMode.RobotType.ROBOT_2026) {
+        if (Constants.RobotMode.getRobot() == Constants.RobotMode.RobotType.ROBOT_2026_DOUG) {
           LoggerGroup.setDataLog("/media/sda1");
         }
         break;

@@ -52,7 +52,7 @@ public final class Constants {
   }
 
   public static class RobotMode {
-    private static final RobotType ROBOT = RobotType.ROBOT_2026;
+    private static final RobotType ROBOT = RobotType.ROBOT_2026_DOUG;
 
     public static boolean isSimBot() {
       switch (getRobot()) {
@@ -87,7 +87,7 @@ public final class Constants {
       // object that is created. In this case ExampleRobotConfig. Suppliers solve this
       // by only creating the specific config object corresponding to the robot type
       ROBOT_SIMBOT(SimulatorRobotConfig::new), ROBOT_SIMBOT_REAL_CAMERAS(SimulatorRobotConfig::new),
-      ROBOT_2025_RETIRED_HOLO(RobotConfig2025::new), ROBOT_2026(RobotConfig2026::new); // Someone please name it...
+      ROBOT_2025_RETIRED_HOLO(RobotConfig2025::new), ROBOT_2026_DOUG(RobotConfig2026::new); // Someone please name it...
 
       public final Supplier<RobotConfig> config;
 
@@ -113,7 +113,7 @@ public final class Constants {
      * y = front to back
      */
     public static Translation2d ROBOT_DIMENSIONS_WITHOUT_BUMPERS() {
-      if (RobotMode.getRobot() == RobotType.ROBOT_2026) {
+      if (RobotMode.getRobot() == RobotType.ROBOT_2026_DOUG) {
         return new Translation2d(Units.Inches.of(27.0), Units.Inches.of(32.5));
       } else {
         return new Translation2d(Units.Inches.of(28.5), Units.Inches.of(30.5));
@@ -242,7 +242,7 @@ public final class Constants {
   }
 
   public static class ArmConstants {
-    public static final Distance ARM_LENGTH = RobotMode.ROBOT == RobotType.ROBOT_2026 ? Units.Inches.of(14)
+    public static final Distance ARM_LENGTH = RobotMode.ROBOT == RobotType.ROBOT_2026_DOUG ? Units.Inches.of(14)
         : Units.Inches.of(22.080109);
   }
 

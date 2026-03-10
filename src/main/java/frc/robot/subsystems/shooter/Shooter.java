@@ -175,7 +175,7 @@ public class Shooter extends SubsystemBase {
     var flywheel = tunables.flywheel;
     var kicker   = tunables.kicker;
 
-    if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2026) {
+    if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2026_DOUG) {
       hood.KP.initDefault(800.0);
       hood.KD.initDefault(0.0);
       hood.KG.initDefault(0.0);
