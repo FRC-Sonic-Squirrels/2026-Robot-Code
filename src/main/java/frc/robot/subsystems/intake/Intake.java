@@ -21,7 +21,7 @@ import frc.robot.Constants.IntakeConstants.PivotConstants;
 
 public class Intake extends SubsystemBase {
   public enum Goal {
-    Stow, Down, Eject, Intake
+    Stow, Down, Eject, Roll, Intake
   }
 
   public static class RollerLogs extends AutoRegisterLoggers {
@@ -225,6 +225,9 @@ public class Intake extends SubsystemBase {
           break;
         case Eject:
           setRollerVelocity(tunables.ejectingFuelVelocity.get() * -1);
+          break;
+        case Roll:
+          setRollerVelocity(tunables.intakingFuelVelocity.get());
           break;
         case Intake:
           setPivotAngle(PivotConstants.MAX_PIVOT_ANGLE);
