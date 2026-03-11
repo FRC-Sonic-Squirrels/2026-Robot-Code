@@ -75,7 +75,7 @@ public class RotateToFaceHelper {
 
     Rotation2d finalRotation = new Rotation2d(normalizedAngleToCenter);
 
-    if (isRobotRotatedBackward) {
+    if (!isRobotRotatedBackward) {
       return finalRotation;
     }
 
