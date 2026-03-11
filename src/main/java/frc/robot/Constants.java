@@ -330,6 +330,8 @@ public final class Constants {
       public static final double PEAK_REVERSE_VOLTAGE = 0;
       public static final double SUPPLY_VOLTAGE_TIME  = 0.02;
       public static final double IDLE_FLYWHEEL_RPM    = 0;     // 2000;
+      public static final double DEBOUNCE_AT_TARGET   = 0.15;
+
     }
 
     public static class Kicker {
@@ -338,7 +340,7 @@ public final class Constants {
       public static final double SUPPLY_CURRENT_LIMIT                 = 40;
       public static final double STATOR_CURRENT_LIMIT                 = 40;
       public static final double SHOOTING_KICKER_RPM                  = 1600;
-      public static final double STALL_CURRENT_THRESHOLD              = 20;
+      public static final double STALL_CURRENT_THRESHOLD              = 35;
       public static final double PRELOADING_KICKER_RPM                = 800;
       public static final double DURATION_TO_CONFIRM_STALL            = 0.1;
       public static final double DURATION_TO_CONFIRM_UNSTALL          = 0.2;

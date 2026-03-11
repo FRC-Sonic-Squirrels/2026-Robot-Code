@@ -41,6 +41,9 @@ public class Shooter extends SubsystemBase {
     public LoggerEntry.Bool    hoodReady;
     public LoggerEntry.Bool    flywheelReady;
 
+    public LoggerEntry.Bool stallDetected;
+    public LoggerEntry.Bool persistantStallDetected;
+
     public InputsLogs inputs;
   }
 
@@ -85,7 +88,7 @@ public class Shooter extends SubsystemBase {
     @TunableEntry(defaultValue = 0.0)
     public LoggedTunableNumber overrideRPM;
 
-    @TunableEntry(defaultValue = 150)
+    @TunableEntry(defaultValue = 250)
     public LoggedTunableNumber toleranceRPM;
 
     public boolean hasChanged() {
@@ -157,7 +160,7 @@ public class Shooter extends SubsystemBase {
   private Distance distanceFromTarget = Distance.ofRelativeUnits(1, Units.Meters);
   private boolean  isFacingTarget;
 
-  private final Trigger initialStallDetected = new Trigger(() -> inputs.kickerVelocityRPM <= 50
+  private final Trigger initialStallDetected = new Trigger(() -> inputs.kickerVelocityRPM < ShooterConstants.Kicker.SHOOTING_KICKER_RPM * .6
       && inputs.kickerCurrentAmps >= ShooterConstants.Kicker.STALL_CURRENT_THRESHOLD)
       .debounce(ShooterConstants.Kicker.DURATION_TO_CONFIRM_STALL);
 
@@ -184,7 +187,7 @@ public class Shooter extends SubsystemBase {
 
       flywheel.KP.initDefault(0.1);
       flywheel.KI.initDefault(1);
-      flywheel.KD.initDefault(0.01);
+      flywheel.KD.initDefault(0.02);
       flywheel.KV.initDefault(0.0);
       flywheel.KS.initDefault(0.0);
       flywheel.closedLoopMaxAccelerationConstraint.initDefault(1000.0);
@@ -256,10 +259,11 @@ public class Shooter extends SubsystemBase {
       logs.flywheelRollersDifference.info(inputs.flywheelRPM[1] - inputs.flywheelRPM[0]);
       logs.state.info(goal);
       logs.targetDistance.info(distanceFromTarget.in(Units.Meters));
-      logs.facingTarget.info(isFacingTarget);
       logs.shooterReady.info(isShooterReady());
       logs.hoodReady.info(isHoodReady());
       logs.flywheelReady.info(isFlywheelReady());
+      logs.stallDetected.info(stallDetected.getAsBoolean());
+      logs.persistantStallDetected.info(persistantStallDetected.getAsBoolean());
 
       switch (goal) {
         case Idle:
@@ -383,14 +387,6 @@ public class Shooter extends SubsystemBase {
     return inputs.flywheelRPM[0];
   }
 
-  public boolean isAtTargetRPM() {
-    return isAtTargetRPM(flywheelTargetRPM);
-  }
-
-  public boolean isAtTargetRPM(double rpm) {
-    return inputs.flywheelRPM[0] > rpm - tunables.flywheel.toleranceRPM.get();
-  }
-
   public double getHoodPIDLatency() {
     return hoodPidLatency;
   }
@@ -460,11 +456,12 @@ public class Shooter extends SubsystemBase {
 
   public void setFacingTarget(boolean updatedIsFacingTarget) {
     isFacingTarget = updatedIsFacingTarget;
+    logs.facingTarget.info(isFacingTarget);
   }
 
   public boolean isFlywheelReady() {
     double desiredFlywheelRPM = getFlywheelRPM(distanceFromTarget);
-    return Math.abs(inputs.flywheelRPM[0] - desiredFlywheelRPM) < tunables.flywheel.toleranceRPM.get();
+    return inputs.flywheelRPM[0] > desiredFlywheelRPM - tunables.flywheel.toleranceRPM.get();
   }
 
   public boolean isHoodReady() {
@@ -473,8 +470,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean isShooterReady() {
-    return isFlywheelReady();
-//    return isFacingTarget && isFlywheelReady() && isHoodReady();
+    return isFacingTarget && isFlywheelReady() && isHoodReady();
   }
 
   public boolean getFuelInUpperKicker() {
@@ -482,13 +478,11 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean kickerStallDetected() {
-    return false;
-//    return stallDetected.getAsBoolean();
+    return stallDetected.getAsBoolean();
   }
 
   public boolean persistantKickerStallDetected() {
-    return false;
-//    return persistantStallDetected.getAsBoolean();
+    return persistantStallDetected.getAsBoolean();
   }
 
   public void setGoal(Goal goal) {

@@ -251,7 +251,7 @@ public class RobotStates {
     RotateToFaceState rotateState = rotateToFaceHelper.periodic(drivetrain.getHubPoseEstimatorPose(true),
         config.isRobotRotatedBackward());
     drivetrain.setRotationOverride(rotateState.omega());
-    shooter.setFacingTarget(true);// rotateState.withinTolerance());
+    shooter.setFacingTarget(rotateState.withinTolerance());
     shooter.setDistanceFromTarget(rotateState.distance());
   }
 

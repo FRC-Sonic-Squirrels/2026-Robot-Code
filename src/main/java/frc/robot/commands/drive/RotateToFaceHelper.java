@@ -89,25 +89,20 @@ public class RotateToFaceHelper {
     var currentPoseRotation = pose.getRotation();
     var rotVel              = rotationalPID.calculate(currentPoseRotation.getRadians(), targetangle.getRadians());
 
+    var error           = Math.toDegrees(rotationalPID.getPositionError());
+    var withinTolerance = Math.abs(error) <= tunables.toleranceDegrees.get();
+
     logs.rotVel.info(rotVel);
     logs.targetRotation.info(targetangle);
     logs.currentRotation.info(currentPoseRotation);
-    logs.positionErrorDeg.info(Math.toDegrees(getError()));
+    logs.positionErrorDeg.info(error);
 
-    return new RotateToFaceState(rotVel, withinTolerance(), Units.Meters.of(target.getDistance(currentTranslation)));
+    return new RotateToFaceState(rotVel, withinTolerance, Units.Meters.of(target.getDistance(currentTranslation)));
   }
 
   public boolean setTarget(Translation2d target) {
     boolean reset = !Objects.equals(this.target, target);
     this.target = target;
     return reset;
-  }
-
-  private boolean withinTolerance() {
-    return Math.abs(Math.toDegrees(getError())) <= tunables.toleranceDegrees.get();
-  }
-
-  private double getError() {
-    return rotationalPID.getPositionError();
   }
 }
