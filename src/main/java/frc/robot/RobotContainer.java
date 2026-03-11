@@ -435,12 +435,17 @@ public class RobotContainer {
     // ---------- OPERATOR CONTROLS -----------
 
     // Eject
-    operatorController.registerTrigger(XboxControllerWrapper.Button.leftBumper, "Left Intake Eject")
-        .react(robotStates.changeIntakeGoal(IntakeGoal.LeftEject, RobotStates.IntakeGoal.Stow));
+    operatorController.registerTrigger(XboxControllerWrapper.Button.leftBumper, "Left Intake Roll")
+        .react(robotStates.changeIntakeGoal(IntakeGoal.LeftRoll, RobotStates.IntakeGoal.Stow));
 
-    operatorController.registerTrigger(XboxControllerWrapper.Button.rightBumper, "Right Intake Eject")
-        .react(robotStates.changeIntakeGoal(IntakeGoal.RightEject, RobotStates.IntakeGoal.Stow));
+    operatorController.registerTrigger(XboxControllerWrapper.Button.rightBumper, "Right Intake Roll")
+        .react(robotStates.changeIntakeGoal(IntakeGoal.RightRoll, RobotStates.IntakeGoal.Stow));
 
+    operatorController.registerTrigger(XboxControllerWrapper.Button.leftStick, "Left Intake Eject")
+        .react(robotStates.changeIntakeGoal(IntakeGoal.LeftEject, IntakeGoal.Stow));
+
+    operatorController.registerTrigger(XboxControllerWrapper.Button.rightStick, "Right Intake Eject")
+        .react(robotStates.changeIntakeGoal(IntakeGoal.RightEject, IntakeGoal.Stow));
     // Intake
     operatorController.registerTrigger(XboxControllerWrapper.Button.leftTrigger, "Left Intake")
         .react(robotStates.changeIntakeGoal(IntakeGoal.LeftIntake, RobotStates.IntakeGoal.Stow));
