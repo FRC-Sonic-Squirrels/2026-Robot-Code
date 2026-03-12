@@ -38,7 +38,7 @@ public class RotateToFaceHelper {
     @TunableEntry(defaultValue = 4 * Math.PI)
     public LoggedTunableNumber maxAcceleration;
 
-    @TunableEntry(defaultValue = 1)
+    @TunableEntry(defaultValue = 4)
     public LoggedTunableNumber toleranceDegrees;
   }
 

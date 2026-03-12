@@ -176,6 +176,10 @@ public class RobotStates {
 
     if (goal.shooterActive) {
       shoot();
+    } else {
+      setRotateToFaceTarget(FieldConstants.HUB_CENTER_POSE.get());
+      RotateToFaceState rotateState = rotateToFaceHelper.periodic(drivetrain.getHubPoseEstimatorPose(true), config.isRobotRotatedBackward());
+      shooter.setDistanceFromTarget(rotateState.distance());
     }
 
     periodicIntake(currentIntakeGoal);

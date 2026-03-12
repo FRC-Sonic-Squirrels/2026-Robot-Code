@@ -450,8 +450,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public void setDistanceFromTarget(Distance updatedDistanceFromTarget) {
-    distanceFromTarget = Distance.ofRelativeUnits(1, Units.Meters);
-    // distanceFromTarget = updatedDistanceFromTarget;
+    distanceFromTarget = updatedDistanceFromTarget;
   }
 
   public void setFacingTarget(boolean updatedIsFacingTarget) {
