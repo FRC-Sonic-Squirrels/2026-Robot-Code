@@ -160,8 +160,9 @@ public class Shooter extends SubsystemBase {
   private Distance distanceFromTarget = Distance.ofRelativeUnits(1, Units.Meters);
   private boolean  isFacingTarget;
 
-  private final Trigger initialStallDetected = new Trigger(() -> inputs.kickerVelocityRPM < ShooterConstants.Kicker.SHOOTING_KICKER_RPM * .6
-      && inputs.kickerCurrentAmps >= ShooterConstants.Kicker.STALL_CURRENT_THRESHOLD)
+  private final Trigger initialStallDetected = new Trigger(
+      () -> inputs.kickerVelocityRPM < ShooterConstants.Kicker.SHOOTING_KICKER_RPM * .6
+          && inputs.kickerCurrentAmps >= ShooterConstants.Kicker.STALL_CURRENT_THRESHOLD)
       .debounce(ShooterConstants.Kicker.DURATION_TO_CONFIRM_STALL);
 
   private final Trigger stallDetected = new Trigger(() -> initialStallDetected.getAsBoolean())
@@ -420,7 +421,7 @@ public class Shooter extends SubsystemBase {
       return 0;
     }
     if (kickerStallDetected()) {
-      return -ShooterConstants.Kicker.SHOOTING_KICKER_RPM;
+      return ShooterConstants.Kicker.UNJAM_KICKER_RPM;
     }
     if (shouldMoveUp) {
       switch (goal) {

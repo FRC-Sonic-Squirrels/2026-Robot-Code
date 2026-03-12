@@ -339,11 +339,12 @@ public final class Constants {
       public static final double GEARING                              = 3.33333;
       public static final double SUPPLY_CURRENT_LIMIT                 = 40;
       public static final double STATOR_CURRENT_LIMIT                 = 40;
-      public static final double SHOOTING_KICKER_RPM                  = 1600;
+      public static final double SHOOTING_KICKER_RPM                  = 2500;
+      public static final double UNJAM_KICKER_RPM                     = -1200;
       public static final double STALL_CURRENT_THRESHOLD              = 35;
       public static final double PRELOADING_KICKER_RPM                = 800;
-      public static final double DURATION_TO_CONFIRM_STALL            = 0.1;
-      public static final double DURATION_TO_CONFIRM_UNSTALL          = 0.2;
+      public static final double DURATION_TO_CONFIRM_STALL            = 0.2;
+      public static final double DURATION_TO_CONFIRM_UNSTALL          = 0.4;
       public static final double DURATION_TO_CONFIRM_PERSISTANT_STALL = 1;
     }
 
@@ -351,30 +352,23 @@ public final class Constants {
       public static TunableInterpolationMap generateHoodAngleForHubDistanceMap() {
         var map = new HashMap<Double, Double>();
         map.put(1.0, 12.0);
-        map.put(1.5, 12.0);
-        map.put(2.0, 12.0);
-        map.put(2.5, 12.0);
-        map.put(3.0, 12.0);
-        map.put(3.5, 12.0);
-        map.put(4.0, 12.0);
-        map.put(4.5, 12.0);
-        map.put(5.0, 12.0);
-        map.put(5.5, 12.0);
-        map.put(6.0, 12.0);
-        map.put(6.5, 12.0);
+        map.put(1.5, 16.0);
+        map.put(2.0, 20.0);
+        map.put(2.5, 20.0);
+        map.put(3.0, 20.0);
+        map.put(3.5, 20.0);
+        map.put(4.0, 20.0);
         return new TunableInterpolationMap("HOOD_ANGLE_FOR_HUB_DISTANCE", map);
       }
 
       public static TunableInterpolationMap generateFlywheelRpmForHubDistanceMap() {
         var map = new HashMap<Double, Double>();
-        map.put(1.0, 2000.0);
-        map.put(2.0, 3000.0);
-        map.put(3.0, 4500.0);
-        map.put(4.0, 5200.0);
-        map.put(7.0, 6000.0);
-        map.put(8.0, 6800.0);
-        map.put(9.5, 7200.0);
-        map.put(11.5, 8000.0);
+        map.put(1.0, 3000.0);
+        map.put(1.5, 3200.0);
+        map.put(2.0, 3500.0);
+        map.put(2.5, 4200.0);
+        map.put(3.0, 5000.0);
+        map.put(3.5, 5000.0);
         return new TunableInterpolationMap("RPM_FOR_HUB_DISTANCE", map);
       }
 
