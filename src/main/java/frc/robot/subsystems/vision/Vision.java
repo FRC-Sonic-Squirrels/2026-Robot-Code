@@ -3,10 +3,7 @@ package frc.robot.subsystems.vision;
 import com.ctre.phoenix6.Utils;
 import edu.wpi.first.apriltag.AprilTag;
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Pose3d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.*;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.team2930.*;
@@ -56,6 +53,7 @@ public class Vision extends SubsystemBase {
     public LoggerEntry.Decimal        poseEstimatorErrorPitch;
     public LoggerEntry.Decimal        poseEstimatorErrorYaw;
     public LoggerEntry.Decimal        poseEstimatorErrorRoll;
+    public LoggerEntry.Struct<Pose3d> cameraDisagreement;
   }
 
   public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
@@ -215,6 +213,15 @@ public class Vision extends SubsystemBase {
 
       logs.useVision.info(useVisionForPoseEstimation);
       logs.useMaxDistanceAwayFromExistingEstimate.info(useMaxDistanceAwayFromExistingEstimate);
+
+      var camera1 = visionModules.get(0).loggedFields;
+      var camera2 = visionModules.get(1).loggedFields;
+      if (camera1.numSeenTargets() > 0 && camera2.numSeenTargets() > 0) {
+        Pose3d pose1 = camera1.robotPose3d();
+        Pose3d pose2 = camera2.robotPose3d();
+        var    diff  = pose1.minus(pose2);
+        logs.cameraDisagreement.info(new Pose3d(diff.getTranslation(), diff.getRotation()));
+      }
     }
   }
 
