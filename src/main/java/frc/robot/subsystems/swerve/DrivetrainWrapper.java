@@ -30,7 +30,7 @@ public class DrivetrainWrapper {
     @TunableEntry(defaultValue = 100.0)
     public LoggedTunableNumber driveSpeedPercent;
 
-    @TunableEntry(defaultValue = 100.0)
+    @TunableEntry(defaultValue = 50.0)
     public LoggedTunableNumber rotateSpeedPercent;
   }
 

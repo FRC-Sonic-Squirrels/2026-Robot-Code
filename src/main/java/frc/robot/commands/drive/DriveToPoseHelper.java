@@ -84,8 +84,8 @@ public class DriveToPoseHelper {
 
   /** Drives to the specified pose under full software control. */
   public DriveToPoseHelper(Supplier<Boolean> slowMode) {
-    this.slowMode               = slowMode;
-    this.driveToleranceValue    = 0.1;
+    this.slowMode            = slowMode;
+    this.driveToleranceValue = 0.1;
 
     tunables.driveMaxVelocity.initDefault(5);
     tunables.driveMaxVelocitySlow.initDefault(Units.Inches.of(50.0).in(Units.Meters));

@@ -125,6 +125,9 @@ public class Intake extends SubsystemBase {
   private final IntakeIO        io;
   private final IntakeIO.Inputs inputs;
 
+  private final Rotation2d minPivotAngle;
+  private final Rotation2d maxPivotAngle;
+
   // Intake states
   private Goal goal = Goal.Stow;
 
@@ -135,7 +138,10 @@ public class Intake extends SubsystemBase {
   private final Trigger stallDetected;
 
   /** Creates a new Intake. */
-  public Intake(String name, IntakeIO io) {
+  public Intake(String name, IntakeIO io, Rotation2d minPivotAngle, Rotation2d maxPivotAngle) {
+    this.minPivotAngle = minPivotAngle;
+    this.maxPivotAngle = maxPivotAngle;
+
     logs = LoggerGroup.root.newAutoLogger(Logs.class, name);
 
     // Execution timing
@@ -173,7 +179,7 @@ public class Intake extends SubsystemBase {
       roller.maxAccelerationConstraint.initDefault(200);
 
       pivot.KP.initDefault(80);
-      pivot.KI.initDefault(2);
+      pivot.KI.initDefault(20);
       pivot.KD.initDefault(5);
       pivot.KG.initDefault(0);
       pivot.maxProfiledVelocity.initDefault(200);
@@ -227,7 +233,7 @@ public class Intake extends SubsystemBase {
           setRollerVelocity(0);
           break;
         case Down:
-          setPivotAngle(PivotConstants.MAX_PIVOT_ANGLE);
+          setPivotAngle(maxPivotAngle);
           // setPivotDownCurrentLimit();
           // setPivotVoltage(-2);
           setRollerVelocity(0);
@@ -239,7 +245,7 @@ public class Intake extends SubsystemBase {
           setRollerVelocity(tunables.intakingFuelVelocity.get());
           break;
         case Intake:
-          setPivotAngle(PivotConstants.MAX_PIVOT_ANGLE);
+          setPivotAngle(maxPivotAngle);
           // setPivotDownCurrentLimit();
           // setPivotVoltage(-2);
           setRollerVelocity(tunables.intakingFuelVelocity.get());
@@ -288,8 +294,8 @@ public class Intake extends SubsystemBase {
   }
 
   public void setPivotAngle(Rotation2d angle) {
-    Rotation2d targetAngle = Rotation2d.fromRadians(MathUtil.clamp(angle.getRadians(),
-        PivotConstants.MIN_PIVOT_ANGLE.getRadians(), PivotConstants.MAX_PIVOT_ANGLE.getRadians()));
+    Rotation2d targetAngle = Rotation2d
+        .fromRadians(MathUtil.clamp(angle.getRadians(), minPivotAngle.getRadians(), maxPivotAngle.getRadians()));
     pivotControlMode = ControlMode.CLOSED_LOOP;
 
     pivotTargetAngle = targetAngle;
@@ -298,7 +304,7 @@ public class Intake extends SubsystemBase {
   }
 
   public void resetPivotSensorToHomePosition() {
-    io.resetPivotSensorPosition(PivotConstants.HOME_POSITION);
+    io.resetPivotSensorPosition(PivotConstants.ZERO_POSITION);
   }
 
   public void setPivotNeutralMode(NeutralModeValue value) {

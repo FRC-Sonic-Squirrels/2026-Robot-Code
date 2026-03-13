@@ -173,6 +173,10 @@ public class RobotContainer {
     var fakeIntakeIO   = new IntakeIO() {
                        };
 
+    var minPivotAngle      = Constants.IntakeConstants.PivotConstants.MIN_PIVOT_ANGLE;
+    var maxPivotAngleLeft  = Constants.IntakeConstants.PivotConstants.MAX_PIVOT_ANGLE_LEFT;
+    var maxPivotAngleRight = Constants.IntakeConstants.PivotConstants.MAX_PIVOT_ANGLE_RIGHT;
+
     if (mode == Mode.REPLAY) {
       drivetrain = new Drivetrain(config, new GyroIO.Fake(), new GyroIO.Fake(), config.getReplaySwerveModuleObjects(),
           () -> is_autonomous);
@@ -181,9 +185,9 @@ public class RobotContainer {
           drivetrain::addVisionEstimate, config.getReplayVisionModules());
 
       leftIntake  = new Intake(leftIntakeRoot, new IntakeIO() {
-                  });
+                  }, minPivotAngle, maxPivotAngleLeft);
       rightIntake = new Intake(rightIntakeRoot, new IntakeIO() {
-                  });
+                  }, minPivotAngle, maxPivotAngleRight);
 
       climber = new Climber(fakeElevatorIO, fakeElevatorIO, 0, Rotation2d.kZero, Rotation2d.kZero);
       hopper  = new Hopper(fakeHopperIO);
@@ -227,8 +231,8 @@ public class RobotContainer {
               Constants.ClimberConstants.FOLLOWER_PULLEY_DIAMETER.in(Units.Inches),
               Constants.ClimberConstants.MAX_FOLLOWER_CLIMBER_HEIGHT);
 
-          leftIntake = new Intake(leftIntakeRoot, new IntakeIOSim());
-          rightIntake = new Intake(rightIntakeRoot, new IntakeIOSim());
+          leftIntake = new Intake(leftIntakeRoot, new IntakeIOSim(), minPivotAngle, maxPivotAngleLeft);
+          rightIntake = new Intake(rightIntakeRoot, new IntakeIOSim(), minPivotAngle, maxPivotAngleRight);
           climber = new Climber(new ElevatorIOSim(leaderConfig), new ElevatorIOSim(followerConfig), 0, Rotation2d.kZero,
               Rotation2d.kZero);
           hopper = new Hopper(new HopperIOSim());
@@ -247,8 +251,10 @@ public class RobotContainer {
               InvertedValue.Clockwise_Positive,
               config.newMotor(RobotConfig2026.CanIDs.INTAKE_RIGHT_ROLLER_CAN_ID, RobotConfig.CANSpeed.ROBORIO),
               InvertedValue.CounterClockwise_Positive);
-          leftIntake  = new Intake(leftIntakeRoot, new IntakeIOReal(leftIntakeIOConfig));
-          rightIntake = new Intake(rightIntakeRoot, new IntakeIOReal(rightIntakeIOConfig));
+          leftIntake  = new Intake(leftIntakeRoot, new IntakeIOReal(leftIntakeIOConfig), minPivotAngle,
+              maxPivotAngleLeft);
+          rightIntake = new Intake(rightIntakeRoot, new IntakeIOReal(rightIntakeIOConfig), minPivotAngle,
+              maxPivotAngleRight);
 
           ElevatorIOConfig leaderElevatorIOConfig = new ElevatorIOConfig(
               config.newMotor(RobotConfig2026.CanIDs.CLIMBER_LEADER_CAN_ID, RobotConfig.CANSpeed.ROBORIO), false,
@@ -296,8 +302,8 @@ public class RobotContainer {
               config.getReplaySwerveModuleObjects(), () -> is_autonomous);
           vision      = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
               drivetrain::addVisionEstimate, config.getReplayVisionModules());
-          leftIntake  = new Intake(leftIntakeRoot, fakeIntakeIO);
-          rightIntake = new Intake(rightIntakeRoot, fakeIntakeIO);
+          leftIntake  = new Intake(leftIntakeRoot, fakeIntakeIO, minPivotAngle, maxPivotAngleLeft);
+          rightIntake = new Intake(rightIntakeRoot, fakeIntakeIO, minPivotAngle, maxPivotAngleRight);
           climber     = new Climber(fakeElevatorIO, fakeElevatorIO, 0, Rotation2d.kZero, Rotation2d.kZero);
           hopper      = new Hopper(fakeHopperIO);
           shooter     = new Shooter(fakeShooterIO);
