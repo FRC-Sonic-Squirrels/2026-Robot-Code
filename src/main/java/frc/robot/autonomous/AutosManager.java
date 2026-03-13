@@ -22,7 +22,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class AutosManager {
   public enum Autos {
-    NOTHING, TEST, DEPOT, DEPOTPLUS, SWERVE_CHARACTERIZATION;
+    NOTHING, TEST, DEPOT, DEPOTPLUS, MIDDLE_DEPOTSIDE, SWERVE_CHARACTERIZATION;
   }
 
   public enum AutoGoals {
@@ -209,6 +209,15 @@ public class AutosManager {
       waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.SCORE, false));
       return Pair.of(waypoints, aInitialPose);
 
+      case MIDDLE_DEPOTSIDE:
+      aInitialPose = new AllianceAwarePose2d(ChoreoVars.Poses.START2);
+      waypoints.add(new Waypoint(ChoreoVars.Poses.INTAKE_PREP_MIDDLE_DEPOTSIDE, AutoGoals.DRIVE, false));
+      waypoints.add(new Waypoint(ChoreoVars.Poses.INTAKE_MIDDLE_DEPOTSIDE, AutoGoals.INTAKEWHILEDRIVELEFT, true));
+      waypoints.add(new Waypoint(ChoreoVars.Poses.INTAKE_PREP_MIDDLE_MIDDLE_DEPOTSIDE, AutoGoals.INTAKEWHILEDRIVELEFT, false));
+      waypoints.add(new Waypoint(ChoreoVars.Poses.INTAKE_MIDDLE_MIDDLE_DEPOTSIDE, AutoGoals.INTAKEWHILEDRIVELEFT, true));
+      waypoints.add(new Waypoint(ChoreoVars.Poses.BUMP_PREP_MIDDLE_DEPOTSIDE, AutoGoals.DRIVE, false));
+      waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.DRIVE, false));
+      waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.SCORE, false));
 
 
       default:
