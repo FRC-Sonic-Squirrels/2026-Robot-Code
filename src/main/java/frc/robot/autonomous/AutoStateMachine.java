@@ -24,7 +24,7 @@ public class AutoStateMachine extends StateMachine {
     super("Auto");
     this.wrapper    = subsystems.drivetrain();
     this.waypoints  = waypoints;
-    driveHelper     = new DriveToPoseHelper(states.config.isRobotRotatedBackward(), this::goSlow);
+    driveHelper     = new DriveToPoseHelper(this::goSlow);
     this.states     = states;
     waypointCounter = 0;
 

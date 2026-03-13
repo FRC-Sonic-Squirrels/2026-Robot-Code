@@ -317,7 +317,7 @@ public class RobotContainer {
 
     robotStates = new RobotStates(config, climber, leftIntake, rightIntake, shooter, drivetrainWrapper, hopper);
 
-    autoManager = new AutosManager(subsystems, config, autoChooser, stringToAutoSupplierMap, () -> {
+    autoManager = new AutosManager(subsystems, autoChooser, stringToAutoSupplierMap, () -> {
       var result = flipAutoChooser.get();
       if (result != null) {
         return result;

@@ -3,13 +3,9 @@ package frc.robot.autonomous;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
-import frc.lib.team2930.AllianceAwarePose2d;
-import frc.lib.team2930.AutoRegisterLoggers;
-import frc.lib.team2930.LoggerEntry;
-import frc.lib.team2930.LoggerGroup;
+import frc.lib.team2930.*;
 import frc.robot.RobotStates;
 import frc.robot.autonomous.records.ChoreoVars;
-import frc.robot.configs.RobotConfig;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -45,7 +41,7 @@ public class AutosManager {
 
   public final boolean includeDebugPaths = false;
 
-  public AutosManager(AutosSubsystems subsystems, RobotConfig config, LoggedDashboardChooser<String> chooser,
+  public AutosManager(AutosSubsystems subsystems, LoggedDashboardChooser<String> chooser,
       HashMap<String, Supplier<AutoProgram>> stringToAutoSupplierMap, BooleanSupplier flipAuto, RobotStates states) {
     this.subsystems = subsystems;
     this.states     = states;
@@ -110,24 +106,36 @@ public class AutosManager {
   }
 
   public AutoProgram depot() {
-    Pair<ArrayList<Waypoint>, AllianceAwarePose2d> autoPoints = createAutoPoints(Autos.DEPOT);
-    var                                            state      = new AutoStateMachine(subsystems, autoPoints.getFirst(),
-        autoPoints.getSecond(), states);
+    var autoPoints = createAutoPoints(Autos.DEPOT);
+
+    var state = new AutoStateMachine(subsystems, autoPoints.getFirst(), autoPoints.getSecond(), states);
     return stateToAutoProgram(state, autoPoints.getSecond(), "DEPOT");
   }
 
   public AutoProgram depotMiddle() {
-    Pair<ArrayList<Waypoint>, AllianceAwarePose2d> autoPoints = createAutoPoints(Autos.DEPOT_MIDDLE_DEPOTSIDE);
-    var                                            state      = new AutoStateMachine(subsystems, autoPoints.getFirst(),
-        autoPoints.getSecond(), states);
+    var autoPoints = createAutoPoints(Autos.DEPOT_MIDDLE_DEPOTSIDE);
+
+    var state = new AutoStateMachine(subsystems, autoPoints.getFirst(), autoPoints.getSecond(), states);
     return stateToAutoProgram(state, autoPoints.getSecond(), "DEPOT MIDDLE DEPOT SIDE");
   }
 
   public AutoProgram middleDepotSide() {
-    Pair<ArrayList<Waypoint>, AllianceAwarePose2d> autoPoints = createAutoPoints(Autos.MIDDLE_DEPOTSIDE);
-    var                                            state      = new AutoStateMachine(subsystems, autoPoints.getFirst(),
-        autoPoints.getSecond(), states);
+    var autoPoints = createAutoPoints(Autos.MIDDLE_DEPOTSIDE);
+
+    var state = new AutoStateMachine(subsystems, autoPoints.getFirst(), autoPoints.getSecond(), states);
     return stateToAutoProgram(state, autoPoints.getSecond(), "MIDDLE DEPOT SIDE");
+  }
+
+  private AllianceAwarePose2d newInitialPose(Pose2d pose) {
+    return new AllianceAwarePose2d(fixPose(pose));
+  }
+
+  private Pose2d fixPose(Pose2d pose) {
+    return GeometryUtil.rotateIfNeeded(pose, states.config.isRobotRotatedBackward());
+  }
+
+  private Waypoint newWaypoint(Pose2d pose, AutoGoals goals, boolean goSlow) {
+    return new Waypoint(fixPose(pose), goals, goSlow);
   }
 
   private Pair<ArrayList<Waypoint>, AllianceAwarePose2d> createAutoPoints(Autos auto) {
@@ -135,45 +143,45 @@ public class AutosManager {
     AllianceAwarePose2d aInitialPose;
     switch (auto) {
       case DEPOT:
-        aInitialPose = new AllianceAwarePose2d(ChoreoVars.Poses.START1);
-        waypoints.add(new Waypoint(ChoreoVars.Poses.DEPOT_PREP, AutoGoals.DRIVE, false));
-        waypoints.add(new Waypoint(ChoreoVars.Poses.DEPOT, AutoGoals.INTAKEWHILEDRIVERIGHT, true));
-        waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.DRIVE, false));
-        waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.SCORE, false));
+        aInitialPose = newInitialPose(ChoreoVars.Poses.START1);
+        waypoints.add(newWaypoint(ChoreoVars.Poses.DEPOT_PREP, AutoGoals.DRIVE, false));
+        waypoints.add(newWaypoint(ChoreoVars.Poses.DEPOT, AutoGoals.INTAKEWHILEDRIVERIGHT, true));
+        waypoints.add(newWaypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.DRIVE, false));
+        waypoints.add(newWaypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.SCORE, false));
         return Pair.of(waypoints, aInitialPose);
 
       case DEPOT_MIDDLE_DEPOTSIDE:
-        aInitialPose = new AllianceAwarePose2d(ChoreoVars.Poses.START1);
-        waypoints.add(new Waypoint(ChoreoVars.Poses.DEPOT_PREP, AutoGoals.DRIVE, false));
-        waypoints.add(new Waypoint(ChoreoVars.Poses.DEPOT, AutoGoals.INTAKEWHILEDRIVERIGHT, true));
-        waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.DRIVE, false));
-        waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.SCORE, false));
-        waypoints.add(new Waypoint(ChoreoVars.Poses.INTAKE_PREP_MIDDLE_DEPOTSIDE, AutoGoals.DRIVE, false));
-        waypoints.add(new Waypoint(ChoreoVars.Poses.INTAKE_MIDDLE_DEPOTSIDE, AutoGoals.INTAKEWHILEDRIVELEFT, true));
+        aInitialPose = newInitialPose(ChoreoVars.Poses.START1);
+        waypoints.add(newWaypoint(ChoreoVars.Poses.DEPOT_PREP, AutoGoals.DRIVE, false));
+        waypoints.add(newWaypoint(ChoreoVars.Poses.DEPOT, AutoGoals.INTAKEWHILEDRIVERIGHT, true));
+        waypoints.add(newWaypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.DRIVE, false));
+        waypoints.add(newWaypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.SCORE, false));
+        waypoints.add(newWaypoint(ChoreoVars.Poses.INTAKE_PREP_MIDDLE_DEPOTSIDE, AutoGoals.DRIVE, false));
+        waypoints.add(newWaypoint(ChoreoVars.Poses.INTAKE_MIDDLE_DEPOTSIDE, AutoGoals.INTAKEWHILEDRIVELEFT, true));
         waypoints.add(
-            new Waypoint(ChoreoVars.Poses.INTAKE_PREP_MIDDLE_MIDDLE_DEPOTSIDE, AutoGoals.INTAKEWHILEDRIVELEFT, false));
+            newWaypoint(ChoreoVars.Poses.INTAKE_PREP_MIDDLE_MIDDLE_DEPOTSIDE, AutoGoals.INTAKEWHILEDRIVELEFT, false));
         waypoints
-            .add(new Waypoint(ChoreoVars.Poses.INTAKE_MIDDLE_MIDDLE_DEPOTSIDE, AutoGoals.INTAKEWHILEDRIVELEFT, true));
-        waypoints.add(new Waypoint(ChoreoVars.Poses.BUMP_PREP_MIDDLE_DEPOTSIDE, AutoGoals.DRIVE, false));
-        waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.DRIVE, false));
-        waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.SCORE, false));
+            .add(newWaypoint(ChoreoVars.Poses.INTAKE_MIDDLE_MIDDLE_DEPOTSIDE, AutoGoals.INTAKEWHILEDRIVELEFT, true));
+        waypoints.add(newWaypoint(ChoreoVars.Poses.BUMP_PREP_MIDDLE_DEPOTSIDE, AutoGoals.DRIVE, false));
+        waypoints.add(newWaypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.DRIVE, false));
+        waypoints.add(newWaypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.SCORE, false));
         return Pair.of(waypoints, aInitialPose);
 
       case MIDDLE_DEPOTSIDE:
-        aInitialPose = new AllianceAwarePose2d(ChoreoVars.Poses.START2);
-        waypoints.add(new Waypoint(ChoreoVars.Poses.INTAKE_PREP_MIDDLE_DEPOTSIDE, AutoGoals.DRIVE, false));
-        waypoints.add(new Waypoint(ChoreoVars.Poses.INTAKE_MIDDLE_DEPOTSIDE, AutoGoals.INTAKEWHILEDRIVELEFT, true));
+        aInitialPose = newInitialPose(ChoreoVars.Poses.START2);
+        waypoints.add(newWaypoint(ChoreoVars.Poses.INTAKE_PREP_MIDDLE_DEPOTSIDE, AutoGoals.DRIVE, false));
+        waypoints.add(newWaypoint(ChoreoVars.Poses.INTAKE_MIDDLE_DEPOTSIDE, AutoGoals.INTAKEWHILEDRIVELEFT, true));
         waypoints.add(
-            new Waypoint(ChoreoVars.Poses.INTAKE_PREP_MIDDLE_MIDDLE_DEPOTSIDE, AutoGoals.INTAKEWHILEDRIVELEFT, false));
+            newWaypoint(ChoreoVars.Poses.INTAKE_PREP_MIDDLE_MIDDLE_DEPOTSIDE, AutoGoals.INTAKEWHILEDRIVELEFT, false));
         waypoints
-            .add(new Waypoint(ChoreoVars.Poses.INTAKE_MIDDLE_MIDDLE_DEPOTSIDE, AutoGoals.INTAKEWHILEDRIVELEFT, true));
-        waypoints.add(new Waypoint(ChoreoVars.Poses.BUMP_PREP_MIDDLE_DEPOTSIDE, AutoGoals.DRIVE, false));
-        waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.DRIVE, false));
-        waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.SCORE, false));
+            .add(newWaypoint(ChoreoVars.Poses.INTAKE_MIDDLE_MIDDLE_DEPOTSIDE, AutoGoals.INTAKEWHILEDRIVELEFT, true));
+        waypoints.add(newWaypoint(ChoreoVars.Poses.BUMP_PREP_MIDDLE_DEPOTSIDE, AutoGoals.DRIVE, false));
+        waypoints.add(newWaypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.DRIVE, false));
+        waypoints.add(newWaypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.SCORE, false));
         return Pair.of(waypoints, aInitialPose);
 
       default:
-        aInitialPose = new AllianceAwarePose2d(Pose2d.kZero);
+        aInitialPose = newInitialPose(Pose2d.kZero);
         return Pair.of(new ArrayList<>(), aInitialPose);
     }
   }

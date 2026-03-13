@@ -69,7 +69,6 @@ public class DriveToPoseHelper {
 
   private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
 
-  private final boolean           isRobotRotatedBackward;
   private final Supplier<Boolean> slowMode;
   private final double            driveToleranceValue;
 
@@ -84,8 +83,7 @@ public class DriveToPoseHelper {
   private double                      thetaErrorAbs;
 
   /** Drives to the specified pose under full software control. */
-  public DriveToPoseHelper(boolean isRobotRotatedBackward, Supplier<Boolean> slowMode) {
-    this.isRobotRotatedBackward = isRobotRotatedBackward;
+  public DriveToPoseHelper(Supplier<Boolean> slowMode) {
     this.slowMode               = slowMode;
     this.driveToleranceValue    = 0.1;
 
@@ -106,10 +104,6 @@ public class DriveToPoseHelper {
   }
 
   public void resetPID(Pose2d currentPose, Pose2d fieldRelativeVelocities) {
-    if (isRobotRotatedBackward) {
-      currentPose = GeometryUtil.faceBackward(currentPose);
-    }
-
     // Reset all controllers
 
     // Update from tunable numbers
@@ -185,9 +179,6 @@ public class DriveToPoseHelper {
   }
 
   public boolean setTarget(Pose2d target) {
-    if (isRobotRotatedBackward) {
-      target = GeometryUtil.faceBackward(target);
-    }
     boolean reset = !Objects.equals(this.targetPose, target);
     this.targetPose = target;
     return reset;
