@@ -87,7 +87,7 @@ public class RobotStates {
 
   // Commands
 
-  private final RobotConfig        config;
+  public final RobotConfig         config;
   private final Intake             leftIntake;
   private final Intake             rightIntake;
   private final DrivetrainWrapper  drivetrain;

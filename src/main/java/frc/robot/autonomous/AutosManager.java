@@ -41,19 +41,13 @@ public class AutosManager {
 
   private final Logs            logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
   private final AutosSubsystems subsystems;
-  private final RobotConfig     config;
   private final RobotStates     states;
-  private final BooleanSupplier flipAuto;
 
   public final boolean includeDebugPaths = false;
-
-  private boolean preloadingComplete = !false;
 
   public AutosManager(AutosSubsystems subsystems, RobotConfig config, LoggedDashboardChooser<String> chooser,
       HashMap<String, Supplier<AutoProgram>> stringToAutoSupplierMap, BooleanSupplier flipAuto, RobotStates states) {
     this.subsystems = subsystems;
-    this.config     = config;
-    this.flipAuto   = flipAuto;
     this.states     = states;
     // preload code
     // Command preloader;
@@ -124,94 +118,20 @@ public class AutosManager {
 
   public AutoProgram depotMiddle() {
     Pair<ArrayList<Waypoint>, AllianceAwarePose2d> autoPoints = createAutoPoints(Autos.DEPOT_MIDDLE_DEPOTSIDE);
-    var state = new AutoStateMachine(subsystems, autoPoints.getFirst(), autoPoints.getSecond(), states);
+    var                                            state      = new AutoStateMachine(subsystems, autoPoints.getFirst(),
+        autoPoints.getSecond(), states);
     return stateToAutoProgram(state, autoPoints.getSecond(), "DEPOT MIDDLE DEPOT SIDE");
   }
 
-  public AutoProgram middleDepotSide(){
+  public AutoProgram middleDepotSide() {
     Pair<ArrayList<Waypoint>, AllianceAwarePose2d> autoPoints = createAutoPoints(Autos.MIDDLE_DEPOTSIDE);
-    var state = new AutoStateMachine(subsystems, autoPoints.getFirst(), autoPoints.getSecond(), states);
+    var                                            state      = new AutoStateMachine(subsystems, autoPoints.getFirst(),
+        autoPoints.getSecond(), states);
     return stateToAutoProgram(state, autoPoints.getSecond(), "MIDDLE DEPOT SIDE");
   }
 
-  // @SuppressWarnings("unused")
-  // private AutoProgram testPath(String pathName, boolean useInitialPose) {
-  // return testPath(pathName, useInitialPose, pathName);
-  // }
-
-  // TODO: Potentially get rid of testPath? See if it's necessary.
-  // private AutoProgram testPath(String pathName, boolean useInitialPose, String
-  // autoName) {
-  // var traj = ChoreoTrajectoryWithName.getTrajectory(pathName);
-  // return new AutoProgram(Pair.of(new Command() {
-  // private final DrivetrainWrapper drivetrain = subsystems.drivetrain();
-  // ChoreoHelper helper;
-  // boolean atEndOfPath;
-
-  // @Override
-  // public void initialize() {
-  // drivetrain.setPose(Constants.zeroPose2d);
-  // helper = new ChoreoHelper(Timer.getFPGATimestamp(),
-  // drivetrain.getHubPoseEstimatorPose(true), traj,
-  // config.getDriveBaseRadius() / 2, config.getAutoTranslationPidController(),
-  // config.getAutoTranslationPidController(),
-  // config.getAutoThetaPidController());
-  // }
-
-  // @Override
-  // public void execute() {
-  // var result =
-  // helper.calculateChassisSpeeds(drivetrain.getHubPoseEstimatorPose(true),
-  // Timer.getFPGATimestamp());
-  // drivetrain.setVelocityOverride(result.chassisSpeeds());
-  // atEndOfPath = result.atEndOfPath();
-  // }
-
-  // @Override
-  // public void end(boolean interrupted) {
-  // drivetrain.resetVelocityOverride();
-  // }
-
-  // @Override
-  // public boolean isFinished() {
-  // return atEndOfPath;
-  // }
-  // }, Constants.zeroPose2d), autoName);
-  // }
-
-  // TODO: Finish up swerveCharacterization to reinstate it
-  // public AutoProgram swerveCharacterization() {
-  // var sysidConfig = new SysIdRoutine.Config(null, null, null, (state) -> {
-  // if (state != SysIdRoutineLog.State.kNone) {
-  // logs.swervesysidstate.info(state);
-  // }
-  // });
-
-  // var mechanism = new SysIdRoutine(sysidConfig,
-  // subsystems.drivetrain().getSysIdMechanism());
-
-  // var command1 = mechanism.quasistatic(Direction.kForward);
-  // var command2 = mechanism.quasistatic(Direction.kReverse);
-  // var command3 = mechanism.dynamic(Direction.kForward);
-  // var command4 = mechanism.dynamic(Direction.kReverse);
-
-  // var finalCommand = command1
-  // // .andThen(Commands.waitSeconds(1.0))
-  // .andThen(command2)
-  // // .andThen(Commands.waitSeconds(1.0))
-  // .andThen(command3);
-  // // .andThen(Commands.waitSeconds(1.0))
-  // // .andThen(command4).andThen(Commands.runOnce(() ->
-  // // logSwerveSysidState.info(SysIdRoutineLog.State.kNone)));
-  // // return new AutoProgram(null, Pose2d.kZero, "Swerve Characterization");
-  // }
-
-  public boolean preloadingComplete() {
-    return preloadingComplete;
-  }
-
   private Pair<ArrayList<Waypoint>, AllianceAwarePose2d> createAutoPoints(Autos auto) {
-    ArrayList<Waypoint> waypoints = new ArrayList<Waypoint>();
+    var                 waypoints = new ArrayList<Waypoint>();
     AllianceAwarePose2d aInitialPose;
     switch (auto) {
       case DEPOT:

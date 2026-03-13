@@ -325,8 +325,6 @@ public class RobotContainer {
       return false;
     }, robotStates);
 
-    led.setPreloadSupplier(autoManager::preloadingComplete);
-
     drivetrain.setDefaultCommand(new DrivetrainDefaultTeleopDrive(drivetrainWrapper, () -> -driverController.getLeftY(),
         () -> -driverController.getLeftX(), () -> -driverController.getRightX()));
 

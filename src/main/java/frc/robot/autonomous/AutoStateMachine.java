@@ -10,15 +10,10 @@ import frc.robot.RobotStates.RobotGoal;
 import frc.robot.autonomous.AutosManager.AutoGoals;
 import frc.robot.autonomous.AutosManager.Waypoint;
 import frc.robot.commands.drive.DriveToPoseHelper;
-import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
 
 public class AutoStateMachine extends StateMachine {
   private final DrivetrainWrapper   wrapper;
-  private final Intake              leftIntake;
-  private final Intake              rightIntake;
-  private final Shooter             shooter;
   private final DriveToPoseHelper   driveHelper;
   private final ArrayList<Waypoint> waypoints;
   private int                       waypointCounter;
@@ -27,14 +22,11 @@ public class AutoStateMachine extends StateMachine {
   public AutoStateMachine(AutosSubsystems subsystems, ArrayList<Waypoint> waypoints, AllianceAwarePose2d initialPose,
       RobotStates states) {
     super("Auto");
-    this.wrapper     = subsystems.drivetrain();
-    this.leftIntake  = subsystems.leftIntake();
-    this.rightIntake = subsystems.rightIntake();
-    this.shooter     = subsystems.shooter();
-    this.waypoints   = waypoints;
-    driveHelper      = new DriveToPoseHelper(this::goSlow);
-    this.states      = states;
-    waypointCounter  = 0;
+    this.wrapper    = subsystems.drivetrain();
+    this.waypoints  = waypoints;
+    driveHelper     = new DriveToPoseHelper(states.config.isRobotRotatedBackward(), this::goSlow);
+    this.states     = states;
+    waypointCounter = 0;
 
     driveHelper.resetPID(initialPose.get(), wrapper.getFieldRelativeVelocities());
     setInitialState(this::nextState);
@@ -59,7 +51,7 @@ public class AutoStateMachine extends StateMachine {
     if (!driveHelper.isAtTarget()) {
       return null;
     }
-    if(!(waypoints.get(waypointCounter).goal().equals(AutoGoals.INTAKEWHILEDRIVELEFT))){
+    if (!(waypoints.get(waypointCounter).goal().equals(AutoGoals.INTAKEWHILEDRIVELEFT))) {
       states.setIntakeGoal(IntakeGoal.Stow);
     }
 
@@ -73,7 +65,7 @@ public class AutoStateMachine extends StateMachine {
     if (!driveHelper.isAtTarget()) {
       return null;
     }
-    if(!(waypoints.get(waypointCounter).goal().equals(AutoGoals.INTAKEWHILEDRIVERIGHT))){
+    if (!(waypoints.get(waypointCounter).goal().equals(AutoGoals.INTAKEWHILEDRIVERIGHT))) {
       states.setIntakeGoal(IntakeGoal.Stow);
     }
 

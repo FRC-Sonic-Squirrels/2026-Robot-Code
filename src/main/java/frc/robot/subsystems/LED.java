@@ -48,16 +48,15 @@ public class LED extends SubsystemBase {
 
   private final Distance ledSpacing = Meters.of(1 / 120.0);
 
-  private int               levelMeterCount        = 0;
-  private RobotState        robotState             = RobotState.BASE;
-  private BaseRobotState    baseRobotState         = BaseRobotState.GAMEPIECE_STATUS;
-  private final Color       squirrelOrange         = new Color(0.1, 1, 0);
-  private final Tunables    tunable                = TunableNumberGroup.newAutoTunable(Tunables.class, "LED");
-  private int               robotLoops             = 0;
-  private double            timeToResetToBaseState = 0;
-  private final Timer       resetToBaseStateTimer  = new Timer();
-  private boolean           autoConfirmed          = false;
-  private Supplier<Boolean> preloadComplete;
+  private int            levelMeterCount        = 0;
+  private RobotState     robotState             = RobotState.BASE;
+  private BaseRobotState baseRobotState         = BaseRobotState.GAMEPIECE_STATUS;
+  private final Color    squirrelOrange         = new Color(0.1, 1, 0);
+  private final Tunables tunable                = TunableNumberGroup.newAutoTunable(Tunables.class, "LED");
+  private int            robotLoops             = 0;
+  private double         timeToResetToBaseState = 0;
+  private final Timer    resetToBaseStateTimer  = new Timer();
+  private boolean        autoConfirmed          = false;
 
   public LED(Supplier<Boolean> brakeMode, Supplier<Boolean> gyroConnected, Supplier<Boolean> motorsZeroed) {
     String ROOT_TABLE = "LED";
@@ -70,10 +69,6 @@ public class LED extends SubsystemBase {
     this.brakeMode     = brakeMode;
     this.gyroConnected = gyroConnected;
     this.motorsZeroed  = motorsZeroed;
-  }
-
-  public void setPreloadSupplier(Supplier<Boolean> preloadComplete) {
-    this.preloadComplete = preloadComplete;
   }
 
   @Override
@@ -95,8 +90,6 @@ public class LED extends SubsystemBase {
                 setProgressBar(Color.kGreen, (double) robotLoops / (double) robotLoopsTillReady);
               } else if (!brakeMode.get()) { // No brake mode indication
                 setSnake(Color.kGreen, Color.kCrimson);
-              } else if (!preloadComplete.get()) { // Code preload incomplete indication
-                setRainbow();
               } else if (!motorsZeroed.get() && DriverStation.isDisabled()) { // moters not zeroed indication
                 setSnake(Color.kRed, Color.kPurple);
               } else if (!gyroConnected.get() && !Constants.RobotMode.isSimBot()) { // gyro disconnected indication

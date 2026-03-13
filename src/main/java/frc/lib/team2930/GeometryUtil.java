@@ -147,4 +147,8 @@ public class GeometryUtil {
     }
     return getClosestPose(normArr, currentPose);
   }
+
+  public static Pose2d faceBackward(Pose2d target) {
+    return new Pose2d(target.getTranslation(), target.getRotation().plus(Rotation2d.k180deg));
+  }
 }
