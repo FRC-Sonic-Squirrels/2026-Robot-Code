@@ -20,7 +20,7 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class AutosManager {
   public enum Autos {
-    NOTHING, TEST, DEPOT, DEPOTPLUS, MIDDLE_DEPOTSIDE, SWERVE_CHARACTERIZATION;
+    NOTHING, TEST, DEPOT, DEPOT_MIDDLE_DEPOTSIDE, MIDDLE_DEPOTSIDE, SWERVE_CHARACTERIZATION;
   }
 
   public enum AutoGoals {
@@ -74,6 +74,8 @@ public class AutosManager {
 
     list.add(this::doNothing);
     list.add(this::depot);
+    list.add(this::depotMiddle);
+    list.add(this::middleDepotSide);
 
     if (includeDebugPaths) {
       // list.add(this::swerveCharacterization);
@@ -118,6 +120,18 @@ public class AutosManager {
     var                                            state      = new AutoStateMachine(subsystems, autoPoints.getFirst(),
         autoPoints.getSecond(), states);
     return stateToAutoProgram(state, autoPoints.getSecond(), "DEPOT");
+  }
+
+  public AutoProgram depotMiddle() {
+    Pair<ArrayList<Waypoint>, AllianceAwarePose2d> autoPoints = createAutoPoints(Autos.DEPOT_MIDDLE_DEPOTSIDE);
+    var state = new AutoStateMachine(subsystems, autoPoints.getFirst(), autoPoints.getSecond(), states);
+    return stateToAutoProgram(state, autoPoints.getSecond(), "DEPOT MIDDLE DEPOT SIDE");
+  }
+
+  public AutoProgram middleDepotSide(){
+    Pair<ArrayList<Waypoint>, AllianceAwarePose2d> autoPoints = createAutoPoints(Autos.MIDDLE_DEPOTSIDE);
+    var state = new AutoStateMachine(subsystems, autoPoints.getFirst(), autoPoints.getSecond(), states);
+    return stateToAutoProgram(state, autoPoints.getSecond(), "MIDDLE DEPOT SIDE");
   }
 
   // @SuppressWarnings("unused")
@@ -208,6 +222,23 @@ public class AutosManager {
         waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.SCORE, false));
         return Pair.of(waypoints, aInitialPose);
 
+      case DEPOT_MIDDLE_DEPOTSIDE:
+        aInitialPose = new AllianceAwarePose2d(ChoreoVars.Poses.START1);
+        waypoints.add(new Waypoint(ChoreoVars.Poses.DEPOT_PREP, AutoGoals.DRIVE, false));
+        waypoints.add(new Waypoint(ChoreoVars.Poses.DEPOT, AutoGoals.INTAKEWHILEDRIVERIGHT, true));
+        waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.DRIVE, false));
+        waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.SCORE, false));
+        waypoints.add(new Waypoint(ChoreoVars.Poses.INTAKE_PREP_MIDDLE_DEPOTSIDE, AutoGoals.DRIVE, false));
+        waypoints.add(new Waypoint(ChoreoVars.Poses.INTAKE_MIDDLE_DEPOTSIDE, AutoGoals.INTAKEWHILEDRIVELEFT, true));
+        waypoints.add(
+            new Waypoint(ChoreoVars.Poses.INTAKE_PREP_MIDDLE_MIDDLE_DEPOTSIDE, AutoGoals.INTAKEWHILEDRIVELEFT, false));
+        waypoints
+            .add(new Waypoint(ChoreoVars.Poses.INTAKE_MIDDLE_MIDDLE_DEPOTSIDE, AutoGoals.INTAKEWHILEDRIVELEFT, true));
+        waypoints.add(new Waypoint(ChoreoVars.Poses.BUMP_PREP_MIDDLE_DEPOTSIDE, AutoGoals.DRIVE, false));
+        waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.DRIVE, false));
+        waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.SCORE, false));
+        return Pair.of(waypoints, aInitialPose);
+
       case MIDDLE_DEPOTSIDE:
         aInitialPose = new AllianceAwarePose2d(ChoreoVars.Poses.START2);
         waypoints.add(new Waypoint(ChoreoVars.Poses.INTAKE_PREP_MIDDLE_DEPOTSIDE, AutoGoals.DRIVE, false));
@@ -219,6 +250,7 @@ public class AutosManager {
         waypoints.add(new Waypoint(ChoreoVars.Poses.BUMP_PREP_MIDDLE_DEPOTSIDE, AutoGoals.DRIVE, false));
         waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.DRIVE, false));
         waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.SCORE, false));
+        return Pair.of(waypoints, aInitialPose);
 
       default:
         aInitialPose = new AllianceAwarePose2d(Pose2d.kZero);
