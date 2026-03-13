@@ -138,6 +138,8 @@ public class RobotContainer {
     @TunableEntry(defaultValue = 0.0)
     public LoggedTunableNumber tunableAngle;
 
+    @TunableEntry(defaultValue = 0.0)
+    public LoggedTunableNumber disablePhoenixTuner;
   }
 
   private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, "RobotContainer");
@@ -612,6 +614,11 @@ public class RobotContainer {
 
   public void updateRobotState() {
     robotStates.periodic();
+
+    if (DriverStation.isFMSAttached() || tunables.disablePhoenixTuner.get() > 0) {
+      // Turn off diagnostics server in competition.
+      com.ctre.phoenix6.unmanaged.Unmanaged.setPhoenixDiagnosticsStartTime(-1.0);
+    }
   }
 
   public Command threadCommand() { // Used to set thread priority to main thread after a timed delay
