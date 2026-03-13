@@ -3,8 +3,6 @@ package frc.robot.autonomous;
 import edu.wpi.first.math.Pair;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
-import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import frc.lib.team2930.AllianceAwarePose2d;
 import frc.lib.team2930.AutoRegisterLoggers;
 import frc.lib.team2930.LoggerEntry;
@@ -30,7 +28,7 @@ public class AutosManager {
   }
 
   public record Waypoint(AllianceAwarePose2d waypointPose, AutoGoals goal, boolean goSlow) {
-    public Waypoint(Pose2d waypointPose, AutoGoals goal, boolean goSlow){
+    public Waypoint(Pose2d waypointPose, AutoGoals goal, boolean goSlow) {
       this(new AllianceAwarePose2d(waypointPose), goal, goSlow);
     }
   }
@@ -78,7 +76,7 @@ public class AutosManager {
     list.add(this::depot);
 
     if (includeDebugPaths) {
-      //list.add(this::swerveCharacterization);
+      // list.add(this::swerveCharacterization);
       // list.add(() -> testPath("TestDrive1Meter", true));
       // list.add(() -> testPath("TestDrive10Meter", true));
       // list.add(() -> testPath("TestDrive2Meters", true));
@@ -117,7 +115,7 @@ public class AutosManager {
 
   public AutoProgram depot() {
     Pair<ArrayList<Waypoint>, AllianceAwarePose2d> autoPoints = createAutoPoints(Autos.DEPOT);
-    var                               state      = new AutoStateMachine(subsystems, autoPoints.getFirst(),
+    var                                            state      = new AutoStateMachine(subsystems, autoPoints.getFirst(),
         autoPoints.getSecond(), states);
     return stateToAutoProgram(state, autoPoints.getSecond(), "DEPOT");
   }
@@ -169,28 +167,29 @@ public class AutosManager {
 
   // TODO: Finish up swerveCharacterization to reinstate it
   // public AutoProgram swerveCharacterization() {
-  //   var sysidConfig = new SysIdRoutine.Config(null, null, null, (state) -> {
-  //     if (state != SysIdRoutineLog.State.kNone) {
-  //       logs.swervesysidstate.info(state);
-  //     }
-  //   });
+  // var sysidConfig = new SysIdRoutine.Config(null, null, null, (state) -> {
+  // if (state != SysIdRoutineLog.State.kNone) {
+  // logs.swervesysidstate.info(state);
+  // }
+  // });
 
-  //   var mechanism = new SysIdRoutine(sysidConfig, subsystems.drivetrain().getSysIdMechanism());
+  // var mechanism = new SysIdRoutine(sysidConfig,
+  // subsystems.drivetrain().getSysIdMechanism());
 
-  //   var command1 = mechanism.quasistatic(Direction.kForward);
-  //   var command2 = mechanism.quasistatic(Direction.kReverse);
-  //   var command3 = mechanism.dynamic(Direction.kForward);
-  //   var command4 = mechanism.dynamic(Direction.kReverse);
+  // var command1 = mechanism.quasistatic(Direction.kForward);
+  // var command2 = mechanism.quasistatic(Direction.kReverse);
+  // var command3 = mechanism.dynamic(Direction.kForward);
+  // var command4 = mechanism.dynamic(Direction.kReverse);
 
-  //   var finalCommand = command1
-  //       // .andThen(Commands.waitSeconds(1.0))
-  //       .andThen(command2)
-  //       // .andThen(Commands.waitSeconds(1.0))
-  //       .andThen(command3);
-  //   // .andThen(Commands.waitSeconds(1.0))
-  //   // .andThen(command4).andThen(Commands.runOnce(() ->
-  //   // logSwerveSysidState.info(SysIdRoutineLog.State.kNone)));
-  //  // return new AutoProgram(null, Pose2d.kZero, "Swerve Characterization");
+  // var finalCommand = command1
+  // // .andThen(Commands.waitSeconds(1.0))
+  // .andThen(command2)
+  // // .andThen(Commands.waitSeconds(1.0))
+  // .andThen(command3);
+  // // .andThen(Commands.waitSeconds(1.0))
+  // // .andThen(command4).andThen(Commands.runOnce(() ->
+  // // logSwerveSysidState.info(SysIdRoutineLog.State.kNone)));
+  // // return new AutoProgram(null, Pose2d.kZero, "Swerve Characterization");
   // }
 
   public boolean preloadingComplete() {
@@ -199,26 +198,27 @@ public class AutosManager {
 
   private Pair<ArrayList<Waypoint>, AllianceAwarePose2d> createAutoPoints(Autos auto) {
     ArrayList<Waypoint> waypoints = new ArrayList<Waypoint>();
-    AllianceAwarePose2d aInitialPose; 
+    AllianceAwarePose2d aInitialPose;
     switch (auto) {
       case DEPOT:
-      aInitialPose = new AllianceAwarePose2d(ChoreoVars.Poses.START1);
-      waypoints.add(new Waypoint(ChoreoVars.Poses.DEPOT_PREP, AutoGoals.DRIVE, false));
-      waypoints.add(new Waypoint(ChoreoVars.Poses.DEPOT, AutoGoals.INTAKEWHILEDRIVERIGHT, true));
-      waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.DRIVE, false));
-      waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.SCORE, false));
-      return Pair.of(waypoints, aInitialPose);
+        aInitialPose = new AllianceAwarePose2d(ChoreoVars.Poses.START1);
+        waypoints.add(new Waypoint(ChoreoVars.Poses.DEPOT_PREP, AutoGoals.DRIVE, false));
+        waypoints.add(new Waypoint(ChoreoVars.Poses.DEPOT, AutoGoals.INTAKEWHILEDRIVERIGHT, true));
+        waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.DRIVE, false));
+        waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.SCORE, false));
+        return Pair.of(waypoints, aInitialPose);
 
       case MIDDLE_DEPOTSIDE:
-      aInitialPose = new AllianceAwarePose2d(ChoreoVars.Poses.START2);
-      waypoints.add(new Waypoint(ChoreoVars.Poses.INTAKE_PREP_MIDDLE_DEPOTSIDE, AutoGoals.DRIVE, false));
-      waypoints.add(new Waypoint(ChoreoVars.Poses.INTAKE_MIDDLE_DEPOTSIDE, AutoGoals.INTAKEWHILEDRIVELEFT, true));
-      waypoints.add(new Waypoint(ChoreoVars.Poses.INTAKE_PREP_MIDDLE_MIDDLE_DEPOTSIDE, AutoGoals.INTAKEWHILEDRIVELEFT, false));
-      waypoints.add(new Waypoint(ChoreoVars.Poses.INTAKE_MIDDLE_MIDDLE_DEPOTSIDE, AutoGoals.INTAKEWHILEDRIVELEFT, true));
-      waypoints.add(new Waypoint(ChoreoVars.Poses.BUMP_PREP_MIDDLE_DEPOTSIDE, AutoGoals.DRIVE, false));
-      waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.DRIVE, false));
-      waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.SCORE, false));
-
+        aInitialPose = new AllianceAwarePose2d(ChoreoVars.Poses.START2);
+        waypoints.add(new Waypoint(ChoreoVars.Poses.INTAKE_PREP_MIDDLE_DEPOTSIDE, AutoGoals.DRIVE, false));
+        waypoints.add(new Waypoint(ChoreoVars.Poses.INTAKE_MIDDLE_DEPOTSIDE, AutoGoals.INTAKEWHILEDRIVELEFT, true));
+        waypoints.add(
+            new Waypoint(ChoreoVars.Poses.INTAKE_PREP_MIDDLE_MIDDLE_DEPOTSIDE, AutoGoals.INTAKEWHILEDRIVELEFT, false));
+        waypoints
+            .add(new Waypoint(ChoreoVars.Poses.INTAKE_MIDDLE_MIDDLE_DEPOTSIDE, AutoGoals.INTAKEWHILEDRIVELEFT, true));
+        waypoints.add(new Waypoint(ChoreoVars.Poses.BUMP_PREP_MIDDLE_DEPOTSIDE, AutoGoals.DRIVE, false));
+        waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.DRIVE, false));
+        waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.SCORE, false));
 
       default:
         aInitialPose = new AllianceAwarePose2d(Pose2d.kZero);

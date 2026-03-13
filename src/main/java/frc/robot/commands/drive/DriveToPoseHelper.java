@@ -135,7 +135,7 @@ public class DriveToPoseHelper {
     driveController.setConstraints(new TrapezoidProfile.Constraints(
         slowMode.get() ? tunables.driveMaxVelocitySlow.get() : tunables.driveMaxVelocity.get(),
         tunables.driveMaxAcceleration.get()));
-        
+
     thetaController.setConstraints(new TrapezoidProfile.Constraints(
         slowMode.get() ? tunables.thetaMaxVelocitySlow.get() : tunables.thetaMaxVelocity.get(),
         tunables.thetaMaxAcceleration.get()));

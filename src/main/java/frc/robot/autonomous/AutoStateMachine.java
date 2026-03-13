@@ -2,8 +2,6 @@ package frc.robot.autonomous;
 
 import java.util.ArrayList;
 
-import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.wpilibj.Timer;
 import frc.lib.team2930.AllianceAwarePose2d;
 import frc.lib.team2930.StateMachine;
 import frc.robot.RobotStates;
@@ -17,24 +15,25 @@ import frc.robot.subsystems.swerve.DrivetrainWrapper;
 
 public class AutoStateMachine extends StateMachine {
   private final DrivetrainWrapper   wrapper;
-  private final Intake leftIntake;
-  private final Intake rightIntake;
-  private final Shooter shooter;
+  private final Intake              leftIntake;
+  private final Intake              rightIntake;
+  private final Shooter             shooter;
   private final DriveToPoseHelper   driveHelper;
   private final ArrayList<Waypoint> waypoints;
   private int                       waypointCounter;
-  private final RobotStates states;
+  private final RobotStates         states;
 
-  public AutoStateMachine(AutosSubsystems subsystems, ArrayList<Waypoint> waypoints, AllianceAwarePose2d initialPose, RobotStates states) {
+  public AutoStateMachine(AutosSubsystems subsystems, ArrayList<Waypoint> waypoints, AllianceAwarePose2d initialPose,
+      RobotStates states) {
     super("Auto");
-    this.wrapper    = subsystems.drivetrain();
-    this.leftIntake = subsystems.leftIntake();
+    this.wrapper     = subsystems.drivetrain();
+    this.leftIntake  = subsystems.leftIntake();
     this.rightIntake = subsystems.rightIntake();
-    this.shooter = subsystems.shooter();
-    this.waypoints  = waypoints;
-    driveHelper     = new DriveToPoseHelper(this::goSlow);
-    this.states = states;
-    waypointCounter = 0;
+    this.shooter     = subsystems.shooter();
+    this.waypoints   = waypoints;
+    driveHelper      = new DriveToPoseHelper(this::goSlow);
+    this.states      = states;
+    waypointCounter  = 0;
 
     driveHelper.resetPID(initialPose.get(), wrapper.getFieldRelativeVelocities());
     setInitialState(this::nextState);
@@ -51,10 +50,10 @@ public class AutoStateMachine extends StateMachine {
     return nextState();
   }
 
-  private StateHandler driveToPoseIntakingLeft(){
+  private StateHandler driveToPoseIntakingLeft() {
 
     states.setIntakeGoal(IntakeGoal.LeftIntake);
-    //TODO: Slow down at some point
+    // TODO: Slow down at some point
     wrapper.setVelocityOverride(driveHelper.periodic(wrapper.getHubPoseEstimatorPose(true)));
 
     if (!driveHelper.isAtTarget()) {
@@ -64,9 +63,9 @@ public class AutoStateMachine extends StateMachine {
     return nextState();
   }
 
-  private StateHandler driveToPoseIntakingRight(){
+  private StateHandler driveToPoseIntakingRight() {
     states.setIntakeGoal(IntakeGoal.RightIntake);
-    //TODO: Slow down at some point
+    // TODO: Slow down at some point
     wrapper.setVelocityOverride(driveHelper.periodic(wrapper.getHubPoseEstimatorPose(true)));
 
     if (!driveHelper.isAtTarget()) {
@@ -76,10 +75,10 @@ public class AutoStateMachine extends StateMachine {
     return nextState();
   }
 
-  private StateHandler shoot(){
+  private StateHandler shoot() {
     var time = this.timeFromStartOfState();
     states.setRobotGoal(RobotGoal.Shoot);
-    if((time <= 2)){
+    if ((time <= 2)) {
       return null;
     }
 
@@ -103,11 +102,11 @@ public class AutoStateMachine extends StateMachine {
       case NOTHING:
         break;
       case INTAKEWHILEDRIVELEFT:
-        return stateWithName("DriveToPoseIntakeLeft",this::driveToPoseIntakingLeft);
+        return stateWithName("DriveToPoseIntakeLeft", this::driveToPoseIntakingLeft);
       case INTAKEWHILEDRIVERIGHT:
-        return stateWithName("DriveToPoseIntakeRight", this::driveToPoseIntakingRight);  
+        return stateWithName("DriveToPoseIntakeRight", this::driveToPoseIntakingRight);
       case SCORE:
-        
+
         return stateWithName("Shoot", this::shoot);
       default:
         break;
@@ -116,7 +115,7 @@ public class AutoStateMachine extends StateMachine {
     return stateWithName("DriveToPose", this::driveToPose);
   }
 
-  private boolean goSlow(){
+  private boolean goSlow() {
     if (waypointCounter >= waypoints.size()) {
       return false;
     }
