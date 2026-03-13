@@ -27,9 +27,11 @@ public class DrivetrainWrapper {
   public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
   public static class Tunables extends AutoRegisterTunables {
-    @TunableEntry(defaultValue = 100.0) public LoggedTunableNumber driveSpeedPercent;
+    @TunableEntry(defaultValue = 100.0)
+    public LoggedTunableNumber driveSpeedPercent;
 
-    @TunableEntry(defaultValue = 50.0) public LoggedTunableNumber rotateSpeedPercent;
+    @TunableEntry(defaultValue = 50.0)
+    public LoggedTunableNumber rotateSpeedPercent;
   }
 
   private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
