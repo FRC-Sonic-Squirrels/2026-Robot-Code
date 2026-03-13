@@ -24,6 +24,9 @@ public class RotateToFaceHelper {
     public LoggerEntry.Decimal targetRotation;
     public LoggerEntry.Decimal currentRotation;
     public LoggerEntry.Decimal positionErrorDeg;
+
+    public LoggerEntry.Decimal velocityX;
+    public LoggerEntry.Decimal velocityY;
   }
 
   public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
@@ -82,22 +85,27 @@ public class RotateToFaceHelper {
     return finalRotation.rotateBy(Rotation2d.k180deg);
   }
 
-  public RotateToFaceState periodic(Pose2d pose, boolean isRobotRotatedBackward) {
-    Translation2d currentTranslation = pose.getTranslation();
+  public RotateToFaceState periodic(Pose2d pose, Pose2d robotVelocity, boolean isRobotRotatedBackward) {
 
-    var targetangle         = RotateToFaceHelper.faceTowardsCenter(currentTranslation, target, isRobotRotatedBackward);
+    var targetAngle = RotateToFaceHelper.faceTowardsCenter(pose.getTranslation(), target, isRobotRotatedBackward);
+
+    var currentVel = robotVelocity.getTranslation();
+    currentVel = currentVel.rotateBy(targetAngle.unaryMinus());
+
+    logs.velocityX.info(currentVel.getX());
+    logs.velocityY.info(currentVel.getY());
     var currentPoseRotation = pose.getRotation();
-    var rotVel              = rotationalPID.calculate(currentPoseRotation.getRadians(), targetangle.getRadians());
+    var rotVel              = rotationalPID.calculate(currentPoseRotation.getRadians(), targetAngle.getRadians());
 
     var error           = Math.toDegrees(rotationalPID.getPositionError());
     var withinTolerance = Math.abs(error) <= tunables.toleranceDegrees.get();
 
     logs.rotVel.info(rotVel);
-    logs.targetRotation.info(targetangle);
+    logs.targetRotation.info(targetAngle);
     logs.currentRotation.info(currentPoseRotation);
     logs.positionErrorDeg.info(error);
 
-    return new RotateToFaceState(rotVel, withinTolerance, Units.Meters.of(target.getDistance(currentTranslation)));
+    return new RotateToFaceState(rotVel, withinTolerance, Units.Meters.of(target.getDistance(pose.getTranslation())));
   }
 
   public boolean setTarget(Translation2d target) {

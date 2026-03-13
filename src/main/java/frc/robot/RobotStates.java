@@ -6,7 +6,6 @@ import edu.wpi.first.units.Units;
 import frc.lib.team2930.*;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.commands.drive.RotateToFaceHelper;
-import frc.robot.commands.drive.RotateToFaceHelper.RotateToFaceState;
 import frc.robot.configs.RobotConfig;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.hopper.Hopper;
@@ -178,8 +177,10 @@ public class RobotStates {
       shoot();
     } else {
       setRotateToFaceTarget(FieldConstants.HUB_CENTER_POSE.get());
-      RotateToFaceState rotateState = rotateToFaceHelper.periodic(drivetrain.getHubPoseEstimatorPose(true),
-          config.isRobotRotatedBackward());
+
+      var robotPose     = drivetrain.getHubPoseEstimatorPose(true);
+      var robotVelocity = drivetrain.getRobotCentricVelocities();
+      var rotateState   = rotateToFaceHelper.periodic(robotPose, robotVelocity, config.isRobotRotatedBackward());
       shooter.setDistanceFromTarget(rotateState.distance());
     }
 
@@ -253,8 +254,9 @@ public class RobotStates {
   }
 
   private void shoot() {
-    RotateToFaceState rotateState = rotateToFaceHelper.periodic(drivetrain.getHubPoseEstimatorPose(true),
-        config.isRobotRotatedBackward());
+    var robotPose     = drivetrain.getHubPoseEstimatorPose(true);
+    var robotVelocity = drivetrain.getRobotCentricVelocities();
+    var rotateState   = rotateToFaceHelper.periodic(robotPose, robotVelocity, config.isRobotRotatedBackward());
     drivetrain.setRotationOverride(rotateState.omega());
     shooter.setFacingTarget(rotateState.withinTolerance());
     shooter.setDistanceFromTarget(rotateState.distance());
