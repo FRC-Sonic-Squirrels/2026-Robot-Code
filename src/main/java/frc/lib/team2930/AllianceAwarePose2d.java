@@ -21,4 +21,14 @@ public class AllianceAwarePose2d {
 
     return target;
   }
+
+  public Pose2d getAndFixRotation(boolean isisRobotRotatedBackward) {
+    var pose = get();
+
+    if (isisRobotRotatedBackward) {
+      return GeometryUtil.faceBackward(pose);
+    }
+
+    return pose;
+  }
 }

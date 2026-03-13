@@ -106,6 +106,10 @@ public class DriveToPoseHelper {
   }
 
   public void resetPID(Pose2d currentPose, Pose2d fieldRelativeVelocities) {
+    if (isRobotRotatedBackward) {
+      currentPose = GeometryUtil.faceBackward(currentPose);
+    }
+
     // Reset all controllers
 
     // Update from tunable numbers
