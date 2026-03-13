@@ -76,12 +76,9 @@ public class AutoStateMachine extends StateMachine {
   }
 
   private StateHandler shoot(){
-
+    var time = this.timeFromStartOfState();
     states.setRobotGoal(RobotGoal.Shoot);
-    double time = Timer.getFPGATimestamp();
-    if(shooter.getFuelInUpperKicker()){
-      return null;
-    } else if(time + 2 <= Timer.getFPGATimestamp()){
+    if((time <= 2)){
       return null;
     }
 
@@ -95,7 +92,7 @@ public class AutoStateMachine extends StateMachine {
     }
 
     Waypoint nextWaypoint = waypoints.get(waypointCounter);
-    driveHelper.setTarget(nextWaypoint.waypointPose());
+    driveHelper.setTarget(nextWaypoint.waypointPose().get());
     waypointCounter++;
     switch (nextWaypoint.goal()) {
       case DRIVE:
@@ -109,7 +106,8 @@ public class AutoStateMachine extends StateMachine {
       case INTAKEWHILEDRIVERIGHT:
         return stateWithName("DriveToPoseIntakeRight", this::driveToPoseIntakingRight);  
       case SCORE:
-        return stateWithName("Shoot", shoot());
+        
+        return stateWithName("Shoot", this::shoot);
       default:
         break;
     }

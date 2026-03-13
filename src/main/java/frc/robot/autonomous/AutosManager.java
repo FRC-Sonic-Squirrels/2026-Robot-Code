@@ -5,6 +5,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.sysid.SysIdRoutineLog;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
+import frc.lib.team2930.AllianceAwarePose2d;
 import frc.lib.team2930.AutoRegisterLoggers;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
@@ -28,7 +29,10 @@ public class AutosManager {
     NOTHING, DRIVE, INTAKEWHILEDRIVELEFT, INTAKEWHILEDRIVERIGHT, SCORE, CLIMB;
   }
 
-  public record Waypoint(Pose2d waypointPose, AutoGoals goal) {
+  public record Waypoint(AllianceAwarePose2d waypointPose, AutoGoals goal) {
+    public Waypoint(Pose2d waypointPose, AutoGoals goal){
+      this(new AllianceAwarePose2d(waypointPose), goal);
+    }
   }
 
   private String ROOT_TABLE = "Sysid";
