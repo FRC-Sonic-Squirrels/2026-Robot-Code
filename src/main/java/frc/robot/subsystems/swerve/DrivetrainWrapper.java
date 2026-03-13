@@ -17,6 +17,7 @@ public class DrivetrainWrapper {
   private final String ROOT_TABLE = "DrivetrainWrapper";
 
   public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.Struct<ChassisSpeeds> chassisSpeeds;
     public LoggerEntry.Struct<ChassisSpeeds> chassisSpeedsBase;
     public LoggerEntry.Struct<ChassisSpeeds> chassisSpeedsOverride;
     public LoggerEntry.Decimal               omegaOverride;
@@ -81,6 +82,8 @@ public class DrivetrainWrapper {
     chassisSpeeds.omegaRadiansPerSecond *= tunables.rotateSpeedPercent.get() / 100.0;
 
     // Run drivetrain
+
+    logs.chassisSpeeds.info(chassisSpeeds);
 
     drivetrain.runVelocity(chassisSpeeds, prioritizeRotation, chassisSpeedsOverride != null);
 
