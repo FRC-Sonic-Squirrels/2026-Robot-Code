@@ -109,17 +109,11 @@ public class DriveToPoseHelper {
     // Update from tunable numbers
     driveController.setP(tunables.driveKP.get());
     driveController.setD(tunables.driveKD.get());
-    driveController.setConstraints(new TrapezoidProfile.Constraints(
-        slowMode.get() ? tunables.driveMaxVelocitySlow.get() : tunables.driveMaxVelocity.get(),
-        tunables.driveMaxAcceleration.get()));
     driveController.setTolerance(
         // slowMode ? driveToleranceSlow.get() : driveTolerance.get()
         driveToleranceValue);
     thetaController.setP(tunables.thetaKP.get());
     thetaController.setD(tunables.thetaKD.get());
-    thetaController.setConstraints(new TrapezoidProfile.Constraints(
-        slowMode.get() ? tunables.thetaMaxVelocitySlow.get() : tunables.thetaMaxVelocity.get(),
-        tunables.thetaMaxAcceleration.get()));
     thetaController.setTolerance(slowMode.get() ? tunables.thetaToleranceSlow.get() : tunables.thetaTolerance.get());
     if (targetPose == null) {
       driveController.reset(0);
@@ -138,6 +132,13 @@ public class DriveToPoseHelper {
   public ChassisSpeeds periodic(Pose2d currentPose) {
 
     // Calculate drive speed
+    driveController.setConstraints(new TrapezoidProfile.Constraints(
+        slowMode.get() ? tunables.driveMaxVelocitySlow.get() : tunables.driveMaxVelocity.get(),
+        tunables.driveMaxAcceleration.get()));
+        
+    thetaController.setConstraints(new TrapezoidProfile.Constraints(
+        slowMode.get() ? tunables.thetaMaxVelocitySlow.get() : tunables.thetaMaxVelocity.get(),
+        tunables.thetaMaxAcceleration.get()));
 
     var    currentTranslation = currentPose.getTranslation();
     double currentDistance    = currentTranslation.getDistance(targetPose.getTranslation());

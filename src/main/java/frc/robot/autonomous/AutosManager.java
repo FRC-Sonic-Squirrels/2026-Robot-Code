@@ -22,16 +22,16 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class AutosManager {
   public enum Autos {
-    NOTHING, TEST, SWERVE_CHARACTERIZATION;
+    NOTHING, TEST, DEPOT, DEPOTPLUS, SWERVE_CHARACTERIZATION;
   }
 
   public enum AutoGoals {
     NOTHING, DRIVE, INTAKEWHILEDRIVELEFT, INTAKEWHILEDRIVERIGHT, SCORE, CLIMB;
   }
 
-  public record Waypoint(AllianceAwarePose2d waypointPose, AutoGoals goal) {
-    public Waypoint(Pose2d waypointPose, AutoGoals goal){
-      this(new AllianceAwarePose2d(waypointPose), goal);
+  public record Waypoint(AllianceAwarePose2d waypointPose, AutoGoals goal, boolean goSlow) {
+    public Waypoint(Pose2d waypointPose, AutoGoals goal, boolean goSlow){
+      this(new AllianceAwarePose2d(waypointPose), goal, goSlow);
     }
   }
 
@@ -75,10 +75,10 @@ public class AutosManager {
     var list = new ArrayList<Supplier<AutoProgram>>();
 
     list.add(this::doNothing);
-    list.add(this::firstTest);
+    list.add(this::depot);
 
     if (includeDebugPaths) {
-      list.add(this::swerveCharacterization);
+      //list.add(this::swerveCharacterization);
       // list.add(() -> testPath("TestDrive1Meter", true));
       // list.add(() -> testPath("TestDrive10Meter", true));
       // list.add(() -> testPath("TestDrive2Meters", true));
@@ -112,14 +112,14 @@ public class AutosManager {
   }
 
   public AutoProgram doNothing() {
-    return new AutoProgram(null, Pose2d.kZero, "Do Nothing");
+    return new AutoProgram(null, new AllianceAwarePose2d(Pose2d.kZero), "Do Nothing");
   }
 
-  public AutoProgram firstTest() {
-    Pair<ArrayList<Waypoint>, Pose2d> autoPoints = createAutoPoints(Autos.TEST);
+  public AutoProgram depot() {
+    Pair<ArrayList<Waypoint>, AllianceAwarePose2d> autoPoints = createAutoPoints(Autos.DEPOT);
     var                               state      = new AutoStateMachine(subsystems, autoPoints.getFirst(),
         autoPoints.getSecond(), states);
-    return stateToAutoProgram(state, autoPoints.getSecond(), "TEST");
+    return stateToAutoProgram(state, autoPoints.getSecond(), "DEPOT");
   }
 
   // @SuppressWarnings("unused")
@@ -168,56 +168,56 @@ public class AutosManager {
   // }
 
   // TODO: Finish up swerveCharacterization to reinstate it
-  public AutoProgram swerveCharacterization() {
-    var sysidConfig = new SysIdRoutine.Config(null, null, null, (state) -> {
-      if (state != SysIdRoutineLog.State.kNone) {
-        logs.swervesysidstate.info(state);
-      }
-    });
+  // public AutoProgram swerveCharacterization() {
+  //   var sysidConfig = new SysIdRoutine.Config(null, null, null, (state) -> {
+  //     if (state != SysIdRoutineLog.State.kNone) {
+  //       logs.swervesysidstate.info(state);
+  //     }
+  //   });
 
-    var mechanism = new SysIdRoutine(sysidConfig, subsystems.drivetrain().getSysIdMechanism());
+  //   var mechanism = new SysIdRoutine(sysidConfig, subsystems.drivetrain().getSysIdMechanism());
 
-    var command1 = mechanism.quasistatic(Direction.kForward);
-    var command2 = mechanism.quasistatic(Direction.kReverse);
-    var command3 = mechanism.dynamic(Direction.kForward);
-    var command4 = mechanism.dynamic(Direction.kReverse);
+  //   var command1 = mechanism.quasistatic(Direction.kForward);
+  //   var command2 = mechanism.quasistatic(Direction.kReverse);
+  //   var command3 = mechanism.dynamic(Direction.kForward);
+  //   var command4 = mechanism.dynamic(Direction.kReverse);
 
-    var finalCommand = command1
-        // .andThen(Commands.waitSeconds(1.0))
-        .andThen(command2)
-        // .andThen(Commands.waitSeconds(1.0))
-        .andThen(command3);
-    // .andThen(Commands.waitSeconds(1.0))
-    // .andThen(command4).andThen(Commands.runOnce(() ->
-    // logSwerveSysidState.info(SysIdRoutineLog.State.kNone)));
-    return new AutoProgram(null, Pose2d.kZero, "Swerve Characterization");
-  }
+  //   var finalCommand = command1
+  //       // .andThen(Commands.waitSeconds(1.0))
+  //       .andThen(command2)
+  //       // .andThen(Commands.waitSeconds(1.0))
+  //       .andThen(command3);
+  //   // .andThen(Commands.waitSeconds(1.0))
+  //   // .andThen(command4).andThen(Commands.runOnce(() ->
+  //   // logSwerveSysidState.info(SysIdRoutineLog.State.kNone)));
+  //  // return new AutoProgram(null, Pose2d.kZero, "Swerve Characterization");
+  // }
 
   public boolean preloadingComplete() {
     return preloadingComplete;
   }
 
-  private Pair<ArrayList<Waypoint>, Pose2d> createAutoPoints(Autos auto) {
+  private Pair<ArrayList<Waypoint>, AllianceAwarePose2d> createAutoPoints(Autos auto) {
     ArrayList<Waypoint> waypoints = new ArrayList<Waypoint>();
-    Pose2d              initialPose;
+    AllianceAwarePose2d aInitialPose; 
     switch (auto) {
-      case TEST:
-        initialPose = ChoreoVars.Poses.S5;
-        waypoints.add(new Waypoint(ChoreoVars.Poses.ST3, AutoGoals.DRIVE));
-        waypoints.add(new Waypoint(ChoreoVars.Poses.T1, AutoGoals.DRIVE));
-        waypoints.add(new Waypoint(ChoreoVars.Poses.T2, AutoGoals.DRIVE));
-        waypoints.add(new Waypoint(ChoreoVars.Poses.T3, AutoGoals.INTAKEWHILEDRIVELEFT));
-        waypoints.add(new Waypoint(ChoreoVars.Poses.T4, AutoGoals.INTAKEWHILEDRIVERIGHT));
-        waypoints.add(new Waypoint(ChoreoVars.Poses.H1, AutoGoals.DRIVE));
-        waypoints.add(new Waypoint(ChoreoVars.Poses.H1, AutoGoals.SCORE));
-        waypoints.add(new Waypoint(ChoreoVars.Poses.C1, AutoGoals.CLIMB));
-        return Pair.of(waypoints, initialPose);
+      case DEPOT:
+      aInitialPose = new AllianceAwarePose2d(ChoreoVars.Poses.START1);
+      waypoints.add(new Waypoint(ChoreoVars.Poses.DEPOT_PREP, AutoGoals.DRIVE, false));
+      waypoints.add(new Waypoint(ChoreoVars.Poses.DEPOT, AutoGoals.INTAKEWHILEDRIVERIGHT, true));
+      waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.DRIVE, false));
+      waypoints.add(new Waypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.SCORE, false));
+      return Pair.of(waypoints, aInitialPose);
+
+
+
       default:
-        return Pair.of(new ArrayList<>(), Pose2d.kZero);
+        aInitialPose = new AllianceAwarePose2d(Pose2d.kZero);
+        return Pair.of(new ArrayList<>(), aInitialPose);
     }
   }
 
-  private AutoProgram stateToAutoProgram(AutoStateMachine state, Pose2d initialPose, String name) {
+  private AutoProgram stateToAutoProgram(AutoStateMachine state, AllianceAwarePose2d initialPose, String name) {
     return new AutoProgram(state.asCommand(), initialPose, name);
   }
 }

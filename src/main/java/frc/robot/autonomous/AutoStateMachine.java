@@ -4,6 +4,7 @@ import java.util.ArrayList;
 
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.Timer;
+import frc.lib.team2930.AllianceAwarePose2d;
 import frc.lib.team2930.StateMachine;
 import frc.robot.RobotStates;
 import frc.robot.RobotStates.IntakeGoal;
@@ -24,18 +25,18 @@ public class AutoStateMachine extends StateMachine {
   private int                       waypointCounter;
   private final RobotStates states;
 
-  public AutoStateMachine(AutosSubsystems subsystems, ArrayList<Waypoint> waypoints, Pose2d initialPose, RobotStates states) {
+  public AutoStateMachine(AutosSubsystems subsystems, ArrayList<Waypoint> waypoints, AllianceAwarePose2d initialPose, RobotStates states) {
     super("Auto");
     this.wrapper    = subsystems.drivetrain();
     this.leftIntake = subsystems.leftIntake();
     this.rightIntake = subsystems.rightIntake();
     this.shooter = subsystems.shooter();
     this.waypoints  = waypoints;
-    driveHelper     = new DriveToPoseHelper(() -> false);
+    driveHelper     = new DriveToPoseHelper(this::goSlow);
     this.states = states;
     waypointCounter = 0;
 
-    driveHelper.resetPID(initialPose, wrapper.getFieldRelativeVelocities());
+    driveHelper.resetPID(initialPose.get(), wrapper.getFieldRelativeVelocities());
     setInitialState(this::nextState);
   }
 
@@ -113,6 +114,15 @@ public class AutoStateMachine extends StateMachine {
     }
 
     return stateWithName("DriveToPose", this::driveToPose);
+  }
+
+  private boolean goSlow(){
+    if (waypointCounter >= waypoints.size()) {
+      return false;
+    }
+
+    Waypoint nextWaypoint = waypoints.get(waypointCounter);
+    return nextWaypoint.goSlow();
   }
 
 }
