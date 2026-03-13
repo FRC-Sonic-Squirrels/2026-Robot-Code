@@ -338,7 +338,7 @@ public final class Constants {
       public static final double STATOR_CURRENT_LIMIT                 = 40;
       public static final double SHOOTING_KICKER_RPM                  = 2500;
       public static final double UNJAM_KICKER_RPM                     = -1200;
-      public static final double STALL_CURRENT_THRESHOLD              = 35;
+      public static final double STALL_CURRENT_THRESHOLD              = 40;
       public static final double PRELOADING_KICKER_RPM                = 800;
       public static final double DURATION_TO_CONFIRM_STALL            = 0.2;
       public static final double DURATION_TO_CONFIRM_UNSTALL          = 0.4;
