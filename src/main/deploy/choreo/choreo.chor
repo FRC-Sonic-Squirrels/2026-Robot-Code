@@ -47,6 +47,34 @@
      "val":-1.5707963267948966
     }
    },
+   "FAKE_DEPOT":{
+    "x":{
+     "exp":"0.4 m",
+     "val":0.4
+    },
+    "y":{
+     "exp":"2.1 m",
+     "val":2.1
+    },
+    "heading":{
+     "exp":"90 deg",
+     "val":1.5707963267948966
+    }
+   },
+   "FAKE_DEPOT_PREP":{
+    "x":{
+     "exp":"1.1 m",
+     "val":1.1
+    },
+    "y":{
+     "exp":"2.1 m",
+     "val":2.1
+    },
+    "heading":{
+     "exp":"90 deg",
+     "val":1.5707963267948966
+    }
+   },
    "INTAKE_MIDDLE_DEPOTSIDE":{
     "x":{
      "exp":"7.7 m",
@@ -75,6 +103,20 @@
      "val":-3.141592653589793
     }
    },
+   "INTAKE_MIDDLE_OUTPOSTSIDE":{
+    "x":{
+     "exp":"7.72 m",
+     "val":7.72
+    },
+    "y":{
+     "exp":"2.18 m",
+     "val":2.18
+    },
+    "heading":{
+     "exp":"90 deg",
+     "val":1.5707963267948966
+    }
+   },
    "INTAKE_PREP_MIDDLE_DEPOTSIDE":{
     "x":{
      "exp":"6.7 m",
@@ -101,6 +143,20 @@
     "heading":{
      "exp":"-135 deg",
      "val":-2.356194490192345
+    }
+   },
+   "INTAKE_PREP_MIDDLE_OUTPOSTSIDE":{
+    "x":{
+     "exp":"6.95 m",
+     "val":6.95
+    },
+    "y":{
+     "exp":"2.18 m",
+     "val":2.18
+    },
+    "heading":{
+     "exp":"90 deg",
+     "val":1.5707963267948966
     }
    },
    "SHOOT_DEPOT_SIDE":{
@@ -185,6 +241,34 @@
     "heading":{
      "exp":"0.92729521 rad",
      "val":0.92729521
+    }
+   },
+   "TEST_MIDDLE_HUB":{
+    "x":{
+     "exp":"6.165 m",
+     "val":6.165
+    },
+    "y":{
+     "exp":"3.217 m",
+     "val":3.217
+    },
+    "heading":{
+     "exp":"3.082 rad",
+     "val":3.082
+    }
+   },
+   "TEST_OVER_BUMP":{
+    "x":{
+     "exp":"5.82 m",
+     "val":5.82
+    },
+    "y":{
+     "exp":"2.28 m",
+     "val":2.28
+    },
+    "heading":{
+     "exp":"2.0533 rad",
+     "val":2.0533
     }
    }
   }
