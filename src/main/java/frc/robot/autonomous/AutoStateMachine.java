@@ -7,6 +7,7 @@ import frc.lib.team2930.StateMachine;
 import frc.robot.RobotStates;
 import frc.robot.RobotStates.IntakeGoal;
 import frc.robot.RobotStates.RobotGoal;
+import frc.robot.autonomous.AutosManager.AutoGoals;
 import frc.robot.autonomous.AutosManager.Waypoint;
 import frc.robot.commands.drive.DriveToPoseHelper;
 import frc.robot.subsystems.intake.Intake;
@@ -53,11 +54,13 @@ public class AutoStateMachine extends StateMachine {
   private StateHandler driveToPoseIntakingLeft() {
 
     states.setIntakeGoal(IntakeGoal.LeftIntake);
-    // TODO: Slow down at some point
     wrapper.setVelocityOverride(driveHelper.periodic(wrapper.getHubPoseEstimatorPose(true)));
 
     if (!driveHelper.isAtTarget()) {
       return null;
+    }
+    if(!(waypoints.get(waypointCounter).goal().equals(AutoGoals.INTAKEWHILEDRIVELEFT))){
+      states.setIntakeGoal(IntakeGoal.Stow);
     }
 
     return nextState();
@@ -65,11 +68,13 @@ public class AutoStateMachine extends StateMachine {
 
   private StateHandler driveToPoseIntakingRight() {
     states.setIntakeGoal(IntakeGoal.RightIntake);
-    // TODO: Slow down at some point
     wrapper.setVelocityOverride(driveHelper.periodic(wrapper.getHubPoseEstimatorPose(true)));
 
     if (!driveHelper.isAtTarget()) {
       return null;
+    }
+    if(!(waypoints.get(waypointCounter).goal().equals(AutoGoals.INTAKEWHILEDRIVERIGHT))){
+      states.setIntakeGoal(IntakeGoal.Stow);
     }
 
     return nextState();
