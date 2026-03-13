@@ -218,7 +218,7 @@ public class RobotConfig2026 extends RobotConfig {
     SHOOTER_SIDE_LEFT.z     = Units.Inches.of(10);
     SHOOTER_SIDE_LEFT.roll  = Units.Degree.of(0.0);
     SHOOTER_SIDE_LEFT.pitch = Units.Degree.of(-25.0);
-    SHOOTER_SIDE_LEFT.yaw   = Units.Degree.of(-17);
+    SHOOTER_SIDE_LEFT.yaw   = Units.Degree.of(-19);
 
     SHOOTER_SIDE_RIGHT       = new CameraConfiguration();
     SHOOTER_SIDE_RIGHT.x     = Units.Inches.of(12.5);
@@ -226,7 +226,7 @@ public class RobotConfig2026 extends RobotConfig {
     SHOOTER_SIDE_RIGHT.z     = Units.Inches.of(10);
     SHOOTER_SIDE_RIGHT.roll  = Units.Degree.of(0.0);
     SHOOTER_SIDE_RIGHT.pitch = Units.Degree.of(-25.0);
-    SHOOTER_SIDE_RIGHT.yaw   = Units.Degree.of(17);
+    SHOOTER_SIDE_RIGHT.yaw   = Units.Degree.of(19);
 
     if (RobotIsRotatedBackward) {
       SHOOTER_SIDE_LEFT.rotate180();
