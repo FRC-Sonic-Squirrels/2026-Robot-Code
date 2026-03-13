@@ -313,7 +313,7 @@ public class RobotContainer {
     flipAutoChooser.addDefaultOption("No", false);
     flipAutoChooser.addOption("Yes", true);
 
-    var subsystems = new AutosSubsystems(drivetrainWrapper, led, leftIntake, rightIntake);
+    var subsystems = new AutosSubsystems(drivetrainWrapper, led, leftIntake, rightIntake, shooter);
 
     robotStates = new RobotStates(config, climber, leftIntake, rightIntake, shooter, drivetrainWrapper, hopper);
 

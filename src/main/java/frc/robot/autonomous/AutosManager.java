@@ -25,7 +25,7 @@ public class AutosManager {
   }
 
   public enum AutoGoals {
-    NOTHING, DRIVE, INTAKEWHILEDRIVE, SCORE, CLIMB;
+    NOTHING, DRIVE, INTAKEWHILEDRIVELEFT, INTAKEWHILEDRIVERIGHT, SCORE, CLIMB;
   }
 
   public record Waypoint(Pose2d waypointPose, AutoGoals goal) {
@@ -114,7 +114,7 @@ public class AutosManager {
   public AutoProgram firstTest() {
     Pair<ArrayList<Waypoint>, Pose2d> autoPoints = createAutoPoints(Autos.TEST);
     var                               state      = new AutoStateMachine(subsystems, autoPoints.getFirst(),
-        autoPoints.getSecond());
+        autoPoints.getSecond(), states);
     return stateToAutoProgram(state, autoPoints.getSecond(), "TEST");
   }
 
@@ -202,9 +202,10 @@ public class AutosManager {
         waypoints.add(new Waypoint(ChoreoVars.Poses.ST3, AutoGoals.DRIVE));
         waypoints.add(new Waypoint(ChoreoVars.Poses.T1, AutoGoals.DRIVE));
         waypoints.add(new Waypoint(ChoreoVars.Poses.T2, AutoGoals.DRIVE));
-        waypoints.add(new Waypoint(ChoreoVars.Poses.T3, AutoGoals.DRIVE));
-        waypoints.add(new Waypoint(ChoreoVars.Poses.T4, AutoGoals.DRIVE));
+        waypoints.add(new Waypoint(ChoreoVars.Poses.T3, AutoGoals.INTAKEWHILEDRIVELEFT));
+        waypoints.add(new Waypoint(ChoreoVars.Poses.T4, AutoGoals.INTAKEWHILEDRIVERIGHT));
         waypoints.add(new Waypoint(ChoreoVars.Poses.H1, AutoGoals.DRIVE));
+        waypoints.add(new Waypoint(ChoreoVars.Poses.H1, AutoGoals.SCORE));
         waypoints.add(new Waypoint(ChoreoVars.Poses.C1, AutoGoals.CLIMB));
         return Pair.of(waypoints, initialPose);
       default:

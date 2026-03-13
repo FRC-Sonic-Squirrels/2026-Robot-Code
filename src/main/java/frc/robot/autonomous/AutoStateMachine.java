@@ -3,22 +3,36 @@ package frc.robot.autonomous;
 import java.util.ArrayList;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.Timer;
 import frc.lib.team2930.StateMachine;
+import frc.robot.RobotStates;
+import frc.robot.RobotStates.IntakeGoal;
+import frc.robot.RobotStates.RobotGoal;
 import frc.robot.autonomous.AutosManager.Waypoint;
 import frc.robot.commands.drive.DriveToPoseHelper;
+import frc.robot.subsystems.intake.Intake;
+import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
 
 public class AutoStateMachine extends StateMachine {
   private final DrivetrainWrapper   wrapper;
+  private final Intake leftIntake;
+  private final Intake rightIntake;
+  private final Shooter shooter;
   private final DriveToPoseHelper   driveHelper;
   private final ArrayList<Waypoint> waypoints;
   private int                       waypointCounter;
+  private final RobotStates states;
 
-  public AutoStateMachine(AutosSubsystems subsystems, ArrayList<Waypoint> waypoints, Pose2d initialPose) {
+  public AutoStateMachine(AutosSubsystems subsystems, ArrayList<Waypoint> waypoints, Pose2d initialPose, RobotStates states) {
     super("Auto");
     this.wrapper    = subsystems.drivetrain();
+    this.leftIntake = subsystems.leftIntake();
+    this.rightIntake = subsystems.rightIntake();
+    this.shooter = subsystems.shooter();
     this.waypoints  = waypoints;
     driveHelper     = new DriveToPoseHelper(() -> false);
+    this.states = states;
     waypointCounter = 0;
 
     driveHelper.resetPID(initialPose, wrapper.getFieldRelativeVelocities());
@@ -33,6 +47,45 @@ public class AutoStateMachine extends StateMachine {
       return null;
     }
 
+    return nextState();
+  }
+
+  private StateHandler driveToPoseIntakingLeft(){
+
+    states.setIntakeGoal(IntakeGoal.LeftIntake);
+    //TODO: Slow down at some point
+    wrapper.setVelocityOverride(driveHelper.periodic(wrapper.getHubPoseEstimatorPose(true)));
+
+    if (!driveHelper.isAtTarget()) {
+      return null;
+    }
+
+    return nextState();
+  }
+
+  private StateHandler driveToPoseIntakingRight(){
+    states.setIntakeGoal(IntakeGoal.RightIntake);
+    //TODO: Slow down at some point
+    wrapper.setVelocityOverride(driveHelper.periodic(wrapper.getHubPoseEstimatorPose(true)));
+
+    if (!driveHelper.isAtTarget()) {
+      return null;
+    }
+
+    return nextState();
+  }
+
+  private StateHandler shoot(){
+
+    states.setRobotGoal(RobotGoal.Shoot);
+    double time = Timer.getFPGATimestamp();
+    if(shooter.getFuelInUpperKicker()){
+      return null;
+    } else if(time + 2 <= Timer.getFPGATimestamp()){
+      return null;
+    }
+
+    states.setRobotGoal(RobotGoal.None);
     return nextState();
   }
 
@@ -51,10 +104,12 @@ public class AutoStateMachine extends StateMachine {
         break;
       case NOTHING:
         break;
-      case INTAKEWHILEDRIVE:
-        break;
+      case INTAKEWHILEDRIVELEFT:
+        return stateWithName("DriveToPoseIntakeLeft",this::driveToPoseIntakingLeft);
+      case INTAKEWHILEDRIVERIGHT:
+        return stateWithName("DriveToPoseIntakeRight", this::driveToPoseIntakingRight);  
       case SCORE:
-        break;
+        return stateWithName("Shoot", shoot());
       default:
         break;
     }
