@@ -7,6 +7,7 @@ import frc.lib.team2930.*;
 import frc.robot.RobotStates;
 import frc.robot.autonomous.records.ChoreoVars;
 
+import java.nio.channels.NonWritableChannelException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -63,6 +64,7 @@ public class AutosManager {
     var list = new ArrayList<Supplier<AutoProgram>>();
 
     list.add(this::doNothing);
+    list.add(this::goFast);
     list.add(this::depot);
     list.add(this::depotMiddle);
     list.add(this::middleDepotSide);
@@ -105,6 +107,12 @@ public class AutosManager {
     return new AutoProgram(null, new AllianceAwarePose2d(Pose2d.kZero), "Do Nothing");
   }
 
+  public AutoProgram goFast(){
+    var autoPoints = createAutoPoints(Autos.TEST);
+    var state = new AutoStateMachine(subsystems, autoPoints.getFirst(), autoPoints.getSecond(), states);
+    return stateToAutoProgram(state, autoPoints.getSecond(), "test go fast");
+  }  
+
   public AutoProgram depot() {
     var autoPoints = createAutoPoints(Autos.DEPOT);
 
@@ -142,6 +150,12 @@ public class AutosManager {
     var                 waypoints = new ArrayList<Waypoint>();
     AllianceAwarePose2d aInitialPose;
     switch (auto) {
+      case TEST:
+        aInitialPose = newInitialPose(ChoreoVars.Poses.START4);
+        waypoints.add(newWaypoint(ChoreoVars.Poses.SHOOT_OUTPOST_SIDE, AutoGoals.DRIVE, false));
+        waypoints.add(newWaypoint(ChoreoVars.Poses.SHOOT_OUTPOST_SIDE, AutoGoals.SCORE, false));
+        return Pair.of(waypoints, aInitialPose);
+
       case DEPOT:
         aInitialPose = newInitialPose(ChoreoVars.Poses.START1);
         waypoints.add(newWaypoint(ChoreoVars.Poses.DEPOT_PREP, AutoGoals.DRIVE, false));
