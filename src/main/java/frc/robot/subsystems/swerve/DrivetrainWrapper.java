@@ -27,11 +27,9 @@ public class DrivetrainWrapper {
   public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
   public static class Tunables extends AutoRegisterTunables {
-    @TunableEntry(defaultValue = 100.0)
-    public LoggedTunableNumber driveSpeedPercent;
+    @TunableEntry(defaultValue = 100.0) public LoggedTunableNumber driveSpeedPercent;
 
-    @TunableEntry(defaultValue = 50.0)
-    public LoggedTunableNumber rotateSpeedPercent;
+    @TunableEntry(defaultValue = 50.0) public LoggedTunableNumber rotateSpeedPercent;
   }
 
   private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
@@ -76,10 +74,18 @@ public class DrivetrainWrapper {
       chassisSpeeds = chassisSpeedsOverride;
     }
 
-    // Hack to make it run forward!!!!!!!!!
-    chassisSpeeds.vxMetersPerSecond     *= tunables.driveSpeedPercent.get() / 100.0;
-    chassisSpeeds.vyMetersPerSecond     *= tunables.driveSpeedPercent.get() / 100.0;
-    chassisSpeeds.omegaRadiansPerSecond *= tunables.rotateSpeedPercent.get() / 100.0;
+    var    velocity    = Math.hypot(chassisSpeeds.vxMetersPerSecond, chassisSpeeds.vyMetersPerSecond);
+    double maxVelocity = tunables.driveSpeedPercent.get();
+    if (velocity > maxVelocity) {
+      chassisSpeeds.vxMetersPerSecond *= maxVelocity / velocity;
+      chassisSpeeds.vyMetersPerSecond *= maxVelocity / velocity;
+    }
+
+    double maxRotation = tunables.rotateSpeedPercent.get();
+    double absRotation = Math.abs(chassisSpeeds.omegaRadiansPerSecond);
+    if (absRotation > maxRotation) {
+      chassisSpeeds.omegaRadiansPerSecond *= maxRotation / absRotation;
+    }
 
     // Run drivetrain
 
@@ -102,8 +108,9 @@ public class DrivetrainWrapper {
    * @param chassisSpeeds speeds (m/s, rad/s)
    */
   public void setVelocity(ChassisSpeeds chassisSpeeds) {
-    if (chassisSpeeds == null)
+    if (chassisSpeeds == null) {
       chassisSpeeds = new ChassisSpeeds();
+    }
     chassisSpeedsBase = chassisSpeeds;
   }
 
