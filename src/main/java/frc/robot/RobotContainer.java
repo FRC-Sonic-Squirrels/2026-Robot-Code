@@ -355,29 +355,40 @@ public class RobotContainer {
         Pose2d pose = drivetrain.getHubPoseEstimatorPose();
         drivetrain.setPose(new Pose2d(pose.getX(), pose.getY(), Constants.zeroRotation2d));
       }, drivetrain));
+
+      driverController.registerTrigger(XboxControllerWrapper.Button.start, "X Stance")
+          .onTrue(Commands.runOnce(drivetrain::stopWithX));
+
+      driverController.registerTrigger(XboxControllerWrapper.Button.a, "DriveToTag")
+          .whileTrue(Commands.repeatingSequence(
+              new DriveToPose(drivetrainWrapper, false,
+                  aprilTagLayout.getTagPose(15).get().toPose2d()
+                      .transformBy(new Transform2d(Units.Inches.of(60).in(Units.Meters),
+                          Units.Inches.of(-15).in(Units.Meters), Rotation2d.kZero)),
+                  () -> drivetrainWrapper.getHubPoseEstimatorPose(true)),
+              new DriveToPose(drivetrainWrapper, false,
+                  aprilTagLayout.getTagPose(15).get().toPose2d()
+                      .transformBy(new Transform2d(Units.Inches.of(40).in(Units.Meters),
+                          Units.Inches.of(0).in(Units.Meters), Rotation2d.kZero)),
+                  () -> drivetrainWrapper.getHubPoseEstimatorPose(true)),
+              new DriveToPose(drivetrainWrapper, false,
+                  aprilTagLayout.getTagPose(15).get().toPose2d()
+                      .transformBy(new Transform2d(Units.Inches.of(60).in(Units.Meters),
+                          Units.Inches.of(15).in(Units.Meters), Rotation2d.kZero)),
+                  () -> drivetrainWrapper.getHubPoseEstimatorPose(true))));
+
+      driverController.registerTrigger(XboxControllerWrapper.Button.b, "DriveToTag2")
+          .onTrue(new DriveToPose(drivetrainWrapper, false,
+              aprilTagLayout.getTagPose(15).get().toPose2d()
+                  .transformBy(new Transform2d(Units.Inches.of(60).in(Units.Meters),
+                      Units.Inches.of(15).in(Units.Meters), Rotation2d.kZero)),
+              () -> drivetrainWrapper.getHubPoseEstimatorPose(true)));
     }
-    driverController.registerTrigger(XboxControllerWrapper.Button.start, "X Stance")
-        .onTrue(Commands.runOnce(drivetrain::stopWithX));
-    driverController.registerTrigger(XboxControllerWrapper.Button.a, "DriveToTag").whileTrue(Commands.repeatingSequence(
-        new DriveToPose(drivetrainWrapper, false,
-            aprilTagLayout.getTagPose(15).get().toPose2d()
-                .transformBy(new Transform2d(Units.Inches.of(60).in(Units.Meters),
-                    Units.Inches.of(-15).in(Units.Meters), Rotation2d.kZero)),
-            () -> drivetrainWrapper.getHubPoseEstimatorPose(true)),
-        new DriveToPose(drivetrainWrapper, false,
-            aprilTagLayout.getTagPose(15).get().toPose2d()
-                .transformBy(new Transform2d(Units.Inches.of(40).in(Units.Meters), Units.Inches.of(0).in(Units.Meters),
-                    Rotation2d.kZero)),
-            () -> drivetrainWrapper.getHubPoseEstimatorPose(true)),
-        new DriveToPose(drivetrainWrapper, false,
-            aprilTagLayout.getTagPose(15).get().toPose2d().transformBy(new Transform2d(
-                Units.Inches.of(60).in(Units.Meters), Units.Inches.of(15).in(Units.Meters), Rotation2d.kZero)),
-            () -> drivetrainWrapper.getHubPoseEstimatorPose(true))));
-    driverController.registerTrigger(XboxControllerWrapper.Button.b, "DriveToTag2")
-        .onTrue(new DriveToPose(drivetrainWrapper, false,
-            aprilTagLayout.getTagPose(15).get().toPose2d().transformBy(new Transform2d(
-                Units.Inches.of(60).in(Units.Meters), Units.Inches.of(15).in(Units.Meters), Rotation2d.kZero)),
-            () -> drivetrainWrapper.getHubPoseEstimatorPose(true)));
+
+    if (Constants.RobotMode.isSimBot()) {
+      driverController.registerTrigger(XboxControllerWrapper.Button.a, "Shoot")
+          .react(robotStates.changeRobotGoal(RobotStates.RobotGoal.Shoot, RobotStates.RobotGoal.None));
+    }
 
     driverController.registerTrigger(XboxControllerWrapper.Button.leftTrigger, "Shoot")
         .react(robotStates.changeRobotGoal(RobotStates.RobotGoal.Shoot, RobotStates.RobotGoal.None));
@@ -391,17 +402,19 @@ public class RobotContainer {
     driverController.registerTrigger(XboxControllerWrapper.Button.rightBumper, "Right Intake")
         .react(robotStates.changeIntakeGoal(IntakeGoal.RightIntake, RobotStates.IntakeGoal.Stow));
 
-    driverController.registerTrigger(XboxControllerWrapper.Button.povDown, "ClimbL1")
-        .react(robotStates.changeRobotGoal(RobotGoal.ClimbL1, RobotGoal.None));
+    if (Constants.unusedCode) {
+      driverController.registerTrigger(XboxControllerWrapper.Button.povDown, "ClimbL1")
+          .react(robotStates.changeRobotGoal(RobotGoal.ClimbL1, RobotGoal.None));
 
-    driverController.registerTrigger(XboxControllerWrapper.Button.povUp, "ClimbL2")
-        .react(robotStates.changeRobotGoal(RobotGoal.ClimbL2, RobotGoal.None));
+      driverController.registerTrigger(XboxControllerWrapper.Button.povUp, "ClimbL2")
+          .react(robotStates.changeRobotGoal(RobotGoal.ClimbL2, RobotGoal.None));
 
-    driverController.registerTrigger(XboxControllerWrapper.Button.povRight, "ClimbL3")
-        .react(robotStates.changeRobotGoal(RobotGoal.ClimbL3, RobotGoal.None));
+      driverController.registerTrigger(XboxControllerWrapper.Button.povRight, "ClimbL3")
+          .react(robotStates.changeRobotGoal(RobotGoal.ClimbL3, RobotGoal.None));
 
-    driverController.registerTrigger(XboxControllerWrapper.Button.povLeft, "Lock")
-        .react(robotStates.changeRobotGoal(RobotGoal.Lock, RobotGoal.None));
+      driverController.registerTrigger(XboxControllerWrapper.Button.povLeft, "Lock")
+          .react(robotStates.changeRobotGoal(RobotGoal.Lock, RobotGoal.None));
+    }
 
     // ---------- OPERATOR CONTROLS -----------
 

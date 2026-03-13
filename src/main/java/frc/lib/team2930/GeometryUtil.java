@@ -30,6 +30,10 @@ public class GeometryUtil {
     return Math.hypot(pose.getX() - pose2.getX(), pose.getY() - pose2.getY());
   }
 
+  public static Rotation2d newRotation2d(double x, double y) {
+    return Math.abs(x) > 0.01 || Math.abs(y) > 0.01 ? new Rotation2d(x, y) : Rotation2d.kZero;
+  }
+
   public static Translation3d translation2dTo3d(Translation2d translation) {
     return new Translation3d(translation.getX(), translation.getY(), 0.0);
   }

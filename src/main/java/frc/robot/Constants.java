@@ -55,14 +55,7 @@ public final class Constants {
     private static final RobotType ROBOT = RobotType.ROBOT_2026_DOUG;
 
     public static boolean isSimBot() {
-      switch (getRobot()) {
-        case ROBOT_SIMBOT:
-        case ROBOT_SIMBOT_REAL_CAMERAS:
-          return true;
-
-        default:
-          return false;
-      }
+      return getRobot().isSimulator;
     }
 
     public static Mode getMode() {
@@ -87,15 +80,17 @@ public final class Constants {
       // object that is created. In this case ExampleRobotConfig. Suppliers solve this
       // by only creating the specific config object corresponding to the robot type
       // @formatter:off
-      ROBOT_SIMBOT(SimulatorRobotConfig::new),
-      ROBOT_SIMBOT_REAL_CAMERAS(SimulatorRobotConfig::new),
-      ROBOT_2026_DOUG(RobotConfig2026::new); // Someone please name it...
+      ROBOT_SIMBOT(SimulatorRobotConfig::new, true),
+      ROBOT_SIMBOT_REAL_CAMERAS(SimulatorRobotConfig::new, true),
+      ROBOT_2026_DOUG(RobotConfig2026::new, false); // Someone please name it...
       // @formatter:on
 
       public final Supplier<RobotConfig> config;
+      public final boolean               isSimulator;
 
-      RobotType(Supplier<RobotConfig> config) {
-        this.config = config;
+      RobotType(Supplier<RobotConfig> config, boolean isSimulator) {
+        this.config      = config;
+        this.isSimulator = isSimulator;
       }
     }
 

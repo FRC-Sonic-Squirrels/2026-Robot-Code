@@ -9,7 +9,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
-import frc.robot.Constants.RobotMode.RobotType;
 
 public class Elevator extends SubsystemBase {
 
@@ -63,7 +62,7 @@ public class Elevator extends SubsystemBase {
 
     setAccel = tunables.targetAccelerationConfig.get();
 
-    if (Constants.RobotMode.getRobot() == RobotType.ROBOT_SIMBOT) {
+    if (Constants.RobotMode.isSimBot()) {
       tunables.elevatorKP.initDefault(.2);
       tunables.elevatorKD.initDefault(0);
       tunables.elevatorKG.initDefault(0.0);

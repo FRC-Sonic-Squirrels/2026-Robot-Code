@@ -13,6 +13,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.team2930.AutoRegisterLoggers;
+import frc.lib.team2930.GeometryUtil;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
 import frc.robot.Constants;
@@ -68,7 +69,7 @@ public class DrivetrainDefaultTeleopDrive extends Command {
     double     x               = xSupplier.getAsDouble() * redFlip;
     double     y               = ySupplier.getAsDouble() * redFlip;
     double     linearMagnitude = MathUtil.applyDeadband(Math.hypot(x, y), DEADBAND);
-    Rotation2d linearDirection = x != 0 || y != 0 ? new Rotation2d(x, y) : Rotation2d.kZero;
+    Rotation2d linearDirection = GeometryUtil.newRotation2d(x, y);
     double     omega           = MathUtil.applyDeadband(omegaSupplier.getAsDouble(), DEADBAND);
 
     // Square values
