@@ -37,7 +37,7 @@ public class RobotStates {
     Score        (true,  false),
     Pass         (true,  false),
     Shoot        (true,  false),
-    BumperShot (true, false),
+    BumperShot   (true , false),
     StowClimber  (false,  true),
     MountDismount(false,  true),
     ClimbL1      (false,  true),
@@ -261,7 +261,12 @@ public class RobotStates {
     var robotPose     = drivetrain.getHubPoseEstimatorPose(true);
     var robotVelocity = drivetrain.getRobotCentricVelocities();
     var rotateState   = rotateToFaceHelper.periodic(robotPose, robotVelocity);
-    drivetrain.setRotationOverride(rotateState.omega());
+
+    if (goal != RobotGoal.BumperShot) {
+      drivetrain.setRotationOverride(rotateState.omega());
+    } else {
+      drivetrain.resetRotationOverride();
+    }
     shooter.setFacingTarget(rotateState.withinTolerance());
     shooter.setDistanceFromTarget(rotateState.distance());
   }

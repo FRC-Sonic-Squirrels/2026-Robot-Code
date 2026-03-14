@@ -353,6 +353,7 @@ public class Shooter extends SubsystemBase {
   public Rotation2d getHoodAngle(Distance distance) {
     return switch (goal) {
       case Scoring -> Rotation2d.fromDegrees(hoodAngleForHubDistanceMap.get(distance.in(Units.Meters)));
+      case BumperShot -> Rotation2d.fromDegrees(hoodAngleForHubDistanceMap.get(distance.in(Units.Meters)));
       case Passing -> Rotation2d.fromDegrees(hoodAngleForAllianceZoneDistanceMap.get(distance.in(Units.Meters)));
       default -> Rotation2d.kZero;
     };
@@ -361,6 +362,7 @@ public class Shooter extends SubsystemBase {
   public double getFlywheelRPM(Distance distance) {
     return switch (goal) {
       case Scoring -> flywheelRpmForHubDistanceMap.get(distance.in(Units.Meters));
+      case BumperShot -> flywheelRpmForHubDistanceMap.get(distance.in(Units.Meters));
       case Passing -> flywheelRpmForAllianceZoneDistanceMap.get(distance.in(Units.Meters));
       default -> ShooterConstants.Flywheel.IDLE_FLYWHEEL_RPM;
     };
@@ -432,6 +434,7 @@ public class Shooter extends SubsystemBase {
       switch (goal) {
         case Scoring:
         case Passing:
+        case BumperShot:
           return ShooterConstants.Kicker.SHOOTING_KICKER_RPM;
         case PreLoading:
           return ShooterConstants.Kicker.PRELOADING_KICKER_RPM;
@@ -475,6 +478,13 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean isShooterReady() {
+    boolean isFacingTarget;
+    if (goal == Goal.BumperShot) {
+      isFacingTarget = true;
+    } else {
+      isFacingTarget = this.isFacingTarget;
+    }
+
     return isFacingTarget && isFlywheelReady() && isHoodReady();
   }
 
