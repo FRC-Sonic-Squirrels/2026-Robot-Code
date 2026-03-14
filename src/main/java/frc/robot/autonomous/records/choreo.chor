@@ -103,6 +103,20 @@
      "val":-3.141592653589793
     }
    },
+   "INTAKE_MIDDLE_MIDDLE_OUTPOSTSIDE":{
+    "x":{
+     "exp":"7.68 m",
+     "val":7.68
+    },
+    "y":{
+     "exp":"3.47 m",
+     "val":3.47
+    },
+    "heading":{
+     "exp":"-pi rad",
+     "val":-3.141592653589793
+    }
+   },
    "INTAKE_MIDDLE_OUTPOSTSIDE":{
     "x":{
      "exp":"7.72 m",

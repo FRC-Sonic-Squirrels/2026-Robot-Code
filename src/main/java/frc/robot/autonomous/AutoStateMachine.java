@@ -75,7 +75,7 @@ public class AutoStateMachine extends StateMachine {
   private StateHandler shoot() {
     var time = this.timeFromStartOfState();
     states.setRobotGoal(RobotGoal.Shoot);
-    if ((time <= 2)) {
+    if ((time <= 3)) {
       return null;
     }
 

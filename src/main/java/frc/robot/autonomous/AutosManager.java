@@ -176,8 +176,9 @@ public class AutosManager {
         waypoints.add(newWaypoint(ChoreoVars.Poses.START3, AutoGoals.SCORE, false));
         waypoints.add(newWaypoint(ChoreoVars.Poses.INTAKE_PREP_MIDDLE_OUTPOSTSIDE, AutoGoals.DRIVE, false));
         waypoints.add(newWaypoint(ChoreoVars.Poses.INTAKE_MIDDLE_OUTPOSTSIDE, AutoGoals.INTAKEWHILEDRIVERIGHT, true));
-        waypoints.add(
-            newWaypoint(ChoreoVars.Poses.INTAKE_PREP_MIDDLE_MIDDLE_DEPOTSIDE, AutoGoals.INTAKEWHILEDRIVERIGHT, false));
+        waypoints
+            .add(newWaypoint(ChoreoVars.Poses.INTAKE_MIDDLE_MIDDLE_OUTPOSTSIDE, AutoGoals.INTAKEWHILEDRIVERIGHT, true));
+        waypoints.add(new Waypoint(ChoreoVars.Poses.INTAKE_PREP_MIDDLE_OUTPOSTSIDE, AutoGoals.DRIVE, false));
         waypoints.add(newWaypoint(ChoreoVars.Poses.SHOOT_OUTPOST_SIDE, AutoGoals.DRIVE, false));
         waypoints.add(newWaypoint(ChoreoVars.Poses.SHOOT_OUTPOST_SIDE, AutoGoals.SCORE, false));
         return Pair.of(waypoints, aInitialPose);
