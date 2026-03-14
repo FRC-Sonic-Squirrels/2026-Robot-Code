@@ -102,7 +102,7 @@ public class Intake extends SubsystemBase {
     public PivotTunables  pivot;
     public RollerTunables roller;
 
-    @TunableEntry(defaultValue = 3000.0)
+    @TunableEntry(defaultValue = 4000.0)
     public LoggedTunableNumber intakingFuelVelocity;
 
     @TunableEntry(defaultValue = 500.0)

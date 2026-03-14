@@ -343,7 +343,7 @@
  },
  "generationFeatures":[],
  "codegen":{
-  "root":"..\\..\\java\\frc\\robot\\autonomous\\records",
+  "root":"C:\\Users\\Squirrels\\Documents\\2026-Robot-Code\\src\\main\\java\\frc\\robot\\autonomous\\records",
   "genVars":true,
   "genTrajData":true,
   "useChoreoLib":true
