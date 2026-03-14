@@ -20,7 +20,7 @@ import java.util.List;
 
 public class Shooter extends SubsystemBase {
   public enum Goal {
-    Idle, Scoring, Passing, Stop, PreLoading, Unjamming
+    Idle, Scoring, BumperShot, Passing, Stop, PreLoading, Unjamming
   }
 
   private final String ROOT_TABLE = "Shooter";
@@ -281,6 +281,11 @@ public class Shooter extends SubsystemBase {
           setKickerVelocity(getKickerRPM(isShooterReady()));
           break;
 
+        case BumperShot:
+          setFlywheelRPM(getFlywheelRPM(Distance.ofBaseUnits(1.0, Units.Meters)));
+          setHoodPosition(getHoodAngle(Distance.ofBaseUnits(1.0, Units.Meters)));
+          setKickerVelocity(getKickerRPM(isShooterReadyCameraless()));
+
         case Stop:
           setFlywheelRPM(0);
           setHoodPosition(Rotation2d.kZero);
@@ -471,6 +476,10 @@ public class Shooter extends SubsystemBase {
 
   public boolean isShooterReady() {
     return isFacingTarget && isFlywheelReady() && isHoodReady();
+  }
+
+  public boolean isShooterReadyCameraless() {
+    return isFlywheelReady() && isHoodReady();
   }
 
   public boolean getFuelInUpperKicker() {

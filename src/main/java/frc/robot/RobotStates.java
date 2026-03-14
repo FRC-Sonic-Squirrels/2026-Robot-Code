@@ -37,6 +37,7 @@ public class RobotStates {
     Score        (true,  false),
     Pass         (true,  false),
     Shoot        (true,  false),
+    BumperShot (true, false),
     StowClimber  (false,  true),
     MountDismount(false,  true),
     ClimbL1      (false,  true),
@@ -145,6 +146,9 @@ public class RobotStates {
         break;
       case Pass:
         pass();
+        break;
+      case BumperShot:
+        bumperShot();
         break;
       case Shoot:
         if (isInAllianceZone) {
@@ -355,6 +359,11 @@ public class RobotStates {
   public void score() {
     setRotateToFaceTarget(FieldConstants.HUB_CENTER_POSE.get());
     shooter.setGoal(Shooter.Goal.Scoring);
+    hopper.setGoal(Hopper.Goal.Shooting);
+  }
+
+  public void bumperShot() {
+    shooter.setGoal(Shooter.Goal.BumperShot);
     hopper.setGoal(Hopper.Goal.Shooting);
   }
 

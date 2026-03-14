@@ -408,6 +408,9 @@ public class RobotContainer {
     driverController.registerTrigger(XboxControllerWrapper.Button.rightBumper, "Right Intake")
         .react(robotStates.changeIntakeGoal(IntakeGoal.RightIntake, RobotStates.IntakeGoal.Stow));
 
+    driverController.registerTrigger(XboxControllerWrapper.Button.x, "Bumper Shot")
+        .react(robotStates.changeRobotGoal(RobotStates.RobotGoal.BumperShot, RobotStates.RobotGoal.None));
+
     if (Constants.unusedCode) {
       driverController.registerTrigger(XboxControllerWrapper.Button.povDown, "ClimbL1")
           .react(robotStates.changeRobotGoal(RobotGoal.ClimbL1, RobotGoal.None));
