@@ -285,6 +285,7 @@ public class Shooter extends SubsystemBase {
           setFlywheelRPM(getFlywheelRPM(Distance.ofBaseUnits(1.0, Units.Meters)));
           setHoodPosition(getHoodAngle(Distance.ofBaseUnits(1.0, Units.Meters)));
           setKickerVelocity(getKickerRPM(isShooterReadyCameraless()));
+          break;
 
         case Stop:
           setFlywheelRPM(0);
@@ -423,6 +424,13 @@ public class Shooter extends SubsystemBase {
     return inputs.hoodVelocityRadsPerSec;
   }
 
+  public Distance getDistanceFromTarget() {
+    if (goal == Goal.BumperShot) {
+      return Distance.ofBaseUnits(1.0, Units.Meters);
+    }
+    return distanceFromTarget;
+  }
+
   public double getKickerRPM(boolean shouldMoveUp) {
     if (persistantKickerStallDetected()) {
       return 0;
@@ -468,7 +476,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean isFlywheelReady() {
-    double desiredFlywheelRPM = getFlywheelRPM(distanceFromTarget);
+    double desiredFlywheelRPM = getFlywheelRPM(getDistanceFromTarget());
     return inputs.flywheelRPM[0] > desiredFlywheelRPM - tunables.flywheel.toleranceRPM.get();
   }
 

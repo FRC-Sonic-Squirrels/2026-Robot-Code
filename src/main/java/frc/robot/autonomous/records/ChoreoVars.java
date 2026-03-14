@@ -15,7 +15,7 @@ public final class ChoreoVars {
 
     public static final class Poses {
         public static final Pose2d BUMP_PREP_MIDDLE_DEPOTSIDE = new Pose2d(6.32, 5.56, Rotation2d.fromRadians(-2.3561945));
-        public static final Pose2d DEPOT = new Pose2d(0.4, 5.9, Rotation2d.fromRadians(-1.5707963));
+        public static final Pose2d DEPOT = new Pose2d(0.55, 5.9, Rotation2d.fromRadians(-1.5707963));
         public static final Pose2d DEPOT_PREP = new Pose2d(1.1, 5.9, Rotation2d.fromRadians(-1.5707963));
         public static final Pose2d FAKE_DEPOT = new Pose2d(0.4, 2.1, Rotation2d.fromRadians(1.5707963));
         public static final Pose2d FAKE_DEPOT_PREP = new Pose2d(1.1, 2.1, Rotation2d.fromRadians(1.5707963));
@@ -25,6 +25,8 @@ public final class ChoreoVars {
         public static final Pose2d INTAKE_PREP_MIDDLE_DEPOTSIDE = new Pose2d(6.7, 5.8, Rotation2d.fromRadians(-1.5707963));
         public static final Pose2d INTAKE_PREP_MIDDLE_MIDDLE_DEPOTSIDE = new Pose2d(7.7, 5.8, Rotation2d.fromRadians(-2.3561945));
         public static final Pose2d INTAKE_PREP_MIDDLE_OUTPOSTSIDE = new Pose2d(6.95, 2.18, Rotation2d.fromRadians(1.5707963));
+        public static final Pose2d OUTPOST_GETOUT = new Pose2d(0.87, 1.75, Rotation2d.fromRadians(0));
+        public static final Pose2d OUTPOST_MIDDLE_INTAKE_PREP = new Pose2d(6.67, 2.34, Rotation2d.fromRadians(1.5707963));
         public static final Pose2d SHOOT_DEPOT_SIDE = new Pose2d(2.6, 5.3, Rotation2d.fromRadians(-0.690446));
         public static final Pose2d SHOOT_OUTPOST_SIDE = new Pose2d(2.5, 2.5, Rotation2d.fromRadians(0.690446));
         public static final Pose2d START1 = new Pose2d(3.5, 5.9, Rotation2d.fromRadians(-0.9272952));

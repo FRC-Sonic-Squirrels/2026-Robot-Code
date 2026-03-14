@@ -21,8 +21,8 @@
    },
    "DEPOT":{
     "x":{
-     "exp":"0.4 m",
-     "val":0.4
+     "exp":"0.55 m",
+     "val":0.55
     },
     "y":{
      "exp":"5.9 m",
@@ -153,6 +153,34 @@
     "y":{
      "exp":"2.18 m",
      "val":2.18
+    },
+    "heading":{
+     "exp":"90 deg",
+     "val":1.5707963267948966
+    }
+   },
+   "OUTPOST_GETOUT":{
+    "x":{
+     "exp":"0.87 m",
+     "val":0.87
+    },
+    "y":{
+     "exp":"1.75 m",
+     "val":1.75
+    },
+    "heading":{
+     "exp":"0 rad",
+     "val":0.0
+    }
+   },
+   "OUTPOST_MIDDLE_INTAKE_PREP":{
+    "x":{
+     "exp":"6.67 m",
+     "val":6.67
+    },
+    "y":{
+     "exp":"2.34 m",
+     "val":2.34
     },
     "heading":{
      "exp":"90 deg",
