@@ -193,7 +193,7 @@ public class IntakeIOReal implements IntakeIO {
       pidConfig.kI = tunables.KI.get();
       pidConfig.kD = tunables.KD.get();
       pidConfig.kG = tunables.KG.get();
-      pidConfig.kV = 0;
+      pidConfig.kV = tunables.KV.get();
       pidConfig.kA = 0;
       pidConfig.kS = 0;
     });

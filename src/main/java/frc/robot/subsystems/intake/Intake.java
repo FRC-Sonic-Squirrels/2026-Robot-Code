@@ -56,6 +56,7 @@ public class Intake extends SubsystemBase {
     public LoggedTunableNumber KI;
     public LoggedTunableNumber KD;
     public LoggedTunableNumber KG;
+    public LoggedTunableNumber KV;
 
     public LoggedTunableNumber maxProfiledVelocity;
     public LoggedTunableNumber maxAccelerationConstraint;
@@ -69,6 +70,7 @@ public class Intake extends SubsystemBase {
       hasChanged |= KI.hasChanged();
       hasChanged |= KD.hasChanged();
       hasChanged |= KG.hasChanged();
+      hasChanged |= KV.hasChanged();
       hasChanged |= maxProfiledVelocity.hasChanged();
       hasChanged |= maxAccelerationConstraint.hasChanged();
       return hasChanged;
@@ -178,10 +180,11 @@ public class Intake extends SubsystemBase {
       roller.KV.initDefault(0.0);
       roller.maxAccelerationConstraint.initDefault(200);
 
-      pivot.KP.initDefault(80);
-      pivot.KI.initDefault(20);
+      pivot.KP.initDefault(140);
+      pivot.KI.initDefault(40);
       pivot.KD.initDefault(5);
       pivot.KG.initDefault(0);
+      pivot.KV.initDefault(0);
       pivot.maxProfiledVelocity.initDefault(200);
       pivot.maxAccelerationConstraint.initDefault(500);
     }
