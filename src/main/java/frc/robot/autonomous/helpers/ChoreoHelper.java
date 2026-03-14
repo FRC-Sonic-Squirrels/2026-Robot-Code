@@ -68,7 +68,7 @@ public class ChoreoHelper {
   private double finalErrorMaxWait      = 2;
   private double finalErrorWaitDeadline = Double.NaN;
 
-  public record ChassisSpeedsWithPathEnd(ChassisSpeeds chassisSpeeds, boolean atEndOfPath) {
+  public record ChassisSpeedsWithPathEnd(ChassisSpeeds chassisSpeeds, SwerveSample currentState, boolean atEndOfPath) {
   }
 
   /**
@@ -312,7 +312,7 @@ public class ChoreoHelper {
 
     var chassisSpeeds = new ChassisSpeeds(xVel, yVel, omegaVel);
     chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, rotation);
-    return new ChassisSpeedsWithPathEnd(chassisSpeeds, atTheEndOfPath);
+    return new ChassisSpeedsWithPathEnd(chassisSpeeds, state, atTheEndOfPath);
   }
 
   private SwerveSample isFutureStateCloser(Pose2d robotPose, SwerveSample state, double lookaheadTime) {
