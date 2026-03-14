@@ -152,9 +152,10 @@ public class AutosManager {
       case TEST:
         aInitialPose = newInitialPose(ChoreoVars.Poses.START4);
         waypoints.add(newWaypoint(ChoreoVars.Poses.TEST_OVER_BUMP, AutoGoals.DRIVE, false));
-        waypoints.add(newWaypoint(ChoreoVars.Poses.TEST_MIDDLE_HUB, AutoGoals.DRIVE, false));
+        waypoints.add(newWaypoint(ChoreoVars.Poses.TEST_MIDDLE_HUB, AutoGoals.INTAKEWHILEDRIVERIGHT, false));
         waypoints.add(newWaypoint(ChoreoVars.Poses.TEST_OVER_BUMP, AutoGoals.DRIVE, false));
         waypoints.add(newWaypoint(ChoreoVars.Poses.SHOOT_OUTPOST_SIDE, AutoGoals.DRIVE, false));
+        waypoints.add(newWaypoint(ChoreoVars.Poses.SHOOT_OUTPOST_SIDE, AutoGoals.SCORE, false));
         // waypoints.add(newWaypoint(ChoreoVars.Poses.SHOOT_OUTPOST_SIDE,
         // AutoGoals.DRIVE, false));
         // waypoints.add(newWaypoint(ChoreoVars.Poses.SHOOT_OUTPOST_SIDE,

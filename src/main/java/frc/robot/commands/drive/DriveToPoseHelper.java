@@ -93,9 +93,9 @@ public class DriveToPoseHelper {
     tunables.thetaMaxVelocity.initDefault(Math.toRadians(360.0));
     tunables.thetaMaxVelocitySlow.initDefault(Math.toRadians(90.0));
     tunables.thetaMaxAcceleration.initDefault(Math.toRadians(720.0));
-    tunables.driveTolerance.initDefault(0.08);
-    tunables.driveToleranceSlow.initDefault(0.08);
-    tunables.thetaTolerance.initDefault(0.01);
+    tunables.driveTolerance.initDefault(0.1);
+    tunables.driveToleranceSlow.initDefault(0.1);
+    tunables.thetaTolerance.initDefault(Math.toRadians(5.0));
     tunables.thetaToleranceSlow.initDefault(Math.toRadians(3.0));
     tunables.ffMinRadius.initDefault(0.0);
     tunables.ffMaxRadius.initDefault(1);
