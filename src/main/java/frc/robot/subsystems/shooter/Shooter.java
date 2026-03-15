@@ -278,13 +278,13 @@ public class Shooter extends SubsystemBase {
         case Scoring:
           setFlywheelRPM(getFlywheelRPM(distanceFromTarget));
           setHoodPosition(getHoodAngle(distanceFromTarget));
-          setKickerVelocity(getKickerRPM(isShooterReady()));
+          setKickerVelocity(getKickerRPM(true));
           break;
 
         case BumperShot:
           setFlywheelRPM(getFlywheelRPM(Distance.ofBaseUnits(1.0, Units.Meters)));
           setHoodPosition(getHoodAngle(Distance.ofBaseUnits(1.0, Units.Meters)));
-          setKickerVelocity(getKickerRPM(isShooterReadyCameraless()));
+          setKickerVelocity(getKickerRPM(true));
           break;
 
         case Stop:

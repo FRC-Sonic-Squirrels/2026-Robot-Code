@@ -193,8 +193,10 @@ public class AutosManager {
 
       case DEPOT_MIDDLE_DEPOTSIDE:
         aInitialPose = newInitialPose(ChoreoVars.Poses.START1);
-        waypoints.add(newWaypoint(ChoreoVars.Poses.DEPOT_PREP, AutoGoals.DRIVE, false));
-        waypoints.add(newWaypoint(ChoreoVars.Poses.DEPOT, AutoGoals.INTAKEWHILEDRIVERIGHT, true));
+        // waypoints.add(newWaypoint(ChoreoVars.Poses.DEPOT_PREP, AutoGoals.DRIVE,
+        // false));
+        // waypoints.add(newWaypoint(ChoreoVars.Poses.DEPOT,
+        // AutoGoals.INTAKEWHILEDRIVERIGHT, true));
         waypoints.add(newWaypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.DRIVE, false));
         waypoints.add(newWaypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.SCORE, false));
         waypoints.add(newWaypoint(ChoreoVars.Poses.INTAKE_PREP_MIDDLE_DEPOTSIDE, AutoGoals.DRIVE, false));
