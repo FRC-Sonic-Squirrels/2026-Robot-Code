@@ -36,6 +36,7 @@ public class Shooter extends SubsystemBase {
     public LoggerEntry.Decimal flywheelTargetRPM;
     public LoggerEntry.Decimal flywheelRollersDifference;
     public LoggerEntry.Decimal targetDistance;
+    public LoggerEntry.Decimal hoodTarget;
     public LoggerEntry.Bool    facingTarget;
     public LoggerEntry.Bool    shooterReady;
     public LoggerEntry.Bool    hoodReady;
@@ -265,6 +266,7 @@ public class Shooter extends SubsystemBase {
       logs.flywheelReady.info(isFlywheelReady());
       logs.stallDetected.info(stallDetected.getAsBoolean());
       logs.persistantStallDetected.info(persistantStallDetected.getAsBoolean());
+      logs.hoodTarget.info(targetHoodPosition);
 
       switch (goal) {
         case Idle:
@@ -278,13 +280,13 @@ public class Shooter extends SubsystemBase {
         case Scoring:
           setFlywheelRPM(getFlywheelRPM(distanceFromTarget));
           setHoodPosition(getHoodAngle(distanceFromTarget));
-          setKickerVelocity(getKickerRPM(true));
+          setKickerVelocity(getKickerRPM(isShooterReady()));
           break;
 
         case BumperShot:
           setFlywheelRPM(getFlywheelRPM(Distance.ofBaseUnits(1.0, Units.Meters)));
           setHoodPosition(getHoodAngle(Distance.ofBaseUnits(1.0, Units.Meters)));
-          setKickerVelocity(getKickerRPM(true));
+          setKickerVelocity(getKickerRPM(isShooterReadyCameraless()));
           break;
 
         case Stop:
@@ -481,7 +483,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean isHoodReady() {
-    double desiredHoodAngle = getHoodAngle(distanceFromTarget).getDegrees();
+    double desiredHoodAngle = getHoodAngle(getDistanceFromTarget()).getDegrees();
     return Math.abs(inputs.hoodPosition.getDegrees() - desiredHoodAngle) < ShooterConstants.Hood.CORRECT_ANGLE_RANGE;
   }
 
