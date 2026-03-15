@@ -89,7 +89,7 @@ public class Shooter extends SubsystemBase {
     @TunableEntry(defaultValue = 0.0)
     public LoggedTunableNumber overrideRPM;
 
-    @TunableEntry(defaultValue = 250)
+    @TunableEntry(defaultValue = 10.0)
     public LoggedTunableNumber toleranceRPM;
 
     public boolean hasChanged() {
@@ -158,8 +158,9 @@ public class Shooter extends SubsystemBase {
   private Rotation2d targetHoodPosition = Constants.zeroRotation2d;
   private double     flywheelTargetRPM  = 0.0;
 
-  private Distance distanceFromTarget = Distance.ofRelativeUnits(1, Units.Meters);
+  private Distance distanceFromTarget    = Distance.ofRelativeUnits(1, Units.Meters);
   private boolean  isFacingTarget;
+  private boolean  flywheelHasReachedRpm = false;
 
   private final Trigger initialStallDetected = new Trigger(
       () -> inputs.kickerVelocityRPM < ShooterConstants.Kicker.SHOOTING_KICKER_RPM * .6
@@ -273,6 +274,7 @@ public class Shooter extends SubsystemBase {
           setFlywheelRPM(ShooterConstants.Flywheel.IDLE_FLYWHEEL_RPM);
           setHoodPosition(ShooterConstants.Hood.IDLE_ANGLE_RAD);
           setKickerVelocity(0);
+          flywheelHasReachedRpm = false;
           break;
 
         case Passing:
@@ -293,14 +295,17 @@ public class Shooter extends SubsystemBase {
           setFlywheelRPM(0);
           setHoodPosition(Rotation2d.kZero);
           setKickerVelocity(0);
+          flywheelHasReachedRpm = false;
           break;
 
         case PreLoading:
           setKickerVelocity((getKickerRPM(!getFuelInUpperKicker())));
+          flywheelHasReachedRpm = false;
           break;
 
         case Unjamming:
           setKickerVelocity(-(ShooterConstants.Kicker.SHOOTING_KICKER_RPM));
+          flywheelHasReachedRpm = false;
           break;
       }
 
@@ -478,8 +483,12 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean isFlywheelReady() {
-    double desiredFlywheelRPM = getFlywheelRPM(getDistanceFromTarget());
-    return inputs.flywheelRPM[0] > desiredFlywheelRPM - tunables.flywheel.toleranceRPM.get();
+    double  desiredFlywheelRPM = getFlywheelRPM(getDistanceFromTarget());
+    boolean isAtRpm            = inputs.flywheelRPM[0] > desiredFlywheelRPM - tunables.flywheel.toleranceRPM.get();
+    if (!flywheelHasReachedRpm && isAtRpm) {
+      flywheelHasReachedRpm = true;
+    }
+    return flywheelHasReachedRpm;
   }
 
   public boolean isHoodReady() {
