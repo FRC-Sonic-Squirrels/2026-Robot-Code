@@ -223,7 +223,7 @@ public final class Constants {
       public static final double STATOR_CURRENT_LIMIT = 10;
 
       public static final String ROLLER                   = "Rollers";
-      public static final int    SHOOTING_ROLLER_VELOCITY = 1000;
+      public static final int    SHOOTING_ROLLER_VELOCITY = 2000;
     }
   }
 
@@ -326,9 +326,8 @@ public final class Constants {
       public static final double STATOR_CURRENT_LIMIT = 40;
       public static final double PEAK_REVERSE_VOLTAGE = 0;
       public static final double SUPPLY_VOLTAGE_TIME  = 0.02;
-      public static final double IDLE_FLYWHEEL_RPM    = 0;     // 2000;
+      public static final double IDLE_FLYWHEEL_RPM    = 3000;  // 2000;
       public static final double DEBOUNCE_AT_TARGET   = 0.15;
-
     }
 
     public static class Kicker {
@@ -361,8 +360,8 @@ public final class Constants {
       public static TunableInterpolationMap generateFlywheelRpmForHubDistanceMap() {
         var map = new HashMap<Double, Double>();
         map.put(1.0, 3000.0);
-        map.put(1.5, 3200.0);
-        map.put(2.0, 3500.0);
+        map.put(1.5, 3100.0);
+        map.put(2.0, 3400.0);
         map.put(2.5, 4200.0);
         map.put(3.0, 5000.0);
         map.put(3.5, 5000.0);

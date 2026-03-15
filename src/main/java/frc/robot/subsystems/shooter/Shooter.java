@@ -41,6 +41,7 @@ public class Shooter extends SubsystemBase {
     public LoggerEntry.Bool    shooterReady;
     public LoggerEntry.Bool    hoodReady;
     public LoggerEntry.Bool    flywheelReady;
+    public LoggerEntry.Bool    flywheelIdleRPM;
 
     public LoggerEntry.Bool stallDetected;
     public LoggerEntry.Bool persistantStallDetected;
@@ -145,6 +146,8 @@ public class Shooter extends SubsystemBase {
   private final TunableInterpolationMap hoodAngleForHubDistanceMap;
   private final TunableInterpolationMap hoodAngleForAllianceZoneDistanceMap;
 
+  private boolean flywheelIdleRPMEnabled = true;
+
   // Creates a new flat moving average filter
   // Average will be taken over the last 20 samples
   private final LinearFilter hoodPidLatencyfilter = LinearFilter.movingAverage(20);
@@ -215,9 +218,9 @@ public class Shooter extends SubsystemBase {
       flywheel.KS.initDefault(0.0);
       flywheel.closedLoopMaxAccelerationConstraint.initDefault(10.0);
 
-      kicker.KP.initDefault(0.1);
-      kicker.KD.initDefault(0.01);
-      kicker.KI.initDefault(1);
+      kicker.KP.initDefault(0.2);
+      kicker.KD.initDefault(0.0);
+      kicker.KI.initDefault(0.2);
       kicker.KV.initDefault(0.0);
       kicker.KS.initDefault(0.0);
       kicker.closedLoopMaxAccelerationConstraint.initDefault(0.0);
@@ -268,10 +271,15 @@ public class Shooter extends SubsystemBase {
       logs.stallDetected.info(stallDetected.getAsBoolean());
       logs.persistantStallDetected.info(persistantStallDetected.getAsBoolean());
       logs.hoodTarget.info(targetHoodPosition);
+      logs.flywheelIdleRPM.info(flywheelIdleRPMEnabled);
 
       switch (goal) {
         case Idle:
-          setFlywheelRPM(ShooterConstants.Flywheel.IDLE_FLYWHEEL_RPM);
+          if (flywheelIdleRPMEnabled) {
+            setFlywheelRPM(ShooterConstants.Flywheel.IDLE_FLYWHEEL_RPM);
+          } else {
+            setFlywheelRPM(0);
+          }
           setHoodPosition(ShooterConstants.Hood.IDLE_ANGLE_RAD);
           setKickerVelocity(0);
           flywheelHasReachedRpm = false;
@@ -525,5 +533,9 @@ public class Shooter extends SubsystemBase {
 
   public void setGoal(Goal goal) {
     this.goal = goal;
+  }
+
+  public void setFlywheelIdleRPMEnabled(boolean flywheelIdle) {
+    this.flywheelIdleRPMEnabled = flywheelIdle;
   }
 }
