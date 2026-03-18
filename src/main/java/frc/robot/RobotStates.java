@@ -270,11 +270,7 @@ public class RobotStates {
   private void shoot() {
     var rotateState = computeRotateToFaceState();
 
-    if (goal != RobotGoal.BumperShot) {
-      drivetrain.setRotationOverride(rotateState.omega());
-    } else {
-      drivetrain.resetRotationOverride();
-    }
+    drivetrain.resetRotationOverride();
     shooter.setFacingTarget(rotateState.withinTolerance());
   }
 

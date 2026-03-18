@@ -457,11 +457,7 @@ public class Shooter extends SubsystemBase {
 
   public boolean isShooterReady() {
     boolean isFacingTarget;
-    if (goal == Goal.BumperShot) {
-      isFacingTarget = true;
-    } else {
-      isFacingTarget = this.isFacingTarget;
-    }
+    isFacingTarget = true;
 
     return isFacingTarget && isFlywheelReady() && isHoodReady();
   }
