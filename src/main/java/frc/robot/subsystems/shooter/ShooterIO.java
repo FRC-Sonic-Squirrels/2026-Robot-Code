@@ -30,41 +30,41 @@ public interface ShooterIO {
     }
 
     // flywheel lead, flywheel follower, hood, kicker
-    public double[] tempsCelcius = new double[4];
+    public double[] tempsCelsius = new double[4];
   }
 
   /** Updates the set of loggable inputs. */
-  public default void updateInputs(Inputs inputs) {
+  default void updateInputs(Inputs inputs) {
   }
 
   // Hood
 
-  public default void setHoodPosition(Rotation2d rot) {
+  default void setHoodPosition(Rotation2d rot) {
   }
 
-  public default void setHoodClosedLoopConstants(double kP, double kD, double kG, double maxProfiledVelocity,
+  default void setHoodClosedLoopConstants(double kP, double kD, double kG, double maxProfiledVelocity,
       double maxProfiledAcceleration) {
   }
 
-  public default void resetHoodSensorPosition(Rotation2d angle) {
+  default void resetHoodSensorPosition(Rotation2d angle) {
   }
 
   // Flywheel
 
-  public default void setFlywheelRPM(double revPerMin) {
+  default void setFlywheelRPM(double revPerMin) {
   }
 
-  public default void setFlywheelClosedLoopConstants(Shooter.FlywheelTunables tunables) {
+  default void setFlywheelClosedLoopConstants(Shooter.FlywheelTunables tunables) {
   }
 
   // Kicker
 
-  public default void setNeutralMode(NeutralModeValue value) {
+  default void setNeutralMode(NeutralModeValue value) {
   }
 
-  public default void setKickerClosedLoopConstants(Shooter.KickerTunables kicker) {
+  default void setKickerClosedLoopConstants(Shooter.KickerTunables kicker) {
   }
 
-  public default void setKickerVelocity(double revPerMin) {
+  default void setKickerVelocity(double revPerMin) {
   }
 }

@@ -222,10 +222,10 @@ public class ShooterIOReal implements ShooterIO {
     inputs.kickerTargetRPM    = kickerTargetRPM;
     inputs.fuelInUpperKicker  = !kickerBeamBreak.get();
 
-    inputs.tempsCelcius[0] = flywheelLeadTempCelsius.getValue().in(Units.Celsius);
-    inputs.tempsCelcius[1] = flywheelFollowTempCelsius.getValue().in(Units.Celsius);
-    inputs.tempsCelcius[2] = hoodTempCelsius.getValue().in(Units.Celsius);
-    inputs.tempsCelcius[3] = kickerTempCelsius.getValue().in(Units.Celsius);
+    inputs.tempsCelsius[0] = flywheelLeadTempCelsius.getValue().in(Units.Celsius);
+    inputs.tempsCelsius[1] = flywheelFollowTempCelsius.getValue().in(Units.Celsius);
+    inputs.tempsCelsius[2] = hoodTempCelsius.getValue().in(Units.Celsius);
+    inputs.tempsCelsius[3] = kickerTempCelsius.getValue().in(Units.Celsius);
   }
 
   // HOOD

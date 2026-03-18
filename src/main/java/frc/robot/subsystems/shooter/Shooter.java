@@ -257,7 +257,7 @@ public class Shooter extends SubsystemBase {
       logs.inputs.kickerVelocityRPM.info(inputs.kickerVelocityRPM);
       logs.inputs.kickerTargetRPM.info(inputs.kickerTargetRPM);
       logs.inputs.fuelInUpperKicker.info(inputs.fuelInUpperKicker);
-      logs.inputs.tempsCelcius.info(inputs.tempsCelcius);
+      logs.inputs.tempsCelcius.info(inputs.tempsCelsius);
 
       logs.pitchDegrees.info(inputs.hoodPosition);
       logs.targetPitchDegrees.info(targetHoodPosition);
@@ -362,10 +362,6 @@ public class Shooter extends SubsystemBase {
     }
   }
 
-  public Rotation2d getPitch() {
-    return inputs.hoodPosition;
-  }
-
   public Rotation2d getHoodAngle(Distance distance) {
     return switch (goal) {
       case Scoring -> Rotation2d.fromDegrees(hoodAngleForHubDistanceMap.get(distance.in(Units.Meters)));
@@ -383,11 +379,6 @@ public class Shooter extends SubsystemBase {
       case Passing -> flywheelRpmForAllianceZoneDistanceMap.get(distance.in(Units.Meters));
       default -> ShooterConstants.Flywheel.IDLE_FLYWHEEL_RPM;
     };
-  }
-
-  public void setHoodClosedLoopConstants(double kP, double kD, double kG, double maxProfiledVelocity,
-      double maxProfiledAcceleration) {
-    io.setHoodClosedLoopConstants(kP, kD, kG, maxProfiledVelocity, maxProfiledAcceleration);
   }
 
   public void setHoodPosition(Rotation2d rot) {
@@ -410,34 +401,6 @@ public class Shooter extends SubsystemBase {
 
   public double getRPM() {
     return inputs.flywheelRPM[0];
-  }
-
-  public double getHoodPIDLatency() {
-    return hoodPidLatency;
-  }
-
-  public boolean isHoodIsAtTarget() {
-    return isHoodIsAtTarget(targetHoodPosition);
-  }
-
-  public boolean isHoodIsAtTarget(Rotation2d target) {
-    return isHoodIsAtTarget(target, Rotation2d.fromDegrees(tunables.hood.toleranceDegrees.get()));
-  }
-
-  public boolean isHoodIsAtTarget(Rotation2d target, Rotation2d tolerance) {
-    return Math.abs(inputs.hoodPosition.getRadians() - target.getRadians()) <= tolerance.getRadians();
-  }
-
-  public double getKickerPercentOut() {
-    return inputs.kickerAppliedVolts / Constants.MAX_VOLTAGE;
-  }
-
-  public double getHoodVoltage() {
-    return inputs.hoodAppliedVolts;
-  }
-
-  public double getHoodVelocity() {
-    return inputs.hoodVelocityRadsPerSec;
   }
 
   public Distance getDistanceFromTarget() {
