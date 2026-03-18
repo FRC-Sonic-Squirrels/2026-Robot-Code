@@ -192,8 +192,8 @@ public class Shooter extends SubsystemBase {
       hood.closedLoopMaxAccelerationConstraint.initDefault(5.0);
 
       flywheel.KP.initDefault(0.1);
-      flywheel.KI.initDefault(1);
-      flywheel.KD.initDefault(0.02);
+      flywheel.KI.initDefault(0.8);
+      flywheel.KD.initDefault(0.01);
       flywheel.KV.initDefault(0.0);
       flywheel.KS.initDefault(0.0);
       flywheel.closedLoopMaxAccelerationConstraint.initDefault(1000.0);
@@ -276,7 +276,7 @@ public class Shooter extends SubsystemBase {
       switch (goal) {
         case Idle:
           if (flywheelIdleRPMEnabled) {
-            setFlywheelRPM(ShooterConstants.Flywheel.IDLE_FLYWHEEL_RPM);
+            setFlywheelRPM(getFlywheelRPM(distanceFromTarget));
           } else {
             setFlywheelRPM(0);
           }
@@ -377,6 +377,7 @@ public class Shooter extends SubsystemBase {
 
   public double getFlywheelRPM(Distance distance) {
     return switch (goal) {
+      case Idle -> flywheelRpmForHubDistanceMap.get(distance.in(Units.Meters));
       case Scoring -> flywheelRpmForHubDistanceMap.get(distance.in(Units.Meters));
       case BumperShot -> flywheelRpmForHubDistanceMap.get(distance.in(Units.Meters));
       case Passing -> flywheelRpmForAllianceZoneDistanceMap.get(distance.in(Units.Meters));
