@@ -134,15 +134,11 @@ public class AutosManager {
   }
 
   private AllianceAwarePose2d newInitialPose(Pose2d pose) {
-    return new AllianceAwarePose2d(fixPose(pose));
-  }
-
-  private Pose2d fixPose(Pose2d pose) {
-    return GeometryUtil.rotateIfNeeded(pose, states.config.isRobotRotatedBackward());
+    return new AllianceAwarePose2d(pose);
   }
 
   private Waypoint newWaypoint(Pose2d pose, AutoGoals goals, boolean goSlow) {
-    return new Waypoint(fixPose(pose), goals, goSlow);
+    return new Waypoint(pose, goals, goSlow);
   }
 
   private Pair<ArrayList<Waypoint>, AllianceAwarePose2d> createAutoPoints(Autos auto) {

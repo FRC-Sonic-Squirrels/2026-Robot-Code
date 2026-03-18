@@ -118,7 +118,6 @@ public class SimulatorRobotConfig extends RobotConfig {
       .withSupplyCurrentLimit(25).withSupplyCurrentLimitEnable(true);
 
   // ---- VISION CAMERA TRANSFORM3d's -------
-  public final static boolean      RobotIsRotatedBackward = true;
   public final CameraConfiguration SHOOTER_SIDE_LEFT;
   public final CameraConfiguration SHOOTER_SIDE_RIGHT;
 
@@ -150,11 +149,6 @@ public class SimulatorRobotConfig extends RobotConfig {
     SHOOTER_SIDE_RIGHT.roll  = Units.Degrees.of(0);
     SHOOTER_SIDE_RIGHT.pitch = Units.Degrees.of(0);
     SHOOTER_SIDE_RIGHT.yaw   = Units.Degrees.of(135.0);
-
-    if (RobotIsRotatedBackward) {
-      SHOOTER_SIDE_LEFT.rotate180();
-      SHOOTER_SIDE_RIGHT.rotate180();
-    }
   }
 
   /*
@@ -246,11 +240,6 @@ public class SimulatorRobotConfig extends RobotConfig {
   @Override
   public CANBus getCANBus() {
     return null;
-  }
-
-  @Override
-  public boolean isRobotRotatedBackward() {
-    return RobotIsRotatedBackward;
   }
 
   @Override

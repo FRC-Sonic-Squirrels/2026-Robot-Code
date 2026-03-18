@@ -83,8 +83,6 @@ public abstract class RobotConfig {
 
   public abstract CANBus getCANBus();
 
-  public abstract boolean isRobotRotatedBackward();
-
   // Robot MAX linear speeds
   public abstract double getRobotMaxLinearVelocity();
 

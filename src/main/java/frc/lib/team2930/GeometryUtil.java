@@ -151,11 +151,4 @@ public class GeometryUtil {
   public static Pose2d faceBackward(Pose2d target) {
     return new Pose2d(target.getTranslation(), target.getRotation().plus(Rotation2d.k180deg));
   }
-
-  public static Pose2d rotateIfNeeded(Pose2d waypointPose, boolean isRobotRotatedBackward) {
-    if (isRobotRotatedBackward) {
-      return faceBackward(waypointPose);
-    }
-    return waypointPose;
-  }
 }

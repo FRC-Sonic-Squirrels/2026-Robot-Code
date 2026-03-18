@@ -184,7 +184,7 @@ public class RobotStates {
 
       var robotPose     = drivetrain.getHubPoseEstimatorPose(true);
       var robotVelocity = drivetrain.getRobotCentricVelocities();
-      var rotateState   = rotateToFaceHelper.periodic(robotPose, robotVelocity, config.isRobotRotatedBackward());
+      var rotateState   = rotateToFaceHelper.periodic(robotPose, robotVelocity);
       shooter.setDistanceFromTarget(rotateState.distance());
     }
 
@@ -260,7 +260,7 @@ public class RobotStates {
   private void shoot() {
     var robotPose     = drivetrain.getHubPoseEstimatorPose(true);
     var robotVelocity = drivetrain.getRobotCentricVelocities();
-    var rotateState   = rotateToFaceHelper.periodic(robotPose, robotVelocity, config.isRobotRotatedBackward());
+    var rotateState   = rotateToFaceHelper.periodic(robotPose, robotVelocity);
     drivetrain.setRotationOverride(rotateState.omega());
     shooter.setFacingTarget(rotateState.withinTolerance());
     shooter.setDistanceFromTarget(rotateState.distance());

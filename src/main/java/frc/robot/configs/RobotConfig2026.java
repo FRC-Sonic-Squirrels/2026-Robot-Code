@@ -144,22 +144,22 @@ public class RobotConfig2026 extends RobotConfig {
   //
   private final IndividualSwerveModuleConfig FRONT_LEFT_MODULE_CONFIG = new IndividualSwerveModuleConfig(
       CanIDs.FRONT_LEFT_MODULE_ID__DRIVE, CanIDs.FRONT_LEFT_MODULE_ID__STEER, CanIDs.FRONT_LEFT_MODULE_ID__ENCODER,
-      Rotation2d.fromRotations(-69.608 / 360), InvertedValue.CounterClockwise_Positive,
+      Rotation2d.fromRotations(0.87 / 360), InvertedValue.CounterClockwise_Positive,
       InvertedValue.CounterClockwise_Positive, InvertedValue.Clockwise_Positive);
   // 1
   private final IndividualSwerveModuleConfig FRONT_RIGHT_MODULE_CONFIG = new IndividualSwerveModuleConfig(
       CanIDs.FRONT_RIGHT_MODULE_ID__DRIVE, CanIDs.FRONT_RIGHT_MODULE_ID__STEER, CanIDs.FRONT_RIGHT_MODULE_ID__ENCODER,
-      Rotation2d.fromRotations(-22.5 / 360), InvertedValue.Clockwise_Positive, InvertedValue.CounterClockwise_Positive,
-      InvertedValue.Clockwise_Positive);
+      Rotation2d.fromRotations(-132.27 / 360), InvertedValue.Clockwise_Positive,
+      InvertedValue.CounterClockwise_Positive, InvertedValue.Clockwise_Positive);
   // 2
   private final IndividualSwerveModuleConfig BACK_LEFT_MODULE_CONFIG = new IndividualSwerveModuleConfig(
       CanIDs.BACK_LEFT_MODULE_ID__DRIVE, CanIDs.BACK_LEFT_MODULE_ID__STEER, CanIDs.BACK_LEFT_MODULE_ID__ENCODER,
-      Rotation2d.fromRotations(-132.803 / 360), InvertedValue.CounterClockwise_Positive,
+      Rotation2d.fromRotations(-22.94 / 360), InvertedValue.CounterClockwise_Positive,
       InvertedValue.CounterClockwise_Positive, InvertedValue.Clockwise_Positive);
   // 3
   private final IndividualSwerveModuleConfig BACK_RIGHT_MODULE_CONFIG = new IndividualSwerveModuleConfig(
       CanIDs.BACK_RIGHT_MODULE_ID__DRIVE, CanIDs.BACK_RIGHT_MODULE_ID__STEER, CanIDs.BACK_RIGHT_MODULE_ID__ENCODER,
-      Rotation2d.fromRotations(0.615 / 360), InvertedValue.Clockwise_Positive, InvertedValue.CounterClockwise_Positive,
+      Rotation2d.fromRotations(-69.61 / 360), InvertedValue.Clockwise_Positive, InvertedValue.CounterClockwise_Positive,
       InvertedValue.CounterClockwise_Positive);
 
   // -------- SWERVE CURRENT LIMITS ---------
@@ -202,7 +202,6 @@ public class RobotConfig2026 extends RobotConfig {
       getModuleTranslations());
 
   // ---- VISION -------
-  public final static boolean      RobotIsRotatedBackward = true;
   public final CameraConfiguration SHOOTER_SIDE_LEFT;
   public final CameraConfiguration SHOOTER_SIDE_RIGHT;
 
@@ -227,11 +226,6 @@ public class RobotConfig2026 extends RobotConfig {
     SHOOTER_SIDE_RIGHT.roll  = Units.Degree.of(0.0);
     SHOOTER_SIDE_RIGHT.pitch = Units.Degree.of(-25.0);
     SHOOTER_SIDE_RIGHT.yaw   = Units.Degree.of(19);
-
-    if (RobotIsRotatedBackward) {
-      SHOOTER_SIDE_LEFT.rotate180();
-      SHOOTER_SIDE_RIGHT.rotate180();
-    }
   }
 
   /*
@@ -317,11 +311,6 @@ public class RobotConfig2026 extends RobotConfig {
   @Override
   public CANBus getCANBus() {
     return CAN_BUS_NAME;
-  }
-
-  @Override
-  public boolean isRobotRotatedBackward() {
-    return RobotIsRotatedBackward;
   }
 
   @Override
