@@ -36,6 +36,7 @@ public class Shooter extends SubsystemBase {
     public LoggerEntry.Decimal flywheelTargetRPM;
     public LoggerEntry.Decimal flywheelRollersDifference;
     public LoggerEntry.Decimal targetDistance;
+    public LoggerEntry.Decimal hoodTarget;
     public LoggerEntry.Bool    facingTarget;
     public LoggerEntry.Bool    shooterReady;
     public LoggerEntry.Bool    hoodReady;
@@ -187,8 +188,8 @@ public class Shooter extends SubsystemBase {
       hood.closedLoopMaxAccelerationConstraint.initDefault(5.0);
 
       flywheel.KP.initDefault(0.1);
-      flywheel.KI.initDefault(1);
-      flywheel.KD.initDefault(0.02);
+      flywheel.KI.initDefault(0.8);
+      flywheel.KD.initDefault(0.01);
       flywheel.KV.initDefault(0.0);
       flywheel.KS.initDefault(0.0);
       flywheel.closedLoopMaxAccelerationConstraint.initDefault(1000.0);
@@ -213,9 +214,9 @@ public class Shooter extends SubsystemBase {
       flywheel.KS.initDefault(0.0);
       flywheel.closedLoopMaxAccelerationConstraint.initDefault(10.0);
 
-      kicker.KP.initDefault(0.1);
-      kicker.KD.initDefault(0.01);
-      kicker.KI.initDefault(1);
+      kicker.KP.initDefault(0.2);
+      kicker.KD.initDefault(0.0);
+      kicker.KI.initDefault(0.2);
       kicker.KV.initDefault(0.0);
       kicker.KS.initDefault(0.0);
       kicker.closedLoopMaxAccelerationConstraint.initDefault(0.0);
@@ -268,7 +269,8 @@ public class Shooter extends SubsystemBase {
 
       switch (goal) {
         case Idle:
-          setFlywheelRPM(ShooterConstants.Flywheel.IDLE_FLYWHEEL_RPM);
+          setFlywheelRPM(getFlywheelRPM(distanceFromTarget));
+
           setHoodPosition(ShooterConstants.Hood.IDLE_ANGLE_RAD);
           setKickerVelocity(0);
           break;
@@ -361,16 +363,12 @@ public class Shooter extends SubsystemBase {
 
   public double getFlywheelRPM(Distance distance) {
     return switch (goal) {
+      case Idle -> flywheelRpmForHubDistanceMap.get(distance.in(Units.Meters));
       case Scoring -> flywheelRpmForHubDistanceMap.get(distance.in(Units.Meters));
       case BumperShot -> flywheelRpmForHubDistanceMap.get(distance.in(Units.Meters));
       case Passing -> flywheelRpmForAllianceZoneDistanceMap.get(distance.in(Units.Meters));
       default -> ShooterConstants.Flywheel.IDLE_FLYWHEEL_RPM;
     };
-  }
-
-  public void setHoodClosedLoopConstants(double kP, double kD, double kG, double maxProfiledVelocity,
-      double maxProfiledAcceleration) {
-    io.setHoodClosedLoopConstants(kP, kD, kG, maxProfiledVelocity, maxProfiledAcceleration);
   }
 
   public void setHoodPosition(Rotation2d rot) {
@@ -395,32 +393,11 @@ public class Shooter extends SubsystemBase {
     return inputs.flywheelRPM[0];
   }
 
-  public double getHoodPIDLatency() {
-    return hoodPidLatency;
-  }
-
-  public boolean isHoodIsAtTarget() {
-    return isHoodIsAtTarget(targetHoodPosition);
-  }
-
-  public boolean isHoodIsAtTarget(Rotation2d target) {
-    return isHoodIsAtTarget(target, Rotation2d.fromDegrees(tunables.hood.toleranceDegrees.get()));
-  }
-
-  public boolean isHoodIsAtTarget(Rotation2d target, Rotation2d tolerance) {
-    return Math.abs(inputs.hoodPosition.getRadians() - target.getRadians()) <= tolerance.getRadians();
-  }
-
-  public double getKickerPercentOut() {
-    return inputs.kickerAppliedVolts / Constants.MAX_VOLTAGE;
-  }
-
-  public double getHoodVoltage() {
-    return inputs.hoodAppliedVolts;
-  }
-
-  public double getHoodVelocity() {
-    return inputs.hoodVelocityRadsPerSec;
+  public Distance getDistanceFromTarget() {
+    if (goal == Goal.BumperShot) {
+      return Distance.ofBaseUnits(1.0, Units.Meters);
+    }
+    return distanceFromTarget;
   }
 
   public double getKickerRPM(boolean shouldMoveUp) {
@@ -468,12 +445,12 @@ public class Shooter extends SubsystemBase {
   }
 
   public boolean isFlywheelReady() {
-    double desiredFlywheelRPM = getFlywheelRPM(distanceFromTarget);
+    double desiredFlywheelRPM = getFlywheelRPM(getDistanceFromTarget());
     return inputs.flywheelRPM[0] > desiredFlywheelRPM - tunables.flywheel.toleranceRPM.get();
   }
 
   public boolean isHoodReady() {
-    double desiredHoodAngle = getHoodAngle(distanceFromTarget).getDegrees();
+    double desiredHoodAngle = getHoodAngle(getDistanceFromTarget()).getDegrees();
     return Math.abs(inputs.hoodPosition.getDegrees() - desiredHoodAngle) < ShooterConstants.Hood.CORRECT_ANGLE_RANGE;
   }
 

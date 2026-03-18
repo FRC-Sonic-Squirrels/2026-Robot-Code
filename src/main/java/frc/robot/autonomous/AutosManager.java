@@ -16,7 +16,8 @@ import org.littletonrobotics.junction.networktables.LoggedDashboardChooser;
 
 public class AutosManager {
   public enum Autos {
-    NOTHING, TEST, DEPOT, DEPOT_MIDDLE_DEPOTSIDE, MIDDLE_DEPOTSIDE, SWERVE_CHARACTERIZATION;
+    NOTHING, TEST, OUTPOST_SIDE_SHOOT, OUTPOST_SIDE_SHOOT_PLUS, DEPOT, DEPOT_MIDDLE_DEPOTSIDE, MIDDLE_DEPOTSIDE,
+    SWERVE_CHARACTERIZATION;
   }
 
   public enum AutoGoals {
@@ -67,6 +68,7 @@ public class AutosManager {
     list.add(this::depot);
     list.add(this::depotMiddle);
     list.add(this::middleDepotSide);
+    list.add(this::middleOutpostSide);
 
     if (includeDebugPaths) {
       // list.add(this::swerveCharacterization);
@@ -133,6 +135,12 @@ public class AutosManager {
     return stateToAutoProgram(state, autoPoints.getSecond(), "MIDDLE DEPOT SIDE");
   }
 
+  public AutoProgram middleOutpostSide() {
+    var autoPoints = createAutoPoints(Autos.OUTPOST_SIDE_SHOOT_PLUS);
+    var state      = new AutoStateMachine(subsystems, autoPoints.getFirst(), autoPoints.getSecond(), states);
+    return stateToAutoProgram(state, autoPoints.getSecond(), "MIDDLE OUTPOST SIDE PLUS");
+  }
+
   private AllianceAwarePose2d newInitialPose(Pose2d pose) {
     return new AllianceAwarePose2d(pose);
   }
@@ -158,6 +166,23 @@ public class AutosManager {
         // AutoGoals.SCORE, false));
         return Pair.of(waypoints, aInitialPose);
 
+      case OUTPOST_SIDE_SHOOT:
+        aInitialPose = newInitialPose(ChoreoVars.Poses.START3);
+        waypoints.add(newWaypoint(ChoreoVars.Poses.START3, AutoGoals.SCORE, false));
+        return Pair.of(waypoints, aInitialPose);
+
+      case OUTPOST_SIDE_SHOOT_PLUS:
+        aInitialPose = newInitialPose(ChoreoVars.Poses.START3);
+        waypoints.add(newWaypoint(ChoreoVars.Poses.START3, AutoGoals.SCORE, false));
+        waypoints.add(newWaypoint(ChoreoVars.Poses.INTAKE_PREP_MIDDLE_OUTPOSTSIDE, AutoGoals.DRIVE, false));
+        waypoints.add(newWaypoint(ChoreoVars.Poses.INTAKE_MIDDLE_OUTPOSTSIDE, AutoGoals.INTAKEWHILEDRIVERIGHT, true));
+        waypoints
+            .add(newWaypoint(ChoreoVars.Poses.INTAKE_MIDDLE_MIDDLE_OUTPOSTSIDE, AutoGoals.INTAKEWHILEDRIVERIGHT, true));
+        waypoints.add(new Waypoint(ChoreoVars.Poses.INTAKE_PREP_MIDDLE_OUTPOSTSIDE, AutoGoals.DRIVE, false));
+        waypoints.add(newWaypoint(ChoreoVars.Poses.SHOOT_OUTPOST_SIDE, AutoGoals.DRIVE, false));
+        waypoints.add(newWaypoint(ChoreoVars.Poses.SHOOT_OUTPOST_SIDE, AutoGoals.SCORE, false));
+        return Pair.of(waypoints, aInitialPose);
+
       case DEPOT:
         aInitialPose = newInitialPose(ChoreoVars.Poses.START1);
         waypoints.add(newWaypoint(ChoreoVars.Poses.DEPOT_PREP, AutoGoals.DRIVE, false));
@@ -168,8 +193,10 @@ public class AutosManager {
 
       case DEPOT_MIDDLE_DEPOTSIDE:
         aInitialPose = newInitialPose(ChoreoVars.Poses.START1);
-        waypoints.add(newWaypoint(ChoreoVars.Poses.DEPOT_PREP, AutoGoals.DRIVE, false));
-        waypoints.add(newWaypoint(ChoreoVars.Poses.DEPOT, AutoGoals.INTAKEWHILEDRIVERIGHT, true));
+        // waypoints.add(newWaypoint(ChoreoVars.Poses.DEPOT_PREP, AutoGoals.DRIVE,
+        // false));
+        // waypoints.add(newWaypoint(ChoreoVars.Poses.DEPOT,
+        // AutoGoals.INTAKEWHILEDRIVERIGHT, true));
         waypoints.add(newWaypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.DRIVE, false));
         waypoints.add(newWaypoint(ChoreoVars.Poses.SHOOT_DEPOT_SIDE, AutoGoals.SCORE, false));
         waypoints.add(newWaypoint(ChoreoVars.Poses.INTAKE_PREP_MIDDLE_DEPOTSIDE, AutoGoals.DRIVE, false));
@@ -185,6 +212,7 @@ public class AutosManager {
 
       case MIDDLE_DEPOTSIDE:
         aInitialPose = newInitialPose(ChoreoVars.Poses.START2);
+        waypoints.add(newWaypoint(ChoreoVars.Poses.START2, AutoGoals.SCORE, false));
         waypoints.add(newWaypoint(ChoreoVars.Poses.INTAKE_PREP_MIDDLE_DEPOTSIDE, AutoGoals.DRIVE, false));
         waypoints.add(newWaypoint(ChoreoVars.Poses.INTAKE_MIDDLE_DEPOTSIDE, AutoGoals.INTAKEWHILEDRIVELEFT, true));
         waypoints.add(

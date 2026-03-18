@@ -576,7 +576,8 @@ public class RobotContainer {
     vision.useMaxDistanceAwayFromExistingEstimate(false);
     vision.useGyroBasedFilteringForVision(false);
 
-    if (!DriverStation.isFMSAttached()) {
+    if (true) {
+      robotStates.setIntakeGoal(IntakeGoal.Stow);
       leftIntake.setGoal(Intake.Goal.Stow);
       rightIntake.setGoal(Intake.Goal.Stow);
     }
