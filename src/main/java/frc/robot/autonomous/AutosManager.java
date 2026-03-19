@@ -165,11 +165,11 @@ public class AutosManager {
     switch (auto) {
       case TEST:
         aInitialPose = newInitialPose(ChoreoVars.Poses.START4);
-        waypoints.add(newWaypoint(2, ChoreoVars.Poses.TEST_OVER_BUMP, Translation2d.kZero, AutoGoals.DRIVE));
-        waypoints.add(newWaypoint(3, ChoreoVars.Poses.TEST_MIDDLE_HUB, Translation2d.kZero, AutoGoals.INTAKEWHILEDRIVERIGHT));
-        waypoints.add(newWaypoint(2, ChoreoVars.Poses.TEST_OVER_BUMP, Translation2d.kZero, AutoGoals.DRIVE));
-        waypoints.add(newWaypoint(2, ChoreoVars.Poses.SHOOT_OUTPOST_SIDE, Translation2d.kZero, AutoGoals.DRIVE));
-        waypoints.add(newWaypoint(2, ChoreoVars.Poses.SHOOT_OUTPOST_SIDE, Translation2d.kZero, AutoGoals.SCORE));
+        waypoints.add(newWaypoint(1.5, ChoreoVars.Poses.TEST_OVER_BUMP,  new Translation2d(0.0, 0.5), AutoGoals.DRIVE));
+        waypoints.add(newWaypoint(2, ChoreoVars.Poses.TEST_MIDDLE_HUB,  new Translation2d(0, -0.5), AutoGoals.INTAKEWHILEDRIVERIGHT));
+        waypoints.add(newWaypoint(1.5, ChoreoVars.Poses.TEST_OVER_BUMP,  new Translation2d(-0.5, 0), AutoGoals.DRIVE));
+        waypoints.add(newWaypoint(1.5, ChoreoVars.Poses.SHOOT_OUTPOST_SIDE, Translation2d.kZero, AutoGoals.DRIVE));
+        waypoints.add(newWaypoint(1.5, ChoreoVars.Poses.SHOOT_OUTPOST_SIDE, Translation2d.kZero, AutoGoals.SCORE));
         // waypoints.add(newWaypoint(6, ChoreoVars.Poses.SHOOT_OUTPOST_SIDE, Translation2d.kZero, AutoGoals.DRIVE));
         // waypoints.add(newWaypoint(7, ChoreoVars.Poses.SHOOT_OUTPOST_SIDE, Translation2d.kZero, AutoGoals.SCORE));
         return Pair.of(waypoints, aInitialPose);
