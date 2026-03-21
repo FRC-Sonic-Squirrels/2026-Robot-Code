@@ -13,9 +13,7 @@ import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.*;
-import edu.wpi.first.wpilibj.DigitalInput;
 import frc.robot.Constants;
-import frc.robot.Constants.DIOPorts;
 import frc.robot.Constants.ShooterConstants;
 import frc.robot.subsystems.TalonFXWrapper;
 import frc.robot.configs.RobotConfig2026;
@@ -27,8 +25,6 @@ public class ShooterIOReal implements ShooterIO {
   private final TalonFXWrapper flywheelFollow;
   private final TalonFXWrapper hood;
   private final TalonFXWrapper kicker;
-
-  private final DigitalInput kickerBeamBreak = new DigitalInput(DIOPorts.SHOOTER_BEAM_BREAKER_DOI_ID);
 
   private final StatusSignal<Angle>           hoodPosition;
   private final StatusSignal<AngularVelocity> hoodVelocity;
@@ -220,12 +216,11 @@ public class ShooterIOReal implements ShooterIO {
     inputs.kickerCurrentAmps  = kickerCurrentAmps.getValue().in(Units.Amps);
     inputs.kickerVelocityRPM  = kickerVelocity.getValue().in(Units.RPM);
     inputs.kickerTargetRPM    = kickerTargetRPM;
-    inputs.fuelInUpperKicker  = !kickerBeamBreak.get();
 
-    inputs.tempsCelcius[0] = flywheelLeadTempCelsius.getValue().in(Units.Celsius);
-    inputs.tempsCelcius[1] = flywheelFollowTempCelsius.getValue().in(Units.Celsius);
-    inputs.tempsCelcius[2] = hoodTempCelsius.getValue().in(Units.Celsius);
-    inputs.tempsCelcius[3] = kickerTempCelsius.getValue().in(Units.Celsius);
+    inputs.tempsCelsius[0] = flywheelLeadTempCelsius.getValue().in(Units.Celsius);
+    inputs.tempsCelsius[1] = flywheelFollowTempCelsius.getValue().in(Units.Celsius);
+    inputs.tempsCelsius[2] = hoodTempCelsius.getValue().in(Units.Celsius);
+    inputs.tempsCelsius[3] = kickerTempCelsius.getValue().in(Units.Celsius);
   }
 
   // HOOD

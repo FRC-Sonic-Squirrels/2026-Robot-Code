@@ -60,7 +60,6 @@ public class Shooter extends SubsystemBase {
     public LoggerEntry.Decimal      kickerCurrentAmps;
     public LoggerEntry.Decimal      kickerVelocityRPM;
     public LoggerEntry.Decimal      kickerTargetRPM;
-    public LoggerEntry.Bool         fuelInUpperKicker;
     public LoggerEntry.DecimalArray tempsCelcius;
   }
 
@@ -252,8 +251,7 @@ public class Shooter extends SubsystemBase {
       logs.inputs.kickerCurrentAmps.info(inputs.kickerCurrentAmps);
       logs.inputs.kickerVelocityRPM.info(inputs.kickerVelocityRPM);
       logs.inputs.kickerTargetRPM.info(inputs.kickerTargetRPM);
-      logs.inputs.fuelInUpperKicker.info(inputs.fuelInUpperKicker);
-      logs.inputs.tempsCelcius.info(inputs.tempsCelcius);
+      logs.inputs.tempsCelcius.info(inputs.tempsCelsius);
 
       logs.pitchDegrees.info(inputs.hoodPosition);
       logs.targetPitchDegrees.info(targetHoodPosition);
@@ -295,7 +293,7 @@ public class Shooter extends SubsystemBase {
           break;
 
         case PreLoading:
-          setKickerVelocity((getKickerRPM(!getFuelInUpperKicker())));
+          setKickerVelocity((getKickerRPM(true)));
           break;
 
         case Unjamming:
@@ -467,10 +465,6 @@ public class Shooter extends SubsystemBase {
 
   public boolean isShooterReadyCameraless() {
     return isFlywheelReady() && isHoodReady();
-  }
-
-  public boolean getFuelInUpperKicker() {
-    return inputs.fuelInUpperKicker;
   }
 
   public boolean kickerStallDetected() {
