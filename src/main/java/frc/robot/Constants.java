@@ -193,9 +193,9 @@ public final class Constants {
       public static final double MOI = .00001;
 
       public static final Rotation2d MAX_PIVOT_ANGLE_LEFT  = Rotation2d.fromDegrees(63.5);
-      public static final Rotation2d MAX_PIVOT_ANGLE_RIGHT = Rotation2d.fromDegrees(67);
-      public static final Rotation2d MIN_PIVOT_ANGLE       = Rotation2d.fromDegrees(-2);
-      public static final Rotation2d HOME_POSITION         = Rotation2d.fromDegrees(-2);
+      public static final Rotation2d MAX_PIVOT_ANGLE_RIGHT = Rotation2d.fromDegrees(69);
+      public static final Rotation2d MIN_PIVOT_ANGLE       = Rotation2d.fromDegrees(0);
+      public static final Rotation2d HOME_POSITION         = Rotation2d.fromDegrees(0);
       public static final Rotation2d ZERO_POSITION         = Rotation2d.fromDegrees(0);
 
       public static final Rotation2d PASSOFF_PIVOT_ANGLE = Rotation2d.fromDegrees(92.5);
@@ -333,9 +333,9 @@ public final class Constants {
     public static class Kicker {
       public static final double MOI                                  = 5.0;
       public static final double GEARING                              = 2.25;
-      public static final double SUPPLY_CURRENT_LIMIT                 = 40;
-      public static final double STATOR_CURRENT_LIMIT                 = 40;
-      public static final double SHOOTING_KICKER_RPM                  = 2500;
+      public static final double SUPPLY_CURRENT_LIMIT                 = 60;
+      public static final double STATOR_CURRENT_LIMIT                 = 60;
+      public static final double SHOOTING_KICKER_RPM                  = 4000;
       public static final double UNJAM_KICKER_RPM                     = -1200;
       public static final double STALL_CURRENT_THRESHOLD              = 40;
       public static final double PRELOADING_KICKER_RPM                = 800;
@@ -349,11 +349,13 @@ public final class Constants {
         var map = new HashMap<Double, Double>();
         map.put(1.0, 12.0);
         map.put(1.5, 16.0);
-        map.put(2.0, 20.0);
+        map.put(2.0, 18.0);
         map.put(2.5, 20.0);
         map.put(3.0, 20.0);
         map.put(3.5, 20.0);
         map.put(4.0, 20.0);
+        map.put(4.5, 22.0);
+        map.put(5.0, 24.0);
         return new TunableInterpolationMap("HOOD_ANGLE_FOR_HUB_DISTANCE", map);
       }
 
@@ -361,10 +363,13 @@ public final class Constants {
         var map = new HashMap<Double, Double>();
         map.put(1.0, 3000.0);
         map.put(1.5, 3100.0);
-        map.put(2.0, 3400.0);
-        map.put(2.5, 4200.0);
-        map.put(3.0, 5000.0);
-        map.put(3.5, 5000.0);
+        map.put(2.0, 3200.0);
+        map.put(2.5, 3500.0);
+        map.put(3.0, 3700.0);
+        map.put(3.5, 4000.0);
+        map.put(4.0, 4300.0);
+        map.put(4.5, 4700.0);
+        map.put(5.0, 5200.0);
         return new TunableInterpolationMap("RPM_FOR_HUB_DISTANCE", map);
       }
 
