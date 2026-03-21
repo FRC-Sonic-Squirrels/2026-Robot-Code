@@ -332,7 +332,7 @@ public final class Constants {
 
     public static class Kicker {
       public static final double MOI                                  = 5.0;
-      public static final double GEARING                              = 3.33333;
+      public static final double GEARING                              = 2.25;
       public static final double SUPPLY_CURRENT_LIMIT                 = 40;
       public static final double STATOR_CURRENT_LIMIT                 = 40;
       public static final double SHOOTING_KICKER_RPM                  = 2500;
