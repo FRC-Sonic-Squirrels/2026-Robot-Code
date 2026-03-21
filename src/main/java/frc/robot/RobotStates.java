@@ -100,15 +100,18 @@ public class RobotStates {
   private int     periodicCounter;
   private boolean driveSlow;
 
+  private boolean runFlywheelIdle = true;
+
   public RobotStates(RobotConfig config, Climber climber, Intake leftIntake, Intake rightIntake, Shooter shooter,
       DrivetrainWrapper drivetrain, Hopper hopper) {
-    this.config        = config;
-    this.leftIntake    = leftIntake;
-    this.rightIntake   = rightIntake;
-    this.drivetrain    = drivetrain;
-    this.shooter       = shooter;
-    this.hopper        = hopper;
-    this.climber       = climber;
+    this.config      = config;
+    this.leftIntake  = leftIntake;
+    this.rightIntake = rightIntake;
+    this.drivetrain  = drivetrain;
+    this.shooter     = shooter;
+    this.hopper      = hopper;
+    this.climber     = climber;
+    shooter.setFlywheelIdleRPMEnabled(runFlywheelIdle);
     rotateToFaceHelper = new RotateToFaceHelper();
   }
 
@@ -369,5 +372,10 @@ public class RobotStates {
     setRotateToFaceTarget(target);
     shooter.setGoal(Shooter.Goal.Passing);
     hopper.setGoal(Hopper.Goal.Shooting);
+  }
+
+  public void toggleFlywheelIdle() {
+    runFlywheelIdle = !runFlywheelIdle;
+    shooter.setFlywheelIdleRPMEnabled(runFlywheelIdle);
   }
 }
