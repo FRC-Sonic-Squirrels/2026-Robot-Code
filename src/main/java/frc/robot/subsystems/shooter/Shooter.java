@@ -41,6 +41,7 @@ public class Shooter extends SubsystemBase {
     public LoggerEntry.Bool    shooterReady;
     public LoggerEntry.Bool    hoodReady;
     public LoggerEntry.Bool    flywheelReady;
+    public LoggerEntry.Bool    flywheelIdleRPM;
 
     public LoggerEntry.Bool stallDetected;
     public LoggerEntry.Bool persistantStallDetected;
@@ -143,6 +144,8 @@ public class Shooter extends SubsystemBase {
   private final TunableInterpolationMap flywheelRpmForAllianceZoneDistanceMap;
   private final TunableInterpolationMap hoodAngleForHubDistanceMap;
   private final TunableInterpolationMap hoodAngleForAllianceZoneDistanceMap;
+
+  private boolean flywheelIdleRPMEnabled = true;
 
   // Creates a new flat moving average filter
   // Average will be taken over the last 20 samples
@@ -264,11 +267,16 @@ public class Shooter extends SubsystemBase {
       logs.flywheelReady.info(isFlywheelReady());
       logs.stallDetected.info(stallDetected.getAsBoolean());
       logs.persistantStallDetected.info(persistantStallDetected.getAsBoolean());
+      logs.hoodTarget.info(targetHoodPosition);
+      logs.flywheelIdleRPM.info(flywheelIdleRPMEnabled);
 
       switch (goal) {
         case Idle:
-          setFlywheelRPM(getFlywheelRPM(distanceFromTarget));
-
+          if (flywheelIdleRPMEnabled) {
+            setFlywheelRPM(getFlywheelRPM(distanceFromTarget));
+          } else {
+            setFlywheelRPM(0);
+          }
           setHoodPosition(ShooterConstants.Hood.IDLE_ANGLE_RAD);
           setKickerVelocity(0);
           break;
@@ -285,6 +293,7 @@ public class Shooter extends SubsystemBase {
           setFlywheelRPM(getFlywheelRPM(Distance.ofBaseUnits(1.0, Units.Meters)));
           setHoodPosition(getHoodAngle(Distance.ofBaseUnits(1.0, Units.Meters)));
           setKickerVelocity(getKickerRPM(isShooterReadyCameraless()));
+          break;
 
         case Stop:
           setFlywheelRPM(0);
@@ -341,7 +350,7 @@ public class Shooter extends SubsystemBase {
       }
     }
   }
-
+  
   public Rotation2d getPitch() {
     return inputs.hoodPosition;
   }
@@ -471,5 +480,9 @@ public class Shooter extends SubsystemBase {
 
   public void setGoal(Goal goal) {
     this.goal = goal;
+  }
+
+  public void setFlywheelIdleRPMEnabled(boolean flywheelIdle) {
+    this.flywheelIdleRPMEnabled = flywheelIdle;
   }
 }

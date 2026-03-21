@@ -511,6 +511,10 @@ public class RobotContainer {
       zeroMech();
     }));
 
+    SmartDashboard.putData("Toggle Flywheel Idle RPM", new RunsWhenDisabledInstantCommand(() -> {
+      robotStates.toggleFlywheelIdle();
+    }));
+
     SmartDashboard.putData("Zero Servo",
         new RunsWhenDisabledInstantCommand(() -> climber.setServoAngle(Constants.ClimberConstants.SERVO_LOCK_ANGLE)));
 
