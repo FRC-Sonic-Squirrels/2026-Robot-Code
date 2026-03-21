@@ -23,14 +23,12 @@ public interface ShooterIO {
     public double kickerVelocityRPM  = 0.0;
     public double kickerTargetRPM    = 0.0;
 
-    public boolean fuelInUpperKicker = false;
-
     public Inputs(LoggerGroup logInputs) {
       super(logInputs);
     }
 
     // flywheel lead, flywheel follower, hood, kicker
-    public double[] tempsCelcius = new double[4];
+    public double[] tempsCelsius = new double[4];
   }
 
   /** Updates the set of loggable inputs. */

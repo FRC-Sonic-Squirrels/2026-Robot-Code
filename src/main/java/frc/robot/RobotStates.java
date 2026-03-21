@@ -129,10 +129,10 @@ public class RobotStates {
       case None:
         drivetrain.resetVelocityOverride();
         drivetrain.resetRotationOverride();
+        shooter.setGoal(Shooter.Goal.Idle);
         if (intakeGoal == IntakeGoal.LeftIntake || intakeGoal == IntakeGoal.RightIntake) {
-          preLoadKicker();
+          hopper.setGoal(Hopper.Goal.Shooting);
         } else {
-          shooter.setGoal(Shooter.Goal.Idle);
           hopper.setGoal(Hopper.Goal.Idle);
         }
         climber.setGoal(Climber.Goal.Stowed);
@@ -269,15 +269,6 @@ public class RobotStates {
     }
     shooter.setFacingTarget(rotateState.withinTolerance());
     shooter.setDistanceFromTarget(rotateState.distance());
-  }
-
-  private void preLoadKicker() {
-    shooter.setGoal(Shooter.Goal.PreLoading);
-    if (!shooter.getFuelInUpperKicker()) {
-      hopper.setGoal(Hopper.Goal.Shooting);
-    } else {
-      hopper.setGoal(Hopper.Goal.Idle);
-    }
   }
 
   public RobotGoal getRobotGoal() {
