@@ -54,11 +54,11 @@ public class AutoStateMachine extends StateMachine {
       var pose     = waypoint.pose.get();
       var velocity = waypoint.velocity.get();
 
-      time += waypoint.time;
       samplesMap.put(time, waypoint);
       var swerveSample = new SwerveSample(time + waypoint.time, pose.getX(), pose.getY(),
           pose.getRotation().getRadians(), velocity.getX(), velocity.getY(), 0, 0, 0, 0, null, null);
       samples.add(swerveSample);
+      time += waypoint.time;
     }
 
     helper = new ChoreoHelper(Timer.getFPGATimestamp(), initialPose.get(),
