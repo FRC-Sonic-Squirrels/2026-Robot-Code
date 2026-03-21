@@ -130,7 +130,11 @@ public class RobotStates {
         drivetrain.resetVelocityOverride();
         drivetrain.resetRotationOverride();
         shooter.setGoal(Shooter.Goal.Idle);
-        hopper.setGoal(Hopper.Goal.Idle);
+        if (intakeGoal == IntakeGoal.LeftIntake || intakeGoal == IntakeGoal.RightIntake) {
+          hopper.setGoal(Hopper.Goal.Shooting);
+        } else {
+          hopper.setGoal(Hopper.Goal.Idle);
+        }
         climber.setGoal(Climber.Goal.Stowed);
         break;
       case Unjam:

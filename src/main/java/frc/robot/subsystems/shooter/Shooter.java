@@ -20,7 +20,7 @@ import java.util.List;
 
 public class Shooter extends SubsystemBase {
   public enum Goal {
-    Idle, Scoring, BumperShot, Passing, Stop, PreLoading, Unjamming
+    Idle, Scoring, BumperShot, Passing, Stop, Unjamming
   }
 
   private final String ROOT_TABLE = "Shooter";
@@ -292,10 +292,6 @@ public class Shooter extends SubsystemBase {
           setKickerVelocity(0);
           break;
 
-        case PreLoading:
-          setKickerVelocity((getKickerRPM(true)));
-          break;
-
         case Unjamming:
           setKickerVelocity(-(ShooterConstants.Kicker.SHOOTING_KICKER_RPM));
           break;
@@ -411,8 +407,6 @@ public class Shooter extends SubsystemBase {
         case Passing:
         case BumperShot:
           return ShooterConstants.Kicker.SHOOTING_KICKER_RPM;
-        case PreLoading:
-          return ShooterConstants.Kicker.PRELOADING_KICKER_RPM;
         default:
           return 0;
       }
