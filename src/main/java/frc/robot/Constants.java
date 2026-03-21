@@ -313,8 +313,8 @@ public final class Constants {
 
       public static final double SIM_INITIAL_ANGLE = Math.toRadians(14.0);
 
-      public static final double SUPPLY_CURRENT_LIMIT = 5;
-      public static final double STATOR_CURRENT_LIMIT = 10;
+      public static final double SUPPLY_CURRENT_LIMIT = 15;
+      public static final double STATOR_CURRENT_LIMIT = 15;
 
       public static final double CORRECT_ANGLE_RANGE = 2;
     }

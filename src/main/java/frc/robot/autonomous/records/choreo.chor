@@ -159,6 +159,20 @@
      "val":-2.356194490192345
     }
    },
+   "INTAKE_PREP_MIDDLE_MIDDLE_OUTPOSTSIDE":{
+    "x":{
+     "exp":"7.7637 m",
+     "val":7.7637
+    },
+    "y":{
+     "exp":"2.1635599 m",
+     "val":2.1635599
+    },
+    "heading":{
+     "exp":"2.57967 rad",
+     "val":2.57967
+    }
+   },
    "INTAKE_PREP_MIDDLE_OUTPOSTSIDE":{
     "x":{
      "exp":"6.95 m",

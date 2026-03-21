@@ -24,7 +24,8 @@ public final class ChoreoVars {
         public static final Pose2d INTAKE_MIDDLE_MIDDLE_OUTPOSTSIDE = new Pose2d(7.68, 3.47, Rotation2d.fromRadians(-3.1415927));
         public static final Pose2d INTAKE_MIDDLE_OUTPOSTSIDE = new Pose2d(7.72, 2.18, Rotation2d.fromRadians(1.5707963));
         public static final Pose2d INTAKE_PREP_MIDDLE_DEPOTSIDE = new Pose2d(6.7, 5.8, Rotation2d.fromRadians(-1.5707963));
-        public static final Pose2d INTAKE_PREP_MIDDLE_MIDDLE_DEPOTSIDE = new Pose2d(7.7, 5.8, Rotation2d.fromRadians(-2.3561945));
+        public static final Pose2d INTAKE_PREP_MIDDLE_MIDDLE_DEPOTSIDE = new Pose2d(7.7, 2.2, Rotation2d.fromRadians(-2.3561945));
+        public static final Pose2d INTAKE_PREP_MIDDLE_MIDDLE_OUTPOSTSIDE = new Pose2d(7.7, 2.16, Rotation2d.fromRadians(2.57967));
         public static final Pose2d INTAKE_PREP_MIDDLE_OUTPOSTSIDE = new Pose2d(6.95, 2.18, Rotation2d.fromRadians(1.5707963));
         public static final Pose2d OUTPOST_GETOUT = new Pose2d(0.87, 1.75, Rotation2d.fromRadians(0));
         public static final Pose2d OUTPOST_MIDDLE_INTAKE_PREP = new Pose2d(6.67, 2.34, Rotation2d.fromRadians(1.5707963));
