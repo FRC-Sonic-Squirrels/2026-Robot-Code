@@ -350,7 +350,7 @@ public class Shooter extends SubsystemBase {
       }
     }
   }
-  
+
   public Rotation2d getPitch() {
     return inputs.hoodPosition;
   }
