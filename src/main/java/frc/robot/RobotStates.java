@@ -3,7 +3,10 @@ package frc.robot;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Units;
-import frc.lib.team2930.*;
+import frc.lib.team2930.AutoRegisterLoggers;
+import frc.lib.team2930.GeometryUtil;
+import frc.lib.team2930.LoggerEntry;
+import frc.lib.team2930.LoggerGroup;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.commands.drive.RotateToFaceHelper;
 import frc.robot.configs.RobotConfig;
@@ -184,11 +187,7 @@ public class RobotStates {
       shoot();
     } else {
       setRotateToFaceTarget(FieldConstants.HUB_CENTER_POSE.get());
-
-      var robotPose     = drivetrain.getHubPoseEstimatorPose(true);
-      var robotVelocity = drivetrain.getRobotCentricVelocities();
-      var rotateState   = rotateToFaceHelper.periodic(robotPose, robotVelocity);
-      shooter.setDistanceFromTarget(rotateState.distance());
+      computeRotateToFaceState();
     }
 
     periodicIntake(currentIntakeGoal);
@@ -260,10 +259,16 @@ public class RobotStates {
     }
   }
 
-  private void shoot() {
+  private RotateToFaceHelper.RotateToFaceState computeRotateToFaceState() {
     var robotPose     = drivetrain.getHubPoseEstimatorPose(true);
-    var robotVelocity = drivetrain.getRobotCentricVelocities();
+    var robotVelocity = drivetrain.getFieldRelativeVelocities();
     var rotateState   = rotateToFaceHelper.periodic(robotPose, robotVelocity);
+    shooter.setDistanceFromTarget(rotateState.distance());
+    return rotateState;
+  }
+
+  private void shoot() {
+    var rotateState = computeRotateToFaceState();
 
     if (goal != RobotGoal.BumperShot) {
       drivetrain.setRotationOverride(rotateState.omega());
@@ -271,7 +276,6 @@ public class RobotStates {
       drivetrain.resetRotationOverride();
     }
     shooter.setFacingTarget(rotateState.withinTolerance());
-    shooter.setDistanceFromTarget(rotateState.distance());
   }
 
   public RobotGoal getRobotGoal() {

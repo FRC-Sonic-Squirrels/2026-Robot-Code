@@ -20,13 +20,13 @@ public class RotateToFaceHelper {
   private final String ROOT_TABLE = "RotateToFaceHelper";
 
   public static class Logs extends AutoRegisterLoggers {
-    public LoggerEntry.Decimal rotVel;
-    public LoggerEntry.Decimal targetRotation;
-    public LoggerEntry.Decimal currentRotation;
-    public LoggerEntry.Decimal positionErrorDeg;
+    public LoggerEntry.Decimal             rotVel;
+    public LoggerEntry.Decimal             targetRotation;
+    public LoggerEntry.Decimal             currentRotation;
+    public LoggerEntry.Decimal             positionErrorDeg;
+    public LoggerEntry.StructArray<Pose2d> path;
 
-    public LoggerEntry.Decimal velocityX;
-    public LoggerEntry.Decimal velocityY;
+    public LoggerEntry.Struct<Pose2d> correctedPose;
   }
 
   public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
@@ -34,6 +34,15 @@ public class RotateToFaceHelper {
   public static class Tunables extends AutoRegisterTunables {
     @TunableEntry(defaultValue = 4.9)
     public LoggedTunableNumber KP;
+
+    @TunableEntry(defaultValue = 0.0)
+    public LoggedTunableNumber KI;
+
+    @TunableEntry(defaultValue = 0.0)
+    public LoggedTunableNumber KD;
+
+    @TunableEntry(defaultValue = 0.1)
+    public LoggedTunableNumber moveCorrection;
 
     @TunableEntry(defaultValue = 2 * Math.PI)
     public LoggedTunableNumber cruiseVelocity;
@@ -43,6 +52,18 @@ public class RotateToFaceHelper {
 
     @TunableEntry(defaultValue = 4)
     public LoggedTunableNumber toleranceDegrees;
+
+    public boolean hasChanged() {
+      boolean hasChanged = false;
+      hasChanged |= KP.hasChanged();
+      hasChanged |= KI.hasChanged();
+      hasChanged |= KD.hasChanged();
+      hasChanged |= moveCorrection.hasChanged();
+      hasChanged |= cruiseVelocity.hasChanged();
+      hasChanged |= maxAcceleration.hasChanged();
+      hasChanged |= toleranceDegrees.hasChanged();
+      return hasChanged;
+    }
   }
 
   public record RotateToFaceState(double omega, boolean withinTolerance, Distance distance) {
@@ -59,9 +80,15 @@ public class RotateToFaceHelper {
 
   public void resetPID(Pose2d currentPose, Pose2d fieldRelativeVelocities) {
     rotationalPID.reset(currentPose.getRotation().getRadians(), fieldRelativeVelocities.getRotation().getRadians());
-    rotationalPID.setP(tunables.KP.get());
-    rotationalPID.setConstraints(new Constraints(tunables.cruiseVelocity.get(), tunables.maxAcceleration.get()));
     rotationalPID.enableContinuousInput(-Math.PI, Math.PI);
+    refreshTunables();
+  }
+
+  private void refreshTunables() {
+    rotationalPID.setConstraints(new Constraints(tunables.cruiseVelocity.get(), tunables.maxAcceleration.get()));
+    rotationalPID.setP(tunables.KP.get());
+    rotationalPID.setI(tunables.KI.get());
+    rotationalPID.setD(tunables.KD.get());
   }
 
   private static Rotation2d faceTowardsCenter(Translation2d current, Translation2d target) {
@@ -79,26 +106,38 @@ public class RotateToFaceHelper {
   }
 
   public RotateToFaceState periodic(Pose2d pose, Pose2d robotVelocity) {
+    if (tunables.hasChanged()) {
+      refreshTunables();
+    }
 
-    var targetAngle = RotateToFaceHelper.faceTowardsCenter(pose.getTranslation(), target);
-
-    var currentVel = robotVelocity.getTranslation();
-    currentVel = currentVel.rotateBy(targetAngle.unaryMinus());
-
-    logs.velocityX.info(currentVel.getX());
-    logs.velocityY.info(currentVel.getY());
+    var currentPose         = pose.getTranslation();
     var currentPoseRotation = pose.getRotation();
-    var rotVel              = rotationalPID.calculate(currentPoseRotation.getRadians(), targetAngle.getRadians());
+    var currentVel          = robotVelocity.getTranslation();
+    var correctedVel        = currentVel.times(tunables.moveCorrection.get());
 
+    // We have to add the future movement to get the correct angle.
+    var correctedPose = currentPose.plus(correctedVel);
+    var targetAngle   = RotateToFaceHelper.faceTowardsCenter(correctedPose, target);
+
+    var rotVel          = rotationalPID.calculate(currentPoseRotation.getRadians(), targetAngle.getRadians());
     var error           = Math.toDegrees(rotationalPID.getPositionError());
     var withinTolerance = Math.abs(error) <= tunables.toleranceDegrees.get();
+
+    logs.correctedPose.info(new Pose2d(correctedPose, currentPoseRotation));
 
     logs.rotVel.info(rotVel);
     logs.targetRotation.info(targetAngle);
     logs.currentRotation.info(currentPoseRotation);
     logs.positionErrorDeg.info(error);
 
-    return new RotateToFaceState(rotVel, withinTolerance, Units.Meters.of(target.getDistance(pose.getTranslation())));
+    var beam = new Translation2d(2, 0).rotateBy(currentPoseRotation);
+
+    Pose2d[] path = new Pose2d[2];
+    path[0] = new Pose2d(correctedPose, Rotation2d.kZero);
+    path[1] = new Pose2d(correctedPose.plus(beam), Rotation2d.kZero);
+    logs.path.info(path);
+
+    return new RotateToFaceState(rotVel, withinTolerance, Units.Meters.of(target.getDistance(correctedPose)));
   }
 
   public boolean setTarget(Translation2d target) {
