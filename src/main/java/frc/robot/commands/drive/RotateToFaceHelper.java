@@ -41,7 +41,7 @@ public class RotateToFaceHelper {
     @TunableEntry(defaultValue = 0.0)
     public LoggedTunableNumber KD;
 
-    @TunableEntry(defaultValue = 0.1)
+    @TunableEntry(defaultValue = 1.5)
     public LoggedTunableNumber moveCorrection;
 
     @TunableEntry(defaultValue = 2 * Math.PI)
