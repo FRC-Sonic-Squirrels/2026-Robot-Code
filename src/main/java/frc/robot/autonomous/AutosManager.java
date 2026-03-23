@@ -218,13 +218,14 @@ public class AutosManager {
 
       case MIDDLE_DEPOTSIDE:
         aInitialPose = newInitialPose(ChoreoVars.Poses.START2);
-        waypoints.add(newWaypoint(1, ChoreoVars.Poses.INTAKE_PREP_MIDDLE_DEPOTSIDE, Translation2d.kZero, AutoGoals.DRIVE));
-        waypoints.add(newWaypoint(1, ChoreoVars.Poses.INTAKE_MIDDLE_DEPOTSIDE, Translation2d.kZero, AutoGoals.INTAKEWHILEDRIVELEFT));
-        waypoints.add(newWaypoint(1, ChoreoVars.Poses.INTAKE_PREP_MIDDLE_MIDDLE_DEPOTSIDE, Translation2d.kZero, AutoGoals.INTAKEWHILEDRIVELEFT));
-        waypoints.add(newWaypoint(2, ChoreoVars.Poses.INTAKE_MIDDLE_MIDDLE_DEPOTSIDE, Translation2d.kZero, AutoGoals.INTAKEWHILEDRIVELEFT));
-        waypoints.add(newWaypoint(1, ChoreoVars.Poses.BUMP_PREP_MIDDLE_DEPOTSIDE, Translation2d.kZero, AutoGoals.INTAKEWHILEDRIVERIGHT));
-        waypoints.add(newWaypoint(1, ChoreoVars.Poses.SHOOT_DEPOT_SIDE, Translation2d.kZero, AutoGoals.DRIVE));
-        waypoints.add(newWaypoint(1, ChoreoVars.Poses.SHOOT_DEPOT_SIDE, Translation2d.kZero, AutoGoals.SCORE));
+        waypoints.add(newWaypoint(0, ChoreoVars.Poses.START2, Translation2d.kZero, AutoGoals.SCORE));
+        waypoints.add(newWaypoint(2, ChoreoVars.Poses.INTAKE_PREP_MIDDLE_DEPOTSIDE, Translation2d.kZero, AutoGoals.DRIVE));
+        waypoints.add(newWaypoint(2, ChoreoVars.Poses.INTAKE_MIDDLE_DEPOTSIDE, Translation2d.kZero, AutoGoals.INTAKEWHILEDRIVELEFT));
+        waypoints.add(newWaypoint(2, ChoreoVars.Poses.INTAKE_PREP_MIDDLE_MIDDLE_DEPOTSIDE, Translation2d.kZero, AutoGoals.INTAKEWHILEDRIVELEFT));
+        waypoints.add(newWaypoint(4, ChoreoVars.Poses.INTAKE_MIDDLE_MIDDLE_DEPOTSIDE, Translation2d.kZero, AutoGoals.INTAKEWHILEDRIVELEFT));
+        waypoints.add(newWaypoint(2, ChoreoVars.Poses.BUMP_PREP_MIDDLE_DEPOTSIDE, Translation2d.kZero, AutoGoals.INTAKEWHILEDRIVERIGHT));
+        waypoints.add(newWaypoint(2, ChoreoVars.Poses.SHOOT_DEPOT_SIDE, Translation2d.kZero, AutoGoals.DRIVE));
+        waypoints.add(newWaypoint(2, ChoreoVars.Poses.SHOOT_DEPOT_SIDE, Translation2d.kZero, AutoGoals.SCORE));
         return Pair.of(waypoints, aInitialPose);
 
       default:

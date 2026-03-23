@@ -353,7 +353,7 @@ public final class Constants {
         map.put(2.5, 20.0);
         map.put(3.0, 20.0);
         map.put(3.5, 20.0);
-        map.put(4.0, 20.0);
+        map.put(4.0, 21.0);
         map.put(4.5, 22.0);
         map.put(5.0, 24.0);
         return new TunableInterpolationMap("HOOD_ANGLE_FOR_HUB_DISTANCE", map);
