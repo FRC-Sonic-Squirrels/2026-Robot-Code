@@ -68,12 +68,14 @@ public class ChoreoHelper {
   private double finalErrorMaxWait      = 2;
   private double finalErrorWaitDeadline = Double.NaN;
 
-  public record ChassisSpeedsWithPathEnd(ChassisSpeeds chassisSpeeds, SwerveSample currentState, boolean atEndOfPath) {
+  public record ChassisSpeedsWithPathEnd(double timeOffset, ChassisSpeeds chassisSpeeds, SwerveSample currentState,
+      boolean atEndOfPath) {
   }
 
   /**
    * Helper class to go from timestamps of path to desired chassis speeds
    *
+   * @param skipAhead              if set, it will try to find the closest state
    * @param initialTime            timestamp of path starting
    * @param initialPose            initial pose of robot
    * @param trajWithName           trajectory to follow
@@ -83,7 +85,7 @@ public class ChoreoHelper {
    * @param translationalFeedbackY pid in y directions
    * @param rotationalFeedback     pid for angular velocity
    */
-  public ChoreoHelper(double initialTime, Pose2d initialPose, ChoreoTrajectoryWithName trajWithName,
+  public ChoreoHelper(boolean skipAhead, double initialTime, Pose2d initialPose, ChoreoTrajectoryWithName trajWithName,
       double lagThreshold, PIDController translationalFeedbackX, PIDController translationalFeedbackY,
       PIDController rotationalFeedback) {
     this.traj               = trajWithName.states();
@@ -97,7 +99,7 @@ public class ChoreoHelper {
     double       closestDistance = Double.MAX_VALUE;
     double       lastDistance    = Double.MAX_VALUE;
 
-    if (tunables.useCorrection.get() != 0) {
+    if (skipAhead && tunables.useCorrection.get() != 0) {
       for (SwerveSample state : getStates(traj)) {
         SwerveSample stateComputed = traj.sampleAt(state.t, false).orElseThrow();
         double       stateDistance = GeometryUtil.getDist(initialPose, stateComputed.getPose());
@@ -312,7 +314,7 @@ public class ChoreoHelper {
 
     var chassisSpeeds = new ChassisSpeeds(xVel, yVel, omegaVel);
     chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, rotation);
-    return new ChassisSpeedsWithPathEnd(chassisSpeeds, state, atTheEndOfPath);
+    return new ChassisSpeedsWithPathEnd(timeOffset, chassisSpeeds, state, atTheEndOfPath);
   }
 
   private SwerveSample isFutureStateCloser(Pose2d robotPose, SwerveSample state, double lookaheadTime) {

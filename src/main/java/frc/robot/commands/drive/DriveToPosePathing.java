@@ -147,7 +147,7 @@ public class DriveToPosePathing extends Command {
       return;
     }
 
-    helper = new ChoreoHelper(Timer.getFPGATimestamp(), traj.getInitialPose(false).orElseThrow(),
+    helper = new ChoreoHelper(true, Timer.getFPGATimestamp(), traj.getInitialPose(false).orElseThrow(),
         new ChoreoTrajectoryWithName("DriveToPose", traj), config.getDriveBaseRadius() / 2,
         config.getAutoTranslationPidController(), config.getAutoTranslationPidController(),
         config.getAutoThetaPidController());

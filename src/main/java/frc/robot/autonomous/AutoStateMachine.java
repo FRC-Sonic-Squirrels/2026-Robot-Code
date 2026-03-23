@@ -3,9 +3,11 @@ package frc.robot.autonomous;
 import choreo.trajectory.EventMarker;
 import choreo.trajectory.SwerveSample;
 import choreo.trajectory.Trajectory;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.wpilibj.Timer;
 import frc.lib.team2930.AllianceAwarePose2d;
 import frc.lib.team2930.StateMachine;
+import frc.robot.Constants;
 import frc.robot.RobotStates;
 import frc.robot.RobotStates.IntakeGoal;
 import frc.robot.RobotStates.RobotGoal;
@@ -20,6 +22,7 @@ import java.util.TreeMap;
 
 public class AutoStateMachine extends StateMachine {
   private final DrivetrainWrapper         wrapper;
+  private final boolean                   skipAhead;
   private final AllianceAwarePose2d       initialPose;
   private final ArrayList<Waypoint>       waypoints;
   private final RobotStates               states;
@@ -28,10 +31,11 @@ public class AutoStateMachine extends StateMachine {
   private final TreeMap<Double, Waypoint> samplesMap = new TreeMap<>();
 
   public AutoStateMachine(AutosSubsystems subsystems, ArrayList<Waypoint> waypoints, AllianceAwarePose2d initialPose,
-      RobotStates states) {
+      boolean skipAhead, RobotStates states) {
     super("Auto");
 
     this.wrapper     = subsystems.drivetrain();
+    this.skipAhead   = skipAhead;
     this.initialPose = initialPose;
     this.waypoints   = waypoints;
     this.states      = states;
@@ -49,19 +53,29 @@ public class AutoStateMachine extends StateMachine {
     double time = 0;
 
     samplesMap.clear();
+    int sequence = 0;
 
     for (Waypoint waypoint : waypoints) {
-      var pose     = waypoint.pose.get();
-      var velocity = waypoint.velocity.get();
+      waypoint.sequence = sequence++;
+      var waypointTime = waypoint.time;
+      var waypointPose = waypoint.pose;
+      var waypointVel  = waypoint.velocity;
+
+      time += waypointTime;
+
+      if (waypointPose != null) {
+        var pose     = waypointPose.get();
+        var velocity = waypointVel != null ? waypointVel.get() : Translation2d.kZero;
+
+        var swerveSample = new SwerveSample(time, pose.getX(), pose.getY(), pose.getRotation().getRadians(),
+            velocity.getX(), velocity.getY(), 0, 0, 0, 0, null, null);
+        samples.add(swerveSample);
+      }
 
       samplesMap.put(time, waypoint);
-      var swerveSample = new SwerveSample(time + waypoint.time, pose.getX(), pose.getY(),
-          pose.getRotation().getRadians(), velocity.getX(), velocity.getY(), 0, 0, 0, 0, null, null);
-      samples.add(swerveSample);
-      time += waypoint.time;
     }
 
-    helper = new ChoreoHelper(Timer.getFPGATimestamp(), initialPose.get(),
+    helper = new ChoreoHelper(skipAhead, Timer.getFPGATimestamp(), initialPose.get(),
         new ChoreoTrajectoryWithName("Auto", new Trajectory<>("Auto", samples, splits, events)),
         config.getDriveBaseRadius() / 2, config.getAutoTranslationPidController(),
         config.getAutoTranslationPidController(), config.getAutoThetaPidController());
@@ -75,8 +89,15 @@ public class AutoStateMachine extends StateMachine {
 
     wrapper.setVelocityOverride(result.chassisSpeeds());
 
-    var waypoint = matchSwerveSample(result.currentState());
+    if (Constants.unusedCode) {
+      System.out.println("Time: " + result.timeOffset() + " " + result.currentState().t);
+    }
+    var waypoint = matchWaypoint(result);
     if (waypoint != null && waypoint != currentWaypoint) {
+      if (Constants.unusedCode) {
+        System.out.println("Waypoint: " + waypoint.sequence + " # " + waypoint.goal);
+      }
+
       currentWaypoint = waypoint;
 
       switch (waypoint.goal) {
@@ -111,8 +132,8 @@ public class AutoStateMachine extends StateMachine {
     return setDone();
   }
 
-  private Waypoint matchSwerveSample(SwerveSample swerveSample) {
-    var entry = samplesMap.floorEntry(swerveSample.t);
+  private Waypoint matchWaypoint(ChoreoHelper.ChassisSpeedsWithPathEnd state) {
+    var entry = samplesMap.floorEntry(state.timeOffset());
     if (entry != null) {
       return entry.getValue();
     }
