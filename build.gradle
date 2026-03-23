@@ -142,6 +142,7 @@ spotless {
             include '**/*.java'
             exclude '**/build/**', '**/build-*/**'
         }
+        lineEndings 'UNIX'
         toggleOffOn()
         eclipse().configFile("eclipse-style-config.xml")
         removeUnusedImports()
