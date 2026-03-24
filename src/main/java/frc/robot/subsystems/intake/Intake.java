@@ -11,6 +11,7 @@ import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Voltage;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.lib.team2930.*;
@@ -112,6 +113,9 @@ public class Intake extends SubsystemBase {
 
     @TunableEntry(defaultValue = 10)
     public LoggedTunableNumber intakingFuelPivotAngle;
+
+    @TunableEntry(defaultValue = 1)
+    public LoggedTunableNumber keepRolling;
   }
 
   public final Logs logs;
@@ -131,7 +135,8 @@ public class Intake extends SubsystemBase {
   private final Rotation2d maxPivotAngle;
 
   // Intake states
-  private Goal goal = Goal.Stow;
+  private Goal   goal = Goal.Stow;
+  private double timestampToStop;
 
   private double rollerTargetRPM;
 
@@ -233,7 +238,9 @@ public class Intake extends SubsystemBase {
         case Stow:
           setPivotUpCurrentLimit();
           setPivotAngle(PivotConstants.HOME_POSITION);
-          setRollerVelocity(0);
+          if (timestampToStop < Timer.getFPGATimestamp()) {
+            setRollerVelocity(0);
+          }
           break;
         case Down:
           setPivotAngle(maxPivotAngle);
@@ -252,6 +259,7 @@ public class Intake extends SubsystemBase {
           // setPivotDownCurrentLimit();
           // setPivotVoltage(-2);
           setRollerVelocity(tunables.intakingFuelVelocity.get());
+          timestampToStop = Timer.getFPGATimestamp() + tunables.keepRolling.get();
           break;
         default:
           break;
