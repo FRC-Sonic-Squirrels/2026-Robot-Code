@@ -45,7 +45,7 @@ public class ChoreoHelper {
     @TunableEntry(defaultValue = 1.0)
     public LoggedTunableNumber useCorrection;
 
-    @TunableEntry(defaultValue = 2_0)
+    @TunableEntry(defaultValue = -0.1)
     public LoggedTunableNumber minVelToPause;
   }
 

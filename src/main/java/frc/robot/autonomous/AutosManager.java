@@ -229,18 +229,18 @@ public class AutosManager {
         waypoints.add(newWaypoint(0.3, ChoreoVars.Poses.NEAR_TRENCH_DEPOTSIDE, null, AutoGoals.DRIVE));
         waypoints.add(newWaypoint(0.3, ChoreoVars.Poses.INTAKE_PREP_DEPOTSIDE, null, AutoGoals.DRIVE));
         waypoints.add(newWaypoint(0.7, ChoreoVars.Poses.INTAKE_MIDDLE_DEPOTSIDE, null, AutoGoals.INTAKEWHILEDRIVELEFT));
-        waypoints.add(newWaypoint(3, ChoreoVars.Poses.INTAKE_MIDDLE_MIDDLE_DEPOTSIDE, null, AutoGoals.INTAKEWHILEDRIVELEFT));
+        waypoints.add(newWaypoint(0.3, ChoreoVars.Poses.INTAKE_MIDDLE_MIDDLE_DEPOTSIDE, null, AutoGoals.INTAKEWHILEDRIVELEFT));
         waypoints.add(newWaypoint(0.4, ChoreoVars.Poses.BUMP_PREP_MIDDLE_DEPOTSIDE, null, AutoGoals.DRIVE));
         waypoints.add(newWaypoint(0.7, ChoreoVars.Poses.SHOOT_DEPOT_SIDE, null, AutoGoals.DRIVE));
-        waypoints.add(newWaypoint(2.5, ChoreoVars.Poses.SHOOT_DEPOT_SIDE, null, AutoGoals.SCORE));
-        waypoints.add(newWaypoint(0.6, ChoreoVars.Poses.RIGHT_OVER_BUMP_DEPOTSIDE, null, AutoGoals.DRIVE));
+        waypoints.add(newWaypoint(0.0, ChoreoVars.Poses.SHOOT_DEPOT_SIDE, null, AutoGoals.SCORE));
+        waypoints.add(newWaypoint(2.6, ChoreoVars.Poses.RIGHT_OVER_BUMP_DEPOTSIDE, null, AutoGoals.DRIVE));
         waypoints.add(newWaypoint(0.3, ChoreoVars.Poses.NEAR_TRENCH_ANGLED_DEPOTSIDE, null, AutoGoals.DRIVE));
         waypoints.add(newWaypoint(0.3, ChoreoVars.Poses.NEAR_TRENCH_DEPOTSIDE, null, AutoGoals.INTAKEWHILEDRIVELEFT));
         waypoints.add(newWaypoint(0.3, ChoreoVars.Poses.INTAKE_PREP_DEPOTSIDE, null, AutoGoals.INTAKEWHILEDRIVELEFT));
         waypoints.add(newWaypoint(0.7, ChoreoVars.Poses.INTAKE_MIDDLE_DEPOTSIDE, null, AutoGoals.INTAKEWHILEDRIVELEFT));
-        waypoints.add(newWaypoint(2.4, ChoreoVars.Poses.INTAKE_MIDDLE_MIDDLE_DEPOTSIDE, null, AutoGoals.INTAKEWHILEDRIVELEFT));
+        waypoints.add(newWaypoint(0.3, ChoreoVars.Poses.INTAKE_MIDDLE_MIDDLE_DEPOTSIDE, null, AutoGoals.INTAKEWHILEDRIVELEFT));
         waypoints.add(newWaypoint(0.4, ChoreoVars.Poses.BUMP_PREP_MIDDLE_DEPOTSIDE, null, AutoGoals.DRIVE));
-        waypoints.add(newWaypoint(0.7, ChoreoVars.Poses.SHOOT_DEPOT_SIDE, null, AutoGoals.DRIVE));
+        waypoints.add(newWaypoint(0.7, ChoreoVars.Poses.SHOOT_DEPOT_SIDE, null, AutoGoals.SCORE));
         waypoints.add(newWaypoint(2.5, ChoreoVars.Poses.SHOOT_DEPOT_SIDE, null, AutoGoals.SCORE));
         return Pair.of(waypoints, aInitialPose);
 

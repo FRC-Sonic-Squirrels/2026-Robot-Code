@@ -27,8 +27,8 @@ public class AutoStateMachine extends StateMachine {
   private final ArrayList<Waypoint>       waypoints;
   private final RobotStates               states;
   private ChoreoHelper                    helper;
-  private Waypoint                        currentWaypoint;
-  private final TreeMap<Double, Waypoint> samplesMap = new TreeMap<>();
+  private int                             currentWaypoint = -1;
+  private final TreeMap<Double, Waypoint> samplesMap      = new TreeMap<>();
 
   public AutoStateMachine(AutosSubsystems subsystems, ArrayList<Waypoint> waypoints, AllianceAwarePose2d initialPose,
       boolean skipAhead, RobotStates states) {
@@ -93,12 +93,12 @@ public class AutoStateMachine extends StateMachine {
       System.out.println("Time: " + result.timeOffset() + " " + result.currentState().t);
     }
     var waypoint = matchWaypoint(result);
-    if (waypoint != null && waypoint != currentWaypoint) {
+    if (waypoint != null && waypoint.sequence != currentWaypoint) {
       if (Constants.unusedCode) {
         System.out.println("Waypoint: " + waypoint.sequence + " # " + waypoint.goal);
       }
 
-      currentWaypoint = waypoint;
+      currentWaypoint = waypoint.sequence;
 
       switch (waypoint.goal) {
         case DRIVE:
