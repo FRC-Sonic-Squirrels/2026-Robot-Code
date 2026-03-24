@@ -174,11 +174,11 @@ public class ChoreoHelper {
 
     boolean atTheEndOfPath = false;
 
+    var timestampCorrected = timestamp - initialTime + timeOffset;
+
     if (stateTooBehind != null) {
       state = stateTooBehind;
     } else {
-      var timestampCorrected = timestamp - initialTime + timeOffset;
-
       state = traj.sampleAt(timestampCorrected, false).orElseThrow();
       if (timestampCorrected >= traj.getTotalTime()) {
         atTheEndOfPath = true;
@@ -314,7 +314,7 @@ public class ChoreoHelper {
 
     var chassisSpeeds = new ChassisSpeeds(xVel, yVel, omegaVel);
     chassisSpeeds = ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, rotation);
-    return new ChassisSpeedsWithPathEnd(timeOffset, chassisSpeeds, state, atTheEndOfPath);
+    return new ChassisSpeedsWithPathEnd(timestampCorrected, chassisSpeeds, state, atTheEndOfPath);
   }
 
   private SwerveSample isFutureStateCloser(Pose2d robotPose, SwerveSample state, double lookaheadTime) {
