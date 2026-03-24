@@ -75,6 +75,20 @@
      "val":1.5707963267948966
     }
    },
+   "INTAKE_FULLMID_DEPOTSIDE":{
+    "x":{
+     "exp":"7.8027 m",
+     "val":7.8027
+    },
+    "y":{
+     "exp":"2.1986 m",
+     "val":2.1986
+    },
+    "heading":{
+     "exp":"-180 deg",
+     "val":-3.141592653589793
+    }
+   },
    "INTAKE_MIDDLE_DEPOTSIDE":{
     "x":{
      "exp":"7.7 m",
@@ -85,8 +99,8 @@
      "val":5.8
     },
     "heading":{
-     "exp":"-90 deg",
-     "val":-1.5707963267948966
+     "exp":"-180 deg",
+     "val":-3.141592653589793
     }
    },
    "INTAKE_MIDDLE_MIDDLE_DEPOTSIDE":{
@@ -129,6 +143,20 @@
     "heading":{
      "exp":"90 deg",
      "val":1.5707963267948966
+    }
+   },
+   "INTAKE_PREP_DEPOTSIDE":{
+    "x":{
+     "exp":"7.2375297 m",
+     "val":7.2375297
+    },
+    "y":{
+     "exp":"6.64236 m",
+     "val":6.64236
+    },
+    "heading":{
+     "exp":"-2.3086 rad",
+     "val":-2.3086
     }
    },
    "INTAKE_PREP_MIDDLE_DEPOTSIDE":{
@@ -187,6 +215,34 @@
      "val":1.5707963267948966
     }
    },
+   "NEAR_TRENCH_ANGLED_DEPOTSIDE":{
+    "x":{
+     "exp":"6.321 m",
+     "val":6.321
+    },
+    "y":{
+     "exp":"6.25256 m",
+     "val":6.25256
+    },
+    "heading":{
+     "exp":"-0.86853 rad",
+     "val":-0.86853
+    }
+   },
+   "NEAR_TRENCH_DEPOTSIDE":{
+    "x":{
+     "exp":"6.80875 m",
+     "val":6.80875
+    },
+    "y":{
+     "exp":"6.83726 m",
+     "val":6.83726
+    },
+    "heading":{
+     "exp":"-1.570796 rad",
+     "val":-1.570796
+    }
+   },
    "OUTPOST_GETOUT":{
     "x":{
      "exp":"0.87 m",
@@ -213,6 +269,20 @@
     "heading":{
      "exp":"90 deg",
      "val":1.5707963267948966
+    }
+   },
+   "RIGHT_OVER_BUMP_DEPOTSIDE":{
+    "x":{
+     "exp":"5.79 m",
+     "val":5.79
+    },
+    "y":{
+     "exp":"5.25857 m",
+     "val":5.25857
+    },
+    "heading":{
+     "exp":"-2.147171977 rad",
+     "val":-2.147171977
     }
    },
    "SHOOT_DEPOT_SIDE":{
