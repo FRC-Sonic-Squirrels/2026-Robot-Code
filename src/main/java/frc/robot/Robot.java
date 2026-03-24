@@ -91,8 +91,6 @@ public class Robot extends LoggedRobot {
   private double                         cumulativeEnergy;
   private double                         cumulativeEnergyTimestamp = Double.NaN;
 
-  private boolean teleopPrepped = false;
-
   // Enables power distribution logging
   private final PowerDistribution powerDistribution = new PowerDistribution(1, ModuleType.kRev);
 
@@ -305,16 +303,20 @@ public class Robot extends LoggedRobot {
 
   @Override
   public void autonomousExit() {
-    prepForTeleop();
-    teleopPrepped = true;
+    // This makes sure that the autonomous stops running when
+    // teleop starts running. If you want the autonomous to
+    // continue until interrupted by another command, remove
+    // this line or comment it out.
+    if (autoCommand != null) {
+      autoCommand.cancel();
+      autoCommand = null;
+    }
   }
 
   /** This function is called once when teleop is enabled. */
   @Override
   public void teleopInit() {
-    if (!teleopPrepped) {
-      prepForTeleop();
-    }
+    robotContainer.enterTeleop();
     hasEnteredTeleAtSomePoint = true;
   }
 
@@ -344,18 +346,5 @@ public class Robot extends LoggedRobot {
   @Override
   public void simulationPeriodic() {
     logs.simulatedRobotLogs.voltage.info(RobotController.getBatteryVoltage());
-  }
-
-  private void prepForTeleop() {
-    // This makes sure that the autonomous stops running when
-    // teleop starts running. If you want the autonomous to
-    // continue until interrupted by another command, remove
-    // this line or comment it out.
-    if (autoCommand != null) {
-      autoCommand.cancel();
-      autoCommand = null;
-    }
-
-    robotContainer.enterTeleop();
   }
 }
