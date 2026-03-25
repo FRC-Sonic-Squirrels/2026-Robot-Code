@@ -141,8 +141,8 @@
      "val":2.18
     },
     "heading":{
-     "exp":"90 deg",
-     "val":1.5707963267948966
+     "exp":"180 deg",
+     "val":3.141592653589793
     }
    },
    "INTAKE_PREP_DEPOTSIDE":{
@@ -215,6 +215,20 @@
      "val":1.5707963267948966
     }
    },
+   "INTAKE_PREP_OUTPOSTSIDE":{
+    "x":{
+     "exp":"7.49090004 m",
+     "val":7.49090004
+    },
+    "y":{
+     "exp":"1.461920023 m",
+     "val":1.461920023
+    },
+    "heading":{
+     "exp":"2.746801533 rad",
+     "val":2.746801533
+    }
+   },
    "NEAR_TRENCH_ANGLED_DEPOTSIDE":{
     "x":{
      "exp":"6.321 m",
@@ -241,6 +255,20 @@
     "heading":{
      "exp":"-1.570796 rad",
      "val":-1.570796
+    }
+   },
+   "NEAR_TRENCH_OUTPOSTSIDE":{
+    "x":{
+     "exp":"6.51639986 m",
+     "val":6.51639986
+    },
+    "y":{
+     "exp":"1.072119832 m",
+     "val":1.072119832
+    },
+    "heading":{
+     "exp":"90 deg",
+     "val":1.5707963267948966
     }
    },
    "OUTPOST_GETOUT":{
@@ -283,6 +311,20 @@
     "heading":{
      "exp":"-2.147171977 rad",
      "val":-2.147171977
+    }
+   },
+   "RIGHT_OVER_BUMP_OUTPOSTSIDE":{
+    "x":{
+     "exp":"5.77578 m",
+     "val":5.77578
+    },
+    "y":{
+     "exp":"2.57285 m",
+     "val":2.57285
+    },
+    "heading":{
+     "exp":"2.11544708 rad",
+     "val":2.11544708
     }
    },
    "SHOOT_DEPOT_SIDE":{
