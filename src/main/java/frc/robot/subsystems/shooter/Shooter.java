@@ -189,11 +189,11 @@ public class Shooter extends SubsystemBase {
       hood.closedLoopMaxVelocityConstraint.initDefault(10.0);
       hood.closedLoopMaxAccelerationConstraint.initDefault(5.0);
 
-      flywheel.KP.initDefault(0.1);
-      flywheel.KI.initDefault(0.8);
-      flywheel.KD.initDefault(0.01);
-      flywheel.KV.initDefault(0.0);
-      flywheel.KS.initDefault(0.0);
+      flywheel.KP.initDefault(0.3);
+      flywheel.KI.initDefault(0.0);
+      flywheel.KD.initDefault(0.0);
+      flywheel.KV.initDefault(0.08);
+      flywheel.KS.initDefault(0.25);
       flywheel.closedLoopMaxAccelerationConstraint.initDefault(1000.0);
 
       kicker.KP.initDefault(0.1);
