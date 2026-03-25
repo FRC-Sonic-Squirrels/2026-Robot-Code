@@ -229,6 +229,20 @@
      "val":2.746801533
     }
    },
+   "INTAKE_TRUEMID":{
+    "x":{
+     "exp":"7.8 m",
+     "val":7.8
+    },
+    "y":{
+     "exp":"4.07357978 m",
+     "val":4.07357978
+    },
+    "heading":{
+     "exp":"180 deg",
+     "val":3.141592653589793
+    }
+   },
    "NEAR_TRENCH_ANGLED_DEPOTSIDE":{
     "x":{
      "exp":"6.321 m",
@@ -269,6 +283,20 @@
     "heading":{
      "exp":"90 deg",
      "val":1.5707963267948966
+    }
+   },
+   "OUTPOST":{
+    "x":{
+     "exp":"0.61 m",
+     "val":0.61
+    },
+    "y":{
+     "exp":"0.6823 m",
+     "val":0.6823
+    },
+    "heading":{
+     "exp":"0 deg",
+     "val":0.0
     }
    },
    "OUTPOST_GETOUT":{
