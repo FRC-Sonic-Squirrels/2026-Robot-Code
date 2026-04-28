@@ -26,6 +26,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ConditionalCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
+import frc.lib.constants.CTRE.TunerConstants;
 import frc.lib.team2930.*;
 import frc.lib.team2930.commands.RunsWhenDisabledInstantCommand;
 import frc.lib.team6328.LoggedTunableNumber;
@@ -42,6 +43,7 @@ import frc.robot.commands.drive.WheelRadiusCharacterization;
 import frc.robot.configs.RobotConfig;
 import frc.robot.configs.RobotConfig2026;
 import frc.robot.configs.SimulatorRobotConfig;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.LED;
 import frc.robot.subsystems.LED.BaseRobotState;
 import frc.robot.subsystems.LED.RobotState;
@@ -85,16 +87,17 @@ public class RobotContainer {
   public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
   // Subsystems
-  private final Drivetrain          drivetrain;
-  private final DrivetrainWrapper   drivetrainWrapper;
-  private final AprilTagFieldLayout aprilTagLayout;
-  private final Vision              vision;
-  private final Intake              rightIntake;
-  private final Intake              leftIntake;
-  private final LED                 led;
-  private final Climber             climber;
-  private final Hopper              hopper;
-  private final Shooter             shooter;
+  private final Drivetrain              drivetrain;
+  private final CommandSwerveDrivetrain CTREDrivetrain;
+  private final DrivetrainWrapper       drivetrainWrapper;
+  private final AprilTagFieldLayout     aprilTagLayout;
+  private final Vision                  vision;
+  private final Intake                  rightIntake;
+  private final Intake                  leftIntake;
+  private final LED                     led;
+  private final Climber                 climber;
+  private final Hopper                  hopper;
+  private final Shooter                 shooter;
 
   // Controllers
   private final XboxControllerWrapper driverController   = new XboxControllerWrapper(0);
@@ -176,6 +179,8 @@ public class RobotContainer {
     var minPivotAngle      = Constants.IntakeConstants.PivotConstants.MIN_PIVOT_ANGLE;
     var maxPivotAngleLeft  = Constants.IntakeConstants.PivotConstants.MAX_PIVOT_ANGLE_LEFT;
     var maxPivotAngleRight = Constants.IntakeConstants.PivotConstants.MAX_PIVOT_ANGLE_RIGHT;
+
+    CTREDrivetrain = TunerConstants.createDrivetrain();
 
     if (mode == Mode.REPLAY) {
       drivetrain = new Drivetrain(config, new GyroIO.Fake(), new GyroIO.Fake(), config.getReplaySwerveModuleObjects(),
@@ -314,7 +319,7 @@ public class RobotContainer {
       }
     }
 
-    drivetrainWrapper = new DrivetrainWrapper(drivetrain);
+    drivetrainWrapper = new DrivetrainWrapper(drivetrain, CTREDrivetrain);
 
     flipAutoChooser.addDefaultOption("No", false);
     flipAutoChooser.addOption("Yes", true);

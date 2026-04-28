@@ -1,5 +1,8 @@
 package frc.robot.subsystems.swerve;
 
+import com.ctre.phoenix6.swerve.SwerveRequest;
+import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
+
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
@@ -12,6 +15,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
+import frc.robot.subsystems.CommandSwerveDrivetrain;
 
 public class DrivetrainWrapper {
   private final String ROOT_TABLE = "DrivetrainWrapper";
@@ -32,18 +36,27 @@ public class DrivetrainWrapper {
 
     @TunableEntry(defaultValue = 720.0)
     public LoggedTunableNumber maxRotateSpeedPercentDegreesPerSecond;
+
+    @TunableEntry(defaultValue = 1.0)
+    public LoggedTunableNumber useCTREDrive;
   }
 
   private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
 
-  private final Drivetrain drivetrain;
+  private final Drivetrain              drivetrain;
+  private final CommandSwerveDrivetrain CTREDrivetrain;
 
   private ChassisSpeeds chassisSpeedsBase = new ChassisSpeeds();
   private ChassisSpeeds chassisSpeedsOverride;
   private double        omegaOverride     = Double.NaN;
 
-  public DrivetrainWrapper(Drivetrain drivetrain) {
-    this.drivetrain = drivetrain;
+  private final SwerveRequest.FieldCentric drive;
+
+  public DrivetrainWrapper(Drivetrain drivetrain, CommandSwerveDrivetrain CTREDrivetrain) {
+    this.drivetrain     = drivetrain;
+    this.CTREDrivetrain = CTREDrivetrain;
+    drive               = new SwerveRequest.FieldCentric().withDeadband(0.0).withRotationalDeadband(0.0)
+        .withDriveRequestType(DriveRequestType.Velocity);
   }
 
   /** Updated periodically, updates swerve state. */
@@ -93,7 +106,12 @@ public class DrivetrainWrapper {
 
     logs.chassisSpeeds.info(chassisSpeeds);
 
-    drivetrain.runVelocity(chassisSpeeds, prioritizeRotation, chassisSpeedsOverride != null);
+    if (!useCTREDrive()) {
+      drivetrain.runVelocity(chassisSpeeds, prioritizeRotation, chassisSpeedsOverride != null);
+    } else {
+      CTREDrivetrain.setControl(drive.withVelocityX(chassisSpeeds.vxMetersPerSecond)
+          .withVelocityY(chassisSpeeds.vyMetersPerSecond).withRotationalRate(chassisSpeeds.omegaRadiansPerSecond));
+    }
 
     var pose1 = getHubPoseEstimatorPose(false);
     var pose2 = getHubPoseEstimatorPose(true);
@@ -151,19 +169,29 @@ public class DrivetrainWrapper {
   }
 
   public SysIdRoutine.Mechanism getSysIdMechanism() {
+    if (useCTREDrive()) {
+      // FIXME: This does it's own sysId Stuff
+      return null;// CTREDrivetrain.sysIdDynamic(SysIdRoutine.Direction.kForward);
+    }
     // No log consumer, since data is recorded by AdvantageKit
     return new SysIdRoutine.Mechanism((voltage) -> drivetrain.runCharacterizationVolts(voltage.in(Units.Volts)), null,
         drivetrain);
   }
 
   public void setPose(Pose2d pose) {
+    if (useCTREDrive()) {
+      CTREDrivetrain.resetPose(pose);
+    }
     drivetrain.setPose(pose);
   }
 
   // Getters
 
-  public Subsystem getRequirements() {
-    return drivetrain;
+  public Subsystem[] getRequirements() {
+    return new Subsystem[] {
+        drivetrain,
+        CTREDrivetrain
+    };
   }
 
   public Pose2d getHubPoseEstimatorPose(boolean prioritizeGyro) {
@@ -176,6 +204,9 @@ public class DrivetrainWrapper {
   }
 
   public double getVisionStaleness() {
+    if (useCTREDrive()) {
+      return CTREDrivetrain.getVisionStaleness();
+    }
     return drivetrain.getHubVisionStaleness();
   }
 
@@ -188,30 +219,55 @@ public class DrivetrainWrapper {
   }
 
   public Pose2d getFieldRelativeVelocities() {
+    if (useCTREDrive()) {
+      return CTREDrivetrain.getFieldRelativeVelocities();
+    }
     return drivetrain.getFieldRelativeVelocities();
   }
 
   public Pose2d getRobotCentricVelocities() {
+    if (useCTREDrive()) {
+      return CTREDrivetrain.getFieldRelativeVelocities();
+    }
     return drivetrain.getRobotCentricVelocities();
   }
 
   public Rotation2d getRotationGyroOnly() {
+    if (useCTREDrive()) {
+      return CTREDrivetrain.getRotationGyroOnly();
+    }
     return drivetrain.getRotationGyroOnly();
   }
 
   public Angle[] getModuleRotations() {
+    if (useCTREDrive()) {
+      return CTREDrivetrain.getModuleDriveRotations();
+    }
     return drivetrain.getModuleDriveRotations();
   }
 
   public ChassisSpeeds getCurrentRobotRelativeChassisSpeeds() {
+    if (useCTREDrive()) {
+      return CTREDrivetrain.getChassisSpeeds();
+    }
     return drivetrain.getChassisSpeeds();
   }
 
   public Pose2d getRawOdometryPose() {
+    if (useCTREDrive()) {
+      return CTREDrivetrain.getRawOdometryPose();
+    }
     return drivetrain.getRawOdometryPose();
   }
 
   public double getLinearVel() {
+    if (useCTREDrive()) {
+      return CTREDrivetrain.getState().Speeds.vxMetersPerSecond;
+    }
     return drivetrain.getLinearVel();
+  }
+
+  public boolean useCTREDrive() {
+    return tunables.useCTREDrive.get() != 0.0;
   }
 }

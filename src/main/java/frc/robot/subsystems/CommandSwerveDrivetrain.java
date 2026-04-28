@@ -12,10 +12,14 @@ import com.ctre.phoenix6.swerve.SwerveModuleConstants;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
 import edu.wpi.first.math.Matrix;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.Notifier;
@@ -36,6 +40,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   private static final double kSimLoopPeriod = 0.004; // 4 ms
   private Notifier            m_simNotifier  = null;
   private double              m_lastSimTime;
+
+  private double       lastVisionEstimateTime;
+  private LinearFilter linearVel = LinearFilter.movingAverage(3);
 
   /* Blue alliance sees forward as 0 degrees (toward red alliance wall) */
   private static final Rotation2d kBlueAlliancePerspectiveRotation = Rotation2d.kZero;
@@ -242,6 +249,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
    */
   @Override
   public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds) {
+    lastVisionEstimateTime = timestampSeconds;
     super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds));
   }
 
@@ -264,6 +272,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   @Override
   public void addVisionMeasurement(Pose2d visionRobotPoseMeters, double timestampSeconds,
       Matrix<N3, N1> visionMeasurementStdDevs) {
+    lastVisionEstimateTime = timestampSeconds;
     super.addVisionMeasurement(visionRobotPoseMeters, Utils.fpgaToCurrentTime(timestampSeconds),
         visionMeasurementStdDevs);
   }
@@ -278,5 +287,46 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
   @Override
   public Optional<Pose2d> samplePoseAt(double timestampSeconds) {
     return super.samplePoseAt(Utils.fpgaToCurrentTime(timestampSeconds));
+  }
+
+  public double getVisionStaleness() {
+    return lastVisionEstimateTime;
+  }
+
+  public ChassisSpeeds getChassisSpeeds() {
+    return getKinematics().toChassisSpeeds(getState().ModuleStates);
+  }
+
+  public Pose2d getFieldRelativeVelocities() {
+    Translation2d translation = new Translation2d(getChassisSpeeds().vxMetersPerSecond,
+        getChassisSpeeds().vyMetersPerSecond).rotateBy(getState().RawHeading);
+    return new Pose2d(translation, new Rotation2d(getChassisSpeeds().omegaRadiansPerSecond));
+  }
+
+  public Pose2d getRobotCentricVelocities() {
+    Translation2d translation = new Translation2d(getChassisSpeeds().vxMetersPerSecond,
+        getChassisSpeeds().vyMetersPerSecond);
+    return new Pose2d(translation, new Rotation2d(getChassisSpeeds().omegaRadiansPerSecond));
+  }
+
+  public Angle[] getModuleDriveRotations() {
+    Angle[]          rotations = new Angle[4];
+    SwerveDriveState state     = getState();
+    for (int i = 0; i < rotations.length; i++) {
+      rotations[i] = Radians.of(state.ModulePositions[i].angle.getRadians());
+    }
+    return rotations;
+  }
+
+  public Rotation2d getRotationGyroOnly() {
+    return getRawOdometryPose().getRotation();
+  }
+
+  public Pose2d getRawOdometryPose() {
+    return getState().Pose;
+  }
+
+  public double getLinearVel() {
+    return linearVel.calculate(getRobotCentricVelocities().getTranslation().getNorm());
   }
 }
