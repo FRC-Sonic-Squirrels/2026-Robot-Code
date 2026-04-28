@@ -1,6 +1,3 @@
-// Comfort below
-// Note: is there a reason the above comment is here?
-//       I found it but don't understand if it has meaning.
 package frc.robot.subsystems.turret;
 
 import com.ctre.phoenix6.configs.Slot0Configs;

@@ -392,7 +392,7 @@ public class RobotContainer {
     }
 
     if (Constants.RobotMode.isSimBot()) {
-      driverController.registerTrigger(XboxControllerWrapper.Button.a, "Shoot")
+      driverController.registerTrigger(XboxControllerWrapper.Button.a, "Turr") // This is a real word trust
           .react(robotStates.changeRobotGoal(RobotStates.RobotGoal.Shoot, RobotStates.RobotGoal.None));
     }
 
