@@ -234,7 +234,7 @@ public final class Constants {
   }
 
   public static class DIOPorts {
-    public static final int SHOOTER_BEAM_BREAKER_DOI_ID = 8;
+    public static final int TURRET_BEAM_BREAKER_DOI_ID = 8;
   }
 
   public enum ControlMode {
@@ -297,9 +297,9 @@ public final class Constants {
     public static final Distance FOLLOWER_HEIGHT_STOWED = Units.Inches.of(0);
   }
 
-  public static class ShooterConstants {
+  public static class TurretConstants {
 
-    public static final Distance SHOOTER_LENGTH = Units.Inches.of(12.0);
+    public static final Distance TURRET_LENGTH = Units.Inches.of(12.0);
 
     public static class Hood {
 

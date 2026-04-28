@@ -13,7 +13,7 @@ import frc.robot.configs.RobotConfig;
 import frc.robot.subsystems.climber.Climber;
 import frc.robot.subsystems.hopper.Hopper;
 import frc.robot.subsystems.intake.Intake;
-import frc.robot.subsystems.shooter.Shooter;
+import frc.robot.subsystems.turret.Turret;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
 
 public class RobotStates {
@@ -49,11 +49,11 @@ public class RobotStates {
     Lock         (false,  true);
     // @formatter:on
 
-    public final boolean shooterActive;
+    public final boolean turretActive;
     public final boolean climberActive;
 
-    RobotGoal(boolean shooterActive, boolean climberActive) {
-      this.shooterActive = shooterActive;
+    RobotGoal(boolean turretActive, boolean climberActive) {
+      this.turretActive = turretActive;
       this.climberActive = climberActive;
     }
   }
@@ -72,7 +72,7 @@ public class RobotStates {
 
   public static class SubsystemsInUseLogs extends AutoRegisterLoggers {
     public LoggerEntry.Bool intakeInUse;
-    public LoggerEntry.Bool shooterInUse;
+    public LoggerEntry.Bool turretInUse;
   }
 
   public static class Logs extends AutoRegisterLoggers {
@@ -95,7 +95,7 @@ public class RobotStates {
   private final Intake             leftIntake;
   private final Intake             rightIntake;
   private final DrivetrainWrapper  drivetrain;
-  private final Shooter            shooter;
+  private final Turret            turret;
   private final RotateToFaceHelper rotateToFaceHelper;
   private final Hopper             hopper;
   private final Climber            climber;
@@ -105,16 +105,16 @@ public class RobotStates {
 
   private boolean runFlywheelIdle = true;
 
-  public RobotStates(RobotConfig config, Climber climber, Intake leftIntake, Intake rightIntake, Shooter shooter,
+  public RobotStates(RobotConfig config, Climber climber, Intake leftIntake, Intake rightIntake, Turret turret,
       DrivetrainWrapper drivetrain, Hopper hopper) {
     this.config      = config;
     this.leftIntake  = leftIntake;
     this.rightIntake = rightIntake;
     this.drivetrain  = drivetrain;
-    this.shooter     = shooter;
+    this.turret     = turret;
     this.hopper      = hopper;
     this.climber     = climber;
-    shooter.setFlywheelIdleRPMEnabled(runFlywheelIdle);
+    turret.setFlywheelIdleRPMEnabled(runFlywheelIdle);
     rotateToFaceHelper = new RotateToFaceHelper();
   }
 
@@ -135,7 +135,7 @@ public class RobotStates {
       case None:
         drivetrain.resetVelocityOverride();
         drivetrain.resetRotationOverride();
-        shooter.setGoal(Shooter.Goal.Idle);
+        turret.setGoal(Turret.Goal.Idle);
         if (intakeGoal == IntakeGoal.LeftIntake || intakeGoal == IntakeGoal.RightIntake) {
           hopper.setGoal(Hopper.Goal.Shooting);
         } else {
@@ -144,7 +144,7 @@ public class RobotStates {
         climber.setGoal(Climber.Goal.Stowed);
         break;
       case Unjam:
-        shooter.setGoal(Shooter.Goal.Unjamming);
+        turret.setGoal(Turret.Goal.Unjamming);
         hopper.setGoal(Hopper.Goal.Unjamming);
         break;
       case Score:
@@ -183,7 +183,7 @@ public class RobotStates {
         break;
     }
 
-    if (goal.shooterActive) {
+    if (goal.turretActive) {
       shoot();
     } else {
       setRotateToFaceTarget(FieldConstants.HUB_CENTER_POSE.get());
@@ -263,7 +263,7 @@ public class RobotStates {
     var robotPose     = drivetrain.getHubPoseEstimatorPose(true);
     var robotVelocity = drivetrain.getFieldRelativeVelocities();
     var rotateState   = rotateToFaceHelper.periodic(robotPose, robotVelocity);
-    shooter.setDistanceFromTarget(rotateState.distance());
+    turret.setDistanceFromTarget(rotateState.distance());
     return rotateState;
   }
 
@@ -275,7 +275,7 @@ public class RobotStates {
     } else {
       drivetrain.resetRotationOverride();
     }
-    shooter.setFacingTarget(rotateState.withinTolerance());
+    turret.setFacingTarget(rotateState.withinTolerance());
   }
 
   public RobotGoal getRobotGoal() {
@@ -293,7 +293,7 @@ public class RobotStates {
     if (!newGoal.climberActive) {
       drivetrain.resetVelocityOverride();
     }
-    if (!newGoal.shooterActive) {
+    if (!newGoal.turretActive) {
       drivetrain.resetRotationOverride();
     }
 
@@ -361,12 +361,12 @@ public class RobotStates {
 
   public void score() {
     setRotateToFaceTarget(FieldConstants.HUB_CENTER_POSE.get());
-    shooter.setGoal(Shooter.Goal.Scoring);
+    turret.setGoal(Turret.Goal.Scoring);
     hopper.setGoal(Hopper.Goal.Shooting);
   }
 
   public void bumperShot() {
-    shooter.setGoal(Shooter.Goal.BumperShot);
+    turret.setGoal(Turret.Goal.BumperShot);
     hopper.setGoal(Hopper.Goal.Shooting);
   }
 
@@ -374,12 +374,12 @@ public class RobotStates {
     Translation2d target = GeometryUtil.getClosestTranslation(FieldConstants.PASS_AIM_POINTS,
         drivetrain.getHubPoseEstimatorPose(true));
     setRotateToFaceTarget(target);
-    shooter.setGoal(Shooter.Goal.Passing);
+    turret.setGoal(Turret.Goal.Passing);
     hopper.setGoal(Hopper.Goal.Shooting);
   }
 
   public void toggleFlywheelIdle() {
     runFlywheelIdle = !runFlywheelIdle;
-    shooter.setFlywheelIdleRPMEnabled(runFlywheelIdle);
+    turret.setFlywheelIdleRPMEnabled(runFlywheelIdle);
   }
 }

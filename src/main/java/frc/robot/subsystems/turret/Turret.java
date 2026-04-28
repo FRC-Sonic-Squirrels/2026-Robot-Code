@@ -1,4 +1,4 @@
-package frc.robot.subsystems.shooter;
+package frc.robot.subsystems.turret;
 
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.filter.Debouncer.DebounceType;
@@ -13,17 +13,17 @@ import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.Constants.RobotMode.RobotType;
-import frc.robot.Constants.ShooterConstants;
+import frc.robot.Constants.TurretConstants;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class Shooter extends SubsystemBase {
+public class Turret extends SubsystemBase {
   public enum Goal {
     Idle, Scoring, BumperShot, Passing, Stop, Unjamming
   }
 
-  private final String ROOT_TABLE = "Shooter";
+  private final String ROOT_TABLE = "Turret";
 
   private final ExecutionTiming timing = new ExecutionTiming(ROOT_TABLE);
 
@@ -38,7 +38,7 @@ public class Shooter extends SubsystemBase {
     public LoggerEntry.Decimal targetDistance;
     public LoggerEntry.Decimal hoodTarget;
     public LoggerEntry.Bool    facingTarget;
-    public LoggerEntry.Bool    shooterReady;
+    public LoggerEntry.Bool    TurretReady;
     public LoggerEntry.Bool    hoodReady;
     public LoggerEntry.Bool    flywheelReady;
     public LoggerEntry.Bool    flywheelIdleRPM;
@@ -137,8 +137,8 @@ public class Shooter extends SubsystemBase {
 
   private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
 
-  private final ShooterIO        io;
-  private final ShooterIO.Inputs inputs = new ShooterIO.Inputs(logs.group);
+  private final TurretIO        io;
+  private final TurretIO.Inputs inputs = new TurretIO.Inputs(logs.group);
 
   private final TunableInterpolationMap flywheelRpmForHubDistanceMap;
   private final TunableInterpolationMap flywheelRpmForAllianceZoneDistanceMap;
@@ -164,18 +164,18 @@ public class Shooter extends SubsystemBase {
   private boolean  isFacingTarget;
 
   private final Trigger initialStallDetected = new Trigger(
-      () -> inputs.kickerVelocityRPM < ShooterConstants.Kicker.SHOOTING_KICKER_RPM * .6
-          && inputs.kickerCurrentAmps >= ShooterConstants.Kicker.STALL_CURRENT_THRESHOLD)
-      .debounce(ShooterConstants.Kicker.DURATION_TO_CONFIRM_STALL);
+      () -> inputs.kickerVelocityRPM < TurretConstants.Kicker.SHOOTING_KICKER_RPM * .6
+          && inputs.kickerCurrentAmps >= TurretConstants.Kicker.STALL_CURRENT_THRESHOLD)
+      .debounce(TurretConstants.Kicker.DURATION_TO_CONFIRM_STALL);
 
   private final Trigger stallDetected = new Trigger(() -> initialStallDetected.getAsBoolean())
-      .debounce(ShooterConstants.Kicker.DURATION_TO_CONFIRM_UNSTALL, DebounceType.kFalling);
+      .debounce(TurretConstants.Kicker.DURATION_TO_CONFIRM_UNSTALL, DebounceType.kFalling);
 
   private final Trigger persistantStallDetected = new Trigger(() -> kickerStallDetected())
-      .debounce(ShooterConstants.Kicker.DURATION_TO_CONFIRM_PERSISTANT_STALL, DebounceType.kRising);
+      .debounce(TurretConstants.Kicker.DURATION_TO_CONFIRM_PERSISTANT_STALL, DebounceType.kRising);
 
-  /** Creates a new ShooterSubsystem. */
-  public Shooter(ShooterIO io) {
+  /** Creates a new TurretSubsystem. */
+  public Turret(TurretIO io) {
     this.io = io;
 
     var hood     = tunables.hood;
@@ -231,12 +231,12 @@ public class Shooter extends SubsystemBase {
 
     io.setKickerClosedLoopConstants(kicker);
 
-    flywheelRpmForHubDistanceMap          = ShooterConstants.Interpolation.generateFlywheelRpmForHubDistanceMap();
-    flywheelRpmForAllianceZoneDistanceMap = ShooterConstants.Interpolation
+    flywheelRpmForHubDistanceMap          = TurretConstants.Interpolation.generateFlywheelRpmForHubDistanceMap();
+    flywheelRpmForAllianceZoneDistanceMap = TurretConstants.Interpolation
         .generateFlywheelRpmForAllianceZoneDistanceMap();
 
-    hoodAngleForHubDistanceMap          = ShooterConstants.Interpolation.generateHoodAngleForHubDistanceMap();
-    hoodAngleForAllianceZoneDistanceMap = ShooterConstants.Interpolation.generateHoodAngleForAllianceZoneDistanceMap();
+    hoodAngleForHubDistanceMap          = TurretConstants.Interpolation.generateHoodAngleForHubDistanceMap();
+    hoodAngleForAllianceZoneDistanceMap = TurretConstants.Interpolation.generateHoodAngleForAllianceZoneDistanceMap();
   }
 
   @Override
@@ -262,7 +262,7 @@ public class Shooter extends SubsystemBase {
       logs.flywheelRollersDifference.info(inputs.flywheelRPM[1] - inputs.flywheelRPM[0]);
       logs.state.info(goal);
       logs.targetDistance.info(distanceFromTarget.in(Units.Meters));
-      logs.shooterReady.info(isShooterReady());
+      logs.TurretReady.info(isTurretReady());
       logs.hoodReady.info(isHoodReady());
       logs.flywheelReady.info(isFlywheelReady());
       logs.stallDetected.info(stallDetected.getAsBoolean());
@@ -277,7 +277,7 @@ public class Shooter extends SubsystemBase {
           } else {
             setFlywheelRPM(0);
           }
-          setHoodPosition(ShooterConstants.Hood.IDLE_ANGLE_RAD);
+          setHoodPosition(TurretConstants.Hood.IDLE_ANGLE_RAD);
           setKickerVelocity(0);
           break;
 
@@ -286,13 +286,13 @@ public class Shooter extends SubsystemBase {
         case Scoring:
           setFlywheelRPM(getFlywheelRPM(distanceFromTarget));
           setHoodPosition(getHoodAngle(distanceFromTarget));
-          setKickerVelocity(getKickerRPM(isShooterReady()));
+          setKickerVelocity(getKickerRPM(isTurretReady()));
           break;
 
         case BumperShot:
           setFlywheelRPM(getFlywheelRPM(Distance.ofBaseUnits(1.0, Units.Meters)));
           setHoodPosition(getHoodAngle(Distance.ofBaseUnits(1.0, Units.Meters)));
-          setKickerVelocity(getKickerRPM(isShooterReadyCameraless()));
+          setKickerVelocity(getKickerRPM(isTurretReadyCameraless()));
           break;
 
         case Stop:
@@ -302,7 +302,7 @@ public class Shooter extends SubsystemBase {
           break;
 
         case Unjamming:
-          setKickerVelocity(-(ShooterConstants.Kicker.SHOOTING_KICKER_RPM));
+          setKickerVelocity(-(TurretConstants.Kicker.SHOOTING_KICKER_RPM));
           break;
       }
 
@@ -370,7 +370,7 @@ public class Shooter extends SubsystemBase {
       case Scoring -> flywheelRpmForHubDistanceMap.get(distance.in(Units.Meters));
       case BumperShot -> flywheelRpmForHubDistanceMap.get(distance.in(Units.Meters));
       case Passing -> flywheelRpmForAllianceZoneDistanceMap.get(distance.in(Units.Meters));
-      default -> ShooterConstants.Flywheel.IDLE_FLYWHEEL_RPM;
+      default -> TurretConstants.Flywheel.IDLE_FLYWHEEL_RPM;
     };
   }
 
@@ -380,7 +380,7 @@ public class Shooter extends SubsystemBase {
   }
 
   public void resetHoodSensorToHomePosition() {
-    io.resetHoodSensorPosition(ShooterConstants.Hood.MIN_ANGLE_RAD);
+    io.resetHoodSensorPosition(TurretConstants.Hood.MIN_ANGLE_RAD);
   }
 
   public void setFlywheelRPM(double revPerMin) {
@@ -408,14 +408,14 @@ public class Shooter extends SubsystemBase {
       return 0;
     }
     if (kickerStallDetected()) {
-      return ShooterConstants.Kicker.UNJAM_KICKER_RPM;
+      return TurretConstants.Kicker.UNJAM_KICKER_RPM;
     }
     if (shouldMoveUp) {
       switch (goal) {
         case Scoring:
         case Passing:
         case BumperShot:
-          return ShooterConstants.Kicker.SHOOTING_KICKER_RPM;
+          return TurretConstants.Kicker.SHOOTING_KICKER_RPM;
         default:
           return 0;
       }
@@ -452,10 +452,10 @@ public class Shooter extends SubsystemBase {
 
   public boolean isHoodReady() {
     double desiredHoodAngle = getHoodAngle(getDistanceFromTarget()).getDegrees();
-    return Math.abs(inputs.hoodPosition.getDegrees() - desiredHoodAngle) < ShooterConstants.Hood.CORRECT_ANGLE_RANGE;
+    return Math.abs(inputs.hoodPosition.getDegrees() - desiredHoodAngle) < TurretConstants.Hood.CORRECT_ANGLE_RANGE;
   }
 
-  public boolean isShooterReady() {
+  public boolean isTurretReady() {
     boolean isFacingTarget;
     if (goal == Goal.BumperShot) {
       isFacingTarget = true;
@@ -466,7 +466,7 @@ public class Shooter extends SubsystemBase {
     return isFacingTarget && isFlywheelReady() && isHoodReady();
   }
 
-  public boolean isShooterReadyCameraless() {
+  public boolean isTurretReadyCameraless() {
     return isFlywheelReady() && isHoodReady();
   }
 

@@ -1,4 +1,4 @@
-package frc.robot.subsystems.shooter;
+package frc.robot.subsystems.turret;
 
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -6,7 +6,7 @@ import frc.lib.team2930.LoggerGroup;
 import frc.robot.Constants;
 import frc.robot.subsystems.BaseInputs;
 
-public interface ShooterIO {
+public interface TurretIO {
   /** Contains all of the input data received from hardware. */
   class Inputs extends BaseInputs {
     public Rotation2d hoodPosition           = Constants.zeroRotation2d;
@@ -52,7 +52,7 @@ public interface ShooterIO {
   public default void setFlywheelRPM(double revPerMin) {
   }
 
-  public default void setFlywheelClosedLoopConstants(Shooter.FlywheelTunables tunables) {
+  public default void setFlywheelClosedLoopConstants(Turret.FlywheelTunables tunables) {
   }
 
   // Kicker
@@ -60,7 +60,7 @@ public interface ShooterIO {
   public default void setNeutralMode(NeutralModeValue value) {
   }
 
-  public default void setKickerClosedLoopConstants(Shooter.KickerTunables kicker) {
+  public default void setKickerClosedLoopConstants(Turret.KickerTunables kicker) {
   }
 
   public default void setKickerVelocity(double revPerMin) {

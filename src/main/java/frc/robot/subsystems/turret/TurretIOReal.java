@@ -1,4 +1,4 @@
-package frc.robot.subsystems.shooter;
+package frc.robot.subsystems.turret;
 
 import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.StatusSignal;
@@ -14,13 +14,13 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.units.measure.*;
 import frc.robot.Constants;
-import frc.robot.Constants.ShooterConstants;
+import frc.robot.Constants.TurretConstants;
 import frc.robot.subsystems.TalonFXWrapper;
 import frc.robot.configs.RobotConfig2026;
 
 import java.util.function.Consumer;
 
-public class ShooterIOReal implements ShooterIO {
+public class TurretIOReal implements TurretIO {
   private final TalonFXWrapper flywheelLead;
   private final TalonFXWrapper flywheelFollow;
   private final TalonFXWrapper hood;
@@ -56,7 +56,7 @@ public class ShooterIOReal implements ShooterIO {
   private final MotionMagicVelocityVoltage kickerClosedLoop = new MotionMagicVelocityVoltage(0).withEnableFOC(true);
   private double                           kickerTargetRPM;
 
-  public ShooterIOReal(TalonFXWrapper flywheelLead, TalonFXWrapper flywheelFollow, TalonFXWrapper hood,
+  public TurretIOReal(TalonFXWrapper flywheelLead, TalonFXWrapper flywheelFollow, TalonFXWrapper hood,
       TalonFXWrapper kicker) {
     this.flywheelLead   = flywheelLead;
     this.flywheelFollow = flywheelFollow;
@@ -65,28 +65,28 @@ public class ShooterIOReal implements ShooterIO {
 
     // --- flywheel config ---
     flywheelLead.talonFXConfiguration.change((flywheelLeadConfig) -> {
-      flywheelLeadConfig.CurrentLimits.SupplyCurrentLimit       = ShooterConstants.Flywheel.SUPPLY_CURRENT_LIMIT;
+      flywheelLeadConfig.CurrentLimits.SupplyCurrentLimit       = TurretConstants.Flywheel.SUPPLY_CURRENT_LIMIT;
       flywheelLeadConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-      flywheelLeadConfig.CurrentLimits.StatorCurrentLimit       = ShooterConstants.Flywheel.STATOR_CURRENT_LIMIT;
+      flywheelLeadConfig.CurrentLimits.StatorCurrentLimit       = TurretConstants.Flywheel.STATOR_CURRENT_LIMIT;
       flywheelLeadConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
       flywheelLeadConfig.MotorOutput.NeutralMode         = NeutralModeValue.Coast;
       flywheelLeadConfig.MotorOutput.Inverted            = InvertedValue.CounterClockwise_Positive;
-      flywheelLeadConfig.Feedback.SensorToMechanismRatio = ShooterConstants.Flywheel.GEARING;
+      flywheelLeadConfig.Feedback.SensorToMechanismRatio = TurretConstants.Flywheel.GEARING;
 
       flywheelLeadConfig.Voltage.PeakReverseVoltage        = 0.0;
       flywheelLeadConfig.Voltage.SupplyVoltageTimeConstant = 0.02;
     });
 
     flywheelFollow.talonFXConfiguration.change((flywheelFollowerConfig) -> {
-      flywheelFollowerConfig.CurrentLimits.SupplyCurrentLimit       = ShooterConstants.Flywheel.SUPPLY_CURRENT_LIMIT;
+      flywheelFollowerConfig.CurrentLimits.SupplyCurrentLimit       = TurretConstants.Flywheel.SUPPLY_CURRENT_LIMIT;
       flywheelFollowerConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-      flywheelFollowerConfig.CurrentLimits.StatorCurrentLimit       = ShooterConstants.Flywheel.STATOR_CURRENT_LIMIT;
+      flywheelFollowerConfig.CurrentLimits.StatorCurrentLimit       = TurretConstants.Flywheel.STATOR_CURRENT_LIMIT;
       flywheelFollowerConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
       flywheelFollowerConfig.MotorOutput.NeutralMode         = NeutralModeValue.Coast;
       flywheelFollowerConfig.MotorOutput.Inverted            = InvertedValue.Clockwise_Positive;
-      flywheelFollowerConfig.Feedback.SensorToMechanismRatio = ShooterConstants.Flywheel.GEARING;
+      flywheelFollowerConfig.Feedback.SensorToMechanismRatio = TurretConstants.Flywheel.GEARING;
 
       flywheelFollowerConfig.Voltage.PeakReverseVoltage        = 0.0;
       flywheelFollowerConfig.Voltage.SupplyVoltageTimeConstant = 0.02;
@@ -94,21 +94,21 @@ public class ShooterIOReal implements ShooterIO {
 
     // --- hood config ---
     hood.talonFXConfiguration.change((hoodConfig) -> {
-      hoodConfig.Feedback.SensorToMechanismRatio = Constants.ShooterConstants.Hood.GEARING;
+      hoodConfig.Feedback.SensorToMechanismRatio = Constants.TurretConstants.Hood.GEARING;
       hoodConfig.MotorOutput.NeutralMode         = NeutralModeValue.Brake;
       hoodConfig.MotorOutput.Inverted            = InvertedValue.Clockwise_Positive;
 
-      hoodConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Constants.ShooterConstants.Hood.MAX_ANGLE_RAD
+      hoodConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Constants.TurretConstants.Hood.MAX_ANGLE_RAD
           .getRotations();
-      hoodConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = Constants.ShooterConstants.Hood.MIN_ANGLE_RAD
+      hoodConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = Constants.TurretConstants.Hood.MIN_ANGLE_RAD
           .getRotations();
 
       hoodConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
       hoodConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
 
-      hoodConfig.CurrentLimits.SupplyCurrentLimit       = ShooterConstants.Hood.SUPPLY_CURRENT_LIMIT;
+      hoodConfig.CurrentLimits.SupplyCurrentLimit       = TurretConstants.Hood.SUPPLY_CURRENT_LIMIT;
       hoodConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-      hoodConfig.CurrentLimits.StatorCurrentLimit       = ShooterConstants.Hood.STATOR_CURRENT_LIMIT;
+      hoodConfig.CurrentLimits.StatorCurrentLimit       = TurretConstants.Hood.STATOR_CURRENT_LIMIT;
       hoodConfig.CurrentLimits.StatorCurrentLimitEnable = true;
     });
 
@@ -116,14 +116,14 @@ public class ShooterIOReal implements ShooterIO {
 
     // -- kicker config --
     kicker.talonFXConfiguration.change((kickerConfig) -> {
-      kickerConfig.CurrentLimits.SupplyCurrentLimit       = ShooterConstants.Kicker.SUPPLY_CURRENT_LIMIT;
+      kickerConfig.CurrentLimits.SupplyCurrentLimit       = TurretConstants.Kicker.SUPPLY_CURRENT_LIMIT;
       kickerConfig.CurrentLimits.SupplyCurrentLimitEnable = true;
-      kickerConfig.CurrentLimits.StatorCurrentLimit       = ShooterConstants.Kicker.STATOR_CURRENT_LIMIT;
+      kickerConfig.CurrentLimits.StatorCurrentLimit       = TurretConstants.Kicker.STATOR_CURRENT_LIMIT;
       kickerConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
       kickerConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
 
-      kickerConfig.Feedback.SensorToMechanismRatio = ShooterConstants.Kicker.GEARING;
+      kickerConfig.Feedback.SensorToMechanismRatio = TurretConstants.Kicker.GEARING;
     });
 
     var flywheelLeadIO   = flywheelLead.io;
@@ -166,7 +166,7 @@ public class ShooterIOReal implements ShooterIO {
     hoodIO.optimizeBusUtilization();
     kickerIO.optimizeBusUtilization();
 
-    flywheelFollowIO.setControl(new Follower(RobotConfig2026.CanIDs.SHOOTER_LEAD_CAN_ID, MotorAlignmentValue.Opposed));
+    flywheelFollowIO.setControl(new Follower(RobotConfig2026.CanIDs.TURRET_LEAD_CAN_ID, MotorAlignmentValue.Opposed));
 
     refreshSet = new BaseStatusSignal[] {
         hoodPosition,
@@ -259,7 +259,7 @@ public class ShooterIOReal implements ShooterIO {
   }
 
   @Override
-  public void setFlywheelClosedLoopConstants(Shooter.FlywheelTunables tunables) {
+  public void setFlywheelClosedLoopConstants(Turret.FlywheelTunables tunables) {
     Consumer<Slot0Configs> slot0ConfigsSetter = (pidConfig) -> {
       pidConfig.kP = tunables.KP.get();
       pidConfig.kI = tunables.KI.get();
@@ -287,7 +287,7 @@ public class ShooterIOReal implements ShooterIO {
   }
 
   @Override
-  public void setKickerClosedLoopConstants(Shooter.KickerTunables tunables) {
+  public void setKickerClosedLoopConstants(Turret.KickerTunables tunables) {
     kicker.slot0Configs.change((pidConfig) -> {
       pidConfig.kP = tunables.KP.get();
       pidConfig.kI = tunables.KI.get();

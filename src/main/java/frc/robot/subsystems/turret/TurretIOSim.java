@@ -1,5 +1,7 @@
 // Comfort below
-package frc.robot.subsystems.shooter;
+// Note: is there a reason the above comment is here?
+//       I found it but don't understand if it has meaning.
+package frc.robot.subsystems.turret;
 
 import com.ctre.phoenix6.configs.Slot0Configs;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -18,19 +20,19 @@ import frc.lib.team2930.TalonFXArmSim;
 import frc.lib.team2930.TalonFXSim;
 import frc.robot.Constants;
 
-public class ShooterIOSim implements ShooterIO {
+public class TurretIOSim implements TurretIO {
   private TalonFXArmSim hoodArmSim = new TalonFXArmSim(
-      new SingleJointedArmSim(DCMotor.getFalcon500Foc(1), Constants.ShooterConstants.Hood.GEARING,
-          Constants.ShooterConstants.Hood.MOI, Constants.ShooterConstants.SHOOTER_LENGTH.in(Units.Meters),
-          Constants.ShooterConstants.Hood.MIN_ANGLE_RAD.getRadians(),
-          Constants.ShooterConstants.Hood.MAX_ANGLE_RAD.getRadians(), false,
-          Constants.ShooterConstants.Hood.SIM_INITIAL_ANGLE));
+      new SingleJointedArmSim(DCMotor.getFalcon500Foc(1), Constants.TurretConstants.Hood.GEARING,
+          Constants.TurretConstants.Hood.MOI, Constants.TurretConstants.TURRET_LENGTH.in(Units.Meters),
+          Constants.TurretConstants.Hood.MIN_ANGLE_RAD.getRadians(),
+          Constants.TurretConstants.Hood.MAX_ANGLE_RAD.getRadians(), false,
+          Constants.TurretConstants.Hood.SIM_INITIAL_ANGLE));
 
   private final TalonFXSim flywheelMotorSim = new TalonFXSim(DCMotor.getKrakenX60Foc(2),
-      Constants.ShooterConstants.Flywheel.GEARING, Constants.ShooterConstants.Flywheel.MOI);
+      Constants.TurretConstants.Flywheel.GEARING, Constants.TurretConstants.Flywheel.MOI);
 
   private final TalonFXSim kickerMotorSim = new TalonFXSim(DCMotor.getKrakenX60Foc(1),
-      Constants.ShooterConstants.Kicker.GEARING, Constants.ShooterConstants.Kicker.MOI);
+      Constants.TurretConstants.Kicker.GEARING, Constants.TurretConstants.Kicker.MOI);
 
   private final ProfiledPIDController pivotFeedback = new ProfiledPIDController(50.0, 0, 0.0, new Constraints(5, 10.0));
 
@@ -48,7 +50,7 @@ public class ShooterIOSim implements ShooterIO {
 
   private VelocityVoltage kickerClosedLoopControl = new VelocityVoltage(0);
 
-  public ShooterIOSim() {
+  public TurretIOSim() {
   }
 
   @Override
@@ -65,7 +67,7 @@ public class ShooterIOSim implements ShooterIO {
   }
 
   @Override
-  public void setKickerClosedLoopConstants(Shooter.KickerTunables tunables) {
+  public void setKickerClosedLoopConstants(Turret.KickerTunables tunables) {
     TalonFXConfiguration config       = new TalonFXConfiguration();
     Slot0Configs         slot0Configs = new Slot0Configs();
 
@@ -110,7 +112,7 @@ public class ShooterIOSim implements ShooterIO {
   }
 
   @Override
-  public void setFlywheelClosedLoopConstants(Shooter.FlywheelTunables tunables) {
+  public void setFlywheelClosedLoopConstants(Turret.FlywheelTunables tunables) {
     TalonFXConfiguration config       = new TalonFXConfiguration();
     Slot0Configs         slot0Configs = new Slot0Configs();
 

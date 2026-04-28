@@ -118,8 +118,8 @@ public class SimulatorRobotConfig extends RobotConfig {
       .withSupplyCurrentLimit(25).withSupplyCurrentLimitEnable(true);
 
   // ---- VISION CAMERA TRANSFORM3d's -------
-  public final CameraConfiguration SHOOTER_SIDE_LEFT;
-  public final CameraConfiguration SHOOTER_SIDE_RIGHT;
+  public final CameraConfiguration TURRET_SIDE_LEFT;
+  public final CameraConfiguration TURRET_SIDE_RIGHT;
 
   private final com.pathplanner.lib.config.RobotConfig PATH_PLANNER_CONFIG = new com.pathplanner.lib.config.RobotConfig(
       Units.Kilogram.of(115), Units.KilogramSquareMeters.of(5.3598424503),
@@ -128,27 +128,27 @@ public class SimulatorRobotConfig extends RobotConfig {
           Units.Amps.of(DRIVE_TALON_CURRENT_LIMIT_CONFIGS.SupplyCurrentLimit), 1),
       getModuleTranslations());
 
-  public final String SHOOTER_SIDE_LEFT_CAMERA_NAME  = "1_Shooter_Left_See3Cam";
-  public final String SHOOTER_SIDE_RIGHT_CAMERA_NAME = "2_Shooter_Right_See3Cam";
+  public final String TURRET_SIDE_LEFT_CAMERA_NAME  = "1_Turret_Left_See3Cam";
+  public final String TURRET_SIDE_RIGHT_CAMERA_NAME = "2_Turret_Right_See3Cam";
 
   public final AprilTagFields APRIL_TAG_FIELD = AprilTagFields.k2026RebuiltWelded;
 
   public SimulatorRobotConfig() {
-    SHOOTER_SIDE_LEFT       = new CameraConfiguration();
-    SHOOTER_SIDE_LEFT.x     = Units.Inches.of(-0.62273);
-    SHOOTER_SIDE_LEFT.y     = Units.Inches.of(9.625919);
-    SHOOTER_SIDE_LEFT.z     = Units.Inches.of(22.21467);
-    SHOOTER_SIDE_LEFT.roll  = Units.Degrees.of(0);
-    SHOOTER_SIDE_LEFT.pitch = Units.Degrees.of(0);
-    SHOOTER_SIDE_LEFT.yaw   = Units.Degrees.of(225.0);
+    TURRET_SIDE_LEFT       = new CameraConfiguration();
+    TURRET_SIDE_LEFT.x     = Units.Inches.of(-0.62273);
+    TURRET_SIDE_LEFT.y     = Units.Inches.of(9.625919);
+    TURRET_SIDE_LEFT.z     = Units.Inches.of(22.21467);
+    TURRET_SIDE_LEFT.roll  = Units.Degrees.of(0);
+    TURRET_SIDE_LEFT.pitch = Units.Degrees.of(0);
+    TURRET_SIDE_LEFT.yaw   = Units.Degrees.of(225.0);
 
-    SHOOTER_SIDE_RIGHT       = new CameraConfiguration();
-    SHOOTER_SIDE_RIGHT.x     = Units.Inches.of(-0.62273);
-    SHOOTER_SIDE_RIGHT.y     = Units.Inches.of(-9.625919);
-    SHOOTER_SIDE_RIGHT.z     = Units.Inches.of(22.21467);
-    SHOOTER_SIDE_RIGHT.roll  = Units.Degrees.of(0);
-    SHOOTER_SIDE_RIGHT.pitch = Units.Degrees.of(0);
-    SHOOTER_SIDE_RIGHT.yaw   = Units.Degrees.of(135.0);
+    TURRET_SIDE_RIGHT       = new CameraConfiguration();
+    TURRET_SIDE_RIGHT.x     = Units.Inches.of(-0.62273);
+    TURRET_SIDE_RIGHT.y     = Units.Inches.of(-9.625919);
+    TURRET_SIDE_RIGHT.z     = Units.Inches.of(22.21467);
+    TURRET_SIDE_RIGHT.roll  = Units.Degrees.of(0);
+    TURRET_SIDE_RIGHT.pitch = Units.Degrees.of(0);
+    TURRET_SIDE_RIGHT.yaw   = Units.Degrees.of(135.0);
   }
 
   /*
@@ -189,16 +189,16 @@ public class SimulatorRobotConfig extends RobotConfig {
   public VisionModuleConfiguration[] getVisionModuleObjects() {
 
     return new VisionModuleConfiguration[] {
-        VisionModuleConfiguration.build(SHOOTER_SIDE_LEFT_CAMERA_NAME, SHOOTER_SIDE_LEFT),
-        VisionModuleConfiguration.build(SHOOTER_SIDE_RIGHT_CAMERA_NAME, SHOOTER_SIDE_RIGHT)
+        VisionModuleConfiguration.build(TURRET_SIDE_LEFT_CAMERA_NAME, TURRET_SIDE_LEFT),
+        VisionModuleConfiguration.build(TURRET_SIDE_RIGHT_CAMERA_NAME, TURRET_SIDE_RIGHT)
     };
   }
 
   @Override
   public VisionModuleConfiguration[] getReplayVisionModules() {
     return new VisionModuleConfiguration[] {
-        VisionModuleConfiguration.buildReplayStub(SHOOTER_SIDE_LEFT_CAMERA_NAME, SHOOTER_SIDE_LEFT),
-        VisionModuleConfiguration.buildReplayStub(SHOOTER_SIDE_RIGHT_CAMERA_NAME, SHOOTER_SIDE_RIGHT)
+        VisionModuleConfiguration.buildReplayStub(TURRET_SIDE_LEFT_CAMERA_NAME, TURRET_SIDE_LEFT),
+        VisionModuleConfiguration.buildReplayStub(TURRET_SIDE_RIGHT_CAMERA_NAME, TURRET_SIDE_RIGHT)
     };
   }
 

@@ -114,10 +114,10 @@ public class RobotConfig2026 extends RobotConfig {
     public static final int INTAKE_RIGHT_PIVOT_CAN_ID  = 47;
     public static final int INTAKE_RIGHT_ROLLER_CAN_ID = 48;
 
-    public static final int SHOOTER_LEAD_CAN_ID   = 53;
-    public static final int SHOOTER_FOLLOW_CAN_ID = 28;
-    public static final int SHOOTER_HOOD_CAN_ID   = 62;
-    public static final int SHOOTER_KICKER_CAN_ID = 60;
+    public static final int TURRET_LEAD_CAN_ID   = 53;
+    public static final int TURRET_FOLLOW_CAN_ID = 28;
+    public static final int TURRET_HOOD_CAN_ID   = 62;
+    public static final int TURRET_KICKER_CAN_ID = 60;
 
     public static final int HOPPER_ROLLER_CAN_ID = 61;
   }
@@ -202,30 +202,30 @@ public class RobotConfig2026 extends RobotConfig {
       getModuleTranslations());
 
   // ---- VISION -------
-  public final CameraConfiguration SHOOTER_SIDE_LEFT;
-  public final CameraConfiguration SHOOTER_SIDE_RIGHT;
+  public final CameraConfiguration TURRET_SIDE_LEFT;
+  public final CameraConfiguration TURRET_SIDE_RIGHT;
 
-  public final String SHOOTER_SIDE_LEFT_CAMERA_NAME  = "1_Shooter_Left_See3Cam";
-  public final String SHOOTER_SIDE_RIGHT_CAMERA_NAME = "2_Shooter_Right_See3Cam";
+  public final String TURRET_SIDE_LEFT_CAMERA_NAME  = "1_Turret_Left_See3Cam";
+  public final String TURRET_SIDE_RIGHT_CAMERA_NAME = "2_Turret_Right_See3Cam";
 
   public final AprilTagFields APRIL_TAG_FIELD = AprilTagFields.k2026RebuiltWelded;
 
   public RobotConfig2026() {
-    SHOOTER_SIDE_LEFT       = new CameraConfiguration();
-    SHOOTER_SIDE_LEFT.x     = Units.Inches.of(12.5);
-    SHOOTER_SIDE_LEFT.y     = Units.Inches.of(6.5);
-    SHOOTER_SIDE_LEFT.z     = Units.Inches.of(10);
-    SHOOTER_SIDE_LEFT.roll  = Units.Degree.of(0.0);
-    SHOOTER_SIDE_LEFT.pitch = Units.Degree.of(-25.0);
-    SHOOTER_SIDE_LEFT.yaw   = Units.Degree.of(-19);
+    TURRET_SIDE_LEFT       = new CameraConfiguration();
+    TURRET_SIDE_LEFT.x     = Units.Inches.of(12.5);
+    TURRET_SIDE_LEFT.y     = Units.Inches.of(6.5);
+    TURRET_SIDE_LEFT.z     = Units.Inches.of(10);
+    TURRET_SIDE_LEFT.roll  = Units.Degree.of(0.0);
+    TURRET_SIDE_LEFT.pitch = Units.Degree.of(-25.0);
+    TURRET_SIDE_LEFT.yaw   = Units.Degree.of(-19);
 
-    SHOOTER_SIDE_RIGHT       = new CameraConfiguration();
-    SHOOTER_SIDE_RIGHT.x     = Units.Inches.of(12.5);
-    SHOOTER_SIDE_RIGHT.y     = Units.Inches.of(-6.5);
-    SHOOTER_SIDE_RIGHT.z     = Units.Inches.of(10);
-    SHOOTER_SIDE_RIGHT.roll  = Units.Degree.of(0.0);
-    SHOOTER_SIDE_RIGHT.pitch = Units.Degree.of(-25.0);
-    SHOOTER_SIDE_RIGHT.yaw   = Units.Degree.of(19);
+    TURRET_SIDE_RIGHT       = new CameraConfiguration();
+    TURRET_SIDE_RIGHT.x     = Units.Inches.of(12.5);
+    TURRET_SIDE_RIGHT.y     = Units.Inches.of(-6.5);
+    TURRET_SIDE_RIGHT.z     = Units.Inches.of(10);
+    TURRET_SIDE_RIGHT.roll  = Units.Degree.of(0.0);
+    TURRET_SIDE_RIGHT.pitch = Units.Degree.of(-25.0);
+    TURRET_SIDE_RIGHT.yaw   = Units.Degree.of(19);
   }
 
   /*
@@ -255,16 +255,16 @@ public class RobotConfig2026 extends RobotConfig {
   @Override
   public VisionModuleConfiguration[] getVisionModuleObjects() {
     return new VisionModuleConfiguration[] {
-        VisionModuleConfiguration.build(SHOOTER_SIDE_LEFT_CAMERA_NAME, SHOOTER_SIDE_LEFT),
-        VisionModuleConfiguration.build(SHOOTER_SIDE_RIGHT_CAMERA_NAME, SHOOTER_SIDE_RIGHT)
+        VisionModuleConfiguration.build(TURRET_SIDE_LEFT_CAMERA_NAME, TURRET_SIDE_LEFT),
+        VisionModuleConfiguration.build(TURRET_SIDE_RIGHT_CAMERA_NAME, TURRET_SIDE_RIGHT)
     };
   }
 
   @Override
   public VisionModuleConfiguration[] getReplayVisionModules() {
     return new VisionModuleConfiguration[] {
-        VisionModuleConfiguration.buildReplayStub(SHOOTER_SIDE_LEFT_CAMERA_NAME, SHOOTER_SIDE_LEFT),
-        VisionModuleConfiguration.buildReplayStub(SHOOTER_SIDE_RIGHT_CAMERA_NAME, SHOOTER_SIDE_RIGHT)
+        VisionModuleConfiguration.buildReplayStub(TURRET_SIDE_LEFT_CAMERA_NAME, TURRET_SIDE_LEFT),
+        VisionModuleConfiguration.buildReplayStub(TURRET_SIDE_RIGHT_CAMERA_NAME, TURRET_SIDE_RIGHT)
     };
   }
 

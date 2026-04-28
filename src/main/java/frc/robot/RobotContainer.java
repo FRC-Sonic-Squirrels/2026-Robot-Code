@@ -51,10 +51,10 @@ import frc.robot.subsystems.hopper.HopperIO;
 import frc.robot.subsystems.hopper.HopperIOReal;
 import frc.robot.subsystems.hopper.HopperIOSim;
 import frc.robot.subsystems.intake.*;
-import frc.robot.subsystems.shooter.Shooter;
-import frc.robot.subsystems.shooter.ShooterIO;
-import frc.robot.subsystems.shooter.ShooterIOReal;
-import frc.robot.subsystems.shooter.ShooterIOSim;
+import frc.robot.subsystems.turret.Turret;
+import frc.robot.subsystems.turret.TurretIO;
+import frc.robot.subsystems.turret.TurretIOReal;
+import frc.robot.subsystems.turret.TurretIOSim;
 import frc.robot.subsystems.swerve.Drivetrain;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
 import frc.robot.subsystems.swerve.gyro.GyroIO;
@@ -94,7 +94,7 @@ public class RobotContainer {
   private final LED                 led;
   private final Climber             climber;
   private final Hopper              hopper;
-  private final Shooter             shooter;
+  private final Turret             turret;
 
   // Controllers
   private final XboxControllerWrapper driverController   = new XboxControllerWrapper(0);
@@ -168,7 +168,7 @@ public class RobotContainer {
                        };
     var fakeHopperIO   = new HopperIO() {
                        };
-    var fakeShooterIO  = new ShooterIO() {
+    var fakeTurretIO  = new TurretIO() {
                        };
     var fakeIntakeIO   = new IntakeIO() {
                        };
@@ -191,7 +191,7 @@ public class RobotContainer {
 
       climber = new Climber(fakeElevatorIO, fakeElevatorIO, 0, Rotation2d.kZero, Rotation2d.kZero);
       hopper  = new Hopper(fakeHopperIO);
-      shooter = new Shooter(fakeShooterIO);
+      turret = new Turret(fakeTurretIO);
 
       led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
     } else { // REAL and SIM robots HERE
@@ -210,9 +210,9 @@ public class RobotContainer {
           } else {
             var                         config2       = (SimulatorRobotConfig) config;
             VisionModuleConfiguration[] visionModules = {
-                VisionModuleConfiguration.buildSim(config2.SHOOTER_SIDE_LEFT_CAMERA_NAME, config2.SHOOTER_SIDE_LEFT,
+                VisionModuleConfiguration.buildSim(config2.TURRET_SIDE_LEFT_CAMERA_NAME, config2.TURRET_SIDE_LEFT,
                     config, drivetrain::getHubPoseEstimatorPose),
-                VisionModuleConfiguration.buildSim(config2.SHOOTER_SIDE_RIGHT_CAMERA_NAME, config2.SHOOTER_SIDE_RIGHT,
+                VisionModuleConfiguration.buildSim(config2.TURRET_SIDE_RIGHT_CAMERA_NAME, config2.TURRET_SIDE_RIGHT,
                     config, drivetrain::getHubPoseEstimatorPose),
             };
 
@@ -236,7 +236,7 @@ public class RobotContainer {
           climber = new Climber(new ElevatorIOSim(leaderConfig), new ElevatorIOSim(followerConfig), 0, Rotation2d.kZero,
               Rotation2d.kZero);
           hopper = new Hopper(new HopperIOSim());
-          shooter = new Shooter(new ShooterIOSim());
+          turret = new Turret(new TurretIOSim());
           led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
           break;
 
@@ -277,11 +277,11 @@ public class RobotContainer {
             climber = new Climber(fakeElevatorIO, fakeElevatorIO, 0, Rotation2d.kZero, Rotation2d.kZero);
           }
 
-          shooter = new Shooter(new ShooterIOReal(
-              config.newMotor(RobotConfig2026.CanIDs.SHOOTER_LEAD_CAN_ID, RobotConfig.CANSpeed.CANIVORE),
-              config.newMotor(RobotConfig2026.CanIDs.SHOOTER_FOLLOW_CAN_ID, RobotConfig.CANSpeed.CANIVORE),
-              config.newMotor(RobotConfig2026.CanIDs.SHOOTER_HOOD_CAN_ID, RobotConfig.CANSpeed.CANIVORE),
-              config.newMotor(RobotConfig2026.CanIDs.SHOOTER_KICKER_CAN_ID, RobotConfig.CANSpeed.CANIVORE)));
+          turret = new Turret(new TurretIOReal(
+              config.newMotor(RobotConfig2026.CanIDs.TURRET_LEAD_CAN_ID, RobotConfig.CANSpeed.CANIVORE),
+              config.newMotor(RobotConfig2026.CanIDs.TURRET_FOLLOW_CAN_ID, RobotConfig.CANSpeed.CANIVORE),
+              config.newMotor(RobotConfig2026.CanIDs.TURRET_HOOD_CAN_ID, RobotConfig.CANSpeed.CANIVORE),
+              config.newMotor(RobotConfig2026.CanIDs.TURRET_KICKER_CAN_ID, RobotConfig.CANSpeed.CANIVORE)));
 
           hopper = new Hopper(new HopperIOReal(
               config.newMotor(RobotConfig2026.CanIDs.HOPPER_ROLLER_CAN_ID, RobotConfig.CANSpeed.CANIVORE)));
@@ -306,7 +306,7 @@ public class RobotContainer {
           rightIntake = new Intake(rightIntakeRoot, fakeIntakeIO, minPivotAngle, maxPivotAngleRight);
           climber     = new Climber(fakeElevatorIO, fakeElevatorIO, 0, Rotation2d.kZero, Rotation2d.kZero);
           hopper      = new Hopper(fakeHopperIO);
-          shooter     = new Shooter(fakeShooterIO);
+          turret     = new Turret(fakeTurretIO);
 
           led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
         }
@@ -319,9 +319,9 @@ public class RobotContainer {
     flipAutoChooser.addDefaultOption("No", false);
     flipAutoChooser.addOption("Yes", true);
 
-    var subsystems = new AutosSubsystems(drivetrainWrapper, led, leftIntake, rightIntake, shooter);
+    var subsystems = new AutosSubsystems(drivetrainWrapper, led, leftIntake, rightIntake, turret);
 
-    robotStates = new RobotStates(config, climber, leftIntake, rightIntake, shooter, drivetrainWrapper, hopper);
+    robotStates = new RobotStates(config, climber, leftIntake, rightIntake, turret, drivetrainWrapper, hopper);
 
     autoManager = new AutosManager(subsystems, autoChooser, stringToAutoSupplierMap, () -> {
       var result = flipAutoChooser.get();
@@ -341,7 +341,7 @@ public class RobotContainer {
   private void zeroMech() {
     leftIntake.resetPivotSensorToHomePosition();
     rightIntake.resetPivotSensorToHomePosition();
-    shooter.resetHoodSensorToHomePosition();
+    turret.resetHoodSensorToHomePosition();
     climber.setGoal(Climber.Goal.Stowed);
     led.setRobotState(RobotState.ZERO_SUBSYSTEMS);
 
@@ -484,16 +484,16 @@ public class RobotContainer {
     // ---------- ELASTIC CONTROLS ------------
 
     // Add Reset and Reboot buttons to SmartDashboard
-    SmartDashboard.putData("PV Restart SW 1_Shooter_Left",
+    SmartDashboard.putData("PV Restart SW 1_Turret_Left",
         new RunsWhenDisabledInstantCommand(() -> Vision.restartPhotonVision("10.29.30.13")));
 
-    SmartDashboard.putData("PV REBOOT 1_Shooter_Left",
+    SmartDashboard.putData("PV REBOOT 1_Turret_Left",
         new RunsWhenDisabledInstantCommand(() -> Vision.rebootPhotonVision("10.29.30.13")));
 
-    SmartDashboard.putData("PV Restart SW 2_Shooter_Right",
+    SmartDashboard.putData("PV Restart SW 2_Turret_Right",
         new RunsWhenDisabledInstantCommand(() -> Vision.restartPhotonVision("10.29.30.14")));
 
-    SmartDashboard.putData("PV REBOOT 2_Shooter_Right",
+    SmartDashboard.putData("PV REBOOT 2_Turret_Right",
         new RunsWhenDisabledInstantCommand(() -> Vision.rebootPhotonVision("10.29.30.14")));
 
     SmartDashboard.putData("USE GYRO 1", new RunsWhenDisabledInstantCommand(() -> drivetrain.chooseWhichGyro(false)));
