@@ -103,7 +103,7 @@ public class RobotStates {
   private int     periodicCounter;
   private boolean driveSlow;
 
-  private boolean runFlywheelIdle = true;
+  private boolean runFlywheelIdle = false;
 
   public RobotStates(RobotConfig config, Climber climber, Intake leftIntake, Intake rightIntake, Shooter shooter,
       DrivetrainWrapper drivetrain, Hopper hopper) {

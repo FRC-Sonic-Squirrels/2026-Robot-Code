@@ -13,9 +13,13 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.units.Units;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.lib.team2930.AutoRegisterLoggers;
+import frc.lib.team2930.AutoRegisterTunables;
 import frc.lib.team2930.GeometryUtil;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
+import frc.lib.team2930.TunableEntry;
+import frc.lib.team2930.TunableNumberGroup;
+import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
 import java.util.function.DoubleSupplier;
@@ -32,7 +36,16 @@ public class DrivetrainDefaultTeleopDrive extends Command {
     public LoggerEntry.Struct<Translation2d> linearVelocity;
   }
 
-  public static final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
+  public static class Tunables extends AutoRegisterTunables {
+    @TunableEntry(defaultValue = 10)
+    public LoggedTunableNumber driveSpeedPercent;
+
+    @TunableEntry(defaultValue = 10)
+    public LoggedTunableNumber rotateSpeedPercent;
+  }
+
+  public static final Logs logs     = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
+  private final Tunables   tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
 
   /** Creates a new DrivetrainDefaultTeleopDrive. */
   private final DrivetrainWrapper drivetrain;
@@ -90,9 +103,11 @@ public class DrivetrainDefaultTeleopDrive extends Command {
 
     // Convert to field relative speeds & send command
     ChassisSpeeds chassisSpeeds = new ChassisSpeeds(
-        linearVelocity.getX() * drivetrain.getMaxLinearSpeed().in(Units.MetersPerSecond),
-        linearVelocity.getY() * drivetrain.getMaxLinearSpeed().in(Units.MetersPerSecond),
-        omega * drivetrain.getMaxAngularSpeed().in(Units.RadiansPerSecond));
+        linearVelocity.getX() * drivetrain.getMaxLinearSpeed().in(Units.MetersPerSecond)
+            * tunables.driveSpeedPercent.get() / 100.0,
+        linearVelocity.getY() * drivetrain.getMaxLinearSpeed().in(Units.MetersPerSecond)
+            * tunables.driveSpeedPercent.get() / 100.0,
+        omega * drivetrain.getMaxAngularSpeed().in(Units.RadiansPerSecond) * tunables.rotateSpeedPercent.get() / 100.0);
 
     drivetrain.setVelocity(ChassisSpeeds.fromFieldRelativeSpeeds(chassisSpeeds, drivetrain.getRotationGyroOnly()));
   }

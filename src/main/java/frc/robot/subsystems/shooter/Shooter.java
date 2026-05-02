@@ -145,7 +145,7 @@ public class Shooter extends SubsystemBase {
   private final TunableInterpolationMap hoodAngleForHubDistanceMap;
   private final TunableInterpolationMap hoodAngleForAllianceZoneDistanceMap;
 
-  private boolean flywheelIdleRPMEnabled = true;
+  private boolean flywheelIdleRPMEnabled = false;
 
   // Creates a new flat moving average filter
   // Average will be taken over the last 20 samples
