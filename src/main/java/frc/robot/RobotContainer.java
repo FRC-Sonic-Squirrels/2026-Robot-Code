@@ -43,8 +43,9 @@ import frc.robot.commands.drive.WheelRadiusCharacterization;
 import frc.robot.configs.RobotConfig;
 import frc.robot.configs.RobotConfig2026;
 import frc.robot.configs.SimulatorRobotConfig;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
 import frc.robot.subsystems.LED;
+import frc.robot.subsystems.CTRESwerve.CommandSwerveDrivetrain;
+import frc.robot.subsystems.CTRESwerve.Telemetry;
 import frc.robot.subsystems.LED.BaseRobotState;
 import frc.robot.subsystems.LED.RobotState;
 import frc.robot.subsystems.climber.*;
@@ -98,6 +99,9 @@ public class RobotContainer {
   private final Climber                 climber;
   private final Hopper                  hopper;
   private final Shooter                 shooter;
+
+  private final Telemetry logger = new Telemetry(
+      Constants.RobotMode.getRobot().config.get().getRobotMaxLinearVelocity());
 
   // Controllers
   private final XboxControllerWrapper driverController   = new XboxControllerWrapper(0);
@@ -179,8 +183,12 @@ public class RobotContainer {
     var minPivotAngle      = Constants.IntakeConstants.PivotConstants.MIN_PIVOT_ANGLE;
     var maxPivotAngleLeft  = Constants.IntakeConstants.PivotConstants.MAX_PIVOT_ANGLE_LEFT;
     var maxPivotAngleRight = Constants.IntakeConstants.PivotConstants.MAX_PIVOT_ANGLE_RIGHT;
-
-    CTREDrivetrain = TunerConstants.createDrivetrain();
+    if (Constants.USE_CTRE_SWERVE) {
+      CTREDrivetrain = TunerConstants.createDrivetrain();
+      CTREDrivetrain.registerTelemetry(logger::telemeterize);
+    } else {
+      CTREDrivetrain = null;
+    }
 
     if (mode == Mode.REPLAY) {
       drivetrain = new Drivetrain(config, new GyroIO.Fake(), new GyroIO.Fake(), config.getReplaySwerveModuleObjects(),
@@ -291,29 +299,37 @@ public class RobotContainer {
           hopper = new Hopper(new HopperIOReal(
               config.newMotor(RobotConfig2026.CanIDs.HOPPER_ROLLER_CAN_ID, RobotConfig.CANSpeed.CANIVORE)));
 
-          var gyro = config.newGyro(RobotConfig2026.CanIDs.GYRO_CAN_ID, RobotConfig.CANSpeed.CANIVORE);
-          drivetrain = new Drivetrain(config, new GyroIOPigeon2(config, gyro), new GyroIO.Fake(),
-              config.getSwerveModuleObjects(), () -> is_autonomous);
+          if (!Constants.USE_CTRE_SWERVE) {
+            var gyro = config.newGyro(RobotConfig2026.CanIDs.GYRO_CAN_ID, RobotConfig.CANSpeed.CANIVORE);
+            drivetrain = new Drivetrain(config, new GyroIOPigeon2(config, gyro), new GyroIO.Fake(),
+                config.getSwerveModuleObjects(), () -> is_autonomous);
 
-          vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
-              drivetrain::addVisionEstimate, config.getVisionModuleObjects());
+            vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
+                drivetrain::addVisionEstimate, config.getVisionModuleObjects());
 
-          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
+            led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
+          } else {
+            drivetrain = new Drivetrain(config, new GyroIO.Fake(), new GyroIO.Fake(),
+                config.getReplaySwerveModuleObjects(), () -> is_autonomous);
+            vision     = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose,
+                drivetrain::getRotationGyroOnly, drivetrain::addVisionEstimate, config.getReplayVisionModules());
+            led        = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
+          }
         }
           break;
 
         default: {
-          drivetrain  = new Drivetrain(config, new GyroIO.Fake(), new GyroIO.Fake(),
-              config.getReplaySwerveModuleObjects(), () -> is_autonomous);
-          vision      = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
+          drivetrain = null;
+          vision     = new Vision(aprilTagLayout, () -> Pose2d.kZero, () -> Rotation2d.kZero,
               drivetrain::addVisionEstimate, config.getReplayVisionModules());
+          led        = new LED(() -> brakeModeTriggered, () -> false, () -> zeroButtonTriggered);
+
           leftIntake  = new Intake(leftIntakeRoot, fakeIntakeIO, minPivotAngle, maxPivotAngleLeft);
           rightIntake = new Intake(rightIntakeRoot, fakeIntakeIO, minPivotAngle, maxPivotAngleRight);
           climber     = new Climber(fakeElevatorIO, fakeElevatorIO, 0, Rotation2d.kZero, Rotation2d.kZero);
           hopper      = new Hopper(fakeHopperIO);
           shooter     = new Shooter(fakeShooterIO);
 
-          led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
         }
           break;
       }

@@ -15,7 +15,7 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
-import frc.robot.subsystems.CommandSwerveDrivetrain;
+import frc.robot.subsystems.CTRESwerve.CommandSwerveDrivetrain;
 
 public class DrivetrainWrapper {
   private final String ROOT_TABLE = "DrivetrainWrapper";
@@ -36,9 +36,6 @@ public class DrivetrainWrapper {
 
     @TunableEntry(defaultValue = 720.0)
     public LoggedTunableNumber maxRotateSpeedPercentDegreesPerSecond;
-
-    @TunableEntry(defaultValue = 1.0)
-    public LoggedTunableNumber useCTREDrive;
   }
 
   private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
@@ -268,6 +265,6 @@ public class DrivetrainWrapper {
   }
 
   public boolean useCTREDrive() {
-    return tunables.useCTREDrive.get() != 0.0;
+    return Constants.USE_CTRE_SWERVE;
   }
 }

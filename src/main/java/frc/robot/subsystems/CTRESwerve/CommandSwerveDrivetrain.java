@@ -1,4 +1,4 @@
-package frc.robot.subsystems;
+package frc.robot.subsystems.CTRESwerve;
 
 import static edu.wpi.first.units.Units.*;
 
@@ -221,6 +221,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         m_hasAppliedOperatorPerspective = true;
       });
     }
+  }
+
+  public void telemeterize(SwerveDriveState state) {
+
   }
 
   private void startSimThread() {

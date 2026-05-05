@@ -101,6 +101,8 @@ public final class Constants {
 
   public static double MAX_VOLTAGE = 12.0;
 
+  public static final boolean USE_CTRE_SWERVE = true;
+
   public static class RobotDimensions {
     public static Distance BUMPER_THICKNESS = Units.Inches.of(4.1);
 
