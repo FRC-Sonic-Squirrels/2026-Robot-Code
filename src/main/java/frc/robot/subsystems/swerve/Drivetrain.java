@@ -193,30 +193,7 @@ public class Drivetrain extends SubsystemBase {
 
     // Define pose estimators
 
-    int[] hubTags = {
-        2,
-        3,
-        4,
-        5,
-        8,
-        9,
-        10,
-        11,
-        15,
-        16,
-        18,
-        19,
-        20,
-        21,
-        24,
-        25,
-        26,
-        27,
-        31,
-        32
-    };
-
-    hubPoseEstimator = new PoseEstimator(0.1, 0.1, 0.1, hubTags);
+    hubPoseEstimator = new PoseEstimator(0.1, 0.1, 0.1, Constants.FieldConstants.HUB_TAGS);
 
     // High speed odometry thread
 

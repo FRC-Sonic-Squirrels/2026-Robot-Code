@@ -45,7 +45,7 @@ import frc.robot.configs.RobotConfig2026;
 import frc.robot.configs.SimulatorRobotConfig;
 import frc.robot.subsystems.LED;
 import frc.robot.subsystems.CTRESwerve.CommandSwerveDrivetrain;
-import frc.robot.subsystems.CTRESwerve.Telemetry;
+import frc.robot.subsystems.CTRESwerve.CommandSwerveDrivetrain.Telemetry;
 import frc.robot.subsystems.LED.BaseRobotState;
 import frc.robot.subsystems.LED.RobotState;
 import frc.robot.subsystems.climber.*;
@@ -100,8 +100,7 @@ public class RobotContainer {
   private final Hopper                  hopper;
   private final Shooter                 shooter;
 
-  private final Telemetry logger = new Telemetry(
-      Constants.RobotMode.getRobot().config.get().getRobotMaxLinearVelocity());
+  private final Telemetry swerveTelemetry;
 
   // Controllers
   private final XboxControllerWrapper driverController   = new XboxControllerWrapper(0);
@@ -184,8 +183,9 @@ public class RobotContainer {
     var maxPivotAngleLeft  = Constants.IntakeConstants.PivotConstants.MAX_PIVOT_ANGLE_LEFT;
     var maxPivotAngleRight = Constants.IntakeConstants.PivotConstants.MAX_PIVOT_ANGLE_RIGHT;
     if (Constants.USE_CTRE_SWERVE) {
-      CTREDrivetrain = TunerConstants.createDrivetrain();
-      CTREDrivetrain.registerTelemetry(logger::telemeterize);
+      CTREDrivetrain  = TunerConstants.createDrivetrain(config);
+      swerveTelemetry = CTREDrivetrain.createTelemetry(config.getRobotMaxLinearVelocity());
+      CTREDrivetrain.registerTelemetry(swerveTelemetry::telemeterize);
     } else {
       CTREDrivetrain = null;
     }
@@ -311,9 +311,9 @@ public class RobotContainer {
           } else {
             drivetrain = new Drivetrain(config, new GyroIO.Fake(), new GyroIO.Fake(),
                 config.getReplaySwerveModuleObjects(), () -> is_autonomous);
-            vision     = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose,
-                drivetrain::getRotationGyroOnly, drivetrain::addVisionEstimate, config.getReplayVisionModules());
-            led        = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
+            vision     = new Vision(aprilTagLayout, CTREDrivetrain::getHubPoseEstimatorPose,
+                drivetrain::getRotationGyroOnly, CTREDrivetrain::addVisionEstimate, config.getReplayVisionModules());
+            led        = new LED(() -> brakeModeTriggered, () -> false, () -> zeroButtonTriggered);
           }
         }
           break;

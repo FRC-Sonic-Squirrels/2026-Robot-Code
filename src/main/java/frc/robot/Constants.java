@@ -158,6 +158,29 @@ public final class Constants {
         RIGHT_PASS_AIM_POINT,
         LEFT_PASS_AIM_POINT
     };
+
+    public static final int[] HUB_TAGS = {
+        2,
+        3,
+        4,
+        5,
+        8,
+        9,
+        10,
+        11,
+        15,
+        16,
+        18,
+        19,
+        20,
+        21,
+        24,
+        25,
+        26,
+        27,
+        31,
+        32
+    };
   }
 
   public static class MotorConstants {
