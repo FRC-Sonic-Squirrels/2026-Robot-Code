@@ -513,10 +513,6 @@ public class Turret extends SubsystemBase {
 
   public void setPivotRotation(Rotation2d angle) {
     this.pivotTargetAngle = angle;
-  }
-
-  public void aim() {
     io.setPivotPosition(pivotTargetAngle);
   }
-
 }

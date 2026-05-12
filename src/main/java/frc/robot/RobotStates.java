@@ -127,7 +127,7 @@ public class RobotStates {
     var currentGoal       = goal;
     var isInAllianceZone  = isInAllianceZone(drivetrain.getHubPoseEstimatorPose(true));
 
-    turret.aim();
+    setPivotTarget();
 
     if (goal.climberActive) {
       // Force intakes in.
