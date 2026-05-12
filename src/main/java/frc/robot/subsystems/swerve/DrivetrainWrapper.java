@@ -192,6 +192,9 @@ public class DrivetrainWrapper {
   }
 
   public Pose2d getHubPoseEstimatorPose(boolean prioritizeGyro) {
+    if (useCTREDrive()) {
+      return CTREDrivetrain.getHubPoseEstimatorPose();
+    }
     var pose = drivetrain.getHubPoseEstimatorPose();
     if (Constants.unusedCode && prioritizeGyro) {
       pose = new Pose2d(pose.getTranslation(), getRotationGyroOnly());

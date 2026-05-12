@@ -171,7 +171,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (Utils.isSimulation()) {
       startSimThread();
     }
-    kinematics       = config.getSwerveDriveKinematics();
+    kinematics       = this.getKinematics();
     hubPoseEstimator = new PoseEstimator(0.1, 0.1, 0.1, Constants.FieldConstants.HUB_TAGS);
   }
 
@@ -194,7 +194,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (Utils.isSimulation()) {
       startSimThread();
     }
-    kinematics       = config.getSwerveDriveKinematics();
+    kinematics       = this.getKinematics();
     hubPoseEstimator = new PoseEstimator(0.1, 0.1, 0.1, Constants.FieldConstants.HUB_TAGS);
   }
 
@@ -225,7 +225,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
     if (Utils.isSimulation()) {
       startSimThread();
     }
-    kinematics       = config.getSwerveDriveKinematics();
+    kinematics       = this.getKinematics();
     hubPoseEstimator = new PoseEstimator(0.1, 0.1, 0.1, Constants.FieldConstants.HUB_TAGS);
   }
 
@@ -279,10 +279,6 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
         hasAppliedOperatorPerspective = true;
       });
     }
-  }
-
-  public void telemeterize(SwerveDriveState state) {
-
   }
 
   private void startSimThread() {
@@ -419,9 +415,11 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     public static class Logs extends AutoRegisterLoggers {
       public LoggerEntry.Struct<Pose2d>                    drivePose;
+      public LoggerEntry.Struct<Pose2d>                    hubPoseEstimatorPose;
       public LoggerEntry.Struct<ChassisSpeeds>             driveSpeeds;
       public LoggerEntry.StructArray<SwerveModuleState>    driveModuleStates;
       public LoggerEntry.StructArray<SwerveModuleState>    driveModuleTargets;
+      public LoggerEntry.StructArray<SwerveModuleState>    driveModuleDeltas;
       public LoggerEntry.StructArray<SwerveModulePosition> driveModulePositions;
       public LoggerEntry.Decimal                           driveTimestamp;
       public LoggerEntry.Decimal                           driveOdometryFrequency;
@@ -464,7 +462,13 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
     private final double[] poseArray = new double[3];
 
-    private final SwerveModulePosition[] oldModulePositions = new SwerveModulePosition[4];
+    private final SwerveModulePosition[] oldModulePositions = new SwerveModulePosition[] {
+        new SwerveModulePosition(),
+        new SwerveModulePosition(),
+        new SwerveModulePosition(),
+        new SwerveModulePosition()
+    };
+    private Rotation2d                   lastGyroRotation   = Rotation2d.kZero;
 
     /**
      * Accept the swerve drive state and telemeterize it to SmartDashboard and
@@ -497,8 +501,9 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
 
         SwerveModulePosition position     = state.ModulePositions[i];
         SwerveModulePosition lastPosition = oldModulePositions[i];
-        wheelDeltas[i] = new SwerveModulePosition(position.distanceMeters - lastPosition.distanceMeters,
-            new Rotation2d(position.angle.getRadians() - lastPosition.angle.getRadians()));
+        wheelDeltas[i]        = new SwerveModulePosition(position.distanceMeters - lastPosition.distanceMeters,
+            new Rotation2d(position.angle.getRadians()));
+        oldModulePositions[i] = position;
       }
 
       // The twist represents the motion of the robot since the last
@@ -507,16 +512,10 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
       var twist = kinematics.toTwist2d(wheelDeltas);
       logs.twist.info(twist);
 
-      // if (selectedGyroIO != null) {
-      // var gyroRotation = selectedGyroIO.updateOdometry(selectedGyroInputs);
-      // if (gyroRotation != null) {
-      // if (lastGyroRotation != null) {
-      // var dtheta = gyroRotation.minus(lastGyroRotation).getRadians();
-      // twist = new Twist2d(twist.dx, twist.dy, dtheta);
-      // }
-      // lastGyroRotation = gyroRotation;
-      // }
-      // }
+      var gyroRotation = getRotationGyroOnly();
+      var dtheta       = gyroRotation.minus(lastGyroRotation).getRadians();
+      lastGyroRotation = gyroRotation;
+      twist            = new Twist2d(twist.dx, twist.dy, dtheta);
 
       try (var ignored2 = odometryLock.lock()) // Prevents odometry updates while reading data
       {
@@ -526,6 +525,7 @@ public class CommandSwerveDrivetrain extends TunerSwerveDrivetrain implements Su
           hubPoseEstimator.addDriveData(state.Timestamp, twist);
         }
       }
+      logs.hubPoseEstimatorPose.info(hubPoseEstimator.getLatestPose());
     }
   }
 
