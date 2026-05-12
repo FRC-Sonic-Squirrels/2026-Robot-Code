@@ -1,6 +1,7 @@
 package frc.robot;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Units;
 import frc.lib.team2930.AutoRegisterLoggers;
@@ -39,7 +40,7 @@ public class RobotStates {
     Unjam        (false, false),
     Score        (true,  false),
     Pass         (true,  false),
-    Shoot        (true,  false),
+    Turr         (true,  false),
     BumperShot   (true , false),
     StowClimber  (false,  true),
     MountDismount(false,  true),
@@ -53,7 +54,7 @@ public class RobotStates {
     public final boolean climberActive;
 
     RobotGoal(boolean turretActive, boolean climberActive) {
-      this.turretActive = turretActive;
+      this.turretActive  = turretActive;
       this.climberActive = climberActive;
     }
   }
@@ -95,7 +96,7 @@ public class RobotStates {
   private final Intake             leftIntake;
   private final Intake             rightIntake;
   private final DrivetrainWrapper  drivetrain;
-  private final Turret            turret;
+  private final Turret             turret;
   private final RotateToFaceHelper rotateToFaceHelper;
   private final Hopper             hopper;
   private final Climber            climber;
@@ -111,7 +112,7 @@ public class RobotStates {
     this.leftIntake  = leftIntake;
     this.rightIntake = rightIntake;
     this.drivetrain  = drivetrain;
-    this.turret     = turret;
+    this.turret      = turret;
     this.hopper      = hopper;
     this.climber     = climber;
     turret.setFlywheelIdleRPMEnabled(runFlywheelIdle);
@@ -125,6 +126,8 @@ public class RobotStates {
     var currentIntakeGoal = intakeGoal;
     var currentGoal       = goal;
     var isInAllianceZone  = isInAllianceZone(drivetrain.getHubPoseEstimatorPose(true));
+
+    turret.aim();
 
     if (goal.climberActive) {
       // Force intakes in.
@@ -156,7 +159,7 @@ public class RobotStates {
       case BumperShot:
         bumperShot();
         break;
-      case Shoot:
+      case Turr:
         if (isInAllianceZone) {
           score();
         } else {
@@ -275,7 +278,6 @@ public class RobotStates {
     } else {
       drivetrain.resetRotationOverride();
     }
-    turret.setFacingTarget(rotateState.withinTolerance());
   }
 
   public RobotGoal getRobotGoal() {
@@ -381,5 +383,20 @@ public class RobotStates {
   public void toggleFlywheelIdle() {
     runFlywheelIdle = !runFlywheelIdle;
     turret.setFlywheelIdleRPMEnabled(runFlywheelIdle);
+  }
+
+  public void setPivotTarget() {
+    if (goal == RobotGoal.Pass) {
+      var aimPoint = GeometryUtil.getClosestTranslation(FieldConstants.PASS_AIM_POINTS,
+          drivetrain.getHubPoseEstimatorPose(true));
+      turret.setPivotRotation(drivetrain.getHubPoseEstimatorPose(true).getRotation().relativeTo(aimPoint.getAngle()));
+      return;
+    } else if (goal == RobotGoal.BumperShot) {
+      turret.setPivotRotation(Rotation2d.fromDegrees(0));
+      return;
+    }
+    turret.setPivotRotation(drivetrain.getHubPoseEstimatorPose(true).getRotation()
+        .relativeTo(FieldConstants.HUB_CENTER_POSE.get().getAngle()));
+
   }
 }

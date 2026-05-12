@@ -47,6 +47,11 @@ public interface TurretIO {
   public default void resetHoodSensorPosition(Rotation2d angle) {
   }
 
+  // Pivot
+
+  public default void setPivotPosition(Rotation2d rot) {
+  }
+
   // Flywheel
 
   public default void setFlywheelRPM(double revPerMin) {

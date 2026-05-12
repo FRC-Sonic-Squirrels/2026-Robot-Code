@@ -13,6 +13,7 @@ import frc.lib.team2930.*;
 import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants;
 import frc.robot.Constants.RobotMode.RobotType;
+import frc.robot.subsystems.intake.Intake.PivotTunables;
 import frc.robot.Constants.TurretConstants;
 
 import java.util.ArrayList;
@@ -37,7 +38,7 @@ public class Turret extends SubsystemBase {
     public LoggerEntry.Decimal flywheelRollersDifference;
     public LoggerEntry.Decimal targetDistance;
     public LoggerEntry.Decimal hoodTarget;
-    public LoggerEntry.Bool    facingTarget;
+    public LoggerEntry.Decimal pivotTarget;
     public LoggerEntry.Bool    TurretReady;
     public LoggerEntry.Bool    hoodReady;
     public LoggerEntry.Bool    flywheelReady;
@@ -67,6 +68,18 @@ public class Turret extends SubsystemBase {
   public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
   public static class HoodTunables extends AutoRegisterTunables {
+    public LoggedTunableNumber KP;
+    public LoggedTunableNumber KD;
+    public LoggedTunableNumber KG;
+    public LoggedTunableNumber closedLoopMaxVelocityConstraint;
+    public LoggedTunableNumber motionMagicConfigs;
+    public LoggedTunableNumber closedLoopMaxAccelerationConstraint;
+
+    @TunableEntry(defaultValue = 0.5)
+    public LoggedTunableNumber toleranceDegrees;
+  }
+
+  public static class PivotTunables extends AutoRegisterTunables {
     public LoggedTunableNumber KP;
     public LoggedTunableNumber KD;
     public LoggedTunableNumber KG;
@@ -133,6 +146,8 @@ public class Turret extends SubsystemBase {
     public FlywheelTunables flywheel;
 
     public KickerTunables kicker;
+
+    public PivotTunables pivot;
   }
 
   private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
@@ -163,6 +178,8 @@ public class Turret extends SubsystemBase {
   private Distance distanceFromTarget = Distance.ofRelativeUnits(1, Units.Meters);
   private boolean  isFacingTarget;
 
+  private Rotation2d pivotTargetAngle = Constants.zeroRotation2d;
+
   private final Trigger initialStallDetected = new Trigger(
       () -> inputs.kickerVelocityRPM < TurretConstants.Kicker.SHOOTING_KICKER_RPM * .6
           && inputs.kickerCurrentAmps >= TurretConstants.Kicker.STALL_CURRENT_THRESHOLD)
@@ -181,6 +198,7 @@ public class Turret extends SubsystemBase {
     var hood     = tunables.hood;
     var flywheel = tunables.flywheel;
     var kicker   = tunables.kicker;
+    var pivot    = tunables.pivot;
 
     if (Constants.RobotMode.getRobot() == RobotType.ROBOT_2026_DOUG) {
       hood.KP.initDefault(800.0);
@@ -202,6 +220,12 @@ public class Turret extends SubsystemBase {
       kicker.KV.initDefault(0.0);
       kicker.KS.initDefault(0.0);
       kicker.closedLoopMaxAccelerationConstraint.initDefault(300.0);
+
+      pivot.KP.initDefault(0.1);
+      pivot.KD.initDefault(0.0);
+      pivot.KG.initDefault(0.0);
+      pivot.closedLoopMaxVelocityConstraint.initDefault(10.0);
+      pivot.closedLoopMaxAccelerationConstraint.initDefault(10.0);
     } else if (Constants.RobotMode.isSimBot()) {
       hood.KP.initDefault(15.0);
       hood.KD.initDefault(0.0);
@@ -222,6 +246,12 @@ public class Turret extends SubsystemBase {
       kicker.KV.initDefault(0.0);
       kicker.KS.initDefault(0.0);
       kicker.closedLoopMaxAccelerationConstraint.initDefault(0.0);
+
+      pivot.KP.initDefault(0.2);
+      pivot.KD.initDefault(0.0);
+      pivot.KG.initDefault(0.0);
+      pivot.closedLoopMaxVelocityConstraint.initDefault(10.0);
+      pivot.closedLoopMaxAccelerationConstraint.initDefault(10.0);
     }
 
     io.setFlywheelClosedLoopConstants(flywheel);
@@ -440,11 +470,6 @@ public class Turret extends SubsystemBase {
     distanceFromTarget = updatedDistanceFromTarget;
   }
 
-  public void setFacingTarget(boolean updatedIsFacingTarget) {
-    isFacingTarget = updatedIsFacingTarget;
-    logs.facingTarget.info(isFacingTarget);
-  }
-
   public boolean isFlywheelReady() {
     double desiredFlywheelRPM = getFlywheelRPM(getDistanceFromTarget());
     return inputs.flywheelRPM[0] > desiredFlywheelRPM - tunables.flywheel.toleranceRPM.get();
@@ -485,4 +510,13 @@ public class Turret extends SubsystemBase {
   public void setFlywheelIdleRPMEnabled(boolean flywheelIdle) {
     this.flywheelIdleRPMEnabled = flywheelIdle;
   }
+
+  public void setPivotRotation(Rotation2d angle) {
+    this.pivotTargetAngle = angle;
+  }
+
+  public void aim() {
+    io.setPivotPosition(pivotTargetAngle);
+  }
+
 }

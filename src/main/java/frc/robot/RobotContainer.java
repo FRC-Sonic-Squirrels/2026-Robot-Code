@@ -94,7 +94,7 @@ public class RobotContainer {
   private final LED                 led;
   private final Climber             climber;
   private final Hopper              hopper;
-  private final Turret             turret;
+  private final Turret              turret;
 
   // Controllers
   private final XboxControllerWrapper driverController   = new XboxControllerWrapper(0);
@@ -168,7 +168,7 @@ public class RobotContainer {
                        };
     var fakeHopperIO   = new HopperIO() {
                        };
-    var fakeTurretIO  = new TurretIO() {
+    var fakeTurretIO   = new TurretIO() {
                        };
     var fakeIntakeIO   = new IntakeIO() {
                        };
@@ -191,7 +191,7 @@ public class RobotContainer {
 
       climber = new Climber(fakeElevatorIO, fakeElevatorIO, 0, Rotation2d.kZero, Rotation2d.kZero);
       hopper  = new Hopper(fakeHopperIO);
-      turret = new Turret(fakeTurretIO);
+      turret  = new Turret(fakeTurretIO);
 
       led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
     } else { // REAL and SIM robots HERE
@@ -306,7 +306,7 @@ public class RobotContainer {
           rightIntake = new Intake(rightIntakeRoot, fakeIntakeIO, minPivotAngle, maxPivotAngleRight);
           climber     = new Climber(fakeElevatorIO, fakeElevatorIO, 0, Rotation2d.kZero, Rotation2d.kZero);
           hopper      = new Hopper(fakeHopperIO);
-          turret     = new Turret(fakeTurretIO);
+          turret      = new Turret(fakeTurretIO);
 
           led = new LED(() -> brakeModeTriggered, drivetrain::isGyroConnected, () -> zeroButtonTriggered);
         }
@@ -393,7 +393,7 @@ public class RobotContainer {
 
     if (Constants.RobotMode.isSimBot()) {
       driverController.registerTrigger(XboxControllerWrapper.Button.a, "Turr") // This is a real word trust
-          .react(robotStates.changeRobotGoal(RobotStates.RobotGoal.Shoot, RobotStates.RobotGoal.None));
+          .react(robotStates.changeRobotGoal(RobotStates.RobotGoal.Turr, RobotStates.RobotGoal.None));
     }
 
     driverController.registerTrigger(XboxControllerWrapper.Button.leftTrigger, "Pass")
