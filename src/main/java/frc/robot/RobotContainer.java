@@ -404,16 +404,12 @@ public class RobotContainer {
      * driverController.registerTrigger(XboxControllerWrapper.Button.rightTrigger,
      * "Score") .react(robotStates.changeRobotGoal(RobotStates.RobotGoal.Score,
      * RobotStates.RobotGoal.None));
-     *
-     * driverController.registerTrigger(XboxControllerWrapper.Button.leftBumper,
-     * "Left Intake")
-     * .react(robotStates.changeIntakeGoal(RobotStates.IntakeGoal.LeftIntake,
-     * RobotStates.IntakeGoal.Stow));
-     *
-     * driverController.registerTrigger(XboxControllerWrapper.Button.rightBumper,
-     * "Right Intake") .react(robotStates.changeIntakeGoal(IntakeGoal.RightIntake,
-     * RobotStates.IntakeGoal.Stow));
      */
+    driverController.registerTrigger(XboxControllerWrapper.Button.leftBumper, "Left Intake")
+        .react(robotStates.changeIntakeGoal(RobotStates.IntakeGoal.LeftIntake, RobotStates.IntakeGoal.Stow));
+
+    driverController.registerTrigger(XboxControllerWrapper.Button.rightBumper, "Right Intake")
+        .react(robotStates.changeIntakeGoal(IntakeGoal.RightIntake, RobotStates.IntakeGoal.Stow));
 
     driverController.registerTrigger(XboxControllerWrapper.Button.x, "Bumper Shot")
         .react(robotStates.changeRobotGoal(RobotStates.RobotGoal.BumperShot, RobotStates.RobotGoal.None));
@@ -554,7 +550,7 @@ public class RobotContainer {
    *
    * return nearestAprilTag; }
    *
-   *
+   
    * Use this to pass the autonomous command to the main {@link Robot} class.
    *
    * @return the command to run in autonomous
