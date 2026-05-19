@@ -391,39 +391,51 @@ public class RobotContainer {
               () -> drivetrainWrapper.getHubPoseEstimatorPose(true)));
     }
 
-    if (Constants.RobotMode.isSimBot()) {
-      driverController.registerTrigger(XboxControllerWrapper.Button.a, "Shoot")
-          .react(robotStates.changeRobotGoal(RobotStates.RobotGoal.Shoot, RobotStates.RobotGoal.None));
-    }
-
-    driverController.registerTrigger(XboxControllerWrapper.Button.leftTrigger, "Pass")
-        .react(robotStates.changeRobotGoal(RobotStates.RobotGoal.Pass, RobotStates.RobotGoal.None));
-
-    driverController.registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Score")
-        .react(robotStates.changeRobotGoal(RobotStates.RobotGoal.Score, RobotStates.RobotGoal.None));
-
-    driverController.registerTrigger(XboxControllerWrapper.Button.leftBumper, "Left Intake")
-        .react(robotStates.changeIntakeGoal(RobotStates.IntakeGoal.LeftIntake, RobotStates.IntakeGoal.Stow));
-
-    driverController.registerTrigger(XboxControllerWrapper.Button.rightBumper, "Right Intake")
-        .react(robotStates.changeIntakeGoal(IntakeGoal.RightIntake, RobotStates.IntakeGoal.Stow));
+    /*
+     * if (Constants.RobotMode.isSimBot()) {
+     * driverController.registerTrigger(XboxControllerWrapper.Button.a, "Shoot")
+     * .react(robotStates.changeRobotGoal(RobotStates.RobotGoal.Shoot,
+     * RobotStates.RobotGoal.None)); }
+     *
+     * driverController.registerTrigger(XboxControllerWrapper.Button.leftTrigger,
+     * "Pass") .react(robotStates.changeRobotGoal(RobotStates.RobotGoal.Pass,
+     * RobotStates.RobotGoal.None));
+     *
+     * driverController.registerTrigger(XboxControllerWrapper.Button.rightTrigger,
+     * "Score") .react(robotStates.changeRobotGoal(RobotStates.RobotGoal.Score,
+     * RobotStates.RobotGoal.None));
+     *
+     * driverController.registerTrigger(XboxControllerWrapper.Button.leftBumper,
+     * "Left Intake")
+     * .react(robotStates.changeIntakeGoal(RobotStates.IntakeGoal.LeftIntake,
+     * RobotStates.IntakeGoal.Stow));
+     *
+     * driverController.registerTrigger(XboxControllerWrapper.Button.rightBumper,
+     * "Right Intake") .react(robotStates.changeIntakeGoal(IntakeGoal.RightIntake,
+     * RobotStates.IntakeGoal.Stow));
+     */
 
     driverController.registerTrigger(XboxControllerWrapper.Button.x, "Bumper Shot")
         .react(robotStates.changeRobotGoal(RobotStates.RobotGoal.BumperShot, RobotStates.RobotGoal.None));
 
-    if (Constants.unusedCode) {
-      driverController.registerTrigger(XboxControllerWrapper.Button.povDown, "ClimbL1")
-          .react(robotStates.changeRobotGoal(RobotGoal.ClimbL1, RobotGoal.None));
-
-      driverController.registerTrigger(XboxControllerWrapper.Button.povUp, "ClimbL2")
-          .react(robotStates.changeRobotGoal(RobotGoal.ClimbL2, RobotGoal.None));
-
-      driverController.registerTrigger(XboxControllerWrapper.Button.povRight, "ClimbL3")
-          .react(robotStates.changeRobotGoal(RobotGoal.ClimbL3, RobotGoal.None));
-
-      driverController.registerTrigger(XboxControllerWrapper.Button.povLeft, "Lock")
-          .react(robotStates.changeRobotGoal(RobotGoal.Lock, RobotGoal.None));
-    }
+    /*
+     * if (Constants.unusedCode) {
+     * driverController.registerTrigger(XboxControllerWrapper.Button.povDown,
+     * "ClimbL1") .react(robotStates.changeRobotGoal(RobotGoal.ClimbL1,
+     * RobotGoal.None));
+     *
+     * driverController.registerTrigger(XboxControllerWrapper.Button.povUp,
+     * "ClimbL2") .react(robotStates.changeRobotGoal(RobotGoal.ClimbL2,
+     * RobotGoal.None));
+     *
+     * driverController.registerTrigger(XboxControllerWrapper.Button.povRight,
+     * "ClimbL3") .react(robotStates.changeRobotGoal(RobotGoal.ClimbL3,
+     * RobotGoal.None));
+     *
+     * driverController.registerTrigger(XboxControllerWrapper.Button.povLeft,
+     * "Lock") .react(robotStates.changeRobotGoal(RobotGoal.Lock, RobotGoal.None));
+     * }
+     */
 
     // ---------- OPERATOR CONTROLS -----------
 

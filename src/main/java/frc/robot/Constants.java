@@ -347,7 +347,7 @@ public final class Constants {
     public static class Interpolation {
       public static TunableInterpolationMap generateHoodAngleForHubDistanceMap() {
         var map = new HashMap<Double, Double>();
-        map.put(1.0, 12.0);
+        map.put(1.0, 16.0);
         map.put(1.5, 16.0);
         map.put(2.0, 18.0);
         map.put(2.5, 20.0);
