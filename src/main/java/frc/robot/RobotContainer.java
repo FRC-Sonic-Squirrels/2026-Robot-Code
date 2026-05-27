@@ -400,7 +400,7 @@ public class RobotContainer {
         .react(robotStates.changeRobotGoal(RobotStates.RobotGoal.Pass, RobotStates.RobotGoal.None));
 
     driverController.registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Score")
-        .react(robotStates.changeRobotGoal(RobotStates.RobotGoal.Score, RobotStates.RobotGoal.None));
+        .react(robotStates.changeRobotGoal(RobotStates.RobotGoal.BumperShot, RobotStates.RobotGoal.None));
 
     driverController.registerTrigger(XboxControllerWrapper.Button.leftBumper, "Left Intake")
         .react(robotStates.changeIntakeGoal(RobotStates.IntakeGoal.LeftIntake, RobotStates.IntakeGoal.Stow));

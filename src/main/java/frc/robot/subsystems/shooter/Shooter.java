@@ -273,7 +273,7 @@ public class Shooter extends SubsystemBase {
       switch (goal) {
         case Idle:
           if (flywheelIdleRPMEnabled) {
-            setFlywheelRPM(getFlywheelRPM(distanceFromTarget));
+            setFlywheelRPM(2000);
           } else {
             setFlywheelRPM(0);
           }
@@ -282,16 +282,19 @@ public class Shooter extends SubsystemBase {
           break;
 
         case Passing:
+          setFlywheelRPM(getFlywheelRPM(Distance.ofBaseUnits(8.0, Units.Meters)));
+          setHoodPosition(getHoodAngle(Distance.ofBaseUnits(8.0, Units.Meters)));
+          setKickerVelocity(getKickerRPM(isShooterReadyCameraless()));
 
-        case Scoring:
-          setFlywheelRPM(getFlywheelRPM(distanceFromTarget));
-          setHoodPosition(getHoodAngle(distanceFromTarget));
-          setKickerVelocity(getKickerRPM(isShooterReady()));
-          break;
+          // case Scoring:
+          // setFlywheelRPM(getFlywheelRPM(distanceFromTarget));
+          // setHoodPosition(getHoodAngle(distanceFromTarget));
+          // setKickerVelocity(getKickerRPM(isShooterReady()));
+          // break;
 
         case BumperShot:
-          setFlywheelRPM(getFlywheelRPM(Distance.ofBaseUnits(1.0, Units.Meters)));
-          setHoodPosition(getHoodAngle(Distance.ofBaseUnits(1.0, Units.Meters)));
+          setFlywheelRPM(getFlywheelRPM(Distance.ofBaseUnits(3.5, Units.Meters)));
+          setHoodPosition(getHoodAngle(Distance.ofBaseUnits(3.5, Units.Meters)));
           setKickerVelocity(getKickerRPM(isShooterReadyCameraless()));
           break;
 
