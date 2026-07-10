@@ -37,10 +37,10 @@ public class DrivetrainDefaultTeleopDrive extends Command {
   }
 
   public static class Tunables extends AutoRegisterTunables {
-    @TunableEntry(defaultValue = 10)
+    @TunableEntry(defaultValue = 20)
     public LoggedTunableNumber driveSpeedPercent;
 
-    @TunableEntry(defaultValue = 10)
+    @TunableEntry(defaultValue = 20)
     public LoggedTunableNumber rotateSpeedPercent;
   }
 
