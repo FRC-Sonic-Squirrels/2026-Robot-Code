@@ -109,10 +109,8 @@ public class RobotConfig2026 extends RobotConfig {
     public static final int CLIMBER_FOLLOWER_CAN_ID = 40;
     public static final int CLIMBER_LEADER_CAN_ID   = 42;
 
-    public static final int INTAKE_LEFT_PIVOT_CAN_ID   = 19;
-    public static final int INTAKE_LEFT_ROLLER_CAN_ID  = 18;
-    public static final int INTAKE_RIGHT_PIVOT_CAN_ID  = 47;
-    public static final int INTAKE_RIGHT_ROLLER_CAN_ID = 48;
+    public static final int INTAKE_PIVOT_CAN_ID  = 19;
+    public static final int INTAKE_ROLLER_CAN_ID = 18;
 
     public static final int SHOOTER_LEAD_CAN_ID   = 53;
     public static final int SHOOTER_FOLLOW_CAN_ID = 28;

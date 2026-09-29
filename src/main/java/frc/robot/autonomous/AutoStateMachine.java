@@ -87,14 +87,9 @@ public class AutoStateMachine extends StateMachine {
           states.setIntakeGoal(IntakeGoal.Stow);
           break;
 
-        case INTAKEWHILEDRIVELEFT:
+        case INTAKEWHILEDRIVE:
           states.setRobotGoal(RobotGoal.None);
-          states.setIntakeGoal(IntakeGoal.LeftIntake);
-          break;
-
-        case INTAKEWHILEDRIVERIGHT:
-          states.setRobotGoal(RobotGoal.None);
-          states.setIntakeGoal(IntakeGoal.RightIntake);
+          states.setIntakeGoal(IntakeGoal.Intake);
           break;
 
         case SCORE:
