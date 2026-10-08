@@ -59,7 +59,7 @@ public class RobotStates {
   }
 
   public enum IntakeGoal {
-    Stow, LeftIntake, RightIntake, LeftEject, RightEject, RightDown, LeftDown, LeftRoll, RightRoll
+    Stow, RightIntake, RightEject, RightDown, RightRoll
   }
 
   // Logging
@@ -92,7 +92,6 @@ public class RobotStates {
   // Commands
 
   public final RobotConfig         config;
-  private final Intake             leftIntake;
   private final Intake             rightIntake;
   private final DrivetrainWrapper  drivetrain;
   private final Shooter            shooter;
@@ -105,10 +104,9 @@ public class RobotStates {
 
   private boolean runFlywheelIdle = true;
 
-  public RobotStates(RobotConfig config, Climber climber, Intake leftIntake, Intake rightIntake, Shooter shooter,
+  public RobotStates(RobotConfig config, Climber climber, Intake rightIntake, Shooter shooter,
       DrivetrainWrapper drivetrain, Hopper hopper) {
     this.config      = config;
-    this.leftIntake  = leftIntake;
     this.rightIntake = rightIntake;
     this.drivetrain  = drivetrain;
     this.shooter     = shooter;
@@ -136,7 +134,7 @@ public class RobotStates {
         drivetrain.resetVelocityOverride();
         drivetrain.resetRotationOverride();
         shooter.setGoal(Shooter.Goal.Idle);
-        if (intakeGoal == IntakeGoal.LeftIntake || intakeGoal == IntakeGoal.RightIntake) {
+        if (intakeGoal == IntakeGoal.RightIntake) {
           hopper.setGoal(Hopper.Goal.Shooting);
         } else {
           hopper.setGoal(Hopper.Goal.Idle);
@@ -210,47 +208,17 @@ public class RobotStates {
     switch (intakeGoal) {
       case Stow:
         rightIntake.setGoal(Intake.Goal.Stow);
-        leftIntake.setGoal(Intake.Goal.Stow);
-        break;
-
-      case LeftIntake:
-        rightIntake.setGoal(Intake.Goal.Stow);
-        if (rightIntake.isStowed()) {
-          leftIntake.setGoal(Intake.Goal.Intake);
-        }
         break;
 
       case RightIntake:
-        leftIntake.setGoal(Intake.Goal.Stow);
-        if (leftIntake.isStowed()) {
-          rightIntake.setGoal(Intake.Goal.Intake);
-        }
+        rightIntake.setGoal(Intake.Goal.Intake);
         break;
 
       case RightDown:
-        leftIntake.setGoal(Intake.Goal.Stow);
-        if (leftIntake.isStowed()) {
-          rightIntake.setGoal(Intake.Goal.Down);
-        }
-        break;
-
-      case LeftDown:
-        rightIntake.setGoal(Intake.Goal.Stow);
-        if (rightIntake.isStowed()) {
-          leftIntake.setGoal(Intake.Goal.Down);
-        }
-        break;
-
-      case LeftEject:
-        leftIntake.setGoal(Intake.Goal.Eject);
-        break;
+        rightIntake.setGoal(Intake.Goal.Down);
 
       case RightEject:
         rightIntake.setGoal(Intake.Goal.Eject);
-        break;
-
-      case LeftRoll:
-        leftIntake.setGoal(Intake.Goal.Roll);
         break;
 
       case RightRoll:

@@ -90,7 +90,6 @@ public class RobotContainer {
   private final AprilTagFieldLayout aprilTagLayout;
   private final Vision              vision;
   private final Intake              rightIntake;
-  private final Intake              leftIntake;
   private final LED                 led;
   private final Climber             climber;
   private final Hopper              hopper;
@@ -184,10 +183,8 @@ public class RobotContainer {
       vision = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
           drivetrain::addVisionEstimate, config.getReplayVisionModules());
 
-      leftIntake  = new Intake(leftIntakeRoot, new IntakeIO() {
-                  }, minPivotAngle, maxPivotAngleLeft);
       rightIntake = new Intake(rightIntakeRoot, new IntakeIO() {
-                  }, minPivotAngle, maxPivotAngleRight);
+      }, minPivotAngle, maxPivotAngleRight);
 
       climber = new Climber(fakeElevatorIO, fakeElevatorIO, 0, Rotation2d.kZero, Rotation2d.kZero);
       hopper  = new Hopper(fakeHopperIO);
@@ -231,7 +228,6 @@ public class RobotContainer {
               Constants.ClimberConstants.FOLLOWER_PULLEY_DIAMETER.in(Units.Inches),
               Constants.ClimberConstants.MAX_FOLLOWER_CLIMBER_HEIGHT);
 
-          leftIntake = new Intake(leftIntakeRoot, new IntakeIOSim(), minPivotAngle, maxPivotAngleLeft);
           rightIntake = new Intake(rightIntakeRoot, new IntakeIOSim(), minPivotAngle, maxPivotAngleRight);
           climber = new Climber(new ElevatorIOSim(leaderConfig), new ElevatorIOSim(followerConfig), 0, Rotation2d.kZero,
               Rotation2d.kZero);
@@ -241,18 +237,11 @@ public class RobotContainer {
           break;
 
         case ROBOT_2026_DOUG: {
-          IntakeIOConfig leftIntakeIOConfig  = new IntakeIOConfig(
-              config.newMotor(RobotConfig2026.CanIDs.INTAKE_LEFT_PIVOT_CAN_ID, RobotConfig.CANSpeed.ROBORIO),
-              InvertedValue.CounterClockwise_Positive,
-              config.newMotor(RobotConfig2026.CanIDs.INTAKE_LEFT_ROLLER_CAN_ID, RobotConfig.CANSpeed.ROBORIO),
-              InvertedValue.Clockwise_Positive);
           IntakeIOConfig rightIntakeIOConfig = new IntakeIOConfig(
               config.newMotor(RobotConfig2026.CanIDs.INTAKE_RIGHT_PIVOT_CAN_ID, RobotConfig.CANSpeed.ROBORIO),
               InvertedValue.Clockwise_Positive,
               config.newMotor(RobotConfig2026.CanIDs.INTAKE_RIGHT_ROLLER_CAN_ID, RobotConfig.CANSpeed.ROBORIO),
               InvertedValue.CounterClockwise_Positive);
-          leftIntake  = new Intake(leftIntakeRoot, new IntakeIOReal(leftIntakeIOConfig), minPivotAngle,
-              maxPivotAngleLeft);
           rightIntake = new Intake(rightIntakeRoot, new IntakeIOReal(rightIntakeIOConfig), minPivotAngle,
               maxPivotAngleRight);
 
@@ -302,7 +291,6 @@ public class RobotContainer {
               config.getReplaySwerveModuleObjects(), () -> is_autonomous);
           vision      = new Vision(aprilTagLayout, drivetrain::getHubPoseEstimatorPose, drivetrain::getRotationGyroOnly,
               drivetrain::addVisionEstimate, config.getReplayVisionModules());
-          leftIntake  = new Intake(leftIntakeRoot, fakeIntakeIO, minPivotAngle, maxPivotAngleLeft);
           rightIntake = new Intake(rightIntakeRoot, fakeIntakeIO, minPivotAngle, maxPivotAngleRight);
           climber     = new Climber(fakeElevatorIO, fakeElevatorIO, 0, Rotation2d.kZero, Rotation2d.kZero);
           hopper      = new Hopper(fakeHopperIO);
@@ -319,9 +307,9 @@ public class RobotContainer {
     flipAutoChooser.addDefaultOption("No", false);
     flipAutoChooser.addOption("Yes", true);
 
-    var subsystems = new AutosSubsystems(drivetrainWrapper, led, leftIntake, rightIntake, shooter);
+    var subsystems = new AutosSubsystems(drivetrainWrapper, led, rightIntake, shooter);
 
-    robotStates = new RobotStates(config, climber, leftIntake, rightIntake, shooter, drivetrainWrapper, hopper);
+    robotStates = new RobotStates(config, climber, rightIntake, shooter, drivetrainWrapper, hopper);
 
     autoManager = new AutosManager(subsystems, autoChooser, stringToAutoSupplierMap, () -> {
       var result = flipAutoChooser.get();
@@ -339,7 +327,6 @@ public class RobotContainer {
   }
 
   private void zeroMech() {
-    leftIntake.resetPivotSensorToHomePosition();
     rightIntake.resetPivotSensorToHomePosition();
     shooter.resetHoodSensorToHomePosition();
     climber.setGoal(Climber.Goal.Stowed);
@@ -403,7 +390,7 @@ public class RobotContainer {
         .react(robotStates.changeRobotGoal(RobotStates.RobotGoal.Score, RobotStates.RobotGoal.None));
 
     driverController.registerTrigger(XboxControllerWrapper.Button.leftBumper, "Left Intake")
-        .react(robotStates.changeIntakeGoal(RobotStates.IntakeGoal.LeftIntake, RobotStates.IntakeGoal.Stow));
+        .react(robotStates.changeIntakeGoal(IntakeGoal.RightIntake, RobotStates.IntakeGoal.Stow));
 
     driverController.registerTrigger(XboxControllerWrapper.Button.rightBumper, "Right Intake")
         .react(robotStates.changeIntakeGoal(IntakeGoal.RightIntake, RobotStates.IntakeGoal.Stow));
@@ -429,19 +416,19 @@ public class RobotContainer {
 
     // Eject
     operatorController.registerTrigger(XboxControllerWrapper.Button.leftBumper, "Left Intake Roll")
-        .react(robotStates.changeIntakeGoal(IntakeGoal.LeftRoll, RobotStates.IntakeGoal.Stow));
+        .react(robotStates.changeIntakeGoal(IntakeGoal.RightRoll, RobotStates.IntakeGoal.Stow));
 
     operatorController.registerTrigger(XboxControllerWrapper.Button.rightBumper, "Right Intake Roll")
         .react(robotStates.changeIntakeGoal(IntakeGoal.RightRoll, RobotStates.IntakeGoal.Stow));
 
     operatorController.registerTrigger(XboxControllerWrapper.Button.leftStick, "Left Intake Eject")
-        .react(robotStates.changeIntakeGoal(IntakeGoal.LeftEject, IntakeGoal.Stow));
+        .react(robotStates.changeIntakeGoal(IntakeGoal.RightEject, IntakeGoal.Stow));
 
     operatorController.registerTrigger(XboxControllerWrapper.Button.rightStick, "Right Intake Eject")
         .react(robotStates.changeIntakeGoal(IntakeGoal.RightEject, IntakeGoal.Stow));
     // Intake
     operatorController.registerTrigger(XboxControllerWrapper.Button.leftTrigger, "Left Intake")
-        .react(robotStates.changeIntakeGoal(IntakeGoal.LeftIntake, RobotStates.IntakeGoal.Stow));
+        .react(robotStates.changeIntakeGoal(IntakeGoal.RightIntake, RobotStates.IntakeGoal.Stow));
 
     operatorController.registerTrigger(XboxControllerWrapper.Button.rightTrigger, "Right Intake")
         .react(robotStates.changeIntakeGoal(IntakeGoal.RightIntake, RobotStates.IntakeGoal.Stow));
@@ -453,7 +440,7 @@ public class RobotContainer {
         .react(robotStates.changeIntakeGoal(IntakeGoal.RightDown, RobotStates.IntakeGoal.Stow));
 
     operatorController.registerTrigger(XboxControllerWrapper.Button.x, "Left Intake Pivot Out")
-        .react(robotStates.changeIntakeGoal(IntakeGoal.LeftDown, RobotStates.IntakeGoal.Stow));
+        .react(robotStates.changeIntakeGoal(IntakeGoal.RightDown, RobotStates.IntakeGoal.Stow));
 
     operatorController.registerTrigger(XboxControllerWrapper.Button.b, "Unjamming")
         .react(robotStates.changeRobotGoal(RobotGoal.Unjam, RobotStates.RobotGoal.None));
@@ -466,14 +453,12 @@ public class RobotContainer {
     }));
 
     brakeModeButtonTrigger.onTrue(new ConditionalCommand(new RunsWhenDisabledInstantCommand(() -> {
-      leftIntake.setPivotNeutralMode(NeutralModeValue.Coast);
       rightIntake.setPivotNeutralMode(NeutralModeValue.Coast);
       climber.setClimberNeutralMode(NeutralModeValue.Coast);
 
       brakeModeTriggered = false;
       led.setRobotState(RobotState.BRAKE_MODE_OFF);
     }), new RunsWhenDisabledInstantCommand(() -> {
-      leftIntake.setPivotNeutralMode(NeutralModeValue.Brake);
       rightIntake.setPivotNeutralMode(NeutralModeValue.Brake);
       climber.setClimberNeutralMode(NeutralModeValue.Brake);
 
@@ -582,7 +567,6 @@ public class RobotContainer {
 
     if (true) {
       robotStates.setIntakeGoal(IntakeGoal.Stow);
-      leftIntake.setGoal(Intake.Goal.Stow);
       rightIntake.setGoal(Intake.Goal.Stow);
     }
 
