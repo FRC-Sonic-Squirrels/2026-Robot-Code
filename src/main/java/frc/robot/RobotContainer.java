@@ -269,7 +269,6 @@ public class RobotContainer {
           shooter = new Shooter(new ShooterIOReal(
               config.newMotor(RobotConfig2026.CanIDs.SHOOTER_LEAD_CAN_ID, RobotConfig.CANSpeed.CANIVORE),
               config.newMotor(RobotConfig2026.CanIDs.SHOOTER_FOLLOW_CAN_ID, RobotConfig.CANSpeed.CANIVORE),
-              config.newMotor(RobotConfig2026.CanIDs.SHOOTER_HOOD_CAN_ID, RobotConfig.CANSpeed.CANIVORE),
               config.newMotor(RobotConfig2026.CanIDs.SHOOTER_KICKER_CAN_ID, RobotConfig.CANSpeed.CANIVORE)));
 
           hopper = new Hopper(new HopperIOReal(
@@ -328,7 +327,6 @@ public class RobotContainer {
 
   private void zeroMech() {
     rightIntake.resetPivotSensorToHomePosition();
-    shooter.resetHoodSensorToHomePosition();
     climber.setGoal(Climber.Goal.Stowed);
     led.setRobotState(RobotState.ZERO_SUBSYSTEMS);
 
