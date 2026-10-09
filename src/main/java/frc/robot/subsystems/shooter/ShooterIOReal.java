@@ -89,6 +89,7 @@ public class ShooterIOReal implements ShooterIO {
       kickerConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
       kickerConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+      kickerConfig.MotorOutput.Inverted    = InvertedValue.CounterClockwise_Positive;
 
       kickerConfig.Feedback.SensorToMechanismRatio = ShooterConstants.Kicker.GEARING;
     });
