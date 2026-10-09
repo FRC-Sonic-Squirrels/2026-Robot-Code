@@ -192,22 +192,10 @@ public final class Constants {
 
       public static final double MOI = .00001;
 
-      public static final Rotation2d MAX_PIVOT_ANGLE_LEFT  = Rotation2d.fromDegrees(63.5);
-      public static final Rotation2d MAX_PIVOT_ANGLE_RIGHT = Rotation2d.fromDegrees(69);
+      public static final Rotation2d MAX_PIVOT_ANGLE_RIGHT = Rotation2d.fromDegrees(81.5);
       public static final Rotation2d MIN_PIVOT_ANGLE       = Rotation2d.fromDegrees(0);
       public static final Rotation2d HOME_POSITION         = Rotation2d.fromDegrees(0);
       public static final Rotation2d ZERO_POSITION         = Rotation2d.fromDegrees(0);
-
-      public static final Rotation2d PASSOFF_PIVOT_ANGLE = Rotation2d.fromDegrees(92.5);
-
-      public static final Rotation2d INITIAL_PIVOT_ANGLE = Rotation2d.fromDegrees(120);
-      public static final Rotation2d PIVOT_STOWED_ANGLE  = Rotation2d.fromDegrees(105);
-
-      public static final Rotation2d PIVOT_SAFE_ANGLE = Rotation2d.fromDegrees(90);
-
-      public static final Rotation2d INTERNAL_ANGLE    = Rotation2d.fromDegrees(0);
-      public static final Rotation2d EXTERNAL_ANGLE    = Rotation2d.fromDegrees(180);
-      public static final Rotation2d ALGAE_SCORE_ANGLE = Rotation2d.fromDegrees(45);
 
       public static final Distance PIVOT_LENGTH = Units.Inches.of(6.215);
     }

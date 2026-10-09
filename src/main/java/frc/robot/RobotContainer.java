@@ -173,7 +173,6 @@ public class RobotContainer {
                        };
 
     var minPivotAngle      = Constants.IntakeConstants.PivotConstants.MIN_PIVOT_ANGLE;
-    var maxPivotAngleLeft  = Constants.IntakeConstants.PivotConstants.MAX_PIVOT_ANGLE_LEFT;
     var maxPivotAngleRight = Constants.IntakeConstants.PivotConstants.MAX_PIVOT_ANGLE_RIGHT;
 
     if (mode == Mode.REPLAY) {

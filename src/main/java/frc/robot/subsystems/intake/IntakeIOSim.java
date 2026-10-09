@@ -23,7 +23,7 @@ public class IntakeIOSim implements IntakeIO {
   private TalonFXArmSim pivotSim = new TalonFXArmSim(
       new SingleJointedArmSim(DCMotor.getFalcon500Foc(1), frc.robot.Constants.IntakeConstants.PivotConstants.GEAR_RATIO,
           PivotConstants.MOI, PivotConstants.PIVOT_LENGTH.in(Units.Meters), PivotConstants.MIN_PIVOT_ANGLE.getRadians(),
-          PivotConstants.MAX_PIVOT_ANGLE_LEFT.getRadians(), false,
+          PivotConstants.MAX_PIVOT_ANGLE_RIGHT.getRadians(), false,
           Constants.IntakeConstants.PivotConstants.HOME_POSITION.getRadians()));
 
   private VelocityVoltage rollerClosedLoopControl = new VelocityVoltage(0);
