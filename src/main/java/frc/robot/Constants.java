@@ -317,11 +317,11 @@ public final class Constants {
     public static class Interpolation {
       public static TunableInterpolationMap generateFlywheelRpmForHubDistanceMap() {
         var map = new HashMap<Double, Double>();
-        map.put(1.0, 3000.0);
-        map.put(1.5, 3100.0);
-        map.put(2.0, 3200.0);
-        map.put(2.5, 3500.0);
-        map.put(3.0, 3700.0);
+        map.put(1.0, 3300.0);
+        map.put(1.5, 3800.0);
+        map.put(2.0, 4000.0);
+        map.put(2.5, 4000.0);
+        map.put(3.0, 4000.0);
         map.put(3.5, 4000.0);
         map.put(4.0, 4300.0);
         map.put(4.5, 4700.0);

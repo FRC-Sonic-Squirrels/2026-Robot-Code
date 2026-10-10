@@ -17,7 +17,8 @@ import java.util.function.Supplier;
 
 public class AutosManager {
   public enum Autos {
-    NOTHING, TEST, OUTPOST_SIDE_SHOOT, OUTPOST_SIDE_SHOOT_PLUS, DEPOT, SWERVE_CHARACTERIZATION;
+    NOTHING, DEPOT_SIDE_SHOOT, MIDDLE_SHOOT, TEST, OUTPOST_SIDE_SHOOT, OUTPOST_SIDE_SHOOT_PLUS, DEPOT,
+    SWERVE_CHARACTERIZATION;
   }
 
   public enum AutoGoals {
@@ -75,6 +76,8 @@ public class AutosManager {
     list.add(this::goFast);
     list.add(this::depot);
     list.add(this::middleOutpostSide);
+    list.add(this::depotSideShoot);
+    list.add(this::middleShoot);
 
     if (includeDebugPaths) {
       // list.add(this::swerveCharacterization);
@@ -128,9 +131,21 @@ public class AutosManager {
   }
 
   public AutoProgram middleOutpostSide() {
-    var autoPoints = createAutoPoints(Autos.OUTPOST_SIDE_SHOOT_PLUS);
+    var autoPoints = createAutoPoints(Autos.OUTPOST_SIDE_SHOOT);
     var state      = new AutoStateMachine(subsystems, autoPoints.getFirst(), autoPoints.getSecond(), states);
-    return stateToAutoProgram(state, autoPoints.getSecond(), "MIDDLE OUTPOST SIDE PLUS");
+    return stateToAutoProgram(state, autoPoints.getSecond(), "OUTPOST SIDE SHOOT");
+  }
+
+  public AutoProgram middleShoot() {
+    var autoPoints = createAutoPoints(Autos.MIDDLE_SHOOT);
+    var state      = new AutoStateMachine(subsystems, autoPoints.getFirst(), autoPoints.getSecond(), states);
+    return stateToAutoProgram(state, autoPoints.getSecond(), "MIDDLE SHOOT");
+  }
+
+  public AutoProgram depotSideShoot() {
+    var autoPoints = createAutoPoints(Autos.DEPOT_SIDE_SHOOT);
+    var state      = new AutoStateMachine(subsystems, autoPoints.getFirst(), autoPoints.getSecond(), states);
+    return stateToAutoProgram(state, autoPoints.getSecond(), "DEPOT SIDE SHOOT");
   }
 
   private AllianceAwarePose2d newInitialPose(Pose2d pose) {
@@ -146,6 +161,16 @@ public class AutosManager {
     AllianceAwarePose2d aInitialPose;
     // @formatter:off
     switch (auto) {
+      case DEPOT_SIDE_SHOOT:
+        aInitialPose = newInitialPose(ChoreoVars.Poses.START1);
+        waypoints.add(newWaypoint(2, ChoreoVars.Poses.START1, Translation2d.kZero, AutoGoals.SCORE));
+        return Pair.of(waypoints, aInitialPose);
+
+      case MIDDLE_SHOOT:
+        aInitialPose = newInitialPose(ChoreoVars.Poses.START25);
+        waypoints.add(newWaypoint(2, ChoreoVars.Poses.START25, Translation2d.kZero, AutoGoals.SCORE));
+        return Pair.of(waypoints, aInitialPose);
+
       case TEST:
         aInitialPose = newInitialPose(ChoreoVars.Poses.START4);
         waypoints.add(newWaypoint(1.2, ChoreoVars.Poses.TEST_OVER_BUMP,  new Translation2d(0.0, 0.1), AutoGoals.DRIVE));
