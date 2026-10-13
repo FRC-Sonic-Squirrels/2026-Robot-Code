@@ -324,7 +324,6 @@ public class RobotContainer {
 
   private void zeroMech() {
     intake.resetPivotSensorToHomePosition();
-    shooter.resetHoodSensorToHomePosition();
     climber.setGoal(Climber.Goal.Stowed);
     led.setRobotState(RobotState.ZERO_SUBSYSTEMS);
 
