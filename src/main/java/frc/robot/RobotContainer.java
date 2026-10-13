@@ -266,7 +266,6 @@ public class RobotContainer {
           shooter = new Shooter(new ShooterIOReal(
               config.newMotor(RobotConfig2026.CanIDs.SHOOTER_LEAD_CAN_ID, RobotConfig.CANSpeed.CANIVORE),
               config.newMotor(RobotConfig2026.CanIDs.SHOOTER_FOLLOW_CAN_ID, RobotConfig.CANSpeed.CANIVORE),
-              config.newMotor(RobotConfig2026.CanIDs.SHOOTER_HOOD_CAN_ID, RobotConfig.CANSpeed.CANIVORE),
               config.newMotor(RobotConfig2026.CanIDs.SHOOTER_KICKER_CAN_ID, RobotConfig.CANSpeed.CANIVORE)));
 
           hopper = new Hopper(new HopperIOReal(
