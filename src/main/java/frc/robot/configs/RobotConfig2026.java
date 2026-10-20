@@ -114,7 +114,8 @@ public class RobotConfig2026 extends RobotConfig {
 
     public static final int SHOOTER_LEAD_CAN_ID   = 53;
     public static final int SHOOTER_FOLLOW_CAN_ID = 28;
-    public static final int SHOOTER_KICKER_CAN_ID = 62;
+    public static final int SHOOTER_HOOD_CAN_ID   = 62;
+    public static final int SHOOTER_KICKER_CAN_ID = 60;
 
     public static final int HOPPER_ROLLER_CAN_ID = 61;
   }

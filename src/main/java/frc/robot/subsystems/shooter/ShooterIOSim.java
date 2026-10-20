@@ -12,10 +12,20 @@ import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.trajectory.TrapezoidProfile.Constraints;
+import edu.wpi.first.units.Units;
+import edu.wpi.first.wpilibj.simulation.SingleJointedArmSim;
+import frc.lib.team2930.TalonFXArmSim;
 import frc.lib.team2930.TalonFXSim;
 import frc.robot.Constants;
 
 public class ShooterIOSim implements ShooterIO {
+  private TalonFXArmSim hoodArmSim = new TalonFXArmSim(
+      new SingleJointedArmSim(DCMotor.getFalcon500Foc(1), Constants.ShooterConstants.Hood.GEARING,
+          Constants.ShooterConstants.Hood.MOI, Constants.ShooterConstants.SHOOTER_LENGTH.in(Units.Meters),
+          Constants.ShooterConstants.Hood.MIN_ANGLE_RAD.getRadians(),
+          Constants.ShooterConstants.Hood.MAX_ANGLE_RAD.getRadians(), false,
+          Constants.ShooterConstants.Hood.SIM_INITIAL_ANGLE));
+
   private final TalonFXSim flywheelMotorSim = new TalonFXSim(DCMotor.getKrakenX60Foc(2),
       Constants.ShooterConstants.Flywheel.GEARING, Constants.ShooterConstants.Flywheel.MOI);
 
@@ -43,11 +53,13 @@ public class ShooterIOSim implements ShooterIO {
 
   @Override
   public void updateInputs(Inputs inputs) {
+    hoodArmSim.update(Constants.kDefaultPeriod);
     flywheelMotorSim.update(Constants.kDefaultPeriod);
     kickerMotorSim.update(Constants.kDefaultPeriod);
 
     pivotFeedback.setTolerance(1.0);
 
+    inputs.hoodPosition       = new Rotation2d(hoodArmSim.getPosition());
     inputs.flywheelRPM[0]     = targetRPM;
     inputs.kickerAppliedVolts = kickerVolts;
   }
@@ -62,11 +74,39 @@ public class ShooterIOSim implements ShooterIO {
     slot0Configs.kS = tunables.KS.get();
 
     config.Slot0 = slot0Configs;
+
+    hoodArmSim.setConfig(config);
   }
 
   @Override
   public void setKickerVelocity(double revPerMin) {
     kickerMotorSim.setControl(kickerClosedLoopControl.withVelocity(revPerMin / 60));
+  }
+
+  @Override
+  public void setHoodPosition(Rotation2d angle) {
+    hoodArmSim.setControl(hoodClosedLoopControl.withPosition(angle.getRotations()));
+  }
+
+  @Override
+  public void setHoodClosedLoopConstants(double kP, double kD, double kG, double maxProfiledVelocity,
+      double maxProfiledAcceleration) {
+    TalonFXConfiguration config       = new TalonFXConfiguration();
+    Slot0Configs         slot0Configs = new Slot0Configs();
+
+    slot0Configs.kP = kP;
+    slot0Configs.kD = kD;
+    slot0Configs.kG = kG;
+
+    config.Slot0 = slot0Configs;
+
+    hoodArmSim.setConfig(config);
+
+  }
+
+  @Override
+  public void resetHoodSensorPosition(Rotation2d angle) {
+    hoodArmSim.setState(angle.getRadians(), 0.0);
   }
 
   @Override
@@ -81,6 +121,8 @@ public class ShooterIOSim implements ShooterIO {
     slot0Configs.kV = tunables.KV.get();
 
     config.Slot0 = slot0Configs;
+
+    hoodArmSim.setConfig(config);
   }
 
   @Override
