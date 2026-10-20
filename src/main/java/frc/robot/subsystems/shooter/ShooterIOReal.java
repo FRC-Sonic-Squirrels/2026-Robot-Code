@@ -96,7 +96,7 @@ public class ShooterIOReal implements ShooterIO {
     hood.talonFXConfiguration.change((hoodConfig) -> {
       hoodConfig.Feedback.SensorToMechanismRatio = Constants.ShooterConstants.Hood.GEARING;
       hoodConfig.MotorOutput.NeutralMode         = NeutralModeValue.Brake;
-      hoodConfig.MotorOutput.Inverted            = InvertedValue.Clockwise_Positive;
+      hoodConfig.MotorOutput.Inverted            = InvertedValue.CounterClockwise_Positive;
 
       hoodConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = Constants.ShooterConstants.Hood.MAX_ANGLE_RAD
           .getRotations();
@@ -122,7 +122,7 @@ public class ShooterIOReal implements ShooterIO {
       kickerConfig.CurrentLimits.StatorCurrentLimitEnable = true;
 
       kickerConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-      kickerConfig.MotorOutput.Inverted    = InvertedValue.CounterClockwise_Positive;
+      kickerConfig.MotorOutput.Inverted    = InvertedValue.Clockwise_Positive;
 
       kickerConfig.Feedback.SensorToMechanismRatio = ShooterConstants.Kicker.GEARING;
     });
