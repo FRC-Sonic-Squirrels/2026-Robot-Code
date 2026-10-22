@@ -404,10 +404,14 @@ public class Shooter extends SubsystemBase {
   }
 
   public double getKickerRPM(boolean shouldMoveUp) {
-    /*
-     * if (persistantKickerStallDetected()) { return 0; } if (kickerStallDetected())
-     * { return ShooterConstants.Kicker.UNJAM_KICKER_RPM; }
-     */
+
+    if (persistantKickerStallDetected()) {
+      return 0;
+    }
+    if (kickerStallDetected()) {
+      return ShooterConstants.Kicker.UNJAM_KICKER_RPM;
+    }
+
     if (shouldMoveUp) {
       switch (goal) {
         case Scoring:
