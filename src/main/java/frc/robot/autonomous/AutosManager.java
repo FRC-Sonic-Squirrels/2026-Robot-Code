@@ -163,7 +163,7 @@ public class AutosManager {
     switch (auto) {
       case DEPOT_SIDE_SHOOT:
         aInitialPose = newInitialPose(ChoreoVars.Poses.START1);
-        waypoints.add(newWaypoint(2, ChoreoVars.Poses.START1, Translation2d.kZero, AutoGoals.BUMPERSHOT));
+        waypoints.add(newWaypoint(2, ChoreoVars.Poses.START1, Translation2d.kZero, AutoGoals.SCORE));
         return Pair.of(waypoints, aInitialPose);
 
       case MIDDLE_SHOOT:
@@ -184,7 +184,7 @@ public class AutosManager {
 
       case OUTPOST_SIDE_SHOOT:
         aInitialPose = newInitialPose(ChoreoVars.Poses.START3);
-        waypoints.add(newWaypoint(2, ChoreoVars.Poses.START3, Translation2d.kZero, AutoGoals.BUMPERSHOT));
+        waypoints.add(newWaypoint(2, ChoreoVars.Poses.START3, Translation2d.kZero, AutoGoals.SCORE));
         return Pair.of(waypoints, aInitialPose);
 
       case OUTPOST_SIDE_SHOOT_PLUS:
