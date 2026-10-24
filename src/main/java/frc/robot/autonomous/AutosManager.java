@@ -22,7 +22,7 @@ public class AutosManager {
   }
 
   public enum AutoGoals {
-    NOTHING, DRIVE, INTAKEWHILEDRIVERIGHT, SCORE, CLIMB;
+    NOTHING, DRIVE, INTAKEWHILEDRIVERIGHT, SCORE, BUMPERSHOT, CLIMB;
   }
 
   private String ROOT_TABLE = "Sysid";
@@ -163,12 +163,12 @@ public class AutosManager {
     switch (auto) {
       case DEPOT_SIDE_SHOOT:
         aInitialPose = newInitialPose(ChoreoVars.Poses.START1);
-        waypoints.add(newWaypoint(2, ChoreoVars.Poses.START1, Translation2d.kZero, AutoGoals.SCORE));
+        waypoints.add(newWaypoint(2, ChoreoVars.Poses.START1, Translation2d.kZero, AutoGoals.BUMPERSHOT));
         return Pair.of(waypoints, aInitialPose);
 
       case MIDDLE_SHOOT:
         aInitialPose = newInitialPose(ChoreoVars.Poses.START25);
-        waypoints.add(newWaypoint(2, ChoreoVars.Poses.START25, Translation2d.kZero, AutoGoals.SCORE));
+        waypoints.add(newWaypoint(2, ChoreoVars.Poses.START25, Translation2d.kZero, AutoGoals.BUMPERSHOT));
         return Pair.of(waypoints, aInitialPose);
 
       case TEST:
@@ -184,7 +184,7 @@ public class AutosManager {
 
       case OUTPOST_SIDE_SHOOT:
         aInitialPose = newInitialPose(ChoreoVars.Poses.START3);
-        waypoints.add(newWaypoint(2, ChoreoVars.Poses.START3, Translation2d.kZero, AutoGoals.SCORE));
+        waypoints.add(newWaypoint(2, ChoreoVars.Poses.START3, Translation2d.kZero, AutoGoals.BUMPERSHOT));
         return Pair.of(waypoints, aInitialPose);
 
       case OUTPOST_SIDE_SHOOT_PLUS:

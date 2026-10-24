@@ -95,6 +95,10 @@ public class AutoStateMachine extends StateMachine {
         case SCORE:
           states.setRobotGoal(RobotGoal.Shoot);
           break;
+
+        case BUMPERSHOT:
+          states.setRobotGoal(RobotGoal.BumperShot);
+          break;
       }
     }
 
