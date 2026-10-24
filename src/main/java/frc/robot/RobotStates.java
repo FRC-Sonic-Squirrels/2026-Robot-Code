@@ -138,6 +138,7 @@ public class RobotStates {
           hopper.setGoal(Hopper.Goal.Shooting);
         } else {
           hopper.setGoal(Hopper.Goal.Idle);
+
         }
         climber.setGoal(Climber.Goal.Stowed);
         break;
