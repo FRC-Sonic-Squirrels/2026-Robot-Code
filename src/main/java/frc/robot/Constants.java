@@ -392,6 +392,12 @@ public final class Constants {
       }
     }
   }
+    public static class ElevatorConstants {
+    public static final double GEAR_RATIO = 4 / 2;
+    public static final double CARRIAGE_MASS = 5;
+    public static final Distance PULLEY_DIAMETER = Units.Inches.of(2);
+    public static final Distance MAX_HEIGHT = Units.Inches.of(30);
+  }
 
   public static volatile boolean unusedCode = false;
 }
