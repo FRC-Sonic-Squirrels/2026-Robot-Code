@@ -4,9 +4,13 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Units;
 import frc.lib.team2930.AutoRegisterLoggers;
+import frc.lib.team2930.AutoRegisterTunables;
 import frc.lib.team2930.GeometryUtil;
 import frc.lib.team2930.LoggerEntry;
 import frc.lib.team2930.LoggerGroup;
+import frc.lib.team2930.TunableEntry;
+import frc.lib.team2930.TunableNumberGroup;
+import frc.lib.team6328.LoggedTunableNumber;
 import frc.robot.Constants.FieldConstants;
 import frc.robot.commands.drive.RotateToFaceHelper;
 import frc.robot.configs.RobotConfig;
@@ -46,7 +50,8 @@ public class RobotStates {
     ClimbL1      (false,  true),
     ClimbL2      (false,  true),
     ClimbL3      (false,  true),
-    Lock         (false,  true);
+    Lock         (false,  true),
+    DisplayMode  (false,  false);
     // @formatter:on
 
     public final boolean shooterActive;
@@ -82,6 +87,13 @@ public class RobotStates {
     public SubsystemsInTargetStatesLogs subsystemsInTargetStates;
   }
 
+  public static class Tunables extends AutoRegisterTunables {
+    @TunableEntry(defaultValue = 0.1)
+    public LoggedTunableNumber displayModeRotationSpeed;
+  }
+
+  private final Tunables tunables = TunableNumberGroup.newAutoTunable(Tunables.class, ROOT_TABLE);
+
   private final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
   // States
@@ -102,7 +114,7 @@ public class RobotStates {
   private int     periodicCounter;
   private boolean driveSlow;
 
-  private boolean runFlywheelIdle = true;
+  private boolean runFlywheelIdle = false;
 
   public RobotStates(RobotConfig config, Climber climber, Intake rightIntake, Shooter shooter,
       DrivetrainWrapper drivetrain, Hopper hopper) {
@@ -145,6 +157,9 @@ public class RobotStates {
       case Unjam:
         shooter.setGoal(Shooter.Goal.Unjamming);
         hopper.setGoal(Hopper.Goal.Unjamming);
+        break;
+      case DisplayMode:
+        drivetrain.setRotationOverride(tunables.displayModeRotationSpeed.get());
         break;
       case Score:
         score();

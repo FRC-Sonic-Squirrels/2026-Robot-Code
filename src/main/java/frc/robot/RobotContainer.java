@@ -483,6 +483,10 @@ public class RobotContainer {
 
     SmartDashboard.putData("PV REBOOT 2_Shooter_Right",
         new RunsWhenDisabledInstantCommand(() -> Vision.rebootPhotonVision("10.29.30.14")));
+    SmartDashboard.putData("Start DisplayMode",
+        new RunsWhenDisabledInstantCommand(() -> robotStates.setRobotGoal(RobotGoal.DisplayMode)));
+    SmartDashboard.putData("End DisplayMode",
+        new RunsWhenDisabledInstantCommand(() -> robotStates.setRobotGoalIf(RobotGoal.DisplayMode, RobotGoal.None)));
 
     SmartDashboard.putData("USE GYRO 1", new RunsWhenDisabledInstantCommand(() -> drivetrain.chooseWhichGyro(false)));
     SmartDashboard.putData("USE GYRO 2", new RunsWhenDisabledInstantCommand(() -> drivetrain.chooseWhichGyro(true)));
