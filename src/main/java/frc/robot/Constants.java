@@ -192,11 +192,10 @@ public final class Constants {
 
       public static final double MOI = .00001;
 
-      public static final Rotation2d MAX_PIVOT_ANGLE_LEFT  = Rotation2d.fromDegrees(63.5);
-      public static final Rotation2d MAX_PIVOT_ANGLE_RIGHT = Rotation2d.fromDegrees(69);
-      public static final Rotation2d MIN_PIVOT_ANGLE       = Rotation2d.fromDegrees(0);
-      public static final Rotation2d HOME_POSITION         = Rotation2d.fromDegrees(0);
-      public static final Rotation2d ZERO_POSITION         = Rotation2d.fromDegrees(0);
+      public static final Rotation2d MAX_PIVOT_ANGLE = Rotation2d.fromDegrees(69);
+      public static final Rotation2d MIN_PIVOT_ANGLE = Rotation2d.fromDegrees(0);
+      public static final Rotation2d HOME_POSITION   = Rotation2d.fromDegrees(0);
+      public static final Rotation2d ZERO_POSITION   = Rotation2d.fromDegrees(0);
 
       public static final Rotation2d PASSOFF_PIVOT_ANGLE = Rotation2d.fromDegrees(92.5);
 
@@ -347,30 +346,43 @@ public final class Constants {
     public static class Interpolation {
       public static TunableInterpolationMap generateHoodAngleForHubDistanceMap() {
         var map = new HashMap<Double, Double>();
-        map.put(1.0, 12.0);
-        map.put(1.5, 16.0);
-        map.put(2.0, 18.0);
-        map.put(2.5, 20.0);
-        map.put(3.0, 20.0);
-        map.put(3.5, 20.0);
-        map.put(4.0, 20.0);
-        map.put(4.5, 22.0);
-        map.put(5.0, 24.0);
+        map.put(1.0, 22.0);
+        map.put(1.5, 22.0);
+        map.put(2.0, 14.0);
+        map.put(2.5, 16.0);
+        map.put(3.0, 19.0);
+        map.put(3.5, 21.0);
+        map.put(4.0, 22.0);
+        map.put(4.5, 23.0);
+        map.put(5.0, 25.0);
         return new TunableInterpolationMap("HOOD_ANGLE_FOR_HUB_DISTANCE", map);
       }
 
       public static TunableInterpolationMap generateFlywheelRpmForHubDistanceMap() {
         var map = new HashMap<Double, Double>();
-        map.put(1.0, 3000.0);
-        map.put(1.5, 3100.0);
-        map.put(2.0, 3200.0);
-        map.put(2.5, 3500.0);
-        map.put(3.0, 3700.0);
+        map.put(1.0, 4500.0);
+        map.put(1.5, 4500.0);
+        map.put(2.0, 3600.0);
+        map.put(2.5, 4000.0);
+        map.put(3.0, 4000.0);
         map.put(3.5, 4000.0);
         map.put(4.0, 4300.0);
         map.put(4.5, 4700.0);
         map.put(5.0, 5200.0);
         return new TunableInterpolationMap("RPM_FOR_HUB_DISTANCE", map);
+      }
+
+      public static TunableInterpolationMap generateFlywheelRpmForAllianceZoneDistanceMap() {
+        var map = new HashMap<Double, Double>();
+        map.put(1.0, 2000.0);
+        map.put(2.0, 3000.0);
+        map.put(3.0, 4500.0);
+        map.put(4.0, 5200.0);
+        map.put(7.0, 6000.0);
+        map.put(8.0, 6800.0);
+        map.put(9.5, 7200.0);
+        map.put(11.5, 8000.0);
+        return new TunableInterpolationMap("RPM_FOR_ALLIANCE_ZONE_DISTANCE", map);
       }
 
       public static TunableInterpolationMap generateHoodAngleForAllianceZoneDistanceMap() {
@@ -388,19 +400,6 @@ public final class Constants {
         map.put(6.0, 30.0);
         map.put(6.5, 30.0);
         return new TunableInterpolationMap("HOOD_ANGLE_FOR_ALLIANCE_ZONE_DISTANCE", map);
-      }
-
-      public static TunableInterpolationMap generateFlywheelRpmForAllianceZoneDistanceMap() {
-        var map = new HashMap<Double, Double>();
-        map.put(1.0, 2000.0);
-        map.put(2.0, 3000.0);
-        map.put(3.0, 4500.0);
-        map.put(4.0, 5200.0);
-        map.put(7.0, 6000.0);
-        map.put(8.0, 6800.0);
-        map.put(9.5, 7200.0);
-        map.put(11.5, 8000.0);
-        return new TunableInterpolationMap("RPM_FOR_ALLIANCE_ZONE_DISTANCE", map);
       }
     }
   }

@@ -33,6 +33,7 @@ public final class ChoreoVars {
         public static final Pose2d SHOOT_OUTPOST_SIDE = new Pose2d(2.5, 2.5, Rotation2d.fromRadians(0.690446));
         public static final Pose2d START1 = new Pose2d(3.5, 5.9, Rotation2d.fromRadians(-0.9272952));
         public static final Pose2d START2 = new Pose2d(3.5, 5.2, Rotation2d.fromRadians(-0.9272952));
+        public static final Pose2d START25 = new Pose2d(3.5, 4, Rotation2d.fromRadians(0));
         public static final Pose2d START3 = new Pose2d(3.5, 3, Rotation2d.fromRadians(0.9272952));
         public static final Pose2d START4 = new Pose2d(3.5, 2.2, Rotation2d.fromRadians(0.9272952));
         public static final Pose2d TEST_MIDDLE_HUB = new Pose2d(6.165, 3.217, Rotation2d.fromRadians(3.082));

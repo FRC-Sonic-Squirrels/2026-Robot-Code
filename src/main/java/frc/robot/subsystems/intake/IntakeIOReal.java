@@ -95,7 +95,7 @@ public class IntakeIOReal implements IntakeIO {
       pivotConfig.SoftwareLimitSwitch.ForwardSoftLimitEnable = true;
       pivotConfig.SoftwareLimitSwitch.ReverseSoftLimitEnable = true;
 
-      pivotConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = PivotConstants.MAX_PIVOT_ANGLE_LEFT.getRotations();
+      pivotConfig.SoftwareLimitSwitch.ForwardSoftLimitThreshold = PivotConstants.MAX_PIVOT_ANGLE.getRotations();
       pivotConfig.SoftwareLimitSwitch.ReverseSoftLimitThreshold = PivotConstants.MIN_PIVOT_ANGLE
           .minus(Rotation2d.fromDegrees(2.0)).getRotations();
 

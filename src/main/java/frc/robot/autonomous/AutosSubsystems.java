@@ -5,6 +5,5 @@ import frc.robot.subsystems.intake.Intake;
 import frc.robot.subsystems.shooter.Shooter;
 import frc.robot.subsystems.swerve.DrivetrainWrapper;
 
-public record AutosSubsystems(DrivetrainWrapper drivetrain, LED led, Intake leftIntake, Intake rightIntake,
-    Shooter shooter) {
+public record AutosSubsystems(DrivetrainWrapper drivetrain, LED led, Intake intake, Shooter shooter) {
 }

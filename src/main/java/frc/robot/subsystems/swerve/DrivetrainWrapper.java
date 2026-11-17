@@ -27,10 +27,10 @@ public class DrivetrainWrapper {
   public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
 
   public static class Tunables extends AutoRegisterTunables {
-    @TunableEntry(defaultValue = 6)
+    @TunableEntry(defaultValue = 2)
     public LoggedTunableNumber maxDriveSpeedMetersPerSecond;
 
-    @TunableEntry(defaultValue = 720.0)
+    @TunableEntry(defaultValue = 360.0)
     public LoggedTunableNumber maxRotateSpeedPercentDegreesPerSecond;
   }
 
