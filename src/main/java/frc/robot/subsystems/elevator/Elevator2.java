@@ -4,16 +4,23 @@
 
 package frc.robot.subsystems.elevator;
 
-import edu.wpi.first.units.measure.Distance;
+import static edu.wpi.first.units.Units.Inches;
+
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import frc.lib.team2930.AutoRegisterLoggers;
 import frc.lib.team2930.AutoRegisterTunables;
+import frc.lib.team2930.LoggerEntry;
+import frc.lib.team2930.LoggerGroup;
 import frc.lib.team6328.LoggedTunableNumber;
+import frc.robot.Constants.ElevatorConstants;
 
 public class Elevator2 extends SubsystemBase {
 
   public enum ElevatorGoal {
     HOME, L1, L2, L3
   }
+
+  static String ROOT_TABLE = "Elevator2";
 
   public static class ElevatorTunables extends AutoRegisterTunables {
     public LoggedTunableNumber KP;
@@ -35,11 +42,22 @@ public class Elevator2 extends SubsystemBase {
     }
   }
 
+  public static class Logs extends AutoRegisterLoggers {
+    public LoggerEntry.Decimal appliedVolts;
+    public LoggerEntry.Decimal heightInches;
+    public LoggerEntry.Decimal targetHeightInches;
+
+    public LoggerEntry.EnumValue<ElevatorGoal> elevatorState;
+  }
+
+  public final Logs logs = LoggerGroup.root.newAutoLogger(Logs.class, ROOT_TABLE);
+
   private ElevatorGoal goal;
 
-  private ElevatorIO2 io;
+  private ElevatorIO2              io;
+  private final ElevatorIO2.Inputs inputs = new ElevatorIO2.Inputs(logs.group);
 
-  private Distance elevatorTargetHeight;
+  private double elevatorTargetHeight;
 
   /** Creates a new Elevator. */
   public Elevator2(ElevatorIO2 io) {
@@ -48,14 +66,32 @@ public class Elevator2 extends SubsystemBase {
 
   @Override
   public void periodic() {
-    // This method will be called once per scheduler run
+    io.updateInputs(inputs);
+    logs.appliedVolts.info(inputs.appliedVolts);
+    logs.appliedVolts.info(inputs.position.in(Inches));
+
+    elevatorTargetHeight = getTargetHeight();
+  }
+
+  public double getTargetHeight() {
+    switch (goal) {
+      case HOME:
+        return ElevatorConstants.HOME_HEIGHT.in(Inches);
+      case L1:
+        return ElevatorConstants.L1_HEIGHT.in(Inches);
+      case L2:
+        return ElevatorConstants.L2_HEIGHT.in(Inches);
+      case L3:
+        return ElevatorConstants.L3_HEIGHT.in(Inches);
+    }
+    return ElevatorConstants.HOME_HEIGHT.in(Inches);
   }
 
   public ElevatorGoal getGoal() {
     return goal;
   }
 
-  public Distance getElevatorTargetHeight() {
+  public double getElevatorTargetHeight() {
     return elevatorTargetHeight;
   }
 
