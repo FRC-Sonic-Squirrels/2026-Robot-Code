@@ -398,6 +398,11 @@ public final class Constants {
     public static final double   CARRIAGE_MASS   = 5;
     public static final Distance PULLEY_DIAMETER = Units.Inches.of(2);
     public static final Distance MAX_HEIGHT      = Units.Inches.of(30);
+
+    public static final Distance HOME_HEIGHT = Units.Inches.of(2);
+    public static final Distance L1_HEIGHT   = Units.Inches.of(5);
+    public static final Distance L2_HEIGHT   = Units.Inches.of(15);
+    public static final Distance L3_HEIGHT   = Units.Inches.of(25);
   }
 
   public static volatile boolean unusedCode = false;

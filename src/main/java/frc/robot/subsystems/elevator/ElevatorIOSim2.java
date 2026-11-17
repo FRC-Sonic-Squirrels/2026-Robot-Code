@@ -11,7 +11,7 @@ import frc.lib.team2930.TalonFXElevatorSim;
 
 import frc.robot.Constants;
 
-public class ElevatorIOSim implements ElevatorIO {
+public class ElevatorIOSim2 implements ElevatorIO2 {
 
   private final TalonFXElevatorSim sim = new TalonFXElevatorSim(
       new ElevatorSim(DCMotor.getKrakenX60Foc(1), Constants.ElevatorConstants.GEAR_RATIO,
@@ -29,7 +29,7 @@ public class ElevatorIOSim implements ElevatorIO {
   public void setNeutralMode(NeutralModeValue value) {
   }
 
-  public void setElevatorClosedLoopConstants(Elevator.ElevatorTunables kicker) {
+  public void setElevatorClosedLoopConstants(Elevator2.ElevatorTunables kicker) {
   }
 
   public void setSensorPosition(Distance position) {

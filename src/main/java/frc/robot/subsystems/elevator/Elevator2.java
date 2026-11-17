@@ -9,7 +9,7 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.lib.team2930.AutoRegisterTunables;
 import frc.lib.team6328.LoggedTunableNumber;
 
-public class Elevator extends SubsystemBase {
+public class Elevator2 extends SubsystemBase {
 
   public enum ElevatorGoal {
     HOME, L1, L2, L3
@@ -37,10 +37,13 @@ public class Elevator extends SubsystemBase {
 
   private ElevatorGoal goal;
 
+  private ElevatorIO2 io;
+
   private Distance elevatorTargetHeight;
 
   /** Creates a new Elevator. */
-  public Elevator() {
+  public Elevator2(ElevatorIO2 io) {
+    this.io = io;
   }
 
   @Override

@@ -94,6 +94,7 @@ public class RobotContainer {
   private final Climber             climber;
   private final Hopper              hopper;
   private final Shooter             shooter;
+  private final Elevator            elevator;
 
   // Controllers
   private final XboxControllerWrapper driverController   = new XboxControllerWrapper(0);

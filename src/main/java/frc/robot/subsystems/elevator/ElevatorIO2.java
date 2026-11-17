@@ -8,7 +8,7 @@ import edu.wpi.first.units.measure.Distance;
 import frc.lib.team2930.LoggerGroup;
 import frc.robot.subsystems.BaseInputs;
 
-public interface ElevatorIO {
+public interface ElevatorIO2 {
   /** Contains all of the input data received from hardware. */
   class Inputs extends BaseInputs {
     public Distance position                = Distance.ofBaseUnits(0, Inches);
@@ -32,7 +32,7 @@ public interface ElevatorIO {
   public default void setNeutralMode(NeutralModeValue value) {
   }
 
-  public default void setElevatorClosedLoopConstants(Elevator.ElevatorTunables kicker) {
+  public default void setElevatorClosedLoopConstants(Elevator2.ElevatorTunables kicker) {
   }
 
   public default void setSensorPosition(Distance position) {
