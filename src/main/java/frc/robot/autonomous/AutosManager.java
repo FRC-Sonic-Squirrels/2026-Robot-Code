@@ -22,7 +22,7 @@ public class AutosManager {
   }
 
   public enum AutoGoals {
-    NOTHING, DRIVE, INTAKEWHILEDRIVE, SCORE, CLIMB;
+    NOTHING, DRIVE, INTAKEWHILEDRIVERIGHT, SCORE, BUMPERSHOT, CLIMB;
   }
 
   private String ROOT_TABLE = "Sysid";
@@ -168,7 +168,7 @@ public class AutosManager {
 
       case MIDDLE_SHOOT:
         aInitialPose = newInitialPose(ChoreoVars.Poses.START25);
-        waypoints.add(newWaypoint(2, ChoreoVars.Poses.START25, Translation2d.kZero, AutoGoals.SCORE));
+        waypoints.add(newWaypoint(2, ChoreoVars.Poses.START25, Translation2d.kZero, AutoGoals.BUMPERSHOT));
         return Pair.of(waypoints, aInitialPose);
 
       case TEST:
