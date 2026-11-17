@@ -346,23 +346,23 @@ public final class Constants {
     public static class Interpolation {
       public static TunableInterpolationMap generateHoodAngleForHubDistanceMap() {
         var map = new HashMap<Double, Double>();
-        map.put(1.0, 12.0);
-        map.put(1.5, 16.0);
-        map.put(2.0, 18.0);
-        map.put(2.5, 20.0);
-        map.put(3.0, 20.0);
-        map.put(3.5, 20.0);
-        map.put(4.0, 20.0);
-        map.put(4.5, 22.0);
-        map.put(5.0, 24.0);
+        map.put(1.0, 22.0);
+        map.put(1.5, 22.0);
+        map.put(2.0, 14.0);
+        map.put(2.5, 16.0);
+        map.put(3.0, 19.0);
+        map.put(3.5, 21.0);
+        map.put(4.0, 22.0);
+        map.put(4.5, 23.0);
+        map.put(5.0, 25.0);
         return new TunableInterpolationMap("HOOD_ANGLE_FOR_HUB_DISTANCE", map);
       }
 
       public static TunableInterpolationMap generateFlywheelRpmForHubDistanceMap() {
         var map = new HashMap<Double, Double>();
-        map.put(1.0, 3500.0);
-        map.put(1.5, 3800.0);
-        map.put(2.0, 4000.0);
+        map.put(1.0, 4500.0);
+        map.put(1.5, 4500.0);
+        map.put(2.0, 3600.0);
         map.put(2.5, 4000.0);
         map.put(3.0, 4000.0);
         map.put(3.5, 4000.0);

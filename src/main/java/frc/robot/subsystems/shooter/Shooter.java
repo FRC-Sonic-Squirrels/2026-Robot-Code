@@ -114,7 +114,7 @@ public class Shooter extends SubsystemBase {
   private final TunableInterpolationMap flywheelRpmForHubDistanceMap;
   private final TunableInterpolationMap flywheelRpmForAllianceZoneDistanceMap;
 
-  private boolean flywheelIdleRPMEnabled = true;
+  private boolean flywheelIdleRPMEnabled = false;
 
   private Goal goal = Goal.Idle;
 
