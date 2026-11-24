@@ -46,6 +46,7 @@ import frc.robot.subsystems.LED;
 import frc.robot.subsystems.LED.BaseRobotState;
 import frc.robot.subsystems.LED.RobotState;
 import frc.robot.subsystems.climber.*;
+import frc.robot.subsystems.elevator.Elevator2;
 import frc.robot.subsystems.hopper.Hopper;
 import frc.robot.subsystems.hopper.HopperIO;
 import frc.robot.subsystems.hopper.HopperIOReal;
@@ -94,7 +95,7 @@ public class RobotContainer {
   private final Climber             climber;
   private final Hopper              hopper;
   private final Shooter             shooter;
-  private final Elevator            elevator;
+  private final Elevator2            elevator;
 
   // Controllers
   private final XboxControllerWrapper driverController   = new XboxControllerWrapper(0);
@@ -175,6 +176,8 @@ public class RobotContainer {
 
     var minPivotAngle      = Constants.IntakeConstants.PivotConstants.MIN_PIVOT_ANGLE;
     var maxPivotAngleRight = Constants.IntakeConstants.PivotConstants.MAX_PIVOT_ANGLE_RIGHT;
+
+    elevator = new Elevator2(new ElevatorIOSim2());
 
     if (mode == Mode.REPLAY) {
       drivetrain = new Drivetrain(config, new GyroIO.Fake(), new GyroIO.Fake(), config.getReplaySwerveModuleObjects(),
